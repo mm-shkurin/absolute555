@@ -22,14 +22,23 @@ Flow: `features/<name>` -> `dev` -> `main`.
 
 ## Current working branch
 
-**`features/marketplace-scope-cut` is the working branch for the whole marketplace
-rebuild. Do not branch off it, and do not open a branch per story.** Every story lands
-as its own commit on this branch until it is merged into `dev`.
+**One shared working branch at a time — currently `features/listing-lifecycle`.** Do not
+open a second branch beside it: both sessions work the same tree, and two branches over
+one tree put them on different heads.
 
-This is a deliberate exception to the flow above, taken because the backend and frontend
-sessions work the same tree at the same time and a branch per story would put them on
-different heads. The rules that still apply: one commit per story, conventional commit
-subjects, and no direct commits to `main` or `dev`.
+The branch is cut fresh from `dev` when the previous one merges, and it is named for the
+story in flight rather than for the whole rebuild. Cut it only with a clean tree: `git
+checkout -b` refuses over another session's uncommitted work, which is the protection
+working, not an obstacle to force past.
+
+Merging into `dev` from a session whose tree is dirty: push the branch to `dev` directly
+(`git push origin <branch>:dev`) and update the local ref with `git fetch origin
+dev:dev`. Checking `dev` out would overwrite whatever the other session has open.
+
+Previous working branches: `features/marketplace-scope-cut` (stories 1-3, merged).
+
+The rules that still apply: one commit per story, conventional commit subjects, and no
+direct commits to `main`.
 
 ## Commands that overwrite the working tree
 
