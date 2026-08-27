@@ -37,3 +37,6 @@ infra/agent-progress.log
 backend/tests
 backend/pytest.ini
 backend/requirements-dev.txt
+
+# Alembic ships a README that the image never reads.
+backend/alembic/README
