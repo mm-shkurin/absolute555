@@ -22,6 +22,9 @@ Deferred detail, read when the work touches it:
   bind to in this stack
 - `.claude/templates/refactoring/` — 31 refactoring recipes plus the code-smell routing
   table that maps a smell to its template
+- `.claude/templates/tdd/` — red/green templates per layer; `README.md` maps the
+  upstream layer names onto this project's. `.claude/templates/testing/` — determinism
+  hierarchy, coverage commands, test-review patterns
 - `ProductSpecification/ui/ui-conventions.md` — brand, tokens, and component conventions
 
 ## Specs
