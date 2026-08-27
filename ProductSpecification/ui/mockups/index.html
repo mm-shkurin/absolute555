@@ -140,6 +140,39 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
 .foot{padding:34px 0 46px;color:var(--mut);font-size:13.5px;display:flex;gap:20px;flex-wrap:wrap;
   border-top:1px solid var(--line);margin-top:40px}
 
+/* блоки лендинга */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.vp.m .split{grid-template-columns:1fr;gap:24px}
+.cols2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.vp.m .cols2{grid-template-columns:1fr}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.vp.m .cols4{grid-template-columns:1fr}
+.list{list-style:none;margin:0;padding:0}
+.list li{position:relative;padding:14px 0 14px 34px;border-bottom:1px solid var(--line);
+  font-size:16px;line-height:1.5;color:var(--ink2)}
+.list li:last-child{border:0}
+.list li b{color:var(--ink);font-weight:700}
+.list li::before{content:"";position:absolute;left:0;top:19px;width:18px;height:18px;border-radius:50%;
+  background:var(--soft);box-shadow:inset 0 0 0 5px var(--brand)}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:22px}
+.tile h3{font-size:18px;font-weight:700;margin:0 0 8px}
+.tile p{margin:0;color:var(--ink2);font-size:14.5px;line-height:1.5}
+.tile .k{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--brand);margin-bottom:12px;display:block}
+.band{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:44px}
+.vp.m .band{padding:24px;border-radius:20px}
+.faq{border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{list-style:none;cursor:pointer;padding:20px 40px 20px 0;font-size:18px;font-weight:700;position:relative}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";position:absolute;right:8px;top:16px;font-size:24px;font-weight:600;color:var(--brand)}
+.faq details[open] summary::after{content:"\2212"}
+.faq p{margin:0 0 22px;color:var(--ink2);font-size:16px;line-height:1.6;max-width:62ch}
+.vp.m .faq summary{font-size:16px;padding:16px 34px 16px 0}
+.vp.m .faq p{font-size:15px}
+.note{display:flex;gap:12px;align-items:flex-start;background:var(--soft);border-radius:14px;
+  padding:14px 16px;font-size:14.5px;line-height:1.5;color:#25406F;margin-top:20px}
+
 /* ───────── лента ───────── */
 .feedTop{padding-top:24px}
 .tabs{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
@@ -373,6 +406,125 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
           четыре крыла и два бампера. Клик по панели — фото прибора с числом.</p></div>
         <div class="step"><h3>Полная карта — выше в ленте</h3><p>Объявление с замерами по всем
           панелям получает бейдж и поднимается в выдаче. Без карты тоже публикуется.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="split">
+        <div>
+          <span class="eyebrow">Что внутри объявления</span>
+          <h2>Всё, что обычно приходится выпытывать в переписке</h2>
+          <p class="sub">Продавец заполняет один раз, покупатель не задаёт одни и те же
+            пять вопросов каждому.</p>
+          <ul class="list">
+            <li><b>Характеристики из VIN.</b> Марка, модель, год, коробка и мощность подставлены
+              из документа, а не набраны от руки.</li>
+            <li><b>Карта замеров.</b> Каждая панель кузова с числом в микронах и фотографией прибора.</li>
+            <li><b>Продавец с историей.</b> Рейтинг звёздами, число закрытых сделок, отзывы покупателей.</li>
+            <li><b>Цена в динамике.</b> Видно предложения других покупателей — понятно, куда идёт торг.</li>
+            <li><b>Телефон под кнопкой.</b> Продавец сам решает, открывать его или общаться в чате.</li>
+          </ul>
+        </div>
+        <div class="ph" style="aspect-ratio:4/5;border-radius:24px">макет карточки объявления<br>(экран из следующего захода)</div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <span class="eyebrow">Второй канал</span>
+      <h2>Под заказ из-за рубежа</h2>
+      <p class="sub">Отдельная вкладка в ленте. Машины ещё нет в стране — значит, нет ни VIN,
+        ни СТС, зато есть срок доставки и цена под ключ с таможней.</p>
+      <div class="cols3">
+        <div class="tile"><span class="k">Позиции</span>
+          <h3>Конкретные машины</h3>
+          <p>Поставщик выкладывает то, что может привезти: фото, комплектация, страна,
+            срок и цена с растаможкой.</p></div>
+        <div class="tile"><span class="k">Поставщики</span>
+          <h3>Профили с рейтингом</h3>
+          <p>Кто какие страны и марки возит, какие сроки и предоплата. Покупатель выбирает
+            сначала человека, потом машину.</p></div>
+        <div class="tile"><span class="k">Заявки</span>
+          <h3>«Хочу такую»</h3>
+          <p>Покупатель описывает желаемое и бюджет, поставщики откликаются. Аукцион
+            наоборот — предложения приходят к вам.</p></div>
+      </div>
+      <div class="note">Поставщиком становятся по заявке: страны, марки, сроки, условия.
+        Заявку рассматривает владелец площадки — случайных продавцов под привоз тут нет.</div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="band">
+        <span class="eyebrow">Почему безопаснее</span>
+        <h2>Ни одного анонимного объявления</h2>
+        <p class="sub">Четыре вещи, которых нет на бесплатных досках.</p>
+        <div class="cols4">
+          <div class="tile"><h3>Модерация до публикации</h3>
+            <p>Объявление проверяет человек. Отклонил — продавец видит причину текстом и правит.</p></div>
+          <div class="tile"><h3>Рейтинг по сделкам</h3>
+            <p>Отзыв оставляют только после принятого предложения. Накрутить нечем — сделки не было.</p></div>
+          <div class="tile"><h3>Торг на площадке</h3>
+            <p>Предложение по цене живёт ограниченное время. Принял одно — остальные закрываются сами.</p></div>
+          <div class="tile"><h3>Жалоба в один тап</h3>
+            <p>Любую карточку можно отправить модератору. Накопились жалобы — снимут с публикации.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap">
+      <div class="split">
+        <div class="ph" style="aspect-ratio:16/11;border-radius:24px">снимок приложения на телефоне</div>
+        <div>
+          <span class="eyebrow">Android</span>
+          <h2>Приложение для тех, кто снимает машину во дворе</h2>
+          <p class="sub">Черновик сохраняется на каждом шаге: сел телефон — вернётесь и допишете.
+            Распознавание идёт в фоне, ждать с открытым экраном не нужно.</p>
+          <div class="heroCta">
+            <button class="btn ghost">Скачать в RuStore</button>
+            <button class="btn ghost" data-go="feed">Открыть в браузере</button>
+          </div>
+          <p class="heroNote">Веб-версия умеет то же самое — приложение удобнее только камерой.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section style="padding-top:0">
+    <div class="wrap narrow">
+      <span class="eyebrow">Вопросы</span>
+      <h2>Коротко о непонятном</h2>
+      <div class="faq" style="margin-top:28px">
+        <details open><summary>Сколько стоит разместить объявление?</summary>
+          <p>Ничего. Площадка региональная и молодая, платных подъёмов и пакетов нет.
+            Выше в ленте поднимаются объявления с полной картой замеров — это единственный способ
+            попасть наверх, и он бесплатный.</p></details>
+        <details><summary>А если нет толщиномера?</summary>
+          <p>Объявление опубликуется и без карты замеров, шаг пропускается одной кнопкой.
+            Но карточка с полной картой получает бейдж и стоит выше — если прибор можно взять
+            у знакомых на полчаса, это окупается.</p></details>
+        <details><summary>Зачем фотографировать СТС? Я не хочу светить документ.</summary>
+          <p>Из СТС читается VIN, по нему подставляются марка, модель, год, коробка и мощность —
+            это экономит десяток полей. Сам документ в объявление не попадает и покупателям
+            не показывается. Заполнить всё руками можно с самого начала, кнопка есть на первом шаге.</p></details>
+        <details><summary>Почему число толщины нельзя ввести вручную?</summary>
+          <p>Потому что тогда фича теряет смысл: любой впишет «100 мкм» по всему кузову.
+            Число считывается с экрана прибора на фотографии. Распознавание иногда ошибается —
+            тогда продавец правит, и правка помечается как уточнённая вручную, покупатель это видит.</p></details>
+        <details><summary>Кто увидит мой телефон?</summary>
+          <p>Никто, пока вы сами не откроете. В карточке он спрятан за кнопкой, а в настройках
+            объявления можно вообще запретить его показ и общаться только в чате.
+            В чат номер тоже не подставляется автоматически.</p></details>
+        <details><summary>Что будет с объявлением после продажи?</summary>
+          <p>Приняли предложение — объявление переходит в «продано», остальные предложения по нему
+            отклоняются автоматически, их авторы видят «машину продали». Карточка остаётся доступной,
+            но действия в ней выключены.</p></details>
       </div>
     </div>
   </section>

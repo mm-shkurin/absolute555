@@ -1,6 +1,6 @@
 # All targets run from infra/. `docker compose` picks up ./docker-compose.yml
 # and ./.env automatically.
-.PHONY: up down build logs ps restart migrate shell psql clean test
+.PHONY: up down build logs ps restart migrate shell psql clean test smoke
 
 up:
 	docker compose up -d --build
@@ -33,7 +33,13 @@ shell:
 psql:
 	docker compose exec postgres psql -U $${POSTGRES_USER} -d $${POSTGRES_DB}
 
-# Smoke check: the stack is up and the API answers.
+# The backend test suite. tests/ is not in the runtime image on purpose — the image
+# installs requirements.txt only — so the suite is mounted in and its dependencies
+# installed for the life of the container.
 test:
+	docker compose run --rm --no-deps 	  -v "$(CURDIR)/../backend/tests:/app/tests" 	  -v "$(CURDIR)/../backend/pytest.ini:/app/pytest.ini" 	  backend sh -c "pip install --no-cache-dir -q pytest==8.3.4 pytest-asyncio==0.25.0 'httpx==0.27.2' && python -m pytest"
+
+# The stack is up and the API answers.
+smoke:
 	docker compose config -q
 	curl -fsS http://localhost:$${BACKEND_HOST_PORT:-8000}/health
