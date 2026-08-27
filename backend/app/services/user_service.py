@@ -8,8 +8,7 @@ from datetime import datetime
 from loguru import logger
 
 from uuid import UUID
-from app.models.cars import Cars
-from app.models.spare_parts import SpareParts
+from app.models.sale_car import SaleCars
 
 class UserService:
     def __init__(self, db: AsyncSession):
@@ -86,25 +85,24 @@ class UserService:
             await self.db.refresh(user)
         return user.id
     
-    async def guest_limits(self,id : UUID) -> dict[str,bool] : 
+    async def check_guest_limits(self, user_id: UUID) -> dict[str, bool]:
+        """How many more listings this user may create.
+
+        Was `guest_limits`, and nothing could call it: the two call sites in
+        permissions/dependencies.py ask for `check_guest_limits`, and the body read
+        `user_id` while the parameter was named `id` and counted a `Car` class that was
+        never imported. It counted garage cars and spare parts, both of which went with
+        story 1; a guest's one allowed object is now the one listing they may publish.
+        """
         result = await self.db.execute(
-        select(Users).where(Users.id == user_id)
+            select(Users).where(Users.id == user_id)
         )
         user = result.scalar_one_or_none()
         if not user or not user.is_guest:
-            return {"can_create_car": True, "can_create_spare_part": True}  # не гость — без лимитов
-    
-        car_count = await self.db.execute(
-            select(func.count()).where(Car.user_id == user_id)
+            return {"can_create_car": True}
+
+        listing_count = await self.db.execute(
+            select(func.count()).where(SaleCars.user_id == user_id)
         )
-        cars_created = car_count.scalar_one()
-    
-        spare_part_count = await self.db.execute(
-            select(func.count()).where(SpareParts.user_id == user_id)
-        )
-        spare_parts_created = spare_part_count.scalar_one()
-    
-        return {
-            "can_create_car": cars_created < 1,
-            "can_create_spare_part": spare_parts_created < 1
-        }
+
+        return {"can_create_car": listing_count.scalar_one() < 1}

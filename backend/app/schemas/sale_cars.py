@@ -48,7 +48,11 @@ class SaleCarUpdateResponse(BaseModel):
     sale_car_id: UUID
     user_id: UUID
     vin: Optional[str]
-    chroma_document_id: Optional[str]
+    mark: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[int] = None
+    transmission: Optional[str] = None
+    engine_power: Optional[int] = None
     task_status: Optional[str]
     updated_at: datetime
     message: str = "Sale car updated successfully"
@@ -61,7 +65,11 @@ class SaleCarResponse(BaseModel):
     sale_car_id: UUID
     user_id: UUID
     vin: Optional[str]
-    chroma_document_id: Optional[str]
+    mark: Optional[str] = None
+    model: Optional[str] = None
+    year: Optional[int] = None
+    transmission: Optional[str] = None
+    engine_power: Optional[int] = None
     s3_photo_car_keys: Optional[List[str]] = None
     task_id: Optional[str] = None
     task_status: Optional[str] = None

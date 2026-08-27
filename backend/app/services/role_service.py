@@ -101,11 +101,10 @@ class RoleService:
         if current_user.role == UserRole.ADMIN.value:
             return True
         
-        if current_user.role == UserRole.OWNER.value:
-            return target_user.role != UserRole.OWNER.value
-        
+        # OWNER used to sit above ADMIN here and SERVICE_OWNER was what a MANAGER could
+        # manage; both roles went with story 1, leaving MANAGER over plain users.
         if current_user.role == UserRole.MANAGER.value:
-            return target_user.role in [UserRole.USER.value, UserRole.SERVICE_OWNER.value]
+            return target_user.role == UserRole.USER.value
         
         return current_user.id == target_user.id
 

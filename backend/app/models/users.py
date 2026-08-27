@@ -23,9 +23,7 @@ class Users(BaseModel):
     role = Column(String, default=UserRole.USER.value, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     is_guest = Column(Boolean, default = False)
-    review = relationship("Review", back_populates="user")
     role_requests = relationship("RoleRequest", foreign_keys="RoleRequest.user_id", back_populates="user")
-    spare_parts = relationship("SpareParts", back_populates="user")
     offers = relationship("Offer", back_populates="user", cascade="all, delete-orphan")
     
     created_at = Column(DateTime, server_default=func.now()) 

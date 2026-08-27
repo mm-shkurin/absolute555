@@ -11,7 +11,7 @@ from loguru import logger
 
 from app.sse.manager import sse_manager
 from app.db.database import get_db_session
-from app.models.cars import Cars
+from app.models.sale_car import SaleCars
 from app.tasks.status_updater import TaskStatus
 
 task_router = APIRouter()
@@ -21,20 +21,20 @@ def _get_redis_message(pubsub, timeout=0.1):
     """Синхронная функция для получения сообщения из Redis pubsub"""
     return pubsub.get_message(timeout=timeout)
 
-@task_router.get("/sse/{car_id}")
-async def sse_endpoint(car_id: str):
+@task_router.get("/sse/{sale_car_id}")
+async def sse_endpoint(sale_car_id: str):
     async def event_generator():
         queue = asyncio.Queue()
         pubsub = None
 
         try:
             try:
-                uuid.UUID(car_id)
+                uuid.UUID(sale_car_id)
             except ValueError:
-                yield f"data: {json.dumps({'type': 'error', 'message': 'Invalid car_id format'})}\n\n"
+                yield f"data: {json.dumps({'type': 'error', 'message': 'Invalid sale_car_id format'})}\n\n"
                 return
             
-            sse_manager.add_connection(car_id, queue)
+            sse_manager.add_connection(sale_car_id, queue)
             
             from app.core.config import RedisSettings
             redis_settings = RedisSettings()
@@ -53,9 +53,9 @@ async def sse_endpoint(car_id: str):
             redis_client = redis.Redis(**redis_params)
             pubsub = redis_client.pubsub(ignore_subscribe_messages=False)
             
-            redis_channel = f"sse_messages:{car_id}"
+            redis_channel = f"sse_messages:{sale_car_id}"
             pubsub.subscribe(redis_channel)
-            logger.info(f"Subscribed to Redis channel: {redis_channel} for car_id={car_id}")
+            logger.info(f"Subscribed to Redis channel: {redis_channel} for sale_car_id={sale_car_id}")
             
             try:
                 loop = asyncio.get_event_loop()
@@ -76,21 +76,21 @@ async def sse_endpoint(car_id: str):
             current_status = TaskStatus.PENDING
             try:
                 async with get_db_session() as db:
-                    result = await db.execute(select(Cars).where(Cars.car_id == car_id))
-                    car = result.scalar_one_or_none()
-                    if car and car.task_status:
-                        current_status = car.task_status
+                    result = await db.execute(select(SaleCars).where(SaleCars.sale_car_id == sale_car_id))
+                    sale_car = result.scalar_one_or_none()
+                    if sale_car and sale_car.task_status:
+                        current_status = sale_car.task_status
             except Exception as e:
-                logger.warning(f"Could not fetch car status from DB: {e}, using PENDING")
+                logger.warning(f"Could not fetch listing status from DB: {e}, using PENDING")
 
             initial_message = {
-                "car_id": car_id,
+                "sale_car_id": sale_car_id,
                 "status": current_status,
                 "type": "initial",
                 "timestamp": time.time()
             }
             initial_sse_data = f"data: {json.dumps(initial_message)}\n\n"
-            logger.info(f"📤 Sending initial SSE message for car_id={car_id}, status={current_status}")
+            logger.info(f"📤 Sending initial SSE message for sale_car_id={sale_car_id}, status={current_status}")
             yield initial_sse_data
             
             last_heartbeat = time.time()
@@ -100,15 +100,15 @@ async def sse_endpoint(car_id: str):
                 try:
                     try:
                         message = queue.get_nowait()
-                        msg_car_id = message.get('car_id') or message.get('sale_car_id') or message.get('part_id')
-                        msg_car_id_str = str(msg_car_id) if msg_car_id else None
-                        car_id_str = str(car_id)
+                        msg_sale_car_id = message.get('sale_car_id')
+                        msg_sale_car_id_str = str(msg_sale_car_id) if msg_sale_car_id else None
+                        sale_car_id_str = str(sale_car_id)
                         
-                        if msg_car_id_str == car_id_str or msg_car_id is None:
-                            logger.info(f"📨 Sending local queue message for car_id={car_id}: {message.get('status', 'unknown')}")
+                        if msg_sale_car_id_str == sale_car_id_str or msg_sale_car_id is None:
+                            logger.info(f"📨 Sending local queue message for sale_car_id={sale_car_id}: {message.get('status', 'unknown')}")
                             yield f"data: {json.dumps(message)}\n\n"
                         else:
-                            logger.debug(f"⏭️ Skipping local message for different car_id: {msg_car_id_str} != {car_id_str}")
+                            logger.debug(f"⏭️ Skipping local message for different sale_car_id: {msg_sale_car_id_str} != {sale_car_id_str}")
                         continue
                     except asyncio.QueueEmpty:
                         pass
@@ -125,14 +125,14 @@ async def sse_endpoint(car_id: str):
                             if redis_message['type'] == 'message':
                                 try:
                                     message_channel = redis_message.get('channel', b'').decode('utf-8') if isinstance(redis_message.get('channel'), bytes) else redis_message.get('channel', '')
-                                    expected_channel = f"sse_messages:{car_id}"
+                                    expected_channel = f"sse_messages:{sale_car_id}"
                                     
                                     if message_channel == expected_channel:
                                         message_data = json.loads(redis_message['data'])
-                                        logger.info(f"📨 Received Redis message from channel {message_channel} for car_id={car_id}: {message_data}")
+                                        logger.info(f"📨 Received Redis message from channel {message_channel} for sale_car_id={sale_car_id}: {message_data}")
                                         
                                         sse_data = f"data: {json.dumps(message_data)}\n\n"
-                                        logger.info(f"✅ Sending SSE message to client for car_id={car_id}: status={message_data.get('status', 'unknown')}, type={message_data.get('type', 'unknown')}")
+                                        logger.info(f"✅ Sending SSE message to client for sale_car_id={sale_car_id}: status={message_data.get('status', 'unknown')}, type={message_data.get('type', 'unknown')}")
                                         logger.debug(f"📤 SSE data: {sse_data.strip()}")
                                         yield sse_data
                                     else:
@@ -151,7 +151,7 @@ async def sse_endpoint(car_id: str):
                     if current_time - last_heartbeat >= heartbeat_interval:
                         heartbeat_message = {
                             "type": "heartbeat",
-                            "car_id": car_id,
+                            "sale_car_id": sale_car_id,
                             "timestamp": current_time
                         }
                         yield f"data: {json.dumps(heartbeat_message)}\n\n"
@@ -162,19 +162,19 @@ async def sse_endpoint(car_id: str):
                 except asyncio.CancelledError:
                     raise
                 except Exception as e:
-                    logger.error(f"Error in message loop for car_id={car_id}: {e}")
+                    logger.error(f"Error in message loop for sale_car_id={sale_car_id}: {e}")
                     await asyncio.sleep(0.1)
                 
         except asyncio.CancelledError:
-            logger.info(f"SSE connection cancelled for car_id={car_id}")
+            logger.info(f"SSE connection cancelled for sale_car_id={sale_car_id}")
         except Exception as e:
-            logger.error(f"Error in SSE stream for car_id={car_id}: {e}")
-            yield f"data: {json.dumps({'type': 'error', 'message': str(e), 'car_id': car_id})}\n\n"
+            logger.error(f"Error in SSE stream for sale_car_id={sale_car_id}: {e}")
+            yield f"data: {json.dumps({'type': 'error', 'message': str(e), 'sale_car_id': sale_car_id})}\n\n"
         finally:
-            sse_manager.remove_connection(car_id, queue)
+            sse_manager.remove_connection(sale_car_id, queue)
             if pubsub:
                 try:
-                    redis_channel = f"sse_messages:{car_id}"
+                    redis_channel = f"sse_messages:{sale_car_id}"
                     pubsub.unsubscribe(redis_channel)
                     pubsub.close()
                     logger.info(f"Unsubscribed from Redis channel: {redis_channel}")
@@ -198,16 +198,16 @@ async def test_update_status(request: Request):
     
     try:
         body = await request.json()
-        car_id = body.get("car_id")
+        sale_car_id = body.get("sale_car_id")
         status = body.get("status", "TestStatus")
         
-        if not car_id:
-            return {"error": "car_id is required"}
+        if not sale_car_id:
+            return {"error": "sale_car_id is required"}
         
-        await update_task_status(car_id, status)
+        await update_task_status(sale_car_id, status)
         return {
             "message": "Status updated successfully",
-            "car_id": car_id,
+            "sale_car_id": sale_car_id,
             "status": status
         }
     except Exception as e:

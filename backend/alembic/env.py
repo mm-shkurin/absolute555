@@ -7,11 +7,8 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from app.db.database import Base
 from app.models.users import Users
-from app.models.review import Review
-from app.models.cars import Cars
 from app.models.sale_car import SaleCars
 from app.models.offer import Offer
-from app.models.spare_parts import SpareParts
 from app.models.role_request import RoleRequest
 
 from app.core.config import DatabaseSettings

@@ -1,8 +1,7 @@
 from typing import List
 from fastapi import Depends, HTTPException, status
 from app.models.users import Users
-from app.models.cars import Cars
-from app.models.spare_parts import SpareParts
+from app.models.sale_car import SaleCars
 from app.models.offer import Offer,OfferStatus
 from app.utils.security import get_current_user
 from .roles import UserRole
@@ -189,24 +188,6 @@ async def require_guest_can_create_car(
     return current_user
 
 
-async def require_guest_can_create_repair(
-    current_user: Users = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-) -> Users:
-    if not current_user.is_guest:
-        return current_user
-    
-    user_service = UserService(db)
-    limits = await user_service.check_guest_limits(current_user.id)
-    
-    if not limits["can_create_repair"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Guest limit reached: only 1 repair record allowed."
-        )
-    return current_user
-
-
 async def forbid_guest_view_prices(
     current_user: Users = Depends(get_current_user)
 ) -> Users:
@@ -244,34 +225,16 @@ async def check_guest_car_limit(
     if not current_user.is_guest:
         return current_user
     
+    # Counts listings, not garage entries: the Cars model went with story 1, and a
+    # guest's one allowed object is now the one listing they may publish.
     result = await db.execute(
-        select(func.count()).where(Cars.user_id == current_user.id)
+        select(func.count()).where(SaleCars.user_id == current_user.id)
     )
-    car_count = result.scalar_one()
-    
-    if car_count >= 1:
+    listing_count = result.scalar_one()
+
+    if listing_count >= 1:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
-            detail="Guest users can only create 1 car. Please verify your account to create more."
-        )
-    return current_user
-
-
-async def check_guest_repair_limit(
-    current_user: Users = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-) -> Users:
-    if not current_user.is_guest:
-        return current_user
-    
-    result = await db.execute(
-        select(func.count()).where(SpareParts.user_id == current_user.id)
-    )
-    repair_count = result.scalar_one()
-    
-    if repair_count >= 1:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Guest users can only create 1 repair record. Please verify your account to create more."
+            detail="Guest users can only create 1 listing. Please verify your account to create more."
         )
     return current_user

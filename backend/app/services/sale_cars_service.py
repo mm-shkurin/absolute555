@@ -5,7 +5,6 @@ from app.schemas.sale_cars import SaleCarCreate, SaleCarUpdate
 
 from typing import List, Optional
 from app.services.webhook_service import WebhookService
-from app.services.chromadb_service import ChromaService
 from app.services.s3_service import s3_service
 from app.core.config import FrontendSettings
 from loguru import logger
@@ -168,22 +167,6 @@ class SaleCarService:
             except Exception as e:
                 logger.warning(f"Failed to send status change webhook for sale_car_id={sale_car_id}: {e}")
         
-        if sale_car.chroma_document_id:
-            try:
-                from app.services.chromadb_service import ChromaService
-                chroma = ChromaService()
-                
-                current_data = await chroma.get_document(sale_car.chroma_document_id)
-                if current_data and isinstance(current_data, dict):
-                    updated_data = current_data.copy()
-                    for key, value in update_data.items():
-                        if value is not None and key != "vin":  
-                            updated_data[key] = value
-                    
-                    await chroma.update_document(sale_car.chroma_document_id, updated_data)
-            except Exception as e:
-                print(f"Error updating ChromaDB for sale car {sale_car_id}: {e}")
-        
         return sale_car
 
     async def delete_sale_car(self, sale_car_id: str) -> bool:
@@ -203,15 +186,6 @@ class SaleCarService:
                 await s3_service.delete_files(sale_car.s3_photo_car_keys)
             except Exception as e:
                 logger.warning(f"Failed to delete photos from S3 for sale_car_id={sale_car_id}: {e}")
-
-        if sale_car.chroma_document_id:
-            try:
-                from app.services.chromadb_service import ChromaService
-
-                chroma = ChromaService()
-                await chroma.delete_document(sale_car.chroma_document_id)
-            except Exception:
-                pass
 
         await self.db.execute(
             delete(SaleCars).where(SaleCars.sale_car_id == uuid.UUID(sale_car_id))
@@ -269,15 +243,14 @@ class SaleCarService:
         
         data["photo_urls"] = photo_urls
         
-        if sale_car.chroma_document_id:
-            try:
-                chroma = ChromaService()
-                car_data = await chroma.get_document(sale_car.chroma_document_id)
-                if car_data and isinstance(car_data, dict):
-                    data["car_data"] = car_data
-            except Exception as e:
-                logger.warning(f"Failed to get ChromaDB data: {e}")
-        
+        # The decoded СТС fields used to be fetched from ChromaDB by document id and
+        # nested under a "car_data" key. They are columns now, so they are flat here.
+        data["mark"] = sale_car.mark
+        data["model"] = sale_car.model
+        data["year"] = sale_car.year
+        data["transmission"] = sale_car.transmission
+        data["engine_power"] = sale_car.engine_power
+
         return data
 
     

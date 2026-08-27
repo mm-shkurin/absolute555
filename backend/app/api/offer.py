@@ -19,7 +19,6 @@ from app.permissions.dependencies import (
     require_permission,
     check_guest_car_limit,
     forbid_guest,
-    check_guest_repair_limit,
 )
 offer_router = APIRouter()
 @offer_router.post("/", response_model=OfferResponse, status_code=status.HTTP_201_CREATED)

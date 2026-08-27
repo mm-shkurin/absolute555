@@ -148,13 +148,6 @@ class GigaChatSettings(BaseSettings):
     
     model_config = BaseConfig.model_config
 
-class ChromaSettings(BaseSettings):
-    chroma_network_name: str = Field(..., alias="CHROMA_NETWORK_NAME")
-    chroma_port: int = Field(..., ge=1, le=65535, alias="CHROMA_PORT")
-    chroma_collection_name: str = Field(..., alias="CHROMA_COLLECTION_NAME")
-    
-    model_config = BaseConfig.model_config
-
 class WebhookSettings(BaseSettings):
     webhook_secret: str = Field(..., alias="WEBHOOK_SECRET")
     tg_webhook_url: Optional[HttpUrl] = Field(None, alias="TG_WEBHOOK_URL")

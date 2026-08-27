@@ -22,25 +22,17 @@ async def list_sale_cars(
         status = SaleCarStatus.ON_SALE
     cars = await service.get_all_sale_cars(status=status)
     
-    chroma_ids = [car.chroma_document_id for car in cars if car.chroma_document_id]
-    chroma_data_map = {}
-    
-    if chroma_ids:
-        try:
-            from app.services.chromadb_service import ChromaService
-            chroma = ChromaService()
-            chroma_data_map = await chroma.get_documents_batch(chroma_ids)
-        except Exception as e:
-            from loguru import logger
-            logger.error(f"Error batch loading ChromaDB data: {e}")
-    
     enriched_cars = []
     for car in cars:
         car_data = {
             "sale_car_id": car.sale_car_id,
             "user_id": car.user_id,
             "vin": car.vin,
-            "chroma_document_id": car.chroma_document_id,
+            "mark": car.mark,
+            "model": car.model,
+            "year": car.year,
+            "transmission": car.transmission,
+            "engine_power": car.engine_power,
             "s3_photo_car_keys": car.s3_photo_car_keys,
             "task_id": car.task_id,
             "task_status": car.task_status,
@@ -58,11 +50,6 @@ async def list_sale_cars(
                 car_data["preview_photo_url"] = await s3_service.generate_presigned_url(keys[0])
         except Exception:
             pass
-        
-        if car.chroma_document_id and car.chroma_document_id in chroma_data_map:
-            chroma_data = chroma_data_map[car.chroma_document_id]
-            if chroma_data and isinstance(chroma_data, dict):
-                car_data["car_data"] = chroma_data
         
         enriched_cars.append(car_data)
     
@@ -77,25 +64,17 @@ async def list_my_sale_cars(
     service = SaleCarService(db)
     cars = await service.get_sale_cars_by_user(str(current_user.id), status=status)
     
-    chroma_ids = [car.chroma_document_id for car in cars if car.chroma_document_id]
-    chroma_data_map = {}
-    
-    if chroma_ids:
-        try:
-            from app.services.chromadb_service import ChromaService
-            chroma = ChromaService()
-            chroma_data_map = await chroma.get_documents_batch(chroma_ids)
-        except Exception as e:
-            from loguru import logger
-            logger.error(f"Error batch loading ChromaDB data: {e}")
-    
     enriched_cars = []
     for car in cars:
         car_data = {
             "sale_car_id": car.sale_car_id,
             "user_id": car.user_id,
             "vin": car.vin,
-            "chroma_document_id": car.chroma_document_id,
+            "mark": car.mark,
+            "model": car.model,
+            "year": car.year,
+            "transmission": car.transmission,
+            "engine_power": car.engine_power,
             "s3_photo_car_keys": car.s3_photo_car_keys,
             "task_id": car.task_id,
             "task_status": car.task_status,
@@ -113,11 +92,6 @@ async def list_my_sale_cars(
                 car_data["preview_photo_url"] = await s3_service.generate_presigned_url(keys[0])
         except Exception:
             pass
-        
-        if car.chroma_document_id and car.chroma_document_id in chroma_data_map:
-            chroma_data = chroma_data_map[car.chroma_document_id]
-            if chroma_data and isinstance(chroma_data, dict):
-                car_data["car_data"] = chroma_data
         
         enriched_cars.append(car_data)
     return enriched_cars
@@ -137,7 +111,11 @@ async def get_sale_car_by_id(
         "sale_car_id": car.sale_car_id,
         "user_id": car.user_id,
         "vin": car.vin,
-        "chroma_document_id": car.chroma_document_id,
+        "mark": car.mark,
+        "model": car.model,
+        "year": car.year,
+        "transmission": car.transmission,
+        "engine_power": car.engine_power,
         "s3_photo_car_keys": car.s3_photo_car_keys,
         "task_id": car.task_id,
         "task_status": car.task_status,
@@ -157,15 +135,6 @@ async def get_sale_car_by_id(
     except Exception:
         pass
     
-    if car.chroma_document_id:
-        try:
-            from app.services.chromadb_service import ChromaService
-            chroma = ChromaService()
-            chroma_data = await chroma.get_document(car.chroma_document_id)
-            if chroma_data and isinstance(chroma_data, dict):
-                car_data["car_data"] = chroma_data
-        except Exception as e:
-            logger.error(f"Error getting ChromaDB data for sale car {car.sale_car_id}: {e}")
     
     return car_data
 
@@ -198,7 +167,11 @@ async def update_sale_car(
             sale_car_id=updated_car.sale_car_id,
             user_id=updated_car.user_id,
             vin=updated_car.vin,
-            chroma_document_id=updated_car.chroma_document_id,
+            mark=updated_car.mark,
+            model=updated_car.model,
+            year=updated_car.year,
+            transmission=updated_car.transmission,
+            engine_power=updated_car.engine_power,
             task_status=updated_car.task_status,
             updated_at=updated_car.updated_at,
             message="Sale car updated successfully"
@@ -328,25 +301,17 @@ async def list_sale_cars_on_sale(
     service = SaleCarService(db)
     cars = await service.get_sale_cars_on_sale()
     
-    chroma_ids = [car.chroma_document_id for car in cars if car.chroma_document_id]
-    chroma_data_map = {}
-    
-    if chroma_ids:
-        try:
-            from app.services.chromadb_service import ChromaService
-            chroma = ChromaService()
-            chroma_data_map = await chroma.get_documents_batch(chroma_ids)
-        except Exception as e:
-            from loguru import logger
-            logger.error(f"Error batch loading ChromaDB data: {e}")
-    
     enriched_cars = []
     for car in cars:
         car_data = {
             "sale_car_id": car.sale_car_id,
             "user_id": car.user_id,
             "vin": car.vin,
-            "chroma_document_id": car.chroma_document_id,
+            "mark": car.mark,
+            "model": car.model,
+            "year": car.year,
+            "transmission": car.transmission,
+            "engine_power": car.engine_power,
             "s3_photo_car_keys": car.s3_photo_car_keys,
             "task_id": car.task_id,
             "task_status": car.task_status,
@@ -364,11 +329,6 @@ async def list_sale_cars_on_sale(
                 car_data["preview_photo_url"] = await s3_service.generate_presigned_url(keys[0])
         except Exception:
             pass
-        
-        if car.chroma_document_id and car.chroma_document_id in chroma_data_map:
-            chroma_data = chroma_data_map[car.chroma_document_id]
-            if chroma_data and isinstance(chroma_data, dict):
-                car_data["car_data"] = chroma_data
         
         enriched_cars.append(car_data)
     
@@ -381,25 +341,17 @@ async def list_sale_cars_sold(
     service = SaleCarService(db)
     cars = await service.get_sale_cars_sold()
     
-    chroma_ids = [car.chroma_document_id for car in cars if car.chroma_document_id]
-    chroma_data_map = {}
-    
-    if chroma_ids:
-        try:
-            from app.services.chromadb_service import ChromaService
-            chroma = ChromaService()
-            chroma_data_map = await chroma.get_documents_batch(chroma_ids)
-        except Exception as e:
-            from loguru import logger
-            logger.error(f"Error batch loading ChromaDB data: {e}")
-    
     enriched_cars = []
     for car in cars:
         car_data = {
             "sale_car_id": car.sale_car_id,
             "user_id": car.user_id,
             "vin": car.vin,
-            "chroma_document_id": car.chroma_document_id,
+            "mark": car.mark,
+            "model": car.model,
+            "year": car.year,
+            "transmission": car.transmission,
+            "engine_power": car.engine_power,
             "s3_photo_car_keys": car.s3_photo_car_keys,
             "task_id": car.task_id,
             "task_status": car.task_status,
@@ -417,11 +369,6 @@ async def list_sale_cars_sold(
                 car_data["preview_photo_url"] = await s3_service.generate_presigned_url(keys[0])
         except Exception:
             pass
-        
-        if car.chroma_document_id and car.chroma_document_id in chroma_data_map:
-            chroma_data = chroma_data_map[car.chroma_document_id]
-            if chroma_data and isinstance(chroma_data, dict):
-                car_data["car_data"] = chroma_data
         
         enriched_cars.append(car_data)
     
@@ -451,7 +398,11 @@ async def update_sale_car_status(
             sale_car_id=updated_car.sale_car_id,
             user_id=updated_car.user_id,
             vin=updated_car.vin,
-            chroma_document_id=updated_car.chroma_document_id,
+            mark=updated_car.mark,
+            model=updated_car.model,
+            year=updated_car.year,
+            transmission=updated_car.transmission,
+            engine_power=updated_car.engine_power,
             task_status=updated_car.task_status,
             updated_at=updated_car.updated_at,
             message=f"Sale car status updated to {status_update.status.value}"

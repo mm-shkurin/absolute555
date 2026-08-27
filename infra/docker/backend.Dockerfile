@@ -31,13 +31,6 @@ COPY backend/app app
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-# Chroma runs as its own compose service and is reached over HTTP
-# (app/services/chromadb_service.py uses chromadb.HttpClient), so the embedded
-# server and its bundled ONNX model are never loaded in this image.
-ENV CHROMA_SERVER_NOFILE=1
-ENV CHROMA_DISABLE_TELEMETRY=1
-ENV ANONYMIZED_TELEMETRY=False
-
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=5 --start-period=20s \
