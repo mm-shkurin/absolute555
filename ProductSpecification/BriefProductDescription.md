@@ -26,6 +26,31 @@
      choose to reveal it.
    - After a deal closes the buyer rates the seller; the rating aggregates on the profile.
 
+5. A second supply channel runs alongside the in-stock feed: **import to order**. Suppliers
+   who bring cars in from abroad apply through a form describing what they can source and how
+   to reach them; the owner reviews the application and, on approval, grants the `importer`
+   role. From then on the importer publishes on their own, the same way a seller does. The
+   import tab shows three things: importer profiles (which countries, which makes, what terms),
+   concrete cars offered for import with a price and a delivery window, and buyer requests --
+   "bring me one of these" -- that importers answer.
+
+   An import listing is the same `SaleCars` entity carrying a `listing_kind` flag, not a
+   separate one, so filters, photos, offers and chat are shared. The flag is what makes VIN
+   and СТС optional: a car that has not been imported yet has neither.
+
+6. Under the listing sits a **paint-thickness map**: one universal car schematic (four
+   projections — side, front, rear, top) with the body panels as clickable zones. Tapping a
+   panel opens the photo the seller took of a thickness gauge held against it, with the
+   reading on the gauge's screen. The reading is OCR'd from that screen rather than typed, so
+   the seller cannot quietly enter a better number than the instrument showed — the same
+   Tesseract that reads the СТС reads the gauge.
+
+   The stored number colours the panel — factory paint, repainted, filler — which turns a
+   folder of photos into a picture a buyer reads at a glance. Measuring is optional: a listing
+   with every panel measured earns a badge and ranks higher, but a listing without one still
+   publishes. That keeps the barrier to posting low while making the honest listing visibly
+   better.
+
 ## Out of scope
 
 The project began as a car-service management system. The service side is deliberately
