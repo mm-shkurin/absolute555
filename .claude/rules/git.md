@@ -20,6 +20,17 @@ Flow: `features/<name>` -> `dev` -> `main`.
 - Rebase feature branches on `dev` before opening a PR; keep history readable.
 - Delete feature branches after merge.
 
+## Current working branch
+
+**`features/marketplace-scope-cut` is the working branch for the whole marketplace
+rebuild. Do not branch off it, and do not open a branch per story.** Every story lands
+as its own commit on this branch until it is merged into `dev`.
+
+This is a deliberate exception to the flow above, taken because the backend and frontend
+sessions work the same tree at the same time and a branch per story would put them on
+different heads. The rules that still apply: one commit per story, conventional commit
+subjects, and no direct commits to `main` or `dev`.
+
 ## Commit messages
 
 Conventional Commits: `<type>: <short description in imperative mood>`
