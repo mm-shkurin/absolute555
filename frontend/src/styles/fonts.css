@@ -1,0 +1,62 @@
+/* Golos Text и JetBrains Mono, раздаются с собственного origin.
+ *
+ * Раньше в мокапах они грузились с fonts.googleapis.com — на критическом пути рендера:
+ * сторонний DNS, TLS-рукопожатие и запрос таблицы стилей до того, как браузер попросит
+ * хоть один глиф. Плюс зависимость, недоступность которой (а в этом рынке блокировка
+ * Google Fonts — обычное дело) означает страницу без шрифта, и починить её из этого
+ * репозитория нельзя. Самораздача убирает и запрос, и третью сторону.
+ *
+ * `unicode-range` делит файл на кириллицу и латиницу: страница русского текста не тянет
+ * латинский файл, пока в ней не встретится латинская буква. У нас таких букв немного —
+ * марки машин и VIN, — так что деление окупается.
+ *
+ * `font-display: swap` рисует запасным шрифтом сразу и подменяет, когда придёт основной:
+ * текст читается во время загрузки, а не остаётся невидимым на её время.
+ *
+ * ФАЙЛОВ ПОКА НЕТ. Положить в `public/fonts/` перед первой сборкой:
+ *   golos-text-cyrillic.woff2, golos-text-latin.woff2 — вариативные, ось 400–800
+ *   jetbrains-mono-cyrillic.woff2, jetbrains-mono-latin.woff2 — вариативные, ось 400–700
+ * Взять с fonts.google.com, положить в репозиторий, а не подключать ссылкой.
+ */
+
+@font-face {
+  font-family: 'Golos Text';
+  font-style: normal;
+  /* Диапазон, а не одно значение: файл вариативный, и объявление `font-weight: 400`
+     заставило бы браузер синтезировать поддельный жирный вместо настоящего. */
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/golos-text-cyrillic.woff2') format('woff2');
+  unicode-range:
+    U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: 'Golos Text';
+  font-style: normal;
+  font-weight: 400 800;
+  font-display: swap;
+  src: url('/fonts/golos-text-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191,
+    U+2193, U+2212, U+2215;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-cyrillic.woff2') format('woff2');
+  unicode-range: U+0301, U+0400-045F, U+0490-0491, U+04B0-04B1, U+2116;
+}
+
+@font-face {
+  font-family: 'JetBrains Mono';
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url('/fonts/jetbrains-mono-latin.woff2') format('woff2');
+  unicode-range:
+    U+0000-00FF, U+0131, U+0152-0153, U+2000-206F, U+2074, U+20AC, U+2122, U+2212;
+}

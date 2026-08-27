@@ -1,0 +1,76 @@
+@import './styles/fonts.css';
+/* Три файла, в этом порядке: сырые оттенки, затем светлые роли из них, затем тёмные
+   переопределения. Разделение не косметическое — светлый файл единственное место, где токен
+   может РОДИТЬСЯ, и именно это делает правило «у каждого токена есть светлое определение»
+   проверяемым диффом двух файлов. Порядок с запасом: `:root[data-theme='dark']` и так
+   выигрывает по специфичности, откуда бы ни шёл. */
+@import './styles/palette.css';
+@import './styles/tokens-light.css';
+@import './styles/tokens-dark.css';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  /* Плавная прокрутка к якорю, но не для тех, кто просил меньше движения. */
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background: var(--bg-page);
+  color: var(--text-primary);
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Заголовкам и абзацам — перенос по смыслу, а не по краю. Это та типографская мелочь,
+   которую никто не замечает, пока её нет: одинокое слово в последней строке заголовка. */
+h1,
+h2,
+h3 {
+  text-wrap: balance;
+  letter-spacing: -0.028em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Цифры в интерфейсе — табличные всегда. Цена, пробег, микроны и год стоят в столбцах и
+   в строках рядом друг с другом; пропорциональные цифры превращают такой столбец в лесенку. */
+input,
+button,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:where(button, a) {
+  cursor: pointer;
+}
+
+/* Видимая обводка фокуса — не украшение: без неё клавиатурой пройти форму мастера
+   продажи нельзя, а это шесть шагов подряд. */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
