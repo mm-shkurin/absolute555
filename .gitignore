@@ -73,3 +73,9 @@ certbot-www/
 .DS_Store
 Thumbs.db
 desktop.ini
+
+# sprint-check probe output
+*-probe.json
+probe-err.txt
+backend-build.log
+_project_audit/

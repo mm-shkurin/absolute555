@@ -1,13 +1,19 @@
-# Real services — no mocks/placeholders. See infra/architecture.md for
-# topology, port map, and env var contract.
+# Single entry point for the whole stack. Run everything from infra/:
+#   cd infra && cp .env.example .env && docker compose up -d --build
 #
-# All ports/credentials come from infra/.env (gitignored; copy from
-# infra/.env.example). No literals below, no container_name (avoids collisions
-# across parallel worktrees/sessions on the same host).
+# backend/ and frontend/ carry no compose or Dockerfile of their own — the
+# images are built from infra/docker/*.Dockerfile with the repo root as context.
+#
+# All ports and credentials come from infra/.env (gitignored; copy from
+# infra/.env.example). No literals below, and no container_name, so several
+# checkouts can run side by side on one host.
+
+name: absolute
 
 services:
   postgres:
-    image: postgres:16-alpine
+    image: postgres:17-alpine
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -15,84 +21,131 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
-      - "${POSTGRES_PORT}:5432"
+      - "${POSTGRES_HOST_PORT}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes --appendfsync everysec
+    volumes:
+      - redis_data:/data
     ports:
-      - "${REDIS_PORT}:6379"
+      - "${REDIS_HOST_PORT}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
       timeout: 3s
-      retries: 5
+      retries: 10
 
-  # Real FastAPI app (backend/), migrated via Alembic on boot. Build context
-  # is the repo root so the Dockerfile can COPY every backend/ module.
+  # Vector store. The app talks to it with chromadb.HttpClient
+  # (app/services/chromadb_service.py), so CHROMA_NETWORK_NAME/CHROMA_PORT must
+  # name this service and its in-network port, not a host address.
+  chroma:
+    image: chromadb/chroma:latest
+    restart: unless-stopped
+    environment:
+      ANONYMIZED_TELEMETRY: "False"
+    volumes:
+      - chroma_data:/data
+    ports:
+      - "${CHROMA_HOST_PORT}:8000"
+    healthcheck:
+      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/127.0.0.1/8000' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  minio:
+    image: minio/minio:latest
+    restart: unless-stopped
+    command: server --console-address ":9001" /data
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    ports:
+      - "${MINIO_HOST_PORT}:9000"
+      - "${MINIO_CONSOLE_HOST_PORT}:9001"
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  # Creates the bucket the app expects and exits. Without it the first upload
+  # fails against a bucket that was never created — MinIO has no
+  # MINIO_DEFAULT_BUCKETS, that variable only works in the bitnami image.
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET_NAME: ${MINIO_BUCKET_NAME}
+    entrypoint: >
+      sh -c "mc alias set local http://minio:9000 $$MINIO_ROOT_USER $$MINIO_ROOT_PASSWORD &&
+             mc mb --ignore-existing local/$$MINIO_BUCKET_NAME &&
+             echo 'bucket ready'"
+
   backend:
     build:
       context: ..
       dockerfile: infra/docker/backend.Dockerfile
-    # GIGACHAT_CREDENTIALS / GENERATION_PROVIDER and any other backend
-    # secrets live in backend/.env, not here.
+    restart: unless-stopped
+    # Every backend setting lives in infra/.env. app/core/config.py reads the
+    # process environment first, so no backend/.env file is needed in the image.
     env_file:
-      - path: ../backend/.env
-        required: false
-    environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
-      REDIS_URL: redis://redis:6379/0
-      # The Yandex OAuth contract. These four live in infra/.env and were never
-      # forwarded, so the container booted with them unset: every OAuth route
-      # answered a configuration error and nine acceptance tests failed in setup
-      # against a backend whose code was fine. Declared here without defaults —
-      # an empty value is a boot-time failure that names the missing variable,
-      # which is preferable to a runtime error on the first sign-in attempt.
-      YANDEX_CLIENT_ID: ${YANDEX_CLIENT_ID}
-      YANDEX_CLIENT_SECRET: ${YANDEX_CLIENT_SECRET}
-      YANDEX_REDIRECT_URI: ${YANDEX_REDIRECT_URI}
-      OAUTH_FRONTEND_CALLBACK_URL: ${OAUTH_FRONTEND_CALLBACK_URL}
-      # Which provider fetches the identity, and how long a handoff code lives.
-      # Forwarded so the OAuth acceptance suite can select the in-process fake
-      # provider (`OAUTH_PROVIDER=fake`) and a short TTL from infra/.env instead
-      # of nobody being able to run it at all.
-      #
-      # The TTL default is repeated from `oauth_wiring.DEFAULT_HANDOFF_TTL_SECONDS`
-      # rather than left empty, and that is not redundancy. `${VAR:-}` forwards an
-      # EMPTY STRING, which is not the same as unset: the variable then exists in
-      # the container, `os.environ.get(KEY, DEFAULT)` returns `""` because the key
-      # is present, the default never fires, and `int("")` kills the process at
-      # import time. The whole stack failed to boot on exactly that.
-      OAUTH_PROVIDER: ${OAUTH_PROVIDER:-yandex}
-      OAUTH_HANDOFF_CODE_TTL_SECONDS: ${OAUTH_HANDOFF_CODE_TTL_SECONDS:-300}
-      # Read only under OAUTH_PROVIDER=fake, and required there since the stub URL
-      # stopped being a default inside the source: a test address compiled into
-      # the image is one mis-set OAUTH_PROVIDER away from being where a real
-      # sign-in is sent. The default here is the app's own stub page, so the
-      # acceptance suite (which selects the fake) boots with nothing extra set.
-      OAUTH_FAKE_AUTHORIZE_URL: ${OAUTH_FAKE_AUTHORIZE_URL:-http://localhost/auth/fake-provider}
+      - .env
     ports:
-      - "${BACKEND_PORT}:8000"
+      - "${BACKEND_HOST_PORT}:8000"
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_healthy
+      chroma:
+        condition: service_started
 
-  # Real React/Vite app (frontend/), built and served by nginx. Build context
-  # is the repo root so the Dockerfile can COPY frontend/.
+  # Same image as backend, different command. Migrations are not re-run here —
+  # the backend service owns them.
+  celery:
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+    restart: unless-stopped
+    env_file:
+      - .env
+    command: celery -A app.celery_worker.celery_app worker --loglevel=INFO
+    depends_on:
+      backend:
+        condition: service_started
+      redis:
+        condition: service_healthy
+
   frontend:
     build:
       context: ..
       dockerfile: infra/docker/frontend.Dockerfile
+      args:
+        REACT_APP_API_URL: ${REACT_APP_API_URL}
+        REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL}
+    restart: unless-stopped
     ports:
-      - "${FRONTEND_PORT}:80"
+      - "${FRONTEND_HOST_PORT}:80"
     depends_on:
       - backend
 
 volumes:
   postgres_data:
+  redis_data:
+  chroma_data:
+  minio_data:
