@@ -23,34 +23,38 @@
 -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --paper:#F2F7FF; --card:#FFF; --ink:#0A1020; --ink2:#43506B; --mut:#7A88A3;
-  --line:#E1EAF7; --brand:#0066FF; --brand-dk:#0047CC; --soft:#E6F0FF;
+  --paper:#F1F4F9; --card:#FFF; --ink:#0D141F; --ink2:#3F4B5E; --mut:#78849A;
+  --line:#DEE4EE; --brand:#0066FF; --brand-dk:#0047CC; --soft:#E8EFFB;
   --ok:#17A66B; --warn:#F0A020; --bad:#E5484D; --none:#C3CEDF;
-  --sh:0 8px 28px rgba(10,30,80,.08);
-  --r-card:20px; --r-ctl:14px;
+  --sh:none;
+  --r-card:14px; --r-ctl:10px;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:#DCE4F2;font-family:Manrope,system-ui,sans-serif;color:var(--ink)}
+body{background:#D7DFEC;font-family:'Golos Text',system-ui,sans-serif;color:var(--ink);
+  -webkit-font-smoothing:antialiased}
 .mono{font-family:'JetBrains Mono',monospace}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
 a{color:inherit;text-decoration:none}
 
 /* ───────── панель управления мокапом ───────── */
-#bar{position:fixed;inset:0 0 auto 0;z-index:99;height:52px;display:flex;align-items:center;
-  gap:16px;padding:0 20px;background:#0A1020;color:#fff;font-size:13px;font-weight:600}
+#bar{position:fixed;inset:0 0 auto 0;z-index:99;height:48px;display:flex;align-items:center;
+  gap:14px;padding:0 16px;background:#0D141F;color:#fff;font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:400;letter-spacing:.04em}
 #bar .t{opacity:.5;text-transform:uppercase;letter-spacing:.08em;font-size:11px}
 #bar .seg{display:flex;background:#1B2436;border-radius:999px;padding:3px}
 #bar .seg button{padding:6px 14px;border-radius:999px;color:#9FB0CC;font-size:13px;font-weight:600}
 #bar .seg button[aria-pressed=true]{background:var(--brand);color:#fff}
-#stage{padding:52px 0 0}
+#bar select{background:#1B2436;color:#fff;border:0;border-radius:999px;padding:8px 14px;
+  font:inherit;font-size:13px;font-weight:700;min-width:230px}
+#bar select optgroup{background:#0A1020}
+#stage{padding:48px 0 0}
 
 /* ───────── вьюпорт ───────── */
-.vp{margin:0 auto;background:linear-gradient(180deg,var(--paper) 0%,#FFF 620px);
-  min-height:calc(100vh - 52px);overflow-x:hidden}
+.vp{margin:0 auto;background:var(--paper);min-height:calc(100vh - 52px);overflow-x:hidden}
 .vp.m{width:390px;min-height:844px;margin:24px auto;border-radius:38px;
   box-shadow:0 30px 80px rgba(10,20,50,.35);overflow:hidden;position:relative;
   min-height:844px;height:844px;overflow-y:auto}
@@ -59,51 +63,54 @@ a{color:inherit;text-decoration:none}
 .wrap.narrow{max-width:1080px}
 
 /* ───────── шапка десктоп ───────── */
-.hdr{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.82);
+.hdr{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);
   backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .hdr .in{display:flex;align-items:center;gap:24px;height:72px}
 .logo{display:flex;align-items:center;gap:10px;flex:none}
 .logo img{height:26px;display:block}
-.logo b{font-size:19px;font-weight:800;letter-spacing:-.01em}
-.hdr nav{display:flex;gap:4px;margin-left:8px}
-.hdr nav a{padding:9px 14px;border-radius:999px;font-size:15px;font-weight:600;color:var(--ink2)}
-.hdr nav a:hover{background:var(--soft);color:var(--brand)}
-.hdr nav a.on{background:var(--soft);color:var(--brand)}
+.logo b{font-size:19px;font-weight:700;letter-spacing:-.02em}
+.hdr nav{display:flex;margin-left:12px;align-items:center}
+.hdr nav a{padding:9px 2px;margin-right:20px;font-size:15px;font-weight:500;color:var(--ink2);
+  border-bottom:2px solid transparent}
+.hdr nav a:hover{color:var(--ink)}
+.hdr nav a.on{color:var(--ink);font-weight:600;border-bottom-color:var(--brand)}
 .grow{flex:1}
 .ava{width:38px;height:38px;border-radius:50%;background:var(--line);flex:none}
 .vp.m .hdr .in{height:58px;gap:12px}
 .vp.m .hdr nav,.vp.m .hdr .btn.ghost{display:none}
 
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  height:46px;padding:0 20px;border-radius:var(--r-ctl);background:var(--brand);
-  color:#fff;font-weight:700;font-size:15px;transition:.15s}
+  height:44px;padding:0 18px;border-radius:var(--r-ctl);background:var(--brand);
+  color:#fff;font-weight:600;font-size:15px;letter-spacing:-.005em;transition:.12s}
 .btn:hover{background:var(--brand-dk)}
 .btn.ghost{background:transparent;color:var(--ink2);border:1px solid var(--line)}
 .btn.ghost:hover{background:var(--card);color:var(--brand);border-color:var(--brand)}
-.btn.big{height:56px;padding:0 30px;font-size:17px}
+.btn.big{height:54px;padding:0 26px;font-size:16.5px}
 .btn.sm{height:38px;padding:0 14px;font-size:14px}
 .btn.w{width:100%}
 
 /* ───────── лендинг ───────── */
-.hero{position:relative;padding:74px 0 40px;overflow:hidden}
+.hero{position:relative;padding:66px 0 66px;overflow:hidden}
 .vp.m .hero{padding:32px 0 20px}
-.glow{position:absolute;border-radius:50%;filter:blur(80px);opacity:.5;pointer-events:none}
-.g1{width:520px;height:520px;background:#9FC4FF;top:-180px;right:-120px}
-.g2{width:420px;height:420px;background:#CFE0FF;top:180px;left:-180px}
-.hero .in{position:relative;display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.glow{display:none}
+.hero{background:
+  linear-gradient(to right, rgba(13,20,31,.07) 1px, transparent 1px) 0 0/32px 32px,
+  linear-gradient(to bottom, rgba(13,20,31,.07) 1px, transparent 1px) 0 0/32px 32px,
+  #FFF;
+  border-bottom:1px solid var(--line)}
+.hero .in{position:relative;display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
 .vp.m .hero .in{grid-template-columns:1fr;gap:24px}
-h1{font-size:56px;line-height:1.05;font-weight:800;letter-spacing:-.025em;margin:0 0 18px}
+h1{font-size:60px;line-height:1.02;font-weight:800;letter-spacing:-.035em;margin:0 0 20px;text-wrap:balance}
 .vp.m h1{font-size:34px;line-height:1.1}
 h1 em{font-style:normal;color:var(--brand)}
-.lead{font-size:19px;line-height:1.5;color:var(--ink2);margin:0 0 28px;max-width:30em}
+.lead{font-size:18.5px;line-height:1.55;color:var(--ink2);margin:0 0 28px;max-width:34em;text-wrap:pretty}
 .vp.m .lead{font-size:16px;margin-bottom:20px}
 .heroCta{display:flex;gap:12px;flex-wrap:wrap}
 .vp.m .heroCta .btn{flex:1}
 .heroNote{margin-top:18px;font-size:14px;color:var(--mut)}
 
 /* чертёж машины */
-.blueprint{background:var(--card);border:1px solid var(--line);border-radius:24px;
-  padding:20px;box-shadow:var(--sh)}
+.blueprint{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
 .blueprint svg{width:100%;height:auto;display:block}
 .bp-line{fill:none;stroke:#A8BBD8;stroke-width:1.4;stroke-linejoin:round}
 .bp-zone{cursor:pointer;stroke:#fff;stroke-width:1.5;transition:.15s}
@@ -114,69 +121,404 @@ h1 em{font-style:normal;color:var(--brand)}
 .scale i{width:11px;height:11px;border-radius:3px;display:inline-block;margin-right:5px;vertical-align:-1px}
 
 /* секции */
-section{padding:72px 0}
+section{padding:76px 0}
 .vp.m section{padding:44px 0}
-.eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;
-  color:var(--brand);text-transform:uppercase;letter-spacing:.08em;margin-bottom:14px}
-.eyebrow::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--brand)}
-h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:0 0 12px}
+.eyebrow{display:flex;align-items:center;gap:12px;font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;font-weight:500;color:var(--mut);text-transform:uppercase;letter-spacing:.14em;
+  margin-bottom:16px}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--line);max-width:180px}
+h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin:0 0 12px;text-wrap:balance}
 .vp.m h2{font-size:26px}
-.sub{font-size:17px;color:var(--ink2);margin:0 0 34px;max-width:44em}
+.sub{font-size:16.5px;line-height:1.55;color:var(--ink2);margin:0 0 32px;max-width:52ch;text-wrap:pretty}
 .vp.m .sub{font-size:15px;margin-bottom:24px}
-.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.cols3{display:grid;grid-template-columns:repeat(3,1fr);gap:32px}
 .vp.m .cols3{grid-template-columns:1fr}
-.step{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:24px}
-.step .n{width:30px;height:30px;border-radius:50%;background:var(--soft);color:var(--brand);
-  display:grid;place-items:center;font-weight:800;font-size:14px;margin-bottom:16px}
+.step{padding:20px 0 0;border-top:2px solid var(--ink)}
+.step .n{font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:var(--brand);
+  margin-bottom:12px;letter-spacing:.1em}
+.step .n::before{content:"0"}
+.step .n::after{content:" —"}
 .step h3{font-size:19px;font-weight:700;margin:0 0 8px}
 .step p{margin:0;color:var(--ink2);font-size:15px;line-height:1.5}
-.ph{background:var(--line);border-radius:12px;display:grid;place-items:center;
-  color:var(--mut);font-size:12px;font-weight:600;text-align:center;padding:8px}
+.ph{background:
+  repeating-linear-gradient(45deg,rgba(13,20,31,.035) 0 6px,transparent 6px 12px),
+  var(--paper);
+  border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;
+  color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:400;
+  text-align:center;padding:8px;letter-spacing:.04em}
 
-.cta{background:var(--ink);color:#fff;border-radius:28px;padding:56px 44px;text-align:center;position:relative;overflow:hidden}
+.cta{background:var(--ink);color:#fff;border-radius:16px;padding:60px 44px;text-align:left;position:relative;overflow:hidden}
 .vp.m .cta{padding:34px 22px;border-radius:22px}
 .cta h2{color:#fff}
-.cta .sub{color:#A9B7D0;margin:0 auto 26px}
-.foot{padding:34px 0 46px;color:var(--mut);font-size:13.5px;display:flex;gap:20px;flex-wrap:wrap;
-  border-top:1px solid var(--line);margin-top:40px}
+.cta .sub{color:#95A3BC;margin:0 0 26px}
+.foot{padding:28px 0 48px;color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:11.5px;
+  display:flex;gap:24px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:56px;
+  letter-spacing:.03em;text-transform:uppercase}
 
 /* блоки лендинга */
 .split{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
 .vp.m .split{grid-template-columns:1fr;gap:24px}
 .cols2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
 .vp.m .cols2{grid-template-columns:1fr}
-.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.cols4{display:grid;grid-template-columns:repeat(4,1fr);gap:28px}
 .vp.m .cols4{grid-template-columns:1fr}
 .list{list-style:none;margin:0;padding:0}
-.list li{position:relative;padding:14px 0 14px 34px;border-bottom:1px solid var(--line);
+.list li{position:relative;padding:14px 0 14px 26px;border-bottom:1px solid var(--line);
   font-size:16px;line-height:1.5;color:var(--ink2)}
 .list li:last-child{border:0}
 .list li b{color:var(--ink);font-weight:700}
-.list li::before{content:"";position:absolute;left:0;top:19px;width:18px;height:18px;border-radius:50%;
-  background:var(--soft);box-shadow:inset 0 0 0 5px var(--brand)}
-.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:22px}
+.list li::before{content:"";position:absolute;left:0;top:23px;width:10px;height:2px;background:var(--brand)}
+.tile{padding:18px 0 0;border-top:1px solid var(--line)}
 .tile h3{font-size:18px;font-weight:700;margin:0 0 8px}
 .tile p{margin:0;color:var(--ink2);font-size:14.5px;line-height:1.5}
-.tile .k{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
-  color:var(--brand);margin-bottom:12px;display:block}
-.band{background:var(--card);border:1px solid var(--line);border-radius:28px;padding:44px}
+.tile .k{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:500;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--mut);margin-bottom:10px;display:block}
+.band{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:40px}
 .vp.m .band{padding:24px;border-radius:20px}
 .faq{border-top:1px solid var(--line)}
 .faq details{border-bottom:1px solid var(--line)}
-.faq summary{list-style:none;cursor:pointer;padding:20px 40px 20px 0;font-size:18px;font-weight:700;position:relative}
+.faq summary{list-style:none;cursor:pointer;padding:20px 40px 20px 0;font-size:17.5px;font-weight:600;letter-spacing:-.015em;position:relative}
 .faq summary::-webkit-details-marker{display:none}
-.faq summary::after{content:"+";position:absolute;right:8px;top:16px;font-size:24px;font-weight:600;color:var(--brand)}
+.faq summary::after{content:"+";position:absolute;right:8px;top:18px;font-size:20px;font-weight:400;color:var(--mut);font-family:'JetBrains Mono',monospace}
 .faq details[open] summary::after{content:"\2212"}
 .faq p{margin:0 0 22px;color:var(--ink2);font-size:16px;line-height:1.6;max-width:62ch}
 .vp.m .faq summary{font-size:16px;padding:16px 34px 16px 0}
 .vp.m .faq p{font-size:15px}
-.note{display:flex;gap:12px;align-items:flex-start;background:var(--soft);border-radius:14px;
-  padding:14px 16px;font-size:14.5px;line-height:1.5;color:#25406F;margin-top:20px}
+.note{border-left:2px solid var(--brand);padding:2px 0 2px 16px;font-size:14.5px;line-height:1.55;
+  color:var(--ink2);margin-top:28px;max-width:64ch}
+
+
+/* ───────── модалка / шторка ───────── */
+.scrim{position:fixed;inset:0;z-index:60;background:rgba(10,16,32,.45);
+  display:none;align-items:center;justify-content:center;padding:24px}
+.scrim.open{display:flex}
+.vp.m .scrim{position:absolute;align-items:flex-end;padding:0}
+.modal{background:var(--card);border-radius:24px;width:min(760px,100%);max-height:86vh;
+  display:flex;flex-direction:column;overflow:hidden}
+.vp.m .modal{border-radius:22px 22px 0 0;max-height:88%;width:100%}
+.modal .mh{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--line)}
+.modal .mh h3{margin:0;font-size:19px;font-weight:800}
+.modal .mb{overflow-y:auto;padding:16px 20px 20px}
+.modal .mf{padding:14px 20px;border-top:1px solid var(--line);display:flex;gap:10px}
+.x{width:36px;height:36px;border-radius:50%;background:var(--paper);display:grid;place-items:center;
+  font-size:19px;color:var(--ink2);flex:none}
+.x:hover{background:var(--line)}
+.grabber{width:38px;height:4px;border-radius:2px;background:var(--line);margin:8px auto 0;display:none}
+.vp.m .grabber{display:block}
+
+.brands{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.vp.m .brands{grid-template-columns:repeat(2,1fr)}
+.brand{display:flex;align-items:center;gap:10px;padding:10px;border-radius:12px;
+  border:1px solid transparent;text-align:left}
+.brand:hover{background:var(--paper)}
+.brand[aria-pressed=true]{background:var(--soft);border-color:var(--brand)}
+.brand .em{width:36px;height:36px;border-radius:50%;background:var(--paper);border:1px solid var(--line);
+  display:grid;place-items:center;font-size:13px;font-weight:800;color:var(--mut);flex:none}
+.brand b{font-size:14.5px;font-weight:700;display:block}
+.brand s{font-size:12px;color:var(--mut);text-decoration:none}
+.alpha{font-size:12px;font-weight:800;color:var(--mut);letter-spacing:.08em;
+  grid-column:1/-1;padding:14px 4px 4px;border-top:1px solid var(--line);margin-top:6px}
+.alpha:first-child{border:0;margin:0;padding-top:0}
+
+/* ───────── карточка объявления ───────── */
+.lst{display:grid;grid-template-columns:1fr 380px;gap:32px;align-items:start;
+  padding:24px 0 90px}
+.vp.m .lst{grid-template-columns:1fr;gap:16px;padding:12px 0 100px}
+.gal .big{aspect-ratio:4/3;border-radius:var(--r-card)}
+.gal .thumbs{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-top:8px}
+.gal .thumbs .ph{aspect-ratio:4/3;border-radius:10px;font-size:11px}
+.gal .thumbs .ph.on{outline:2px solid var(--brand);outline-offset:-2px}
+.crumbs{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--mut);padding:18px 0 0;
+  letter-spacing:.03em}
+.crumbs a:hover{color:var(--brand)}
+.blk{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:22px;margin-top:16px}
+.blk h3{font-size:18px;font-weight:600;letter-spacing:-.015em;margin:0 0 14px}
+.specs{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+.vp.m .specs{grid-template-columns:1fr}
+.specs div{display:flex;justify-content:space-between;gap:12px;padding:10px 0;
+  border-bottom:1px solid var(--line);font-size:14.5px}
+.specs b{font-variant-numeric:tabular-nums}
+.specs span{color:var(--mut)}
+.specs b{font-weight:700}
+.side{position:sticky;top:88px}
+.vp.m .side{position:static}
+.price-lg{font-size:33px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.vp.m .price-lg{font-size:28px}
+.seller{display:flex;gap:12px;align-items:center}
+.seller .av{width:48px;height:48px;border-radius:50%;background:var(--line);flex:none}
+.stars{color:var(--warn);font-size:14px;letter-spacing:2px}
+.acts{display:grid;gap:8px;margin-top:16px}
+.acts .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.lock{background:var(--paper);border:1px dashed var(--line);border-radius:14px;padding:18px;
+  text-align:center;color:var(--ink2);font-size:14.5px;line-height:1.5}
+.sold{background:var(--ink);color:#fff;border-radius:14px;padding:14px 16px;font-weight:700;
+  display:flex;align-items:center;gap:10px;font-size:15px}
+.offers{font-size:14.5px}
+.offers .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
+.offers .row:last-child{border:0}
+.offers .row b{font-weight:800;color:var(--brand);font-variant-numeric:tabular-nums}
+.offers .row span{color:var(--mut);font-size:13.5px}
+.mbar{display:none;position:sticky;bottom:0;z-index:25;background:rgba(255,255,255,.96);
+  backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:10px 14px 22px;gap:8px}
+.vp.m .mbar{display:grid;grid-template-columns:1fr 1fr}
+
+
+/* ───────── карта замеров ───────── */
+.tmap{display:grid;grid-template-columns:1fr 360px;gap:24px;align-items:start;padding:20px 0 90px}
+.vp.m .tmap{grid-template-columns:1fr;gap:14px;padding:12px 0 100px}
+.sheet{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:20px}
+.sheet svg{width:100%;height:auto;display:block}
+.pz{cursor:pointer;stroke:#fff;stroke-width:1.6;transition:.12s}
+.pz:hover{stroke:var(--brand);stroke-width:3}
+.pz.sel{stroke:var(--brand);stroke-width:3.5}
+.pl{fill:none;stroke:#93A9C9;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.pt{font-size:11px;font-weight:700;fill:#93A9C9;letter-spacing:.08em;pointer-events:none}
+.legend2{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;padding-top:16px;
+  border-top:1px solid var(--line);font-size:13.5px;color:var(--ink2)}
+.legend2 i{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:-1px}
+.legend2 s{text-decoration:none;color:var(--mut);font-size:12.5px}
+.mrow{display:flex;align-items:center;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);
+  width:100%;text-align:left}
+.mrow:last-child{border:0}
+.mrow .sw{width:12px;height:12px;border-radius:3px;flex:none}
+.mrow b{font-weight:700;font-size:14.5px;flex:1}
+.mrow .um{font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:600}
+.mrow:hover b{color:var(--brand)}
+.mrow.sel{background:var(--soft);border-radius:10px;padding-left:8px;padding-right:8px}
+.hint{border-left:2px solid var(--line);padding:2px 0 2px 14px;font-size:14px;line-height:1.55;color:var(--ink2)}
+.subseg{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px;margin:18px 0 4px}
+.subseg button{padding:8px 15px;border-radius:999px;font-size:14px;font-weight:600;color:var(--ink2)}
+.subseg button[aria-pressed=true]{background:var(--brand);color:#fff}
+.ocr{border:1px solid var(--line);border-radius:16px;overflow:hidden}
+.ocr .top{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
+.ocr .val{font-family:'JetBrains Mono',monospace;font-size:38px;font-weight:600;letter-spacing:-.02em}
+.ocr .body{padding:16px}
+.spin{width:16px;height:16px;border-radius:50%;border:2px solid var(--line);
+  border-top-color:var(--brand);animation:sp .7s linear infinite;flex:none}
+@keyframes sp{to{transform:rotate(360deg)}}
+.prog{height:6px;border-radius:3px;background:var(--line);overflow:hidden;margin-top:12px}
+.prog i{display:block;height:100%;width:62%;background:var(--brand);border-radius:3px}
+
+
+/* ───────── мастер продажи ───────── */
+.wiz{display:grid;grid-template-columns:260px 1fr;gap:32px;align-items:start;padding:24px 0 90px}
+.vp.m .wiz{grid-template-columns:1fr;gap:0;padding:8px 0 100px}
+.steps{position:sticky;top:88px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r-card);padding:8px}
+.vp.m .steps{position:static;display:flex;gap:6px;overflow-x:auto;padding:6px;margin-bottom:14px}
+.vp.m .steps::-webkit-scrollbar{display:none}
+.st{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;width:100%;
+  text-align:left;font-size:14.5px;font-weight:600;color:var(--ink2)}
+.vp.m .st{flex:none;width:auto;padding:8px 12px}
+.vp.m .st span.tx{display:none}
+.vp.m .st.on span.tx{display:inline}
+.st:hover{background:var(--paper)}
+.st.on{background:var(--soft);color:var(--brand);font-weight:700}
+.st .num{width:24px;height:24px;border-radius:50%;background:var(--line);color:var(--mut);
+  display:grid;place-items:center;font-size:12.5px;font-weight:800;flex:none}
+.st.on .num{background:var(--brand);color:#fff}
+.st.done .num{background:var(--ok);color:#fff}
+.wcard{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:26px}
+.vp.m .wcard{padding:18px}
+.wcard h2{font-size:25px;font-weight:700;letter-spacing:-.028em;margin:0 0 8px}
+.vp.m .wcard h2{font-size:21px}
+.wcard .sub{font-size:15.5px;margin-bottom:22px}
+.drop{border:2px dashed var(--brand);border-radius:18px;background:#F7FBFF;padding:44px 20px;
+  text-align:center;color:var(--brand);font-weight:700;font-size:15.5px}
+.drop .ic{width:64px;height:64px;border-radius:18px;background:var(--soft);margin:0 auto 14px;
+  display:grid;place-items:center;font-size:28px}
+.drop s{display:block;text-decoration:none;color:var(--mut);font-weight:500;font-size:13.5px;margin-top:8px}
+.form{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.vp.m .form{grid-template-columns:1fr}
+.f{display:block}
+.f.full{grid-column:1/-1}
+.f label{display:block;font-size:13px;font-weight:700;color:var(--mut);margin-bottom:6px}
+.f .fld{height:46px}
+.f textarea.fld{height:120px;padding:12px;resize:vertical;font-family:inherit;line-height:1.5}
+.f.auto .fld{background:#F7FBFF;border-color:#BBD6FF}
+.tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;
+  color:var(--brand);background:var(--soft);border-radius:999px;padding:2px 8px;margin-left:6px}
+.wnav{display:flex;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
+.wnav .grow{flex:1}
+.alert{border-radius:16px;padding:16px 18px;font-size:14.5px;line-height:1.55;display:flex;gap:12px}
+.alert b{display:block;font-size:15.5px;margin-bottom:4px}
+.alert.bad{background:#FDECEC;color:#7A1E21}
+.alert.warn{background:#FEF3E0;color:#7A4A08}
+.alert .ic{font-size:20px;flex:none;line-height:1}
+.photos{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
+.vp.m .photos{grid-template-columns:repeat(3,1fr)}
+.photos .ph{aspect-ratio:4/3;border-radius:12px;position:relative;font-size:11px}
+.photos .ph.cover::after{content:"обложка";position:absolute;left:6px;top:6px;background:var(--brand);
+  color:#fff;font-size:10px;font-weight:800;padding:3px 7px;border-radius:999px}
+.photos .add{border:2px dashed var(--line);background:none;color:var(--brand);font-size:24px;
+  border-radius:12px;display:grid;place-items:center;aspect-ratio:4/3}
+.sum{display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+.vp.m .sum{grid-template-columns:1fr}
+.sum div{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);font-size:15px}
+.sum span{color:var(--mut)}
+.status{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:6px;
+  font-size:13px;font-weight:600}
+.status.mod{background:#FEF3E0;color:#7A4A08}
+.status.pub{background:#E4F7EE;color:#0B6E48}
+.status.rej{background:#FDECEC;color:#7A1E21}
+
+
+/* ───────── офферы / чаты / мои объявления ───────── */
+.page{padding:20px 0 90px;max-width:1080px}
+.vp.m .page{padding:10px 0 100px}
+.ph1{font-size:29px;font-weight:700;letter-spacing:-.03em;margin:0 0 4px}
+.vp.m .ph1{font-size:24px}
+.psub{color:var(--ink2);font-size:15.5px;margin:0 0 20px}
+.orow{display:grid;grid-template-columns:76px 1fr auto;gap:14px;align-items:center;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px}
+.vp.m .orow{grid-template-columns:60px 1fr;gap:10px}
+.orow .ph{width:76px;height:58px;border-radius:10px;font-size:10px}
+.vp.m .orow .ph{width:60px;height:48px}
+.orow .t{font-weight:700;font-size:15.5px}
+.orow .m{color:var(--mut);font-size:13.5px;margin-top:3px}
+.orow .amt{font-weight:800;font-size:18px;font-variant-numeric:tabular-nums;text-align:right}
+.vp.m .orow .amt{grid-column:2;text-align:left;font-size:16px}
+.orow .acts2{display:flex;gap:8px;margin-top:8px}
+.vp.m .orow .acts2{grid-column:1/-1}
+.st-b{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:5px;
+  font-size:12px;font-weight:600;letter-spacing:-.005em}
+.st-b.wait{background:#FEF3E0;color:#7A4A08}
+.st-b.ok{background:#E4F7EE;color:#0B6E48}
+.st-b.no{background:#FDECEC;color:#7A1E21}
+.st-b.gr{background:var(--paper);color:var(--mut)}
+.st-b.bl{background:var(--soft);color:var(--brand)}
+
+.chat{display:grid;grid-template-columns:320px 1fr;gap:0;background:var(--card);
+  border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden;height:620px}
+.vp.m .chat{grid-template-columns:1fr;height:auto}
+.vp.m .chat .dlgs{display:none}
+.dlgs{border-right:1px solid var(--line);overflow-y:auto}
+.dlg{display:grid;grid-template-columns:44px 1fr;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line);
+  width:100%;text-align:left}
+.dlg:hover{background:var(--paper)}
+.dlg.on{background:var(--soft)}
+.dlg .av{width:44px;height:44px;border-radius:50%;background:var(--line)}
+.dlg .n{font-weight:700;font-size:14.5px;display:flex;justify-content:space-between}
+.dlg .n s{text-decoration:none;color:var(--mut);font-size:12px;font-weight:600}
+.dlg .p{font-size:13px;color:var(--mut);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dlg .car{font-size:12px;color:var(--brand);font-weight:700;margin-top:3px}
+.unread{background:var(--brand);color:#fff;border-radius:999px;font-size:11px;font-weight:800;
+  padding:1px 7px;margin-left:6px}
+.conv{display:flex;flex-direction:column}
+.conv .top{padding:12px 16px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+.conv .body{flex:1;overflow-y:auto;padding:18px 16px;display:flex;flex-direction:column;gap:10px;
+  background:var(--paper)}
+.vp.m .conv .body{height:420px}
+.msg{max-width:74%;padding:10px 14px;border-radius:16px;font-size:14.5px;line-height:1.45}
+.msg.them{background:var(--card);border:1px solid var(--line);border-bottom-left-radius:6px;align-self:flex-start}
+.msg.me{background:var(--brand);color:#fff;border-bottom-right-radius:6px;align-self:flex-end}
+.msg s{display:block;text-decoration:none;font-size:11px;opacity:.6;margin-top:4px}
+.sys{align-self:center;background:var(--card);border:1px solid var(--line);border-radius:999px;
+  padding:6px 14px;font-size:12.5px;color:var(--ink2);font-weight:600}
+.conv .send{padding:12px 14px;border-top:1px solid var(--line);display:flex;gap:10px}
+.conv .send .fld{flex:1;height:44px}
+
+.mylist{display:grid;gap:10px}
+.myrow{display:grid;grid-template-columns:96px 1fr auto;gap:14px;align-items:center;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px}
+.vp.m .myrow{grid-template-columns:72px 1fr}
+.myrow .ph{width:96px;height:72px;border-radius:10px;font-size:10px}
+.vp.m .myrow .ph{width:72px;height:56px}
+.myrow .t{font-weight:700;font-size:16px}
+.myrow .m{color:var(--mut);font-size:13.5px;margin-top:3px}
+.myrow .r{display:flex;gap:8px;align-items:center}
+.vp.m .myrow .r{grid-column:1/-1;flex-wrap:wrap}
+.reason{grid-column:1/-1;background:#FDECEC;color:#7A1E21;border-radius:12px;padding:12px 14px;
+  font-size:14px;line-height:1.5;margin-top:4px}
+.tabs2{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
+.tabs2 button{padding:8px 14px;border-radius:8px;font-size:14px;font-weight:600;
+  color:var(--ink2);border:1px solid var(--line);background:var(--card)}
+.tabs2 button[aria-pressed=true]{background:var(--brand);color:#fff;border-color:var(--brand)}
+
+
+/* ───────── модерация ───────── */
+.qgrid{display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:start;padding:20px 0 90px}
+.vp.m .qgrid{grid-template-columns:1fr;padding:10px 0 100px}
+.qitem{display:grid;grid-template-columns:88px 1fr auto;gap:14px;align-items:center;
+  background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;margin-bottom:10px;
+  width:100%;text-align:left}
+.qitem:hover{border-color:var(--brand)}
+.qitem.on{border-color:var(--brand);background:var(--soft)}
+.qitem .ph{width:88px;height:66px;border-radius:10px;font-size:10px}
+.qitem .t{font-weight:700;font-size:15.5px}
+.qitem .m{color:var(--mut);font-size:13px;margin-top:3px}
+.flag{background:#FDECEC;color:#7A1E21;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700}
+.rev{position:sticky;top:88px;background:var(--card);border:1px solid var(--line);
+  border-radius:var(--r-card);padding:20px}
+.rev h3{margin:0 0 4px;font-size:19px;font-weight:800}
+.rej{margin-top:14px;border-top:1px solid var(--line);padding-top:14px}
+.rej .chips{margin:8px 0 10px}
+
+
+/* ───────── вход / отзыв ───────── */
+.oauth{display:grid;gap:10px;margin:18px 0 0}
+.oauth button{display:flex;align-items:center;gap:12px;height:56px;padding:0 18px;
+  border:1px solid var(--line);border-radius:14px;background:var(--card);font-size:16px;font-weight:700}
+.oauth button:hover{border-color:var(--brand);background:var(--paper)}
+.oauth .m{width:32px;height:32px;border-radius:8px;display:grid;place-items:center;
+  font-weight:800;font-size:15px;color:#fff;flex:none}
+.oauth .ya{background:#FC3F1D}
+.oauth .vk{background:#0077FF}
+.rate{display:flex;gap:6px;font-size:34px;color:var(--line);line-height:1}
+.rate button{color:inherit}
+.rate button.on{color:var(--warn)}
+.rev-item{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid var(--line)}
+.rev-item:last-child{border:0}
+.bid{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:12px 0;
+  border-bottom:1px solid var(--line)}
+.bid:last-child{border:0}
+
+
+
+/* ───────── добор: галерея, шторка, пустые состояния ───────── */
+.lb{position:fixed;inset:0;z-index:70;background:rgba(8,12,22,.94);display:none;
+  flex-direction:column;padding:16px}
+.lb.open{display:flex}
+.lb .lbtop{display:flex;align-items:center;gap:12px;color:#fff;font-size:14px;font-weight:600}
+.lb .lbtop .x{background:rgba(255,255,255,.12);color:#fff}
+.lb .lbmain{flex:1;display:grid;place-items:center;padding:16px 0}
+.lb .lbmain .ph{width:min(900px,92vw);aspect-ratio:4/3;background:#1A2334;color:#7A88A3;border-radius:14px}
+.lb .lbstrip{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.lb .lbstrip .ph{width:78px;height:58px;background:#1A2334;color:#7A88A3;border-radius:8px;font-size:10px}
+.lb .lbstrip .ph.on{outline:2px solid var(--brand)}
+.lb .nav{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.12);color:#fff;
+  display:grid;place-items:center;font-size:20px}
+
+.owner{display:grid;gap:8px}
+.owner .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.stat div{background:var(--paper);border-radius:12px;padding:10px 12px}
+.stat b{display:block;font-size:20px;font-weight:800;font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--mut)}
+
+.big-empty{text-align:center;padding:64px 20px;max-width:520px;margin:0 auto}
+.big-empty .ic{width:96px;height:96px;border-radius:28px;background:var(--soft);margin:0 auto 20px;
+  display:grid;place-items:center;font-size:36px}
+.big-empty h2{margin:0 0 10px}
+.big-empty p{color:var(--ink2);font-size:16px;line-height:1.55;margin:0 0 24px}
+.big-empty .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+.kinds{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:18px}
+.kind{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 14px;text-align:left}
+.kind[aria-pressed=true]{border-color:var(--brand);background:var(--soft)}
+.kind b{display:block;font-size:14.5px;font-weight:700}
+.kind s{display:block;text-decoration:none;font-size:12.5px;color:var(--mut);margin-top:2px}
+
+.card.sup{padding:16px}
+.card.sup .top{display:flex;gap:12px;align-items:center}
+.card.sup .av{width:48px;height:48px;border-radius:50%;background:var(--line);flex:none}
+.card.req{padding:16px}
+.card.req .amt{font-size:20px;font-weight:800;margin:8px 0 4px}
 
 /* ───────── лента ───────── */
 .feedTop{padding-top:24px}
 .tabs{display:inline-flex;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:4px;gap:2px}
-.tabs button{padding:9px 20px;border-radius:999px;font-size:15px;font-weight:700;color:var(--ink2)}
+.tabs button{padding:9px 18px;border-radius:999px;font-size:14.5px;font-weight:600;color:var(--ink2)}
 .tabs button[aria-pressed=true]{background:var(--brand);color:#fff}
 .feedHead{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:20px}
 .count{color:var(--mut);font-size:14.5px}
@@ -196,15 +538,15 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
 .vp.m .filters{display:none}
 .fgrp{padding:12px 0;border-bottom:1px solid var(--line)}
 .fgrp:last-child{border:0}
-.fgrp h4{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
-  color:var(--mut);margin:0 0 8px}
+.fgrp h4{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;
+  text-transform:uppercase;letter-spacing:.12em;color:var(--mut);margin:0 0 8px}
 .fld{width:100%;height:38px;border:1px solid var(--line);border-radius:10px;background:#fff;
   padding:0 10px;font:inherit;font-size:14px;color:var(--ink)}
 .fld::placeholder{color:var(--mut)}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{padding:6px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;
-  font-size:13.5px;font-weight:600;color:var(--ink2)}
+.chip{padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;
+  font-size:13.5px;font-weight:500;color:var(--ink2)}
 .chip[aria-pressed=true]{background:var(--soft);border-color:var(--brand);color:var(--brand)}
 .switch{display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;cursor:pointer}
 .switch .box{width:44px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:.15s}
@@ -219,21 +561,26 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
 .vp.m .cards{grid-template-columns:1fr;gap:14px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);
   overflow:hidden;transition:.15s;display:block}
-.card:hover{border-color:var(--brand)}
+.card:hover{border-color:#B6C6DE}
 .card .img{aspect-ratio:4/3;position:relative}
 .vp.m .card .img{aspect-ratio:16/10}
 .card .badges{position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap}
-.bdg{padding:5px 10px;border-radius:999px;font-size:12px;font-weight:700;background:rgba(255,255,255,.94);
-  color:var(--ink);box-shadow:0 2px 8px rgba(10,30,80,.12)}
-.bdg.map{background:var(--ok);color:#fff}
-.bdg.imp{background:var(--brand);color:#fff}
+.bdg{padding:4px 9px;border-radius:4px;font-size:11.5px;font-weight:600;background:rgba(255,255,255,.96);
+  color:var(--ink);letter-spacing:-.005em}
+.bdg.map,.bdg.imp{background:rgba(255,255,255,.96);color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.bdg.map::before,.bdg.imp::before{content:"";width:7px;height:7px;border-radius:50%;flex:none}
+.bdg.map::before{background:var(--ok)}
+.bdg.imp::before{background:var(--brand)}
 .card .b{padding:14px 16px 16px}
-.card .ttl{display:flex;justify-content:space-between;gap:10px;font-size:17px;font-weight:700}
+.card .ttl{display:flex;justify-content:space-between;gap:10px;font-size:16.5px;font-weight:600;
+  letter-spacing:-.01em}
 .card .ttl span{color:var(--mut);font-weight:600;flex:none}
-.card .price{font-size:22px;font-weight:800;margin:6px 0 8px;font-variant-numeric:tabular-nums}
+.card .price{font-size:21px;font-weight:700;margin:5px 0 8px;font-variant-numeric:tabular-nums;
+  letter-spacing:-.02em}
 .card .spec{font-size:13.5px;color:var(--ink2);line-height:1.45}
-.card .loc{font-size:13px;color:var(--mut);margin-top:8px;padding-top:10px;border-top:1px solid var(--line);
-  display:flex;justify-content:space-between}
+.card .loc{font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--mut);margin-top:10px;
+  padding-top:10px;border-top:1px solid var(--line);display:flex;justify-content:space-between;
+  letter-spacing:.02em}
 
 /* мобильные фильтры */
 .mfilters{display:none;position:sticky;top:58px;z-index:15;background:rgba(255,255,255,.9);
@@ -267,18 +614,94 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
   background:var(--bad);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center}
 .rel{position:relative}
 .hide{display:none !important}
+/* ───────── настоящая адаптивность окна браузера ───────── */
+@media(max-width:1100px){
+  .cards{grid-template-columns:repeat(2,1fr)}
+  .cols4{grid-template-columns:repeat(2,1fr)}
+  .photos{grid-template-columns:repeat(4,1fr)}
+}
+@media(max-width:900px){
+  .wrap{padding:0 14px}
+  .hdr nav{display:none}
+  .hero .in,.split{grid-template-columns:1fr;gap:24px}
+  h1{font-size:34px;line-height:1.1}
+  h2{font-size:26px}
+  .lead{font-size:16px}
+  .sub{font-size:15px}
+  section{padding:44px 0}
+  .cols3,.cols2,.cols4{grid-template-columns:1fr}
+  .band{padding:22px;border-radius:20px}
+  .cta{padding:32px 20px}
+  .feedGrid,.lst,.tmap,.wiz,.qgrid{grid-template-columns:1fr;gap:14px}
+  .filters,.side,.steps,.rev{position:static;max-height:none}
+  .filters{display:none}
+  .mfilters{display:flex;margin:0 -14px 14px;padding:10px 14px}
+  .cards{grid-template-columns:repeat(2,1fr);gap:12px}
+  .chat{grid-template-columns:1fr;height:auto}
+  .chat .dlgs{display:none}
+  .conv .body{height:400px}
+  .specs,.sum,.form{grid-template-columns:1fr}
+  .orow,.myrow,.qitem{grid-template-columns:64px 1fr}
+  .orow .amt{grid-column:2;text-align:left}
+  .myrow .r,.orow .acts2{grid-column:1/-1;flex-wrap:wrap;display:flex;gap:8px}
+  .steps{display:flex;gap:6px;overflow-x:auto;padding:6px}
+  .st{flex:none;width:auto}
+  .st span.tx{display:none}
+  .st.on span.tx{display:inline}
+  .photos{grid-template-columns:repeat(3,1fr)}
+  .brands{grid-template-columns:repeat(2,1fr)}
+  .tabbar{display:grid}
+  .mbar{display:grid;grid-template-columns:1fr 1fr}
+  .price-lg{font-size:28px}
+  .ph1{font-size:24px}
+  .wcard{padding:18px}
+  .wcard h2{font-size:21px}
+}
+@media(max-width:520px){
+  .cards{grid-template-columns:1fr}
+  .photos{grid-template-columns:repeat(2,1fr)}
+}
+
 </style>
 </head>
 <body>
 
 <div id="bar">
   <span class="t">Абсолют · мокапы</span>
-  <div class="seg" id="segScreen">
-    <button data-s="landing" aria-pressed="true">Лендинг</button>
-    <button data-s="feed" aria-pressed="false">Лента</button>
-    <button data-s="empty" aria-pressed="false">Лента пустая</button>
-    <button data-s="loading" aria-pressed="false">Загрузка</button>
-  </div>
+  <select id="segScreen">
+    <optgroup label="Публичное">
+      <option value="landing">Лендинг</option>
+      <option value="oauth">Возврат из OAuth</option>
+      <option value="oauthErr">Вход не удался</option>
+      <option value="feed">Лента · в наличии</option>
+      <option value="import">Лента · под заказ</option>
+      <option value="cold">Лента · пусто на старте</option>
+      <option value="empty">Лента · ничего не найдено</option>
+      <option value="loading">Лента · загрузка</option>
+      <option value="listing">Карточка объявления</option>
+      <option value="listingGuest">Карточка · гость</option>
+      <option value="listingSold">Карточка · продано</option>
+      <option value="listingOwner">Карточка · моё объявление</option>
+      <option value="thickness">Карта замеров</option>
+      <option value="importer">Профиль поставщика</option>
+      <option value="seller">Профиль продавца</option>
+    </optgroup>
+    <optgroup label="Личное">
+      <option value="wizard">Мастер продажи</option>
+      <option value="offers">Офферы</option>
+      <option value="chats">Чаты</option>
+      <option value="my">Мои объявления</option>
+      <option value="profile">Мой профиль</option>
+      <option value="request">Заявка «хочу такую» · отклики</option>
+      <option value="requestNew">Заявка «хочу такую» · форма</option>
+      <option value="supplierForm">Заявка на роль поставщика</option>
+    </optgroup>
+    <optgroup label="Модерация">
+      <option value="queue">Очередь модерации</option>
+      <option value="roles">Заявки на роль поставщика</option>
+      <option value="complaints">Жалобы</option>
+    </optgroup>
+  </select>
   <span class="t">ширина</span>
   <div class="seg" id="segView">
     <button data-v="d" aria-pressed="true">Десктоп</button>
@@ -298,11 +721,11 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
   </a>
   <nav>
     <a href="#" class="on" data-go="feed">В наличии</a>
-    <a href="#" data-go="feed">Под заказ</a>
-    <a href="#">Поставщики</a>
+    <a href="#" data-go="import">Под заказ</a>
+    <a href="#" data-go="importer">Поставщики</a>
   </nav>
   <span class="grow"></span>
-  <button class="btn ghost">Войти</button>
+  <button class="btn ghost" data-login="1">Войти</button>
   <button class="btn" data-go="feed">Разместить</button>
 </div></header>
 
@@ -532,9 +955,14 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
   <section style="padding-top:0">
     <div class="wrap">
       <div class="cta">
-        <h2>Разместить объявление — две минуты</h2>
-        <p class="sub">Вход через Яндекс ID или VK ID. Ни пароля, ни почты.</p>
-        <button class="btn big" data-go="feed">Начать</button>
+        <div style="display:flex;gap:32px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:280px">
+            <h2 style="margin-bottom:10px">Разместить объявление — две минуты</h2>
+            <p class="sub" style="margin:0">Вход через Яндекс ID или VK ID.
+              Ни пароля, ни почты, ни подтверждения по СМС.</p>
+          </div>
+          <button class="btn big" data-go="wizard">Начать</button>
+        </div>
       </div>
       <div class="wrap foot" style="padding-left:0;padding-right:0">
         <span>ООО «Абсолют 555» · Омск, Жукова 65/1</span>
@@ -552,7 +980,7 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
     <div class="feedHead">
       <div class="tabs">
         <button aria-pressed="true">В наличии</button>
-        <button aria-pressed="false">Под заказ</button>
+        <button aria-pressed="false" data-go="import">Под заказ</button>
       </div>
       <span class="count" id="cnt">248 объявлений</span>
       <span class="grow"></span>
@@ -583,7 +1011,7 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
         <div class="fgrp"><h4>Год</h4><div class="pair">
           <input class="fld" placeholder="от 2005"><input class="fld" placeholder="до 2026"></div></div>
         <div class="fgrp"><h4>Цена, ₽</h4><div class="pair">
-          <input class="fld" placeholder="от"><input class="fld" placeholder="до 5 000 000"></div></div>
+          <input class="fld" placeholder="от"><input class="fld" placeholder="до 5 млн"></div></div>
         <div class="fgrp"><h4>Пробег, км</h4><div class="pair">
           <input class="fld" placeholder="от"><input class="fld" placeholder="до 200 000"></div></div>
         <div class="fgrp"><h4>Коробка</h4><div class="chips">
@@ -653,24 +1081,1828 @@ h2{font-size:34px;line-height:1.15;font-weight:800;letter-spacing:-.02em;margin:
   </div>
 </main>
 
+
+<main id="s-listing" class="hide">
+  <div class="wrap">
+    <div class="crumbs"><a href="#" data-go="feed">Лента</a> › <a href="#" data-go="feed">Lexus</a> › LX 570</div>
+    <div class="lst">
+      <div>
+        <div class="gal">
+          <div class="ph big" data-lb="1">фотография автомобиля 1 из 12</div>
+          <div class="thumbs">
+            <div class="ph on">1</div><div class="ph">2</div><div class="ph">3</div>
+            <div class="ph">4</div><div class="ph">5</div><div class="ph">+7</div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <h3>Характеристики</h3>
+          <div class="specs">
+            <div><span>Марка и модель</span><b>Lexus LX 570</b></div>
+            <div><span>Год выпуска</span><b>2012</b></div>
+            <div><span>Пробег</span><b>180 000 км</b></div>
+            <div><span>Коробка</span><b>АКПП</b></div>
+            <div><span>Мощность</span><b>367 л.с.</b></div>
+            <div><span>VIN</span><b class="mono" style="font-size:13.5px">JTJHY00W***40218</b></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <h3>Описание</h3>
+          <p style="margin:0;font-size:15.5px;line-height:1.6;color:var(--ink2)">
+            Машина в семье с 2016 года, обслуживание у официального дилера до 2021-го,
+            дальше — проверенный сервис в Омске, чеки сохранены. Переднее правое крыло
+            перекрашивалось после парковочного контакта, это видно в карте замеров.
+            Резина зимняя в комплекте.</p>
+        </div>
+
+        <div class="blk">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <h3 style="margin:0">Карта замеров</h3>
+            <span class="bdg map">полная карта</span>
+          </div>
+          <div class="ph" style="aspect-ratio:16/9;border-radius:14px">схема кузова с замерами
+            <br>(отдельный экран «Карта замеров»)</div>
+          <button class="btn ghost w" style="margin-top:12px" data-go="thickness">Открыть карту целиком</button>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="blk" style="margin-top:0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div>
+              <div style="font-size:20px;font-weight:800">Lexus LX 570</div>
+              <div style="color:var(--mut);font-size:14px;margin-top:2px">2012 · 180 000 км · Омск</div>
+            </div>
+            <button class="x" title="Пожаловаться">⋯</button>
+          </div>
+          <div class="price-lg" style="margin:14px 0 4px">4 020 000 ₽</div>
+          <div style="font-size:13.5px;color:var(--brand);font-weight:700">от 167 500 ₽/мес.</div>
+          <div class="acts">
+            <button class="btn w">Предложить цену</button>
+            <div class="two"><button class="btn ghost">Написать</button>
+              <button class="btn ghost">Показать телефон</button></div>
+          </div>
+          <p style="font-size:13px;color:var(--mut);margin:12px 0 0">Телефон откроется только
+            если продавец разрешил его показ.</p>
+        </div>
+
+        <div class="blk">
+          <h3 style="font-size:16px">Предложения по цене</h3>
+          <div class="offers">
+            <div class="row"><span>сегодня, 14:55</span><b>3 850 000 ₽</b></div>
+            <div class="row"><span>сегодня, 12:10</span><b>3 700 000 ₽</b></div>
+            <div class="row"><span>вчера, 19:02</span><b>3 700 000 ₽</b></div>
+            <div class="row"><span>вчера, 09:41</span><b>3 600 000 ₽</b></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <div class="seller">
+            <div class="av"></div>
+            <div>
+              <div style="font-weight:700;font-size:16px">Михаил</div>
+              <div class="stars">★★★★★ <span style="color:var(--mut);font-size:13px;letter-spacing:0">4,8 · 12 сделок</span></div>
+            </div>
+          </div>
+          <button class="btn ghost w" style="margin-top:14px" data-go="seller">Профиль и другие объявления</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost">Написать</button><button class="btn">Предложить цену</button></div>
+</main>
+
+<main id="s-listingGuest" class="hide">
+  <div class="wrap">
+    <div class="crumbs"><a href="#" data-go="feed">Лента</a> › <a href="#" data-go="feed">Lexus</a> › LX 570</div>
+    <div class="lst">
+      <div>
+        <div class="gal">
+          <div class="ph big">фотография автомобиля 1 из 12</div>
+          <div class="thumbs">
+            <div class="ph on">1</div><div class="ph">2</div><div class="ph">3</div>
+            <div class="ph">4</div><div class="ph">5</div><div class="ph">+7</div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <h3>Характеристики</h3>
+          <div class="specs">
+            <div><span>Марка и модель</span><b>Lexus LX 570</b></div>
+            <div><span>Год выпуска</span><b>2012</b></div>
+            <div><span>Пробег</span><b>180 000 км</b></div>
+            <div><span>Коробка</span><b>АКПП</b></div>
+            <div><span>Мощность</span><b>367 л.с.</b></div>
+            <div><span>VIN</span><b class="mono" style="font-size:13.5px">JTJHY00W***40218</b></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <h3>Описание</h3>
+          <p style="margin:0;font-size:15.5px;line-height:1.6;color:var(--ink2)">
+            Машина в семье с 2016 года, обслуживание у официального дилера до 2021-го,
+            дальше — проверенный сервис в Омске, чеки сохранены. Переднее правое крыло
+            перекрашивалось после парковочного контакта, это видно в карте замеров.
+            Резина зимняя в комплекте.</p>
+        </div>
+
+        <div class="blk">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <h3 style="margin:0">Карта замеров</h3>
+            <span class="bdg map">полная карта</span>
+          </div>
+          <div class="ph" style="aspect-ratio:16/9;border-radius:14px">схема кузова с замерами
+            <br>(отдельный экран «Карта замеров»)</div>
+          <button class="btn ghost w" style="margin-top:12px" data-go="thickness">Открыть карту целиком</button>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="blk" style="margin-top:0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div>
+              <div style="font-size:20px;font-weight:800">Lexus LX 570</div>
+              <div style="color:var(--mut);font-size:14px;margin-top:2px">2012 · 180 000 км · Омск</div>
+            </div>
+            <button class="x" title="Пожаловаться">⋯</button>
+          </div>
+          <div class="price-lg" style="margin:14px 0 4px">4 020 000 ₽</div>
+          <div style="font-size:13.5px;color:var(--brand);font-weight:700">от 167 500 ₽/мес.</div>
+          <div class="acts">
+            <button class="btn w">Предложить цену</button>
+            <div class="two"><button class="btn ghost">Написать</button>
+              <button class="btn ghost">Показать телефон</button></div>
+          </div>
+          <div class="lock" style="margin-top:12px">Чтобы предложить цену или написать —
+            войдите через <b>Яндекс&nbsp;ID</b> или <b>VK&nbsp;ID</b>.<br>
+            Вернётесь на эту же карточку.
+            <button class="btn sm w" style="margin-top:12px" data-login="1">Войти</button></div>
+        </div>
+
+        <div class="blk">
+          <h3 style="font-size:16px">Предложения по цене</h3>
+          <div class="lock">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--mut);margin-bottom:8px">ЗАКРЫТО</div>
+            Авторизуйтесь, чтобы увидеть предложения других покупателей</div>
+        </div>
+
+        <div class="blk">
+          <div class="seller">
+            <div class="av"></div>
+            <div>
+              <div style="font-weight:700;font-size:16px">Михаил</div>
+              <div class="stars">★★★★★ <span style="color:var(--mut);font-size:13px;letter-spacing:0">4,8 · 12 сделок</span></div>
+            </div>
+          </div>
+          <button class="btn ghost w" style="margin-top:14px">Профиль и другие объявления</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost">Написать</button><button class="btn">Предложить цену</button></div>
+</main>
+
+<main id="s-listingSold" class="hide">
+  <div class="wrap">
+    <div class="crumbs"><a href="#" data-go="feed">Лента</a> › <a href="#" data-go="feed">Lexus</a> › LX 570</div>
+    <div class="lst">
+      <div>
+        <div class="gal">
+          <div class="ph big">фотография автомобиля 1 из 12</div>
+          <div class="thumbs">
+            <div class="ph on">1</div><div class="ph">2</div><div class="ph">3</div>
+            <div class="ph">4</div><div class="ph">5</div><div class="ph">+7</div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <h3>Характеристики</h3>
+          <div class="specs">
+            <div><span>Марка и модель</span><b>Lexus LX 570</b></div>
+            <div><span>Год выпуска</span><b>2012</b></div>
+            <div><span>Пробег</span><b>180 000 км</b></div>
+            <div><span>Коробка</span><b>АКПП</b></div>
+            <div><span>Мощность</span><b>367 л.с.</b></div>
+            <div><span>VIN</span><b class="mono" style="font-size:13.5px">JTJHY00W***40218</b></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <h3>Описание</h3>
+          <p style="margin:0;font-size:15.5px;line-height:1.6;color:var(--ink2)">
+            Машина в семье с 2016 года, обслуживание у официального дилера до 2021-го,
+            дальше — проверенный сервис в Омске, чеки сохранены. Переднее правое крыло
+            перекрашивалось после парковочного контакта, это видно в карте замеров.
+            Резина зимняя в комплекте.</p>
+        </div>
+
+        <div class="blk">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+            <h3 style="margin:0">Карта замеров</h3>
+            <span class="bdg map">полная карта</span>
+          </div>
+          <div class="ph" style="aspect-ratio:16/9;border-radius:14px">схема кузова с замерами
+            <br>(отдельный экран «Карта замеров»)</div>
+          <button class="btn ghost w" style="margin-top:12px" data-go="thickness">Открыть карту целиком</button>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="blk" style="margin-top:0">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div>
+              <div style="font-size:20px;font-weight:800">Lexus LX 570</div>
+              <div style="color:var(--mut);font-size:14px;margin-top:2px">2012 · 180 000 км · Омск</div>
+            </div>
+            <button class="x" title="Пожаловаться">⋯</button>
+          </div>
+          <div class="price-lg" style="margin:14px 0 4px">4 020 000 ₽</div>
+          <div style="font-size:13.5px;color:var(--brand);font-weight:700">от 167 500 ₽/мес.</div>
+          <div class="sold">● Продано 24 августа</div>
+          <p style="font-size:14px;color:var(--mut);margin:12px 0 0">Объявление осталось в архиве —
+            характеристики и карту замеров видно, действия выключены.</p>
+        </div>
+
+        <div class="blk">
+          <h3 style="font-size:16px">Предложения по цене</h3>
+          <div class="offers">
+            <div class="row"><span>сегодня, 14:55</span><b>3 850 000 ₽</b></div>
+            <div class="row"><span>сегодня, 12:10</span><b>3 700 000 ₽</b></div>
+            <div class="row"><span>вчера, 19:02</span><b>3 700 000 ₽</b></div>
+            <div class="row"><span>вчера, 09:41</span><b>3 600 000 ₽</b></div>
+          </div>
+        </div>
+
+        <div class="blk">
+          <div class="seller">
+            <div class="av"></div>
+            <div>
+              <div style="font-weight:700;font-size:16px">Михаил</div>
+              <div class="stars">★★★★★ <span style="color:var(--mut);font-size:13px;letter-spacing:0">4,8 · 12 сделок</span></div>
+            </div>
+          </div>
+          <button class="btn ghost w" style="margin-top:14px">Профиль и другие объявления</button>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost" style="grid-column:1/-1" disabled>Машина продана</button></div>
+</main>
+
+
+<!-- ══════════ КАРТА ЗАМЕРОВ ══════════ -->
+<main id="s-thickness" class="hide">
+  <div class="wrap">
+    <div class="crumbs"><a href="#" data-go="feed">Лента</a> ›
+      <a href="#" data-go="listing">Lexus LX 570</a> › Карта замеров</div>
+
+    <div class="subseg" id="tSeg">
+      <button data-t="buy" aria-pressed="true">Смотрит покупатель</button>
+      <button data-t="sell" aria-pressed="false">Заполняет продавец</button>
+      <button data-t="ocr" aria-pressed="false">Распознавание</button>
+    </div>
+
+    <div class="tmap">
+      <div class="sheet">
+        <svg viewBox="0 0 880 640" role="img" aria-label="Схема кузова, пять проекций">
+
+  <!-- ══ БОК ══ -->
+  <text class="pt" x="24" y="28">БОК ЛЕВЫЙ</text>
+  <g>
+    <path class="pz" data-p="hood" d="M120 134 L188 92 L194 96 L132 133 L132 140 L120 140 Z" fill="var(--ok)" opacity=".82"><title>Капот</title></path><path class="pz" data-p="roof" d="M186 90 Q194 84 206 84 L316 84 Q330 84 338 90 L332 96 L192 96 Z" fill="var(--ok)" opacity=".82"><title>Крыша</title></path><path class="pz" data-p="trunk" d="M366 132 L392 133 L500 140 L500 148 L366 140 Z" fill="var(--warn)" opacity=".82"><title>Крышка багажника</title></path>
+    <path class="pz" data-p="fender-fl" d="M28 176 L28 150 Q28 138 44 136 L120 134 L120 176 Z" fill="var(--ok)" opacity=".82"><title>Крыло переднее левое</title></path><path class="pz" data-p="door-fl" d="M132 134 L252 134 L252 176 L132 176 Z" fill="var(--ok)" opacity=".82"><title>Дверь передняя левая</title></path><path class="pz" data-p="door-rl" d="M262 134 L364 134 L364 176 L262 176 Z" fill="var(--ok)" opacity=".82"><title>Дверь задняя левая</title></path><path class="pz" data-p="fender-rl" d="M366 142 L500 150 Q500 168 500 176 L366 176 Z" fill="var(--ok)" opacity=".82"><title>Крыло заднее левое</title></path>
+    <path class="pz" data-p="bumper-f" d="M22 158 L28 158 L28 178 L22 178 Z" fill="var(--warn)" opacity=".82"><title>Бампер передний</title></path><path class="pz" data-p="bumper-r" d="M500 156 L508 158 L508 178 L500 178 Z" fill="var(--ok)" opacity=".82"><title>Бампер задний</title></path>
+    <path class="pl" d="M28 176 L28 150 Q28 138 44 136 L120 134 L186 90 Q194 84 206 84 L316 84
+      Q330 84 338 90 L392 134 L474 138 Q496 142 500 156 L500 176 Z"/>
+    <path class="pl" d="M132 132 L192 94 L252 94 L252 132 Z M262 132 L262 94 L312 94 L364 132 Z"/>
+    <path class="pl" d="M120 134 L120 176 M252 132 L252 176 M262 94 L262 176 M392 134 L392 176"/>
+    <circle class="pl" cx="140" cy="176" r="27"/><circle class="pl" cx="140" cy="176" r="12"/>
+    <circle class="pl" cx="400" cy="176" r="27"/><circle class="pl" cx="400" cy="176" r="12"/>
+    <path class="pl" d="M28 176 L113 176 M167 176 L373 176 M427 176 L500 176"/>
+  </g>
+
+  <!-- ══ ПЕРЁД ══ -->
+  <text class="pt" x="576" y="28">ПЕРЁД</text>
+  <g>
+    <path class="pz" data-p="hood" d="M622 96 L648 62 L802 62 L828 96 Z" fill="var(--ok)" opacity=".82"><title>Капот</title></path><path class="pz" data-p="bumper-f" d="M596 152 L854 152 L854 176 L596 176 Z" fill="var(--warn)" opacity=".82"><title>Бампер передний</title></path><path class="pz" data-p="fender-fl" d="M596 130 L622 130 L622 152 L596 152 Z" fill="var(--ok)" opacity=".82"><title>Крыло переднее левое</title></path><path class="pz" data-p="fender-fr" d="M828 130 L854 130 L854 152 L828 152 Z" fill="var(--bad)" opacity=".82"><title>Крыло переднее правое</title></path>
+    <path class="pl" d="M596 176 L596 120 Q596 104 616 96 L640 62 Q646 52 660 52 L790 52
+      Q804 52 810 62 L834 96 Q854 104 854 120 L854 176 Z"/>
+    <path class="pl" d="M622 96 L648 62 L802 62 L828 96 Z M596 130 L854 130 M596 152 L854 152"/>
+    <path class="pl" d="M614 176 L614 186 M836 176 L836 186"/>
+  </g>
+
+  <!-- ══ ЗАД ══ -->
+  <text class="pt" x="576" y="244">ЗАД</text>
+  <g>
+    <path class="pz" data-p="trunk" d="M622 312 L648 278 L802 278 L828 312 Z" fill="var(--warn)" opacity=".82"><title>Крышка багажника</title></path><path class="pz" data-p="bumper-r" d="M596 368 L854 368 L854 392 L596 392 Z" fill="var(--ok)" opacity=".82"><title>Бампер задний</title></path><path class="pz" data-p="fender-rl" d="M596 346 L622 346 L622 368 L596 368 Z" fill="var(--ok)" opacity=".82"><title>Крыло заднее левое</title></path><path class="pz" data-p="fender-rr" d="M828 346 L854 346 L854 368 L828 368 Z" fill="var(--none)" opacity=".82"><title>Крыло заднее правое</title></path>
+    <path class="pl" d="M596 392 L596 336 Q596 320 616 312 L640 278 Q646 268 660 268 L790 268
+      Q804 268 810 278 L834 312 Q854 320 854 336 L854 392 Z"/>
+    <path class="pl" d="M622 312 L648 278 L802 278 L828 312 Z M596 346 L854 346 M596 368 L854 368"/>
+  </g>
+
+  <!-- ══ СВЕРХУ ══ -->
+  <text class="pt" x="24" y="244">СВЕРХУ</text>
+  <g>
+    <path class="pz" data-p="hood" d="M126 306 L194 306 L194 454 L126 454 Z" fill="var(--ok)" opacity=".82"><title>Капот</title></path><path class="pz" data-p="roof" d="M198 314 L336 313 L336 447 L198 446 Z" fill="var(--ok)" opacity=".82"><title>Крыша</title></path><path class="pz" data-p="trunk" d="M340 314 L470 320 L470 440 L340 446 Z" fill="var(--warn)" opacity=".82"><title>Крышка багажника</title></path>
+    <path class="pz" data-p="fender-fl" d="M126 290 L194 290 L194 304 L126 300 Z" fill="var(--ok)" opacity=".82"><title>Крыло переднее левое</title></path><path class="pz" data-p="fender-fr" d="M126 456 L194 456 L194 470 L126 466 Z" fill="var(--bad)" opacity=".82"><title>Крыло переднее правое</title></path><path class="pz" data-p="door-fl" d="M196 288 L266 288 L266 312 L196 312 Z" fill="var(--ok)" opacity=".82"><title>Дверь передняя левая</title></path><path class="pz" data-p="door-fr" d="M196 448 L266 448 L266 472 L196 472 Z" fill="var(--warn)" opacity=".82"><title>Дверь передняя правая</title></path><path class="pz" data-p="door-rl" d="M268 287 L338 286 L338 312 L268 312 Z" fill="var(--ok)" opacity=".82"><title>Дверь задняя левая</title></path><path class="pz" data-p="door-rr" d="M268 448 L338 448 L338 473 L268 473 Z" fill="var(--none)" opacity=".82"><title>Дверь задняя правая</title></path><path class="pz" data-p="fender-rl" d="M340 286 L410 288 L410 312 L340 312 Z" fill="var(--ok)" opacity=".82"><title>Крыло заднее левое</title></path><path class="pz" data-p="fender-rr" d="M340 448 L410 448 L410 472 L340 472 Z" fill="var(--none)" opacity=".82"><title>Крыло заднее правое</title></path>
+    <path class="pz" data-p="bumper-f" d="M64 340 Q64 300 100 291 L120 296 L120 464 L100 469 Q64 460 64 420 Z" fill="var(--warn)" opacity=".82"><title>Бампер передний</title></path><path class="pz" data-p="bumper-r" d="M472 318 L494 336 L494 424 L472 442 Z" fill="var(--ok)" opacity=".82"><title>Бампер задний</title></path>
+    <path class="pl" d="M64 380 Q64 296 130 288 L420 284 Q484 290 494 336 L494 424
+      Q484 470 420 476 L130 472 Q64 464 64 380 Z"/>
+    <path class="pl" d="M194 288 L194 472 M266 288 L266 472 M338 287 L338 473 M410 288 L410 472
+      M126 300 L126 462"/>
+    <path class="pl" d="M198 314 L336 313 L336 447 L198 446 Z"/>
+  </g>
+</svg>
+        <div class="legend2">
+          <span><i style="background:var(--ok)"></i>заводская <s>до 150 мкм</s></span>
+          <span><i style="background:var(--warn)"></i>перекрашено <s>150–300</s></span>
+          <span><i style="background:var(--bad)"></i>шпаклёвка <s>больше 300</s></span>
+          <span><i style="background:var(--none)"></i>не замерено</span>
+        </div>
+      </div>
+
+      <aside class="side">
+        <!-- ── покупатель ── -->
+        <div class="blk" style="margin-top:0" data-t="buy">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+            <h3 style="margin:0;font-size:17px">Замеры</h3>
+            <span style="font-size:13px;color:var(--mut)">11 из 13</span>
+          </div>
+          <div>
+            <button class="mrow" data-p="hood"><span class="sw" style="background:var(--ok)"></span><b>Капот</b><span class="um" style="color:var(--ink)">96 мкм</span></button>
+            <button class="mrow" data-p="roof"><span class="sw" style="background:var(--ok)"></span><b>Крыша</b><span class="um" style="color:var(--ink)">91 мкм</span></button>
+            <button class="mrow" data-p="trunk"><span class="sw" style="background:var(--warn)"></span><b>Крышка багажника</b><span class="um" style="color:var(--ink)">168 мкм</span></button>
+            <button class="mrow" data-p="fender-fl"><span class="sw" style="background:var(--ok)"></span><b>Крыло переднее левое</b><span class="um" style="color:var(--ink)">103 мкм</span></button>
+            <button class="mrow" data-p="fender-fr"><span class="sw" style="background:var(--bad)"></span><b>Крыло переднее правое</b><span class="um" style="color:var(--ink)">640 мкм</span></button>
+            <button class="mrow" data-p="fender-rl"><span class="sw" style="background:var(--ok)"></span><b>Крыло заднее левое</b><span class="um" style="color:var(--ink)">99 мкм</span></button>
+            <button class="mrow" data-p="fender-rr"><span class="sw" style="background:var(--none)"></span><b>Крыло заднее правое</b><span class="um" style="color:var(--mut)">—</span></button>
+            <button class="mrow" data-p="door-fl"><span class="sw" style="background:var(--ok)"></span><b>Дверь передняя левая</b><span class="um" style="color:var(--ink)">94 мкм</span></button>
+            <button class="mrow" data-p="door-fr"><span class="sw" style="background:var(--warn)"></span><b>Дверь передняя правая</b><span class="um" style="color:var(--ink)">210 мкм</span></button>
+            <button class="mrow" data-p="door-rl"><span class="sw" style="background:var(--ok)"></span><b>Дверь задняя левая</b><span class="um" style="color:var(--ink)">97 мкм</span></button>
+            <button class="mrow" data-p="door-rr"><span class="sw" style="background:var(--none)"></span><b>Дверь задняя правая</b><span class="um" style="color:var(--mut)">—</span></button>
+            <button class="mrow" data-p="bumper-f"><span class="sw" style="background:var(--warn)"></span><b>Бампер передний</b><span class="um" style="color:var(--ink)">189 мкм</span></button>
+            <button class="mrow" data-p="bumper-r"><span class="sw" style="background:var(--ok)"></span><b>Бампер задний</b><span class="um" style="color:var(--ink)">102 мкм</span></button>
+          </div>
+        </div>
+        <div class="blk" data-t="buy">
+          <h3 style="font-size:16px">Крыло переднее правое</h3>
+          <div class="ph" style="aspect-ratio:4/3;border-radius:12px">фото толщиномера
+            на панели</div>
+          <div style="display:flex;align-items:baseline;gap:10px;margin-top:12px">
+            <span class="um mono" style="font-size:30px;font-weight:600;color:var(--bad)">640</span>
+            <span style="color:var(--mut);font-size:14px">мкм · шпаклёвка</span>
+          </div>
+          <p style="font-size:13.5px;color:var(--ink2);margin:8px 0 0;line-height:1.5">
+            Значение считано с экрана прибора. Заводская толщина у этой модели — около 100 мкм.</p>
+        </div>
+
+        <!-- ── продавец ── -->
+        <div class="blk hide" style="margin-top:0" data-t="sell">
+          <h3 style="font-size:17px">Выбрана панель</h3>
+          <div style="font-size:20px;font-weight:800;margin-bottom:4px">Дверь задняя правая</div>
+          <div style="color:var(--mut);font-size:14px">пока не замерена</div>
+          <div class="ph" style="aspect-ratio:4/3;border-radius:12px;margin-top:14px">
+            приложите толщиномер к панели<br>и сфотографируйте экран прибора</div>
+          <div class="acts">
+            <button class="btn w" data-t-go="ocr">Сделать снимок</button>
+            <button class="btn ghost w">Пропустить панель</button>
+          </div>
+        </div>
+        <div class="blk hide" data-t="sell">
+          <div class="hint">Цифру вписать нельзя — она считывается с экрана прибора.
+            Иначе карта замеров ничего не стоила бы.</div>
+          <div style="display:flex;justify-content:space-between;font-size:14.5px;margin-top:16px">
+            <span style="color:var(--mut)">Замерено</span><b>11 из 13</b></div>
+          <div class="prog"><i style="width:85%"></i></div>
+          <p style="font-size:13.5px;color:var(--ink2);margin:10px 0 0">Останутся две панели —
+            и объявление получит бейдж «полная карта замеров» и место выше в ленте.</p>
+          <button class="btn w" style="margin-top:14px">Сохранить и выйти</button>
+        </div>
+
+        <!-- ── распознавание ── -->
+        <div class="blk hide" style="margin-top:0" data-t="ocr">
+          <h3 style="font-size:17px">Дверь задняя правая</h3>
+          <div class="ocr" style="margin-top:12px">
+            <div class="top"><span class="spin"></span>
+              <span style="font-size:14.5px;font-weight:700">Читаем экран прибора…</span></div>
+            <div class="body">
+              <div class="ph" style="aspect-ratio:4/3;border-radius:10px">снимок экрана толщиномера</div>
+              <div class="prog"><i></i></div>
+              <p style="font-size:13.5px;color:var(--mut);margin:10px 0 0">
+                Обработка идёт в фоне — экран можно закрыть, результат придёт сам.</p>
+            </div>
+          </div>
+        </div>
+        <div class="blk hide" data-t="ocr">
+          <h3 style="font-size:16px">Распознали</h3>
+          <div style="display:flex;align-items:center;gap:14px;margin:8px 0 4px">
+            <input class="fld mono" value="87" style="width:110px;height:56px;font-size:30px;
+              font-weight:600;text-align:center">
+            <span style="color:var(--mut);font-size:15px">мкм · заводская</span>
+          </div>
+          <p style="font-size:13.5px;color:var(--ink2);line-height:1.5;margin:10px 0 0">
+            У дешёвых приборов сегментный индикатор — восьмёрку и тройку легко перепутать.
+            Проверьте число. Если поправите, замер пометится как <b>уточнён продавцом</b>,
+            и покупатель это увидит.</p>
+          <div class="acts">
+            <button class="btn w">Всё верно, сохранить</button>
+            <div class="two"><button class="btn ghost">Переснять</button>
+              <button class="btn ghost">Отменить</button></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost" data-go="listing">К объявлению</button>
+    <button class="btn">Предложить цену</button></div>
+</main>
+
+
+<!-- ══════════ МАСТЕР ПРОДАЖИ ══════════ -->
+<main id="s-wizard" class="hide">
+  <div class="wrap">
+    <div class="crumbs"><a href="#" data-go="feed">Лента</a> › Новое объявление
+      <span style="float:right">Черновик сохранён · 14:32</span></div>
+    <div class="wiz">
+      <nav class="steps" id="wSteps">
+        <button class="st on" data-w="1"><span class="num">1</span><span class="tx">Фото СТС</span></button>
+        <button class="st" data-w="2"><span class="num">2</span><span class="tx">Характеристики</span></button>
+        <button class="st" data-w="3"><span class="num">3</span><span class="tx">Цена и контакты</span></button>
+        <button class="st" data-w="4"><span class="num">4</span><span class="tx">Фотографии</span></button>
+        <button class="st" data-w="5"><span class="num">5</span><span class="tx">Карта замеров</span></button>
+        <button class="st" data-w="6"><span class="num">6</span><span class="tx">Отправка</span></button>
+      </nav>
+      <div>
+        
+<!-- шаг 1: ожидание файла -->
+<div class="wcard" data-w="1">
+  <h2>Снимите свидетельство о регистрации</h2>
+  <p class="sub">Из СТС прочитается VIN, а по нему подставятся марка, модель, год, коробка
+    и мощность. Документ в объявление не попадёт.</p>
+  <div class="drop">
+    <div class="ic">СТС</div>
+    Сфотографировать или перетащить файл
+    <s>JPG или PNG, до 10 МБ. Снимайте без бликов, чтобы номер VIN попал в кадр целиком.</s>
+  </div>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="manual">Заполнить вручную</button>
+    <span class="grow"></span>
+    <button class="btn" data-w-go="proc">Продолжить</button>
+  </div>
+</div>
+
+<!-- шаг 1: фоновая обработка -->
+<div class="wcard hide" data-w="proc">
+  <h2>Распознаём документ</h2>
+  <p class="sub">Обработка идёт в фоне. Можно свернуть приложение — черновик сохранён,
+    результат придёт уведомлением.</p>
+  <div style="display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:center">
+    <div class="ph" style="aspect-ratio:4/3;border-radius:14px">снимок СТС</div>
+    <div>
+      <div style="display:flex;align-items:center;gap:10px;font-weight:700;font-size:15.5px">
+        <span class="spin"></span> Читаем текст и разбираем VIN</div>
+      <div class="prog"><i style="width:48%"></i></div>
+      <p style="font-size:13.5px;color:var(--mut);margin:10px 0 0">Обычно занимает 10–40 секунд.</p>
+    </div>
+  </div>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="1">Отмена</button>
+    <span class="grow"></span>
+    <button class="btn ghost" data-w-go="err1">Показать: фото не прочитали</button>
+    <button class="btn ghost" data-w-go="err2">Показать: VIN не разобрали</button>
+    <button class="btn" data-w-go="2">Готово</button>
+  </div>
+</div>
+
+<!-- ошибка 1: не прочитали фото -->
+<div class="wcard hide" data-w="err1">
+  <h2>Не удалось прочитать фотографию</h2>
+  <div class="alert bad"><span class="ic">✕</span>
+    <span><b>Текст на снимке не разобрать</b>
+      Чаще всего мешают блики от вспышки и обрезанные края документа. Положите СТС на ровную
+      поверхность, снимайте при дневном свете, следите, чтобы все четыре угла попали в кадр.</span></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:18px">
+    <div class="ph" style="aspect-ratio:4/3;border-radius:12px">так не надо:<br>блик и обрез</div>
+    <div class="ph" style="aspect-ratio:4/3;border-radius:12px">так надо:<br>ровно и целиком</div>
+  </div>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="manual">Заполнить вручную</button>
+    <span class="grow"></span>
+    <button class="btn" data-w-go="1">Переснять</button>
+  </div>
+</div>
+
+<!-- ошибка 2: VIN не разобран -->
+<div class="wcard hide" data-w="err2">
+  <h2>Документ прочитали, но VIN не разобрали</h2>
+  <div class="alert warn"><span class="ic">!</span>
+    <span><b>Не хватает одного поля</b>
+      Остальной текст распознался. Впишите 17 символов VIN из документа — по нему подтянутся
+      марка, модель, год и характеристики.</span></div>
+  <div class="form" style="margin-top:18px">
+    <div class="f full"><label>VIN — 17 символов</label>
+      <input class="fld mono" placeholder="JTJHY00W004012345" style="letter-spacing:.06em"></div>
+  </div>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="manual">Заполнить вручную</button>
+    <span class="grow"></span>
+    <button class="btn ghost" data-w-go="1">Переснять СТС</button>
+    <button class="btn" data-w-go="2">Проверить VIN</button>
+  </div>
+</div>
+
+<!-- ручной ввод -->
+<div class="wcard hide" data-w="manual">
+  <h2>Заполните характеристики сами</h2>
+  <p class="sub">СТС не обязателен. Всё то же самое можно ввести руками — просто дольше.</p>
+  <div class="form">
+    <div class="f"><label>Марка</label><select class="fld"><option>Выберите марку</option></select></div>
+    <div class="f"><label>Модель</label><select class="fld" disabled><option>Сначала марку</option></select></div>
+    <div class="f"><label>Год выпуска</label><input class="fld" placeholder="2012"></div>
+    <div class="f"><label>Коробка</label><select class="fld"><option>АКПП</option><option>МКПП</option>
+      <option>Вариатор</option><option>Робот</option></select></div>
+    <div class="f"><label>Мощность, л.с.</label><input class="fld" placeholder="367"></div>
+    <div class="f"><label>VIN — необязательно</label><input class="fld mono" placeholder="17 символов"></div>
+  </div>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="1">Назад к фото</button>
+    <span class="grow"></span>
+    <button class="btn" data-w-go="3">Продолжить</button>
+  </div>
+</div>
+
+<!-- шаг 2 -->
+<div class="wcard hide" data-w="2">
+  <h2>Проверьте, что распозналось</h2>
+  <p class="sub">Голубым помечены поля, которые заполнило приложение. Перепроверьте их —
+    ошибка в характеристиках всплывёт при осмотре.</p>
+  <div class="form">
+    <div class="f auto"><label>Марка <span class="tag">из VIN</span></label>
+      <select class="fld"><option>Lexus</option></select></div>
+    <div class="f auto"><label>Модель <span class="tag">из VIN</span></label>
+      <select class="fld"><option>LX 570</option></select></div>
+    <div class="f auto"><label>Год выпуска <span class="tag">из VIN</span></label>
+      <input class="fld" value="2012"></div>
+    <div class="f auto"><label>Коробка <span class="tag">из VIN</span></label>
+      <select class="fld"><option>АКПП</option></select></div>
+    <div class="f auto"><label>Мощность, л.с. <span class="tag">из VIN</span></label>
+      <input class="fld" value="367"></div>
+    <div class="f auto"><label>VIN <span class="tag">из СТС</span></label>
+      <input class="fld mono" value="JTJHY00W004012345" style="letter-spacing:.05em"></div>
+  </div>
+  <div class="alert warn" style="margin-top:18px"><span class="ic">!</span>
+    <span>Мощность в СТС и по VIN разошлись: <b style="display:inline">367</b> против 383 л.с.
+      Оставили значение из документа — поправьте, если знаете точное.</span></div>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="1">Назад</button>
+    <span class="grow"></span>
+    <button class="btn" data-w-go="3">Дальше</button>
+  </div>
+</div>
+
+<!-- шаг 3 -->
+<div class="wcard hide" data-w="3">
+  <h2>Цена, пробег и как с вами связаться</h2>
+  <p class="sub">Телефон нужен, но в карточке он скрыт — покажется только если вы разрешите.</p>
+  <div class="form">
+    <div class="f"><label>Цена, ₽</label><input class="fld" placeholder="4 020 000"></div>
+    <div class="f"><label>Пробег, км</label><input class="fld" placeholder="180 000"></div>
+    <div class="f"><label>Город</label><select class="fld"><option>Омск</option>
+      <option>Калачинск</option><option>Тара</option></select></div>
+    <div class="f"><label>Телефон</label><input class="fld mono" placeholder="+7 913 000-00-00"></div>
+    <div class="f full"><label>Описание</label>
+      <textarea class="fld" placeholder="Что важно знать покупателю: история обслуживания, что менялось, что требует внимания."></textarea></div>
+  </div>
+  <label class="switch" style="margin-top:16px"><input type="checkbox"><span class="box"></span>
+    Показывать телефон в карточке</label>
+  <p style="font-size:13.5px;color:var(--mut);margin:8px 0 0">Выключено — общаться будут только
+    через чат. Номер можно дать в переписке вручную.</p>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="2">Назад</button>
+    <span class="grow"></span>
+    <button class="btn" data-w-go="4">Дальше</button>
+  </div>
+</div>
+
+<!-- шаг 4 -->
+<div class="wcard hide" data-w="4">
+  <h2>Фотографии автомобиля</h2>
+  <p class="sub">До 15 снимков. Перетаскиванием меняется порядок, первый становится обложкой.</p>
+  <div class="photos">
+    <div class="ph cover">1</div><div class="ph">2</div><div class="ph">3</div>
+    <div class="ph">4</div><div class="ph">5</div><div class="ph">6</div>
+    <div class="ph">7</div><button class="add">+</button>
+  </div>
+  <p style="font-size:13.5px;color:var(--mut);margin:14px 0 0">Снято 7 из 15. Покупатели чаще
+    открывают объявления, где есть салон, багажник и моторный отсек, а не только три ракурса снаружи.</p>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="3">Назад</button>
+    <span class="grow"></span>
+    <button class="btn" data-w-go="5">Дальше</button>
+  </div>
+</div>
+
+<!-- шаг 5 -->
+<div class="wcard hide" data-w="5">
+  <h2>Карта замеров — необязательно</h2>
+  <p class="sub">Шаг можно пропустить, объявление всё равно опубликуется. Но с полной картой
+    оно получает бейдж и поднимается выше в ленте — это единственный способ попасть наверх.</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="tile"><h3>Что нужно</h3>
+      <p>Толщиномер — любой, даже самый дешёвый. Прикладываете к панели, фотографируете
+        экран прибора, число считывается автоматически.</p></div>
+    <div class="tile"><h3>Сколько это займёт</h3>
+      <p>13 панелей, примерно по 20 секунд каждая. Можно заполнить не всё и вернуться позже —
+        частичная карта тоже показывается покупателю.</p></div>
+  </div>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="4">Назад</button>
+    <span class="grow"></span>
+    <button class="btn ghost" data-w-go="6">Пропустить</button>
+    <button class="btn" data-go="thickness">Заполнить карту</button>
+  </div>
+</div>
+
+<!-- шаг 6 -->
+<div class="wcard hide" data-w="6">
+  <h2>Проверьте и отправьте</h2>
+  <p class="sub">После отправки объявление попадёт к модератору. Обычно проверка занимает
+    несколько часов.</p>
+  <div style="display:grid;grid-template-columns:220px 1fr;gap:20px;align-items:start">
+    <div class="ph" style="aspect-ratio:4/3;border-radius:14px">обложка</div>
+    <div class="sum">
+      <div><span>Марка и модель</span><b>Lexus LX 570</b></div>
+      <div><span>Год</span><b>2012</b></div>
+      <div><span>Цена</span><b>4 020 000 ₽</b></div>
+      <div><span>Пробег</span><b>180 000 км</b></div>
+      <div><span>Коробка</span><b>АКПП</b></div>
+      <div><span>Мощность</span><b>367 л.с.</b></div>
+      <div><span>Фотографии</span><b>7 штук</b></div>
+      <div><span>Карта замеров</span><b style="color:var(--warn)">11 из 13 панелей</b></div>
+      <div><span>Телефон в карточке</span><b>скрыт</b></div>
+      <div><span>Город</span><b>Омск</b></div>
+    </div>
+  </div>
+  <div class="alert warn" style="margin-top:18px"><span class="ic">!</span>
+    <span>Две панели не замерены — бейджа «полная карта» не будет.
+      <a href="#" data-go="thickness" style="color:inherit;text-decoration:underline">Домерить</a>
+      можно и после публикации.</span></div>
+  <div class="wnav">
+    <button class="btn ghost" data-w-go="5">Назад</button>
+    <span class="grow"></span>
+    <button class="btn ghost">Сохранить черновик</button>
+    <button class="btn" data-w-go="sent">Отправить на модерацию</button>
+  </div>
+</div>
+
+<!-- отправлено -->
+<div class="wcard hide" data-w="sent" style="text-align:center;padding:56px 26px">
+  <div style="width:64px;height:64px;border-radius:50%;border:2px solid var(--ok);color:var(--ok);margin:0 auto 18px;display:grid;place-items:center;font-size:26px">✓</div>
+  <h2 style="margin-bottom:10px">Объявление ушло на проверку</h2>
+  <span class="status mod">● На модерации</span>
+  <p class="sub" style="margin:16px auto 0;max-width:44ch">Модератор посмотрит карточку так же,
+    как её увидит покупатель. Если что-то не так — вернёт с причиной, и вы поправите.</p>
+  <div style="display:flex;gap:10px;justify-content:center;margin-top:24px;flex-wrap:wrap">
+    <button class="btn ghost" data-go="feed">В ленту</button>
+    <button class="btn" data-go="listing">Посмотреть, как выглядит</button>
+  </div>
+</div>
+
+      </div>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost" data-go="feed">Выйти</button>
+    <button class="btn">Дальше</button></div>
+</main>
+
+
+<!-- ══════════ ОФФЕРЫ ══════════ -->
+<main id="s-offers" class="hide">
+  <div class="wrap page">
+    <h1 class="ph1">Предложения по цене</h1>
+    <p class="psub">Оффер живёт трое суток. Не ответили — истекает сам.</p>
+    <div class="tabs2" id="oTabs">
+      <button data-o="in" aria-pressed="true">Мне прислали · 3</button>
+      <button data-o="out" aria-pressed="false">Я отправил · 4</button>
+    </div>
+
+    <div data-o="in">
+      <div class="orow">
+        <div class="ph">фото</div>
+        <div><div class="t">Lexus LX 570 · 2012</div>
+          <div class="m">Дмитрий · рейтинг 4,6 · сегодня в 14:55</div>
+          <div class="acts2"><button class="btn sm">Принять</button>
+            <button class="btn sm ghost">Отклонить</button>
+            <button class="btn sm ghost">Написать</button></div></div>
+        <div><div class="amt">3 850 000 ₽</div>
+          <div class="m" style="text-align:right">на 170 000 ниже</div>
+          <div style="text-align:right;margin-top:6px"><span class="st-b wait">● ждёт ответа · 2 дня</span></div></div>
+      </div>
+      <div class="orow">
+        <div class="ph">фото</div>
+        <div><div class="t">Lexus LX 570 · 2012</div>
+          <div class="m">Артём · рейтинг 5,0 · сегодня в 12:10</div>
+          <div class="acts2"><button class="btn sm">Принять</button>
+            <button class="btn sm ghost">Отклонить</button></div></div>
+        <div><div class="amt">3 700 000 ₽</div>
+          <div style="text-align:right;margin-top:6px"><span class="st-b wait">● ждёт ответа · 2 дня</span></div></div>
+      </div>
+      <div class="orow" style="opacity:.65">
+        <div class="ph">фото</div>
+        <div><div class="t">Honda Stream · 2010</div>
+          <div class="m">Сергей · 21 августа</div></div>
+        <div><div class="amt">900 000 ₽</div>
+          <div style="text-align:right;margin-top:6px"><span class="st-b gr">истёк</span></div></div>
+      </div>
+      <div class="hint" style="margin-top:16px">Приняли предложение — объявление станет
+        «продано», остальные офферы по нему отклонятся сами, их авторы увидят «машину продали».</div>
+    </div>
+
+    <div data-o="out" class="hide">
+      <div class="orow">
+        <div class="ph">фото</div>
+        <div><div class="t">Toyota Camry · 2019</div>
+          <div class="m">Продавец Михаил · отправлено вчера</div>
+          <div class="acts2"><button class="btn sm ghost">Отозвать</button>
+            <button class="btn sm ghost">Написать</button></div></div>
+        <div><div class="amt">2 200 000 ₽</div>
+          <div style="text-align:right;margin-top:6px"><span class="st-b wait">● ждёт ответа</span></div></div>
+      </div>
+      <div class="orow">
+        <div class="ph">фото</div>
+        <div><div class="t">Mazda CX-5 · 2016</div>
+          <div class="m">Продавец Ольга · 22 августа</div>
+          <div class="acts2"><button class="btn sm">Открыть чат</button>
+            <button class="btn sm ghost">Оставить отзыв</button></div></div>
+        <div><div class="amt">1 800 000 ₽</div>
+          <div style="text-align:right;margin-top:6px"><span class="st-b ok">принято</span></div></div>
+      </div>
+      <div class="orow" style="opacity:.7">
+        <div class="ph">фото</div>
+        <div><div class="t">BMW X5 · 2013</div>
+          <div class="m">Продавец Игорь · 20 августа</div></div>
+        <div><div class="amt">2 100 000 ₽</div>
+          <div style="text-align:right;margin-top:6px"><span class="st-b no">машину продали</span></div></div>
+      </div>
+      <div class="orow" style="opacity:.7">
+        <div class="ph">фото</div>
+        <div><div class="t">Kia Rio · 2018</div>
+          <div class="m">Продавец Анна · 18 августа</div></div>
+        <div><div class="amt">850 000 ₽</div>
+          <div style="text-align:right;margin-top:6px"><span class="st-b gr">отозван вами</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost" data-go="feed">В ленту</button>
+    <button class="btn" data-go="chats">Чаты</button></div>
+</main>
+
+<!-- ══════════ ЧАТЫ ══════════ -->
+<main id="s-chats" class="hide">
+  <div class="wrap page">
+    <h1 class="ph1">Чаты</h1>
+    <p class="psub">Переписка привязана к объявлению. Телефон в чат не подставляется —
+      продавец даёт его сам, если хочет.</p>
+    <div class="chat">
+      <div class="dlgs">
+        <button class="dlg on"><div class="av"></div>
+          <div><div class="n">Дмитрий <s>14:58</s></div>
+            <div class="car">Lexus LX 570</div>
+            <div class="p">А по документам всё чисто?</div></div></button>
+        <button class="dlg"><div class="av"></div>
+          <div><div class="n">Артём <s>12:14</s></div>
+            <div class="car">Lexus LX 570</div>
+            <div class="p">Готов подъехать в субботу<span class="unread">2</span></div></div></button>
+        <button class="dlg"><div class="av"></div>
+          <div><div class="n">Ольга <s>вчера</s></div>
+            <div class="car">Mazda CX-5</div>
+            <div class="p">Спасибо, договорились</div></div></button>
+        <button class="dlg"><div class="av"></div>
+          <div><div class="n">Сергей <s>21 авг</s></div>
+            <div class="car">Honda Stream</div>
+            <div class="p">Понял, буду думать</div></div></button>
+      </div>
+      <div class="conv">
+        <div class="top"><div class="ph" style="width:44px;height:34px;border-radius:8px;font-size:9px">фото</div>
+          <div style="flex:1"><div style="font-weight:700;font-size:15px">Дмитрий</div>
+            <div style="font-size:12.5px;color:var(--mut)">Lexus LX 570 · 4 020 000 ₽</div></div>
+          <button class="btn sm ghost" data-go="listing">К объявлению</button></div>
+        <div class="body">
+          <div class="sys">Дмитрий предложил 3 850 000 ₽</div>
+          <div class="msg them">Здравствуйте. Крыло переднее правое красили — что там было?<s>14:41</s></div>
+          <div class="msg me">Здравствуйте. Парковочный контакт на стоянке, задели столб.
+            Лонжерон целый, красили только крыло, это видно в карте замеров.<s>14:48</s></div>
+          <div class="msg them">Понял, спасибо. А по документам всё чисто?<s>14:58</s></div>
+          <div class="msg me">Один владелец по ПТС, ограничений нет. Могу скинуть отчёт.<s>15:02</s></div>
+          <div class="sys">Сегодня</div>
+          <div class="msg them">Давайте. И когда можно посмотреть вживую?<s>15:04</s></div>
+        </div>
+        <div class="send">
+          <input class="fld" placeholder="Написать сообщение">
+          <button class="btn">Отправить</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost" data-go="offers">Офферы</button>
+    <button class="btn" data-go="feed">В ленту</button></div>
+</main>
+
+<!-- ══════════ МОИ ОБЪЯВЛЕНИЯ ══════════ -->
+<main id="s-my" class="hide">
+  <div class="wrap page">
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap">
+      <div><h1 class="ph1">Мои объявления</h1>
+        <p class="psub" style="margin:0">Черновики, проверка, опубликованные и архив.</p></div>
+      <span class="grow"></span>
+      <button class="btn" data-go="wizard">Разместить автомобиль</button>
+    </div>
+    <div class="tabs2" style="margin-top:20px">
+      <button aria-pressed="true">Все · 6</button>
+      <button>Черновики · 1</button>
+      <button>На модерации · 1</button>
+      <button>Опубликованные · 2</button>
+      <button>Отклонённые · 1</button>
+      <button>Проданные · 1</button>
+    </div>
+
+    <div class="mylist">
+      <div class="myrow">
+        <div class="ph">обложка</div>
+        <div><div class="t">Lexus LX 570 · 2012</div>
+          <div class="m">4 020 000 ₽ · 180 000 км · 7 фото · карта 11 из 13</div></div>
+        <div class="r"><span class="st-b ok">опубликовано</span>
+          <button class="btn sm ghost" data-go="listing">Открыть</button>
+          <button class="x">⋯</button></div>
+      </div>
+
+      <div class="myrow">
+        <div class="ph">обложка</div>
+        <div><div class="t">Toyota Camry · 2019</div>
+          <div class="m">2 340 000 ₽ · 3 новых предложения · 2 непрочитанных сообщения</div></div>
+        <div class="r"><span class="st-b ok">опубликовано</span>
+          <button class="btn sm ghost" data-go="offers">Офферы</button>
+          <button class="x">⋯</button></div>
+      </div>
+
+      <div class="myrow">
+        <div class="ph">обложка</div>
+        <div><div class="t">Honda Stream · 2010</div>
+          <div class="m">1 020 000 ₽ · отправлено сегодня в 14:32</div></div>
+        <div class="r"><span class="st-b wait">● на модерации</span>
+          <button class="btn sm ghost" data-go="listing">Как выглядит</button></div>
+      </div>
+
+      <div class="myrow">
+        <div class="ph">обложка</div>
+        <div><div class="t">Nissan Almera · 2014</div>
+          <div class="m">620 000 ₽ · проверено 25 августа</div></div>
+        <div class="r"><span class="st-b no">отклонено</span>
+          <button class="btn sm" data-go="wizard">Исправить и отправить</button></div>
+        <div class="reason"><b>Причина от модератора:</b> на трёх фотографиях виден
+          государственный номер и лицо человека. Замените снимки или закройте номер —
+          после этого объявление пройдёт.</div>
+      </div>
+
+      <div class="myrow">
+        <div class="ph">обложка</div>
+        <div><div class="t">Kia Rio · 2018</div>
+          <div class="m">Заполнено 3 шага из 6 · сохранено 24 августа</div></div>
+        <div class="r"><span class="st-b bl">черновик</span>
+          <button class="btn sm" data-go="wizard">Продолжить</button>
+          <button class="x">⋯</button></div>
+      </div>
+
+      <div class="myrow" style="opacity:.7">
+        <div class="ph">обложка</div>
+        <div><div class="t">Mazda CX-5 · 2016</div>
+          <div class="m">Продано 22 августа за 1 800 000 ₽ · покупатель Ольга</div></div>
+        <div class="r"><span class="st-b gr">продано</span>
+          <button class="btn sm ghost" data-go="listingSold">Открыть</button></div>
+      </div>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost" data-go="feed">В ленту</button>
+    <button class="btn" data-go="wizard">Разместить</button></div>
+</main>
+
+
+<!-- ══════════ ОЧЕРЕДЬ МОДЕРАЦИИ ══════════ -->
+<main id="s-queue" class="hide">
+  <div class="wrap">
+    <div class="qgrid">
+      <div>
+        <h1 class="ph1">Очередь модерации</h1>
+        <p class="psub">7 объявлений ждут проверки, 2 карточки с жалобами.</p>
+        <div class="tabs2">
+          <button aria-pressed="true">Ожидают · 7</button>
+          <button>Жалобы · 2</button>
+          <button>Проверенные сегодня · 14</button>
+        </div>
+        <button class="qitem on"><div class="ph">обложка</div>
+          <div><div class="t">Honda Stream · 2010 · 1 020 000 ₽</div>
+            <div class="m">Михаил · рейтинг 4,8 · отправлено 14:32 · 7 фото · карта 11 из 13</div></div>
+          <span class="st-b wait">● ждёт</span></button>
+        <button class="qitem"><div class="ph">обложка</div>
+          <div><div class="t">Kia Rio · 2018 · 980 000 ₽</div>
+            <div class="m">Анна · новый продавец · отправлено 13:58 · 4 фото · без карты</div></div>
+          <span class="st-b wait">● ждёт</span></button>
+        <button class="qitem"><div class="ph">обложка</div>
+          <div><div class="t">BMW X5 · 2013 · 2 450 000 ₽</div>
+            <div class="m">Игорь · рейтинг 3,9 · отправлено 12:10 · 11 фото</div>
+            <div style="margin-top:6px"><span class="flag">2 жалобы: цена-приманка</span></div></div>
+          <span class="st-b no">жалобы</span></button>
+        <button class="qitem"><div class="ph">обложка</div>
+          <div><div class="t">Toyota Alphard · 2021 · 6 100 000 ₽</div>
+            <div class="m">Поставщик «Восток-Авто» · под заказ · без VIN и СТС</div></div>
+          <span class="st-b bl">под заказ</span></button>
+      </div>
+
+      <aside class="rev">
+        <h3>Honda Stream · 2010</h3>
+        <p style="color:var(--mut);font-size:14px;margin:0 0 14px">Карточка показана так,
+          как её увидит покупатель.</p>
+        <div class="ph" style="aspect-ratio:4/3;border-radius:14px">предпросмотр карточки</div>
+        <button class="btn ghost w" style="margin-top:10px" data-go="listing">Открыть целиком</button>
+
+        <div class="specs" style="grid-template-columns:1fr;margin-top:14px">
+          <div><span>VIN</span><b class="mono" style="font-size:13px">JHMRN18***0231</b></div>
+          <div><span>Фото</span><b>7 · номер закрыт</b></div>
+          <div><span>Карта замеров</span><b>11 из 13</b></div>
+          <div><span>Телефон</span><b>скрыт продавцом</b></div>
+        </div>
+
+        <div class="acts">
+          <button class="btn w">Опубликовать</button>
+          <button class="btn ghost w" data-q="rej">Отклонить с причиной</button>
+        </div>
+
+        <div class="rej hide" data-q="rej">
+          <div style="font-size:13px;font-weight:700;color:var(--mut);text-transform:uppercase;
+            letter-spacing:.06em">Причина отклонения — обязательна</div>
+          <div class="chips">
+            <button class="chip">Видны номер или лицо</button>
+            <button class="chip">Фото не той машины</button>
+            <button class="chip">Цена-приманка</button>
+            <button class="chip">Мало фотографий</button>
+            <button class="chip">Контакты в описании</button>
+          </div>
+          <textarea class="fld" style="height:96px;padding:10px;font-family:inherit"
+            placeholder="Что именно поправить. Текст увидит продавец."></textarea>
+          <div class="acts" style="margin-top:10px">
+            <button class="btn w">Отклонить и отправить причину</button>
+            <button class="btn ghost w" data-q="none">Отмена</button>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ ЗАЯВКИ НА РОЛЬ ПОСТАВЩИКА ══════════ -->
+<main id="s-roles" class="hide">
+  <div class="wrap page">
+    <h1 class="ph1">Заявки на роль поставщика</h1>
+    <p class="psub">Одобряет только владелец площадки. Одобренный публикует позиции сам.</p>
+    <div class="blk" style="margin-top:0">
+      <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+        <div class="ava" style="width:56px;height:56px"></div>
+        <div style="flex:1;min-width:240px">
+          <div style="font-size:19px;font-weight:800">Восток-Авто · Дмитрий Ким</div>
+          <div style="color:var(--mut);font-size:14px;margin-top:2px">заявка от 24 августа ·
+            на площадке с июня · рейтинг покупателя 4,9</div>
+        </div>
+        <span class="st-b wait">● на рассмотрении</span>
+      </div>
+      <div class="specs" style="margin-top:18px">
+        <div><span>Страны</span><b>Япония, Корея</b></div>
+        <div><span>Марки</span><b>Toyota, Lexus, Honda</b></div>
+        <div><span>Срок доставки</span><b>45–70 дней</b></div>
+        <div><span>Предоплата</span><b>30% при заказе</b></div>
+        <div><span>Телефон</span><b class="mono" style="font-size:13.5px">+7 913 ***-**-21</b></div>
+        <div><span>Привёз за год</span><b>по его словам — 40 машин</b></div>
+      </div>
+      <div style="margin-top:16px">
+        <div style="font-size:13px;font-weight:700;color:var(--mut);text-transform:uppercase;
+          letter-spacing:.06em;margin-bottom:6px">О себе</div>
+        <p style="margin:0;font-size:15px;line-height:1.6;color:var(--ink2)">Вожу с аукционов
+          Японии пятый год, работаю через партнёра во Владивостоке. Могу привезти под заказ
+          конкретный лот с аукционного листа, растаможку беру на себя. Готов показать
+          документы по прошлым поставкам.</p>
+      </div>
+      <div class="acts">
+        <div class="two"><button class="btn">Одобрить и выдать роль</button>
+          <button class="btn ghost" data-q="rej2">Отклонить с причиной</button></div>
+      </div>
+      <div class="rej hide" data-q="rej2">
+        <textarea class="fld" style="height:88px;padding:10px;font-family:inherit"
+          placeholder="Причина. Текст увидит заявитель."></textarea>
+        <div class="acts" style="margin-top:10px">
+          <button class="btn w">Отправить отказ</button>
+          <button class="btn ghost w" data-q="none">Отмена</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div class="ava" style="width:44px;height:44px"></div>
+        <div style="flex:1;min-width:200px"><b style="font-size:16px">Сергей П.</b>
+          <div style="color:var(--mut);font-size:13.5px">заявка от 26 августа · аккаунт создан вчера</div></div>
+        <span class="st-b wait">● на рассмотрении</span>
+        <button class="btn sm ghost">Открыть</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ ПРОФИЛЬ ПОСТАВЩИКА ══════════ -->
+<main id="s-importer" class="hide">
+  <div class="wrap page" style="max-width:1240px">
+    <div class="crumbs" style="padding-left:0"><a href="#" data-go="feed">Лента</a> ›
+      Под заказ › Восток-Авто</div>
+    <div class="lst" style="padding-top:14px">
+      <div>
+        <div class="blk" style="margin-top:0">
+          <div style="display:flex;gap:16px;align-items:flex-start;flex-wrap:wrap">
+            <div class="ava" style="width:64px;height:64px"></div>
+            <div style="flex:1;min-width:220px">
+              <div style="font-size:24px;font-weight:800">Восток-Авто</div>
+              <div class="stars" style="margin-top:4px">★★★★★
+                <span style="color:var(--mut);font-size:13.5px;letter-spacing:0">4,7 · 18 поставок · с июня 2026</span></div>
+            </div>
+            <span class="st-b ok">поставщик одобрен площадкой</span>
+          </div>
+          <div class="specs" style="margin-top:18px">
+            <div><span>Страны</span><b>Япония, Корея</b></div>
+            <div><span>Марки</span><b>Toyota, Lexus, Honda</b></div>
+            <div><span>Срок доставки</span><b>45–70 дней</b></div>
+            <div><span>Предоплата</span><b>30% при заказе</b></div>
+          </div>
+          <p style="margin:16px 0 0;font-size:15.5px;line-height:1.6;color:var(--ink2)">
+            Вожу с аукционов Японии пятый год. Под заказ беру конкретный лот с аукционного листа,
+            растаможку веду сам. По каждой машине присылаю фото с площадки до отправки.</p>
+        </div>
+
+        <div class="blk">
+          <h3>Позиции под привоз · 6</h3>
+          <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+            <a class="card" href="#"><div class="img ph">фото автомобиля
+              <div class="badges"><span class="bdg imp">под заказ</span></div></div>
+              <div class="b"><div class="ttl"><b>Toyota Alphard</b><span>2021</span></div>
+                <div class="price">6 100 000 ₽</div>
+                <div class="spec">срок доставки 55–70 дней · 182 л.с. · Вариатор</div>
+                <div class="loc"><span>Япония</span><span>без VIN</span></div></div></a>
+            <a class="card" href="#"><div class="img ph">фото автомобиля
+              <div class="badges"><span class="bdg imp">под заказ</span></div></div>
+              <div class="b"><div class="ttl"><b>Honda Freed</b><span>2020</span></div>
+                <div class="price">2 190 000 ₽</div>
+                <div class="spec">срок доставки 45–60 дней · 131 л.с. · Вариатор</div>
+                <div class="loc"><span>Япония</span><span>без VIN</span></div></div></a>
+            <a class="card" href="#"><div class="img ph">фото автомобиля
+              <div class="badges"><span class="bdg imp">под заказ</span></div></div>
+              <div class="b"><div class="ttl"><b>Lexus RX 300</b><span>2019</span></div>
+                <div class="price">4 350 000 ₽</div>
+                <div class="spec">срок доставки 50–65 дней · 249 л.с. · АКПП</div>
+                <div class="loc"><span>Корея</span><span>без VIN</span></div></div></a>
+          </div>
+        </div>
+
+        <div class="blk">
+          <h3>Отзывы · 18</h3>
+          <div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)">
+            <div class="ava" style="width:40px;height:40px"></div>
+            <div><div style="font-weight:700">Артём <span class="stars" style="font-size:12px">★★★★★</span></div>
+              <p style="margin:4px 0 0;font-size:14.5px;color:var(--ink2);line-height:1.5">
+                Привёз Alphard за 58 дней, по срокам не обманул. Фото с площадки присылал сам,
+                без напоминаний.</p></div>
+          </div>
+          <div style="display:flex;gap:12px;padding:12px 0">
+            <div class="ava" style="width:40px;height:40px"></div>
+            <div><div style="font-weight:700">Ольга <span class="stars" style="font-size:12px">★★★★☆</span></div>
+              <p style="margin:4px 0 0;font-size:14.5px;color:var(--ink2);line-height:1.5">
+                Машина хорошая, но задержали на две недели из-за таможни. Предупредил заранее.</p></div>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="blk" style="margin-top:0">
+          <h3 style="font-size:17px">Заказать привоз</h3>
+          <p style="font-size:14.5px;color:var(--ink2);margin:0 0 14px;line-height:1.5">
+            Опишите, что нужно — поставщик ответит ценой и сроком. Это не покупка,
+            а начало переговоров.</p>
+          <div class="acts">
+            <button class="btn w">Оставить заявку «хочу такую»</button>
+            <button class="btn ghost w">Написать</button>
+          </div>
+        </div>
+        <div class="blk">
+          <h3 style="font-size:16px">Как это работает</h3>
+          <ul class="list" style="font-size:14.5px">
+            <li style="padding:10px 0 10px 30px">Вы описываете машину и бюджет</li>
+            <li style="padding:10px 0 10px 30px">Поставщик отвечает ценой под ключ и сроком</li>
+            <li style="padding:10px 0 10px 30px">Предоплата 30% при заказе лота</li>
+            <li style="padding:10px 0 10px 30px">Остаток — по прибытии в Омск</li>
+          </ul>
+          <div class="hint" style="margin-top:12px">Площадка не участвует в расчётах и не держит
+            деньги. Проверяйте условия сами — рейтинг и отзывы для этого и нужны.</div>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ МОЙ ПРОФИЛЬ ══════════ -->
+<main id="s-profile" class="hide">
+  <div class="wrap page">
+    <h1 class="ph1">Профиль</h1>
+    <p class="psub">Имя и аватар пришли от Яндекс ID. Пароля здесь нет.</p>
+    <div class="blk" style="margin-top:0">
+      <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+        <div class="ava" style="width:64px;height:64px"></div>
+        <div style="flex:1;min-width:200px">
+          <div style="font-size:21px;font-weight:800">Михаил</div>
+          <div class="stars">★★★★★ <span style="color:var(--mut);font-size:13.5px;letter-spacing:0">
+            4,8 · 12 сделок · на площадке с марта</span></div>
+        </div>
+        <button class="btn ghost">Выйти</button>
+      </div>
+    </div>
+
+    <div class="cols2" style="margin-top:16px">
+      <button class="myrow" style="text-align:left" data-go="my">
+        <div class="ph">спис.</div><div><div class="t">Мои объявления</div>
+          <div class="m">6 · одно отклонено</div></div></button>
+      <button class="myrow" style="text-align:left" data-go="offers">
+        <div class="ph">офф.</div><div><div class="t">Мои офферы</div>
+          <div class="m">3 полученных, 4 отправленных</div></div></button>
+      <button class="myrow" style="text-align:left" data-go="chats">
+        <div class="ph">чат</div><div><div class="t">Чаты</div>
+          <div class="m">2 непрочитанных</div></div></button>
+      <button class="myrow" style="text-align:left">
+        <div class="ph">отз.</div><div><div class="t">Отзывы обо мне</div>
+          <div class="m">9 отзывов · средняя 4,8</div></div></button>
+    </div>
+
+    <div class="blk">
+      <h3>Заявка на роль поставщика</h3>
+      <p style="margin:0 0 14px;color:var(--ink2);font-size:15px;line-height:1.5">
+        Если вы возите машины из-за рубежа — подайте заявку. Одобренный поставщик получает
+        публичную страницу и публикует позиции под привоз сам.</p>
+      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">
+        <span class="st-b wait">● заявка на рассмотрении с 24 августа</span>
+        <button class="btn ghost sm" data-go="supplierForm">Посмотреть заявку</button>
+        <button class="btn ghost sm" data-go="importer">Пример страницы поставщика</button>
+      </div>
+    </div>
+
+    <div class="blk">
+      <h3>Мои заявки на привоз</h3>
+      <div class="orow" style="margin:0">
+        <div class="ph">заявка</div>
+        <div><div class="t"><a href="#" data-go="request">Toyota Land Cruiser 300, 2022–2023</a></div>
+          <div class="m">бюджет до 12 000 000 ₽ · создана 20 августа</div></div>
+        <div><div class="amt" style="font-size:16px">4 отклика</div>
+          <div style="text-align:right;margin-top:6px"><span class="st-b bl">активна</span></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost" data-go="feed">В ленту</button>
+    <button class="btn" data-go="wizard">Разместить</button></div>
+</main>
+
+
+<!-- ══════════ ПУБЛИЧНЫЙ ПРОФИЛЬ ПРОДАВЦА ══════════ -->
+<main id="s-seller" class="hide">
+  <div class="wrap page" style="max-width:1240px">
+    <div class="crumbs" style="padding-left:0"><a href="#" data-go="listing">Lexus LX 570</a> › Михаил</div>
+    <div class="lst" style="padding-top:14px">
+      <div>
+        <div class="blk" style="margin-top:0">
+          <div style="display:flex;gap:16px;align-items:center;flex-wrap:wrap">
+            <div class="ava" style="width:64px;height:64px"></div>
+            <div style="flex:1;min-width:200px">
+              <div style="font-size:24px;font-weight:800">Михаил</div>
+              <div class="stars">★★★★★ <span style="color:var(--mut);font-size:13.5px;letter-spacing:0">
+                4,8 · 12 сделок · на площадке с марта 2026</span></div>
+            </div>
+            <button class="btn ghost">Написать</button>
+          </div>
+        </div>
+
+        <div class="blk">
+          <h3>Отзывы покупателей · 9</h3>
+          <div class="rev-item">
+            <div class="ava" style="width:40px;height:40px"></div>
+            <div><div style="font-weight:700">Ольга <span class="stars" style="font-size:12px">★★★★★</span>
+              <span style="color:var(--mut);font-size:12.5px;font-weight:500">· 22 августа · Mazda CX-5</span></div>
+              <p style="margin:5px 0 0;font-size:14.5px;color:var(--ink2);line-height:1.5">
+                Машина полностью совпала с описанием, карта замеров оказалась честной —
+                перекрас крыла был именно там, где показано.</p></div>
+          </div>
+          <div class="rev-item">
+            <div class="ava" style="width:40px;height:40px"></div>
+            <div><div style="font-weight:700">Артём <span class="stars" style="font-size:12px">★★★★☆</span>
+              <span style="color:var(--mut);font-size:12.5px;font-weight:500">· 12 августа · Toyota Camry</span></div>
+              <p style="margin:5px 0 0;font-size:14.5px;color:var(--ink2);line-height:1.5">
+                Долго не отвечал в чате, но по сделке претензий нет. Документы в порядке.</p></div>
+          </div>
+          <div class="hint" style="margin-top:14px">Отзыв можно оставить только по принятому
+            предложению. Поэтому их мало — и поэтому им можно верить.</div>
+        </div>
+
+        <div class="blk">
+          <h3>Активные объявления · 2</h3>
+          <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+            <a class="card" href="#" data-go="listing"><div class="img ph">фото автомобиля
+              <div class="badges"><span class="bdg map">полная карта замеров</span></div></div>
+              <div class="b"><div class="ttl"><b>Lexus LX 570</b><span>2012</span></div>
+                <div class="price">4 020 000 ₽</div>
+                <div class="spec">180 000 км · 367 л.с. · АКПП</div>
+                <div class="loc"><span>Омск</span><span>VIN проверен</span></div></div></a>
+            <a class="card" href="#"><div class="img ph">фото автомобиля</div>
+              <div class="b"><div class="ttl"><b>Toyota Camry</b><span>2019</span></div>
+                <div class="price">2 340 000 ₽</div>
+                <div class="spec">86 000 км · 181 л.с. · АКПП</div>
+                <div class="loc"><span>Омск</span><span>VIN проверен</span></div></div></a>
+          </div>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="blk" style="margin-top:0">
+          <h3 style="font-size:17px">Оставить отзыв</h3>
+          <p style="font-size:14.5px;color:var(--ink2);margin:0 0 12px;line-height:1.5">
+            Вы купили у Михаила Mazda CX-5 22 августа. Оценка появится в его профиле
+            и в карточке каждого его объявления.</p>
+          <div class="rate" id="rateStars">
+            <button class="on">★</button><button class="on">★</button><button class="on">★</button>
+            <button class="on">★</button><button>★</button>
+          </div>
+          <textarea class="fld" style="height:110px;padding:12px;font-family:inherit;margin-top:14px"
+            placeholder="Что было хорошо, что нет. Совпало ли состояние с описанием."></textarea>
+          <button class="btn w" style="margin-top:10px">Отправить отзыв</button>
+          <p style="font-size:12.5px;color:var(--mut);margin:10px 0 0">Отзыв публикуется от вашего
+            имени и его нельзя удалить — только отредактировать.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ ЗАЯВКА «ХОЧУ ТАКУЮ» ══════════ -->
+<main id="s-request" class="hide">
+  <div class="wrap page">
+    <div class="crumbs" style="padding-left:0"><a href="#" data-go="feed">Под заказ</a> › Моя заявка</div>
+    <h1 class="ph1" style="margin-top:12px">Toyota Land Cruiser 300</h1>
+    <p class="psub">Заявка на привоз · создана 20 августа · <span class="st-b bl">активна</span></p>
+
+    <div class="blk" style="margin-top:0">
+      <div class="specs">
+        <div><span>Марка и модель</span><b>Toyota Land Cruiser 300</b></div>
+        <div><span>Год</span><b>2022–2023</b></div>
+        <div><span>Бюджет под ключ</span><b>до 12 000 000 ₽</b></div>
+        <div><span>Пробег</span><b>до 60 000 км</b></div>
+        <div><span>Откуда</span><b>Япония, Корея, ОАЭ</b></div>
+        <div><span>Готов ждать</span><b>до 90 дней</b></div>
+      </div>
+      <p style="margin:16px 0 0;font-size:15px;line-height:1.6;color:var(--ink2)">
+        Нужна комплектация не ниже средней, желательно светлый салон. Важна прозрачная
+        растаможка с документами — беру в лизинг, нужен полный пакет.</p>
+      <div class="acts"><div class="two">
+        <button class="btn ghost">Редактировать</button>
+        <button class="btn ghost">Закрыть заявку</button></div></div>
+    </div>
+
+    <div class="blk">
+      <h3>Отклики поставщиков · 4</h3>
+      <div class="bid">
+        <div class="ava"></div>
+        <div><b style="font-size:15.5px">Восток-Авто</b>
+          <div class="stars" style="font-size:12px">★★★★★ <span style="color:var(--mut);letter-spacing:0;font-size:12.5px">4,7 · 18 поставок</span></div>
+          <div style="font-size:13.5px;color:var(--ink2);margin-top:4px">Есть лот 2022 года,
+            42 000 км, аукцион 4.5B. Срок 65 дней, документы полные.</div></div>
+        <div style="text-align:right"><div class="amt" style="font-size:18px;font-weight:800">11 400 000 ₽</div>
+          <div style="font-size:12.5px;color:var(--mut)">под ключ · 65 дней</div>
+          <button class="btn sm" style="margin-top:8px">Написать</button></div>
+      </div>
+      <div class="bid">
+        <div class="ava"></div>
+        <div><b style="font-size:15.5px">Сергей К.</b>
+          <div class="stars" style="font-size:12px">★★★★☆ <span style="color:var(--mut);letter-spacing:0;font-size:12.5px">4,2 · 6 поставок</span></div>
+          <div style="font-size:13.5px;color:var(--ink2);margin-top:4px">Могу из ОАЭ, но
+            комплектация будет базовая. Срок меньше.</div></div>
+        <div style="text-align:right"><div class="amt" style="font-size:18px;font-weight:800">10 900 000 ₽</div>
+          <div style="font-size:12.5px;color:var(--mut)">под ключ · 40 дней</div>
+          <button class="btn sm ghost" style="margin-top:8px">Написать</button></div>
+      </div>
+      <div class="bid">
+        <div class="ava"></div>
+        <div><b style="font-size:15.5px">АвтоЛинк</b>
+          <div class="stars" style="font-size:12px">★★★★★ <span style="color:var(--mut);letter-spacing:0;font-size:12.5px">4,9 · 31 поставка</span></div>
+          <div style="font-size:13.5px;color:var(--ink2);margin-top:4px">В бюджет не уложусь,
+            но могу предложить 2021 год в максималке.</div></div>
+        <div style="text-align:right"><div class="amt" style="font-size:18px;font-weight:800">12 800 000 ₽</div>
+          <div style="font-size:12.5px;color:var(--mut)">под ключ · 70 дней</div>
+          <button class="btn sm ghost" style="margin-top:8px">Написать</button></div>
+      </div>
+      <div class="hint" style="margin-top:14px">Отклик — это предложение наоборот: не вы торгуетесь
+        за машину, а поставщики за вас. Площадка в расчётах не участвует.</div>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost" data-go="profile">В профиль</button>
+    <button class="btn" data-go="feed">Под заказ</button></div>
+</main>
+
+
+<!-- ══════════ ЛЕНТА · ПОД ЗАКАЗ ══════════ -->
+<main id="s-import" class="hide">
+  <div class="wrap feedTop">
+    <div class="feedHead">
+      <div class="tabs"><button data-go="feed">В наличии</button>
+        <button aria-pressed="true">Под заказ</button></div>
+      <span class="count">34 позиции · 7 поставщиков · 12 заявок</span>
+      <span class="grow"></span>
+      <button class="btn sm" data-go="requestNew">Оставить заявку</button>
+    </div>
+
+    <div class="kinds">
+      <button class="kind" aria-pressed="true"><b>Машины под привоз</b>
+        <s>конкретные позиции с ценой под ключ</s></button>
+      <button class="kind"><b>Поставщики</b><s>кто что возит и на каких условиях</s></button>
+      <button class="kind"><b>Заявки покупателей</b><s>обратный аукцион: отклик вместо оффера</s></button>
+    </div>
+
+    <div class="hint" style="margin-bottom:16px">У машин под привоз нет VIN и фото СТС —
+      их ещё нет в стране. Вместо пробега стоит срок доставки.</div>
+
+    <div class="cards">
+      <a class="card" href="#"><div class="img ph">фото автомобиля
+        <div class="badges"><span class="bdg imp">под заказ</span></div></div>
+        <div class="b"><div class="ttl"><b>Toyota Alphard</b><span>2021</span></div>
+          <div class="price">6 100 000 ₽</div>
+          <div class="spec">доставка 55–70 дней · 182 л.с. · Вариатор</div>
+          <div class="loc"><span>Япония · Восток-Авто</span><span>без VIN</span></div></div></a>
+
+      <a class="card" href="#"><div class="img ph">фото автомобиля
+        <div class="badges"><span class="bdg imp">под заказ</span></div></div>
+        <div class="b"><div class="ttl"><b>Honda Freed</b><span>2020</span></div>
+          <div class="price">2 190 000 ₽</div>
+          <div class="spec">доставка 45–60 дней · 131 л.с. · Вариатор</div>
+          <div class="loc"><span>Япония · Восток-Авто</span><span>без VIN</span></div></div></a>
+
+      <div class="card sup">
+        <div class="top"><div class="av"></div>
+          <div><b style="font-size:16px">Восток-Авто</b>
+            <div class="stars" style="font-size:12px">★★★★★
+              <span style="color:var(--mut);letter-spacing:0;font-size:12.5px">4,7 · 18 поставок</span></div></div></div>
+        <div style="font-size:13.5px;color:var(--ink2);margin-top:12px;line-height:1.5">
+          Япония, Корея · Toyota, Lexus, Honda<br>45–70 дней · предоплата 30%</div>
+        <button class="btn ghost w sm" style="margin-top:12px" data-go="importer">Открыть поставщика</button>
+      </div>
+
+      <div class="card req">
+        <span class="st-b bl">заявка покупателя</span>
+        <div style="font-weight:700;font-size:16px;margin-top:10px">Toyota Land Cruiser 300</div>
+        <div style="color:var(--mut);font-size:13.5px;margin-top:2px">2022–2023 · до 60 000 км</div>
+        <div class="amt">до 12 000 000 ₽</div>
+        <div style="font-size:13px;color:var(--mut)">4 отклика · создана 20 августа</div>
+        <button class="btn w sm" style="margin-top:12px" data-go="request">Откликнуться</button>
+      </div>
+
+      <div class="card sup">
+        <div class="top"><div class="av"></div>
+          <div><b style="font-size:16px">АвтоЛинк</b>
+            <div class="stars" style="font-size:12px">★★★★★
+              <span style="color:var(--mut);letter-spacing:0;font-size:12.5px">4,9 · 31 поставка</span></div></div></div>
+        <div style="font-size:13.5px;color:var(--ink2);margin-top:12px;line-height:1.5">
+          Корея, Китай · Kia, Hyundai, Chery<br>30–50 дней · предоплата 20%</div>
+        <button class="btn ghost w sm" style="margin-top:12px" data-go="importer">Открыть поставщика</button>
+      </div>
+
+      <div class="card req">
+        <span class="st-b bl">заявка покупателя</span>
+        <div style="font-weight:700;font-size:16px;margin-top:10px">Honda Vezel</div>
+        <div style="color:var(--mut);font-size:13.5px;margin-top:2px">2019–2021 · гибрид</div>
+        <div class="amt">до 2 400 000 ₽</div>
+        <div style="font-size:13px;color:var(--mut)">1 отклик · создана вчера</div>
+        <button class="btn w sm" style="margin-top:12px" data-go="request">Откликнуться</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ ЛЕНТА · ПУСТО НА СТАРТЕ ══════════ -->
+<main id="s-cold" class="hide">
+  <div class="wrap feedTop">
+    <div class="feedHead">
+      <div class="tabs"><button aria-pressed="true">В наличии</button><button>Под заказ</button></div>
+      <span class="count">пока пусто</span>
+    </div>
+    <div class="big-empty">
+      <div class="ic">01</div>
+      <h2>Объявлений ещё нет</h2>
+      <p>Площадка только открылась. Первое объявление увидят все, кто зайдёт следом —
+        и оно провисит наверху дольше любого другого.</p>
+      <div class="row">
+        <button class="btn big" data-go="wizard">Разместить первым</button>
+        <button class="btn big ghost" data-go="landing">Как это работает</button>
+      </div>
+      <p style="font-size:13.5px;color:var(--mut);margin:22px 0 0">Уведомим, когда появятся
+        машины по вашим фильтрам — если оставите их сохранёнными.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ КАРТОЧКА · МОЁ ОБЪЯВЛЕНИЕ ══════════ -->
+<main id="s-listingOwner" class="hide">
+  <div class="wrap">
+    <div class="crumbs"><a href="#" data-go="my">Мои объявления</a> › Lexus LX 570</div>
+    <div class="lst">
+      <div>
+        <div class="gal">
+          <div class="ph big" data-lb="1">фотография автомобиля 1 из 12</div>
+          <div class="thumbs">
+            <div class="ph on" data-lb="1">1</div><div class="ph" data-lb="1">2</div>
+            <div class="ph" data-lb="1">3</div><div class="ph" data-lb="1">4</div>
+            <div class="ph" data-lb="1">5</div><div class="ph" data-lb="1">+7</div>
+          </div>
+        </div>
+        <div class="blk">
+          <h3>Как объявление видят покупатели</h3>
+          <p style="margin:0 0 14px;color:var(--ink2);font-size:15px;line-height:1.5">
+            Это ваша карточка. Покупателю показываются те же данные, но с кнопками
+            «Предложить цену» и «Написать».</p>
+          <button class="btn ghost w" data-go="listing">Открыть в режиме покупателя</button>
+        </div>
+        <div class="blk">
+          <h3>Предложения · 4</h3>
+          <div class="offers">
+            <div class="row"><span>Дмитрий · сегодня, 14:55</span><b>3 850 000 ₽</b></div>
+            <div class="row"><span>Артём · сегодня, 12:10</span><b>3 700 000 ₽</b></div>
+            <div class="row"><span>Сергей · вчера, 19:02</span><b>3 700 000 ₽</b></div>
+            <div class="row"><span>Павел · вчера, 09:41</span><b>3 600 000 ₽</b></div>
+          </div>
+          <button class="btn w" style="margin-top:14px" data-go="offers">Ответить на предложения</button>
+        </div>
+      </div>
+
+      <aside class="side">
+        <div class="blk" style="margin-top:0">
+          <span class="st-b ok">опубликовано 22 августа</span>
+          <div style="font-size:20px;font-weight:800;margin-top:12px">Lexus LX 570</div>
+          <div class="price-lg" style="margin:8px 0 4px">4 020 000 ₽</div>
+          <div style="font-size:13.5px;color:var(--mut)">2012 · 180 000 км · Омск</div>
+
+          <div class="stat">
+            <div><b>1 284</b><span>показов</span></div>
+            <div><b>96</b><span>открытий</span></div>
+            <div><b>4</b><span>оффера</span></div>
+          </div>
+
+          <div class="owner" style="margin-top:16px">
+            <button class="btn w" data-go="wizard">Редактировать</button>
+            <div class="two">
+              <button class="btn ghost">Снять с публикации</button>
+              <button class="btn ghost">Отметить проданным</button>
+            </div>
+          </div>
+          <p style="font-size:13px;color:var(--mut);margin:12px 0 0">Отметите проданным —
+            активные предложения по объявлению отклонятся автоматически.</p>
+        </div>
+
+        <div class="blk">
+          <h3 style="font-size:16px">Карта замеров</h3>
+          <div style="display:flex;justify-content:space-between;font-size:14.5px">
+            <span style="color:var(--mut)">Заполнено</span><b>11 из 13</b></div>
+          <div class="prog"><i style="width:85%"></i></div>
+          <p style="font-size:13.5px;color:var(--ink2);margin:10px 0 0">Две панели не замерены —
+            бейджа «полная карта» нет, объявление не поднимается в выдаче.</p>
+          <button class="btn ghost w" style="margin-top:12px" data-go="thickness">Домерить</button>
+        </div>
+
+        <div class="blk">
+          <h3 style="font-size:16px">Настройки объявления</h3>
+          <label class="switch" style="margin-bottom:12px"><input type="checkbox"><span class="box"></span>
+            Показывать телефон</label>
+          <label class="switch"><input type="checkbox" checked><span class="box"></span>
+            Разрешить чат</label>
+        </div>
+      </aside>
+    </div>
+  </div>
+  <div class="mbar"><button class="btn ghost" data-go="wizard">Редактировать</button>
+    <button class="btn" data-go="offers">Предложения · 4</button></div>
+</main>
+
+<!-- ══════════ ЖАЛОБЫ ══════════ -->
+<main id="s-complaints" class="hide">
+  <div class="wrap page">
+    <h1 class="ph1">Жалобы</h1>
+    <p class="psub">Жалобы копятся на объявление. Снятие с публикации — решение модератора,
+      автоматики нет.</p>
+    <div class="tabs2">
+      <button aria-pressed="true">Открытые · 2</button>
+      <button>Разобранные · 31</button>
+    </div>
+
+    <div class="blk" style="margin-top:0">
+      <div style="display:flex;gap:14px;align-items:flex-start;flex-wrap:wrap">
+        <div class="ph" style="width:96px;height:72px;border-radius:10px;font-size:10px">обложка</div>
+        <div style="flex:1;min-width:220px">
+          <div style="font-size:17px;font-weight:800">BMW X5 · 2013 · 2 450 000 ₽</div>
+          <div style="color:var(--mut);font-size:13.5px;margin-top:2px">Игорь · рейтинг 3,9 ·
+            опубликовано 12 августа</div>
+        </div>
+        <span class="flag">2 жалобы</span>
+      </div>
+
+      <div style="margin-top:16px">
+        <div class="rev-item">
+          <div class="ava" style="width:36px;height:36px"></div>
+          <div><div style="font-weight:700;font-size:14.5px">Артём
+            <span style="color:var(--mut);font-weight:500;font-size:12.5px">· сегодня, 11:20 ·
+            причина: цена-приманка</span></div>
+            <p style="margin:4px 0 0;font-size:14.5px;color:var(--ink2);line-height:1.5">
+              В объявлении 2 450 000, а в чате продавец говорит, что реальная цена 2 900 000
+              и «это была ошибка». Висит так третью неделю.</p></div>
+        </div>
+        <div class="rev-item">
+          <div class="ava" style="width:36px;height:36px"></div>
+          <div><div style="font-weight:700;font-size:14.5px">Ольга
+            <span style="color:var(--mut);font-weight:500;font-size:12.5px">· вчера, 18:04 ·
+            причина: фото не той машины</span></div>
+            <p style="margin:4px 0 0;font-size:14.5px;color:var(--ink2);line-height:1.5">
+              Фотографии из интернета, на трёх снимках разные диски и разный салон.</p></div>
+        </div>
+      </div>
+
+      <div class="acts">
+        <div class="two"><button class="btn" data-go="listing">Открыть карточку</button>
+          <button class="btn ghost">Написать продавцу</button></div>
+        <div class="two"><button class="btn ghost">Снять с публикации</button>
+          <button class="btn ghost">Отклонить жалобы</button></div>
+      </div>
+    </div>
+
+    <div class="blk">
+      <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+        <div class="ph" style="width:72px;height:54px;border-radius:10px;font-size:10px">обложка</div>
+        <div style="flex:1;min-width:200px"><b style="font-size:16px">Kia Rio · 2018</b>
+          <div style="color:var(--mut);font-size:13.5px">1 жалоба: контакты в описании</div></div>
+        <button class="btn sm ghost">Разобрать</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ ЗАЯВКА «ХОЧУ ТАКУЮ» · ФОРМА ══════════ -->
+<main id="s-requestNew" class="hide">
+  <div class="wrap page" style="max-width:820px">
+    <div class="crumbs" style="padding-left:0"><a href="#" data-go="import">Под заказ</a> › Новая заявка</div>
+    <div class="wcard" style="margin-top:14px">
+      <h2>Опишите, что нужно привезти</h2>
+      <p class="sub">Заявку увидят одобренные поставщики и ответят ценой под ключ и сроком.
+        Это не покупка — вы ничего не платите и ни к чему не обязаны.</p>
+      <div class="form">
+        <div class="f"><label>Марка</label><select class="fld"><option>Toyota</option></select></div>
+        <div class="f"><label>Модель</label><select class="fld"><option>Land Cruiser 300</option></select></div>
+        <div class="f"><label>Год — от</label><input class="fld" placeholder="2022"></div>
+        <div class="f"><label>Год — до</label><input class="fld" placeholder="2023"></div>
+        <div class="f"><label>Бюджет под ключ, ₽</label><input class="fld" placeholder="до 12 000 000"></div>
+        <div class="f"><label>Пробег, км</label><input class="fld" placeholder="до 60 000"></div>
+        <div class="f"><label>Откуда везти</label><select class="fld"><option>Любая страна</option>
+          <option>Япония</option><option>Корея</option><option>ОАЭ</option><option>Китай</option></select></div>
+        <div class="f"><label>Готов ждать</label><select class="fld"><option>до 90 дней</option>
+          <option>до 60 дней</option><option>до 120 дней</option></select></div>
+        <div class="f full"><label>Что важно</label>
+          <textarea class="fld" placeholder="Комплектация, цвет салона, требования к документам."></textarea></div>
+      </div>
+      <div class="hint" style="margin-top:16px">Заявка живёт 30 дней, потом закроется сама.
+        Отклики приходят в профиль и в чат.</div>
+      <div class="wnav">
+        <button class="btn ghost" data-go="import">Отмена</button>
+        <span class="grow"></span>
+        <button class="btn" data-go="request">Опубликовать заявку</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ ЗАЯВКА НА РОЛЬ ПОСТАВЩИКА ══════════ -->
+<main id="s-supplierForm" class="hide">
+  <div class="wrap page" style="max-width:820px">
+    <div class="crumbs" style="padding-left:0"><a href="#" data-go="profile">Профиль</a> › Стать поставщиком</div>
+    <div class="wcard" style="margin-top:14px">
+      <h2>Заявка на роль поставщика</h2>
+      <p class="sub">Заявку рассматривает владелец площадки. Одобрят — получите публичную
+        страницу и сможете публиковать позиции под привоз сами, без ручного участия.</p>
+      <div class="form">
+        <div class="f full"><label>Название или как вас представлять</label>
+          <input class="fld" placeholder="Восток-Авто"></div>
+        <div class="f"><label>Страны</label><input class="fld" placeholder="Япония, Корея"></div>
+        <div class="f"><label>Марки</label><input class="fld" placeholder="Toyota, Lexus, Honda"></div>
+        <div class="f"><label>Срок доставки</label><input class="fld" placeholder="45–70 дней"></div>
+        <div class="f"><label>Предоплата</label><input class="fld" placeholder="30% при заказе"></div>
+        <div class="f"><label>Телефон</label><input class="fld mono" placeholder="+7 913 000-00-00"></div>
+        <div class="f"><label>Способ связи</label><select class="fld"><option>Телефон и чат</option>
+          <option>Только чат</option></select></div>
+        <div class="f full"><label>О себе и об опыте</label>
+          <textarea class="fld" style="height:140px"
+            placeholder="Сколько лет возите, через кого работаете, что можете показать по прошлым поставкам."></textarea></div>
+      </div>
+      <div class="hint" style="margin-top:16px">Площадка не проверяет ваши документы и не даёт
+        гарантий покупателям от вашего имени. Одобрение означает только то, что владелец
+        посчитал заявку правдоподобной.</div>
+      <div class="wnav">
+        <button class="btn ghost" data-go="profile">Отмена</button>
+        <span class="grow"></span>
+        <button class="btn" data-go="profile">Отправить заявку</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ ВОЗВРАТ ИЗ OAUTH ══════════ -->
+<main id="s-oauth" class="hide">
+  <div class="wrap page">
+    <div class="big-empty" style="padding-top:120px">
+      <div class="ic"><span class="spin" style="width:32px;height:32px;border-width:3px"></span></div>
+      <h2>Завершаем вход</h2>
+      <p>Секунда — и вернём вас туда, где вы нажали кнопку. Действие продолжится само.</p>
+    </div>
+  </div>
+</main>
+
+<!-- ══════════ ВХОД НЕ УДАЛСЯ ══════════ -->
+<main id="s-oauthErr" class="hide">
+  <div class="wrap page">
+    <div class="big-empty" style="padding-top:110px">
+      <div class="ic" style="background:#FDECEC;color:#B4353A">×</div>
+      <h2>Войти не получилось</h2>
+      <p>Провайдер не подтвердил вход — возможно, вы закрыли окно или отклонили доступ.
+        Данные не пострадали, объявление и черновик на месте.</p>
+      <div class="row">
+        <button class="btn big" data-login="1">Попробовать снова</button>
+        <button class="btn big ghost" data-go="feed">Вернуться в ленту</button>
+      </div>
+      <p style="font-size:13px;color:var(--mut);margin:20px 0 0">Если повторяется — попробуйте
+        второй способ входа: VK ID вместо Яндекс ID или наоборот.</p>
+    </div>
+  </div>
+</main>
+
 <!-- ══════════ ТАБ-БАР ══════════ -->
 <nav class="tabbar">
   <a href="#" class="on" data-go="feed">
     <svg viewBox="0 0 24 24"><path d="M3 13l2-5a3 3 0 0 1 3-2h8a3 3 0 0 1 3 2l2 5v5h-3M3 18v-5m0 5h3m12 0H6"/><circle cx="7.5" cy="15.5" r="1.5"/><circle cx="16.5" cy="15.5" r="1.5"/></svg>
     Лента</a>
-  <a href="#" class="rel">
+  <a href="#" class="rel" data-go="offers">
     <svg viewBox="0 0 24 24"><path d="M12 3v18M8 7h6a3 3 0 0 1 0 6h-4a3 3 0 0 0 0 6h6"/></svg>
     Офферы<span class="dot">3</span></a>
-  <a href="#" class="sell">
+  <a href="#" class="sell" data-go="wizard">
     <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
     Продать</a>
-  <a href="#" class="rel">
+  <a href="#" class="rel" data-go="chats">
     <svg viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>
     Чаты<span class="dot">1</span></a>
-  <a href="#">
+  <a href="#" data-go="my">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
     Профиль</a>
 </nav>
+
+
+
+
+<!-- ══════════ ПОЛНОЭКРАННАЯ ГАЛЕРЕЯ ══════════ -->
+<div class="lb" id="lightbox">
+  <div class="lbtop">
+    <b>Lexus LX 570 · 2012</b>
+    <span style="opacity:.6">фотография 1 из 12</span>
+    <span class="grow"></span>
+    <button class="x" data-lbclose="1">✕</button>
+  </div>
+  <div class="lbmain">
+    <button class="nav" data-lbclose="0">‹</button>
+    <div class="ph" style="margin:0 16px">фотография автомобиля, полный размер</div>
+    <button class="nav" data-lbclose="0">›</button>
+  </div>
+  <div class="lbstrip">
+    <div class="ph on">1</div><div class="ph">2</div><div class="ph">3</div><div class="ph">4</div>
+    <div class="ph">5</div><div class="ph">6</div><div class="ph">7</div><div class="ph">8</div>
+  </div>
+</div>
+
+<!-- ══════════ ШТОРКА ФИЛЬТРОВ (МОБИЛКА) ══════════ -->
+<div class="scrim" id="filterSheet">
+  <div class="modal" style="width:min(520px,100%)">
+    <div class="grabber"></div>
+    <div class="mh"><h3>Фильтры</h3><span class="grow"></span>
+      <button class="x" data-close="1">✕</button></div>
+    <div class="mb">
+      <div class="fgrp"><h4>Марка и модель</h4>
+        <button class="fld" style="text-align:left;display:flex;align-items:center;justify-content:space-between"
+          data-sheet="1"><span style="color:var(--mut)">Выберите марку</span>
+          <span style="color:var(--brand)">›</span></button></div>
+      <div class="fgrp"><h4>Год</h4><div class="pair">
+        <input class="fld" placeholder="от 2005"><input class="fld" placeholder="до 2026"></div></div>
+      <div class="fgrp"><h4>Цена, ₽</h4><div class="pair">
+        <input class="fld" placeholder="от"><input class="fld" placeholder="до 5 млн"></div></div>
+      <div class="fgrp"><h4>Пробег, км</h4><div class="pair">
+        <input class="fld" placeholder="от"><input class="fld" placeholder="до 200 000"></div></div>
+      <div class="fgrp"><h4>Коробка</h4><div class="chips">
+        <button class="chip" aria-pressed="true">АКПП</button><button class="chip">МКПП</button>
+        <button class="chip">Вариатор</button><button class="chip">Робот</button></div></div>
+      <div class="fgrp"><label class="switch"><input type="checkbox" checked><span class="box"></span>
+        С полной картой замеров</label></div>
+    </div>
+    <div class="mf">
+      <button class="reset" data-close="1">Сброс</button>
+      <button class="btn" style="flex:1" data-close="1">Показать 248</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ МОДАЛКА ВХОДА ══════════ -->
+<div class="scrim" id="loginModal">
+  <div class="modal" style="width:min(420px,100%)">
+    <div class="grabber"></div>
+    <div class="mh"><h3>Вход</h3><span class="grow"></span>
+      <button class="x" data-close="1">✕</button></div>
+    <div class="mb">
+      <p style="margin:0;font-size:15px;line-height:1.55;color:var(--ink2)">
+        Чтобы предложить цену, нужен аккаунт. Ни пароля, ни почты, ни подтверждения
+        по СМС — только вход через провайдера.</p>
+      <div class="oauth">
+        <button><span class="m ya">Я</span> Продолжить с Яндекс ID</button>
+        <button><span class="m vk">VK</span> Продолжить с VK ID</button>
+      </div>
+      <p style="font-size:13px;color:var(--mut);margin:16px 0 0;line-height:1.5">
+        Имя и аватар придут от провайдера. Вернётесь на ту же карточку, действие продолжится.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════ МОДАЛКА: ВЫБОР МАРКИ ══════════ -->
+<div class="scrim" id="brandModal">
+  <div class="modal">
+    <div class="grabber"></div>
+    <div class="mh">
+      <h3>Марка</h3>
+      <span class="grow"></span>
+      <button class="x" data-close="1">✕</button>
+    </div>
+    <div style="padding:14px 20px 0">
+      <input class="fld" placeholder="Поиск по марке" style="height:44px">
+      <p style="font-size:13px;color:var(--mut);margin:10px 0 0">
+        Кружки — заглушки. Эмблемы марок подставим файлами, когда соберём набор.</p>
+    </div>
+    <div class="mb">
+      <div class="brands">
+          <div class="alpha">A</div>
+          <button class="brand"><span class="em">A</span><span><b>Audi</b><s>184 объявлений</s></span></button>
+          <button class="brand"><span class="em">A</span><span><b>Acura</b><s>12 объявлений</s></span></button>
+          <div class="alpha">B</div>
+          <button class="brand"><span class="em">B</span><span><b>BMW</b><s>241 объявлений</s></span></button>
+          <button class="brand"><span class="em">B</span><span><b>BYD</b><s>9 объявлений</s></span></button>
+          <div class="alpha">C</div>
+          <button class="brand"><span class="em">C</span><span><b>Chery</b><s>77 объявлений</s></span></button>
+          <button class="brand"><span class="em">C</span><span><b>Chevrolet</b><s>156 объявлений</s></span></button>
+          <button class="brand"><span class="em">C</span><span><b>Citroen</b><s>21 объявлений</s></span></button>
+          <div class="alpha">H</div>
+          <button class="brand"><span class="em">H</span><span><b>Haval</b><s>94 объявлений</s></span></button>
+          <button class="brand"><span class="em">H</span><span><b>Honda</b><s>312 объявлений</s></span></button>
+          <button class="brand"><span class="em">H</span><span><b>Hyundai</b><s>408 объявлений</s></span></button>
+          <div class="alpha">K</div>
+          <button class="brand"><span class="em">K</span><span><b>Kia</b><s>395 объявлений</s></span></button>
+          <button class="brand"><span class="em">L</span><span><b>Lada</b><s>520 объявлений</s></span></button>
+          <div class="alpha">L</div>
+          <button class="brand"><span class="em">L</span><span><b>Lexus</b><s>118 объявлений</s></span></button>
+          <button class="brand"><span class="em">L</span><span><b>Land Rover</b><s>31 объявлений</s></span></button>
+          <div class="alpha">M</div>
+          <button class="brand"><span class="em">M</span><span><b>Mazda</b><s>203 объявлений</s></span></button>
+          <button class="brand"><span class="em">M</span><span><b>Mercedes-Benz</b><s>167 объявлений</s></span></button>
+          <button class="brand"><span class="em">M</span><span><b>Mitsubishi</b><s>188 объявлений</s></span></button>
+          <div class="alpha">N</div>
+          <button class="brand"><span class="em">N</span><span><b>Nissan</b><s>341 объявлений</s></span></button>
+          <button class="brand"><span class="em">O</span><span><b>Opel</b><s>44 объявлений</s></span></button>
+          <div class="alpha">S</div>
+          <button class="brand"><span class="em">S</span><span><b>Skoda</b><s>132 объявлений</s></span></button>
+          <button class="brand"><span class="em">S</span><span><b>Subaru</b><s>86 объявлений</s></span></button>
+          <button class="brand"><span class="em">S</span><span><b>Suzuki</b><s>58 объявлений</s></span></button>
+          <div class="alpha">T</div>
+          <button class="brand"><span class="em">T</span><span><b>Toyota</b><s>612 объявлений</s></span></button>
+          <button class="brand"><span class="em">V</span><span><b>Volkswagen</b><s>229 объявлений</s></span></button>
+      </div>
+    </div>
+    <div class="mf">
+      <button class="btn ghost" data-close="1">Отмена</button>
+      <button class="btn" style="flex:1" data-close="1">Показать 612</button>
+    </div>
+  </div>
+</div>
 
 </div></div>
 
@@ -716,17 +2948,22 @@ document.getElementById('skBox').innerHTML = Array.from({length:6}).map(()=>`
     </div>
   </div>`).join('');
 
-const SCREENS = ['landing','feed','empty','loading'];
+const SCREENS = ['landing','feed','empty','loading','listing','listingGuest','listingSold','thickness','wizard','offers','chats','my','profile','queue','roles','importer','seller','request','import','cold','listingOwner','complaints','requestNew','supplierForm','oauth','oauthErr'];
 const vp = document.getElementById('vp');
 const st = JSON.parse(localStorage.getItem('abs-mock')||'{"s":"landing","v":"d"}');
 
 function show(s){
   st.s = s; save();
   SCREENS.forEach(k=>document.getElementById('s-'+k).classList.toggle('hide',k!==s));
-  document.querySelectorAll('#segScreen button').forEach(b=>
-    b.setAttribute('aria-pressed', b.dataset.s===s));
-  document.getElementById('hint').textContent =
-    s==='landing' ? 'гость · не авторизован' : 'гость · действия ведут на вход';
+  document.getElementById('segScreen').value = s;
+  const HINT = {landing:'гость · не авторизован', feed:'гость · листает ленту',
+    empty:'три фильтра сразу', loading:'ожидание ответа',
+    listing:'вошёл · действия активны', listingGuest:'гость · стена входа',
+    listingSold:'объявление в архиве', thickness:'карта замеров', wizard:'продавец · черновик', offers:'вошёл · торг', chats:'вошёл · переписка', my:'вошёл · кабинет', profile:'вошёл · профиль', queue:'модератор', roles:'владелец', importer:'публичная страница', seller:'публичный профиль продавца', request:'обратный аукцион', import:'гость · под заказ', cold:'первый день площадки',
+    listingOwner:'продавец · своё объявление', complaints:'модератор · жалобы',
+    requestNew:'покупатель · новая заявка', supplierForm:'заявка на роль',
+    oauth:'возврат от провайдера', oauthErr:'вход не удался'};
+  document.getElementById('hint').textContent = HINT[s] || '';
   vp.scrollTop = 0; window.scrollTo(0,0);
 }
 function setView(v){
@@ -737,7 +2974,7 @@ function setView(v){
 }
 function save(){ localStorage.setItem('abs-mock', JSON.stringify(st)); }
 
-document.querySelectorAll('#segScreen button').forEach(b=>b.onclick=()=>show(b.dataset.s));
+document.getElementById('segScreen').onchange = e => show(e.target.value);
 document.querySelectorAll('#segView button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
 document.addEventListener('click',e=>{
   const g = e.target.closest('[data-go]');
@@ -748,9 +2985,126 @@ document.addEventListener('click',e=>{
     if(grp) grp.querySelectorAll('button').forEach(x=>x.setAttribute('aria-pressed','false'));
     c.setAttribute('aria-pressed', c.getAttribute('aria-pressed')!=='true');
   }
-  if(e.target.closest('[data-sheet]')) alert('Модалка выбора марки с эмблемами — следующий заход.');
+  if(e.target.closest('[data-sheet]')) brandModal.classList.add('open');
+  if(e.target.closest('[data-close]') || e.target === brandModal) brandModal.classList.remove('open');
+  const br = e.target.closest('.brand');
+  if(br){
+    brandModal.querySelectorAll('.brand').forEach(x=>x.setAttribute('aria-pressed','false'));
+    br.setAttribute('aria-pressed','true');
+  }
 });
 
+
+// ── карта замеров: режимы и выбор панели ──
+function tMode(m){
+  document.querySelectorAll('#tSeg button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.t===m));
+  document.querySelectorAll('#s-thickness [data-t]').forEach(el=>{
+    if(el.closest('#tSeg')) return;
+    el.classList.toggle('hide', el.dataset.t!==m);
+  });
+}
+document.querySelectorAll('#tSeg button').forEach(b=>b.onclick=()=>tMode(b.dataset.t));
+document.addEventListener('click',e=>{
+  const go = e.target.closest('[data-t-go]');
+  if(go) tMode(go.dataset.tGo);
+  const zone = e.target.closest('.pz, .mrow');
+  if(zone){
+    const id = zone.dataset.p;
+    document.querySelectorAll('#s-thickness .pz').forEach(x=>x.classList.toggle('sel', x.dataset.p===id));
+    document.querySelectorAll('#s-thickness .mrow').forEach(x=>x.classList.toggle('sel', x.dataset.p===id));
+  }
+});
+tMode('buy');
+
+
+// ── мастер продажи ──
+const W_STEP = {'1':'1','proc':'1','err1':'1','err2':'1','manual':'1',
+  '2':'2','3':'3','4':'4','5':'5','6':'6','sent':'6'};
+function wGo(k){
+  document.querySelectorAll('#s-wizard [data-w]').forEach(el=>{
+    if(el.closest('#wSteps')) return;
+    el.classList.toggle('hide', el.dataset.w!==k);
+  });
+  const cur = W_STEP[k] || k;
+  document.querySelectorAll('#wSteps .st').forEach(b=>{
+    b.classList.toggle('on', b.dataset.w===cur);
+    b.classList.toggle('done', Number(b.dataset.w) < Number(cur));
+  });
+  document.querySelector('#s-wizard').scrollIntoView ? window.scrollTo(0,0) : 0;
+}
+document.querySelectorAll('#wSteps .st').forEach(b=>b.onclick=()=>wGo(b.dataset.w));
+document.addEventListener('click',e=>{
+  const g = e.target.closest('[data-w-go]');
+  if(g){ e.preventDefault(); wGo(g.dataset.wGo); }
+});
+wGo('1');
+
+
+// ── офферы: полученные / отправленные ──
+document.querySelectorAll('#oTabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#oTabs button').forEach(x=>x.setAttribute('aria-pressed', x===b));
+  document.querySelectorAll('#s-offers [data-o]').forEach(el=>{
+    if(el.closest('#oTabs')) return;
+    el.classList.toggle('hide', el.dataset.o!==b.dataset.o);
+  });
+});
+// ── чаты: выбор диалога ──
+document.querySelectorAll('.dlg').forEach(d=>d.onclick=()=>{
+  document.querySelectorAll('.dlg').forEach(x=>x.classList.toggle('on', x===d));
+});
+// ── табы «мои объявления» ──
+document.querySelectorAll('#s-my .tabs2 button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('#s-my .tabs2 button').forEach(x=>x.setAttribute('aria-pressed', x===b));
+});
+
+
+// ── модерация: раскрытие формы причины ──
+document.addEventListener('click',e=>{
+  const q = e.target.closest('[data-q]');
+  if(!q) return;
+  const v = q.dataset.q;
+  if(v==='none'){ document.querySelectorAll('.rej').forEach(x=>x.classList.add('hide')); return; }
+  const box = document.querySelector('.rej[data-q="'+v+'"]');
+  if(box && box!==q) box.classList.remove('hide');
+});
+// ── очередь: выбор карточки ──
+document.querySelectorAll('.qitem').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('.qitem').forEach(x=>x.classList.toggle('on', x===b));
+});
+
+
+// ── стена входа ──
+document.addEventListener('click',e=>{
+  if(e.target.closest('[data-login]')) loginModal.classList.add('open');
+  if(e.target === loginModal || (e.target.closest('[data-close]') && loginModal.classList.contains('open')))
+    loginModal.classList.remove('open');
+});
+// ── звёзды отзыва ──
+document.querySelectorAll('#rateStars button').forEach((b,i,all)=>b.onclick=()=>{
+  all.forEach((x,j)=>x.classList.toggle('on', j<=i));
+});
+
+
+// ── полноэкранная галерея ──
+document.addEventListener('click',e=>{
+  if(e.target.closest('[data-lb]')) lightbox.classList.add('open');
+  if(e.target.closest('[data-lbclose="1"]') || e.target === lightbox) lightbox.classList.remove('open');
+});
+document.addEventListener('keydown',e=>{ if(e.key==='Escape') lightbox.classList.remove('open'); });
+// ── шторка фильтров на мобилке ──
+document.addEventListener('click',e=>{
+  const b = e.target.closest('.mfilters .chip');
+  if(b && b.dataset.sheet){ e.preventDefault(); filterSheet.classList.add('open'); }
+  if(e.target === filterSheet || (e.target.closest('[data-close]') && filterSheet.classList.contains('open')))
+    filterSheet.classList.remove('open');
+});
+// ── три типа во вкладке «под заказ» ──
+document.querySelectorAll('#s-import .kind').forEach(k=>k.onclick=()=>{
+  document.querySelectorAll('#s-import .kind').forEach(x=>x.setAttribute('aria-pressed', x===k));
+});
+
+const H = location.hash.replace("#","");
+if(SCREENS.includes(H)) st.s = H;
 show(st.s); setView(st.v);
 </script>
 </body>
