@@ -7,14 +7,15 @@ from app.tasks.status_updater import update_task_status, TaskStatus
 from app.ml.decode_vin import decode_vin
 from app.db.database import get_db_session
 from app.models.sale_car import SaleCars
+from app.services.catalog_resolver import CatalogResolver
 
 
 def _apply_decoded(sale_car: SaleCars, result: dict) -> None:
     """Copy the decoded СТС fields onto the listing.
 
-    `decode_vin` answers six flat values — vin, mark, model, year, transmission,
-    engine_power — and until story 1 all but the VIN were written to ChromaDB, with only
-    a document id kept on the row. They are columns now, so this writes them directly.
+    Make and model are not written here — they are names, and the listing stores
+    catalogue keys. `CatalogResolver` owns that step because resolving may also queue a
+    spelling for a moderator, which is a write this function has no business making.
 
     Only truthy values are copied: GigaChat is asked never to leave a field empty and
     to guess instead, but it still returns "" often enough that overwriting a value the
@@ -22,10 +23,6 @@ def _apply_decoded(sale_car: SaleCars, result: dict) -> None:
     """
     if result.get("vin"):
         sale_car.vin = result["vin"]
-    if result.get("mark"):
-        sale_car.mark = result["mark"]
-    if result.get("model"):
-        sale_car.model = result["model"]
 
     # year and engine_power come back as numbers most of the time and as strings the
     # rest, depending on whether the model obeyed the prompt. int() on a stray "2018 г."
@@ -92,6 +89,9 @@ async def decode_vin_from_sts_sale_car_task(sale_car_id: str, file_b64: str):
                     return {"sale_car_id": sale_car_id, "result": result, "error": True}
 
                 _apply_decoded(sale_car, result)
+                await CatalogResolver(db).resolve_into(
+                    sale_car, result.get("mark"), result.get("model")
+                )
                 await db.commit()
 
             await update_task_status(sale_car_id, TaskStatus.DecodeSuccess, entity_type="sale_car")

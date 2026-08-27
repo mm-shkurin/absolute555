@@ -33,8 +33,10 @@ class SaleCarUpdate(BaseModel):
     milleage: Optional[float] = None
     description: Optional[str] = None
     status: Optional[SaleCarStatus] = None
-    mark: Optional[str] = None
+    brand: Optional[str] = None
     model: Optional[str] = None
+    mark_raw: Optional[str] = None
+    model_raw: Optional[str] = None
     year: Optional[str] = None
     transmission: Optional[str] = None
     engine_power: Optional[int] = None
@@ -48,8 +50,10 @@ class SaleCarUpdateResponse(BaseModel):
     sale_car_id: UUID
     user_id: UUID
     vin: Optional[str]
-    mark: Optional[str] = None
+    brand: Optional[str] = None
     model: Optional[str] = None
+    mark_raw: Optional[str] = None
+    model_raw: Optional[str] = None
     year: Optional[int] = None
     transmission: Optional[str] = None
     engine_power: Optional[int] = None
@@ -65,8 +69,10 @@ class SaleCarResponse(BaseModel):
     sale_car_id: UUID
     user_id: UUID
     vin: Optional[str]
-    mark: Optional[str] = None
+    brand: Optional[str] = None
     model: Optional[str] = None
+    mark_raw: Optional[str] = None
+    model_raw: Optional[str] = None
     year: Optional[int] = None
     transmission: Optional[str] = None
     engine_power: Optional[int] = None

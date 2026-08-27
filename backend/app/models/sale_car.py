@@ -18,13 +18,23 @@ class SaleCars(Base):
     task_id = Column(String, nullable=True)
     task_status = Column(String, nullable=True)
 
-    # Decoded from the СТС photo by app/ml/decode_vin.py. Until story 1 these lived in
-    # ChromaDB, addressed by a chroma_document_id kept here — the listing itself held
-    # nothing but a pointer, so no filter or sort could touch them. They are six flat
-    # values; they belong in columns. Nullable because a listing can be created by hand
-    # without a СТС at all, and because an import listing has no VIN to decode.
-    mark = Column(String, nullable=True)
-    model = Column(String, nullable=True)
+    # Make and model resolved against the catalogue, null until they resolve. A make or
+    # model the catalogue does not know does not stop a listing — it simply does not
+    # appear under that filter until a moderator resolves the spelling (CatalogResolver).
+    # Story 1 moved these off ChromaDB, where the row held only a document id and so
+    # nothing could filter or sort on them; story 3 turned the two name columns into
+    # these keys.
+    brand_id = Column(UUID(as_uuid=True), ForeignKey("brands.brand_id", ondelete="SET NULL"), nullable=True, index=True)
+    model_id = Column(UUID(as_uuid=True), ForeignKey("car_models.model_id", ondelete="SET NULL"), nullable=True, index=True)
+
+    # What OCR actually read, kept even when both resolved. Without it a wrong fuzzy
+    # match is invisible: the row says Toyota Camry with nothing to say the document
+    # said Carina.
+    mark_raw = Column(String, nullable=True)
+    model_raw = Column(String, nullable=True)
+
+    # The rest of what the СТС yields. Nullable because a listing can be filled in by
+    # hand with no document at all, and an import listing has no VIN to decode.
     year = Column(Integer, nullable=True)
     transmission = Column(String, nullable=True)
     engine_power = Column(Integer, nullable=True)
@@ -37,6 +47,8 @@ class SaleCars(Base):
     sts_photos = Column(JSONB,default=[])
     s3_photo_car_keys = Column(JSON, default=[])
 
+    brand = relationship("Brand")
+    model = relationship("CarModel")
     offers = relationship("Offer", back_populates="sale_car", cascade="all, delete-orphan")
 
     created_at = Column(DateTime, server_default=func.now())

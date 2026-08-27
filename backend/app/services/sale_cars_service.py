@@ -245,8 +245,8 @@ class SaleCarService:
         
         # The decoded СТС fields used to be fetched from ChromaDB by document id and
         # nested under a "car_data" key. They are columns now, so they are flat here.
-        data["mark"] = sale_car.mark
-        data["model"] = sale_car.model
+        data["brand"] = sale_car.brand.name_ru if sale_car.brand else None
+        data["model"] = sale_car.model.name if sale_car.model else None
         data["year"] = sale_car.year
         data["transmission"] = sale_car.transmission
         data["engine_power"] = sale_car.engine_power
