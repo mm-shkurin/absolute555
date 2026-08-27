@@ -40,8 +40,11 @@ def slugify(value: str) -> str:
     """A stable, readable identifier for a catalogue row.
 
     Unlike `normalize`, this keeps word boundaries as hyphens — a slug is read by people
-    and appears in URLs, where `landcruiserprado` is unreadable.
+    and appears in URLs, where `landcruiserprado` is unreadable — and it does **not** map
+    Cyrillic look-alikes. Mapping them here produced mixed-script slugs: `2121 Нива`
+    became `2121-hиba`, with the Н turned Latin and the и left Cyrillic. Matching is
+    `normalize`'s job; a slug only has to be stable and legible.
     """
-    folded = value.strip().upper().replace("Ё", "Е").translate(_CYRILLIC_TO_LATIN)
+    folded = value.strip().upper().replace("Ё", "Е")
     parts = [p for p in _NON_ALNUM.split(folded) if p]
     return "-".join(parts).lower()
