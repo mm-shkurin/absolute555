@@ -1,0 +1,35 @@
+.navigation {
+  width: 100%; // Растягиваем на всю ширину
+
+  .logo-png {
+    width: 100%;
+  }
+
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+
+
+  }
+
+  .navigation-logo {
+    margin-right: 7%;
+  }
+}
+
+@media screen and (max-width: 863px) {
+  .navigation-logo {
+    margin-right: 2%;
+  }
+}
+
+@media screen and (max-width: 677px) {
+  .navigation .logo-png {
+    display: none;
+  }
+  .navigation .header-row {
+    display: block;
+  }
+}

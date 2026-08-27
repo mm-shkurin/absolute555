@@ -1,0 +1,258 @@
+.advertising {
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    gap: 15px;
+}
+
+.sale-images {
+    display: none;
+}
+
+.conteiner_services {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.services_mark {
+    display: flex;
+    width: 22%;
+    background-color: #2F2F3C;
+    flex-direction: column;
+    align-items: center;
+    gap: 60px;
+    padding-bottom: 20px;
+    border-radius: 16px;
+
+    .kia-images {
+        width: 100%;
+        margin-top: 80px;
+    }
+
+    .but-mark {
+        padding: 20px;
+    }
+
+    button {
+        color: white;
+        background-color: #00499D;
+        padding: 12px;
+        border-style: none;
+        border-radius: 12px;
+        font-size: 20px;
+    }
+}
+
+.services_ferrari {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 22%;
+    background-color: white;
+    border-radius: 16px;
+    padding-top: 1%;
+    padding-bottom: 1%;
+
+    .fer-images {
+        width: 80%;
+    }
+
+    .bmw-images {
+        width: 57%;
+    }
+
+    .lexus-images {
+        width: 85%;
+    }
+
+    .txt_fer {
+        display: flow;
+
+        h2 {
+            font-size: 20px;
+            color: #313131;
+            text-align: center;
+        }
+
+        p {
+            color: #585858;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        .a_fer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            
+            .details-button {
+                background: none;
+                border: none;
+                color: #00499D;
+                text-decoration: underline;
+                cursor: pointer;
+                font-size: 15px;
+                padding: 0;
+                
+                &:hover {
+                    color: #003366;
+                }
+            }
+        }
+    }
+}
+
+.last_auto {
+    .last-cont {
+        text-align: center;
+        margin-top: 2%;
+    }
+
+    margin-top: 2%;
+
+    h1 {
+        text-align: center;
+    }
+
+    .show-car-button {
+        font-size: 20px;
+        padding: 1% 1.5% 1% 1.5%;
+        border-radius: 10px;
+        border-style: none;
+        color: white;
+        background-color: rgb(10, 92, 187);
+    }
+}
+
+.bank-images-mobile {
+    display: none;
+}
+
+@media screen and (max-width: 1175px) {
+    .services_ferrari .txt_fer p {
+        font-size: 14px;
+    }
+
+    .services_ferrari .txt_fer {
+        padding: 0px 5px 0px 5px;
+    }
+}
+
+@media screen and (max-width: 1127px) {
+
+    .paper_p {
+        margin: 0px;
+        font-size: 16px;
+        width: 87%;
+    }
+
+    .papers_p {
+        font-size: 16px;
+    }
+
+    .paper_h3 {
+        margin: 0 auto;
+        font-size: 18px;
+    }
+}
+
+@media screen and (max-width: 1105px) {
+    .services_mark {
+        width: 45%;
+    }
+
+    .services_ferrari {
+        width: 45%;
+    }
+
+    .conteiner_services {
+        flex-wrap: wrap;
+        gap: 20px;
+            justify-content: space-evenly;
+    }
+}
+
+@media screen and (max-width: 1024px) {
+    .paper_p {
+        margin: 0px;
+        font-size: 15px;
+        width: 87%;
+    }
+
+    .papers_p {
+        font-size: 15px;
+    }
+
+    .paper_h3 {
+        margin: 0 auto;
+        font-size: 17px;
+    }
+}
+
+@media screen and (max-width: 960px) {
+    .services {
+        flex-direction: column;
+    }
+
+}
+
+@media screen and (max-width: 677px) {
+    .slider-container {
+        display: none;
+    }
+
+    .sale-images {
+        display: block;
+        width: 100%;
+    }
+
+    .advertising {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .bank-images {
+        display: none;
+    }
+
+    .bank-images-mobile {
+        display: block;
+        width: 100%;
+    }
+
+    .paper_h3 {
+        margin: 0 auto;
+        font-size: 20px;
+    }
+
+    .papers_p {
+        font-size: 18px;
+    }
+
+    .paper_p {
+        margin: 0px;
+        font-size: 18px;
+    }
+
+    .services {
+        background-color: unset;
+        align-items: stretch;
+    }
+}
+@media screen and (max-width: 550px) {
+    .services_mark {
+        width: 90%;
+    }
+
+    .services_ferrari {
+        width: 90%;
+    }
+
+    .conteiner_services {
+        flex-wrap: wrap;
+        gap: 20px;
+            justify-content: space-evenly;
+    }
+}

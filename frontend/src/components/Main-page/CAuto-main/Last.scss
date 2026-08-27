@@ -1,0 +1,141 @@
+.last-with-cars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    grid-gap: 20px;
+    padding: 4px;
+}
+
+.card-last {
+    display: flex;
+    flex-direction: column;
+    border-radius: 16px;
+    background-color: white;
+    overflow: hidden;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+}
+
+/* Изображение автомобиля */
+.car-image-last {
+    padding: 4px;
+    padding-bottom: 0;
+}
+
+.card-price-last {
+    margin: 10px 0;
+
+    p {
+        font-size: 24px;
+        font-weight: bold;
+        color: #000000;
+    }
+}
+
+.car-image-last img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+
+    &:hover {
+        transform: scale(1.02);
+    }
+}
+
+/* Детали автомобиля */
+.car-details-last {
+    p {
+        font-size: 16px;
+        color: #555;
+        margin-top: 5px;
+        line-height: 1.4;
+    }
+}
+
+.car-title {
+    font-size: 22px;
+    color: #333;
+    margin-bottom: 10px;
+    text-decoration: none;
+    display: block;
+    transition: color 0.3s ease;
+
+    p {
+        font-size: 16px;
+        color: #777;
+        margin-top: 5px;
+    }
+
+    &:hover {
+        color: #ff6633;
+    }
+}
+
+/* Текстовые детали */
+.details-last {
+    padding: 15px 20px 20px;
+}
+
+@media screen and (max-width: 1320px) {
+    .last-with-cars {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+
+    }
+}
+
+@media screen and (max-width: 1104px) {
+    .last-with-cars {
+        grid-template-columns: repeat(auto-fit, minmax(380px, 1fr));
+    }
+}
+@media screen and (max-width: 821px) {
+    .last-with-cars {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+}
+@media screen and (max-width: 1127px) {
+    .car-details-last p {
+        font-size: 14px;
+    }
+
+    .car-title {
+        font-size: 20px;
+    }
+
+    .card-price-last p {
+        font-size: 22px;
+    }
+
+    .car-image-last img {
+        height: 220px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .last-with-cars {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+
+    .car-image-last img {
+        height: 200px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .last-with-cars {
+        grid-template-columns: 1fr;
+    }
+
+    .card-price-last p {
+        font-size: 20px;
+    }
+
+    .car-title {
+        font-size: 18px;
+    }
+}

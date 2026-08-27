@@ -1,0 +1,17 @@
+.report-progress {
+    text-align: center;
+    .progress-bar {
+      width: 100%;
+      background: #eee;
+      height: 20px;
+      border-radius: 10px;
+      overflow: hidden;
+      margin: 10px auto;
+      .progress {
+        height: 100%;
+        background: #28a745;
+        transition: width 0.5s;
+      }
+    }
+  }
+  

@@ -1,0 +1,119 @@
+.container-auth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-top: 2%;
+    font-family: sans-serif;
+}
+
+.auth {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 10px -1px 30px 2px rgba(0, 0, 0, 0.1);
+    border-radius: 15px;
+    width: 28%;
+    /* height: 55%; */
+    padding: 2%;
+    background-color: white;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 90%;
+
+}
+
+.auth-input {
+    /* border: 1px solid rgb(201, 197, 197); */
+    border-radius: 4px;
+    background-color: #EAEAEA;
+    border: none;
+    font-size: 20px;
+}
+
+.auth-input:hover {
+    box-shadow: 4px 8px 16px rgba(119, 119, 119, 0.2);
+    transition: 0.3s;
+    font-size: 20px;
+}
+
+.sign {
+    font-size: 24px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+.a-auth {
+    color: #0D99FF;
+    text-decoration: none;
+
+}
+
+.but-auth {
+    width: 80%;
+    border-radius: 15px;
+    border-style: none;
+    font-size: 16px;
+    font-weight: 600;
+    color: #313131;
+    background-color: #F0F0F0;
+    padding: 4%;
+
+}
+
+.button_container {
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+    gap: 20px;
+    align-items: center;
+}
+
+// Стили для Telegram Widget портала
+#telegram-widget-portal,
+#telegram-widget-portal-register {
+  position: relative;
+  z-index: 1000;
+  display: inline-block;
+  margin: 10px 0;
+}
+
+#telegram-login-container {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+@media screen and (max-width: 900px) {
+    .auth {
+        width: 40%;
+
+    }
+}
+
+@media screen and (max-width: 731px) {
+    .auth {
+        width: 55%;
+
+    }
+}
+
+@media screen and (max-width: 677px) {
+    .auth {
+        width: 100%;
+        box-shadow: none;
+        border-radius: 0px;
+        padding: 4%;
+    }
+
+    .sign {
+        font-size: 20px;
+    }
+
+    .auth-input {
+        font-size: 18px;
+    }
+}

@@ -1,0 +1,101 @@
+.phone-button {
+    display: flex;
+    padding: 5%;
+    background-color: #28a745;
+    width: 70%;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+    border-radius: 15px;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    justify-content: space-around;
+
+    &:hover {
+        background-color: #218838; // Темно-зеленый при наведении
+    }
+
+    &:active {
+        background-color: #1e7e34; // Еще более темный при активации
+    }
+}
+
+
+@media screen and (max-width: 1000px) {
+    .cars-mb {
+        width: 100%;
+    }
+
+    .button-conteiner {
+        width: 60%;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 25px;
+    }
+
+    .car-direction {
+        width: 100%;
+    }
+}
+
+@media screen and (max-width: 857px) {
+
+    .h1-car {
+        display: flex;
+        flex-direction: column;
+        font-family: sans-serif;
+
+    }
+
+    .car-but {
+        margin-left: 15%;
+
+    }
+
+    .car-card {
+
+        flex-direction: column;
+
+    }
+
+    .thumbnail {
+        width: 20%;
+        margin: 0px;
+        border-radius: 0px;
+    }
+
+    .thumbnail-container {
+        margin-top: 0px;
+
+    }
+
+    .card-img {
+        border-radius: 0px;
+    }
+
+    .car-direction {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+
+    }
+
+    .slideshow-container {
+        max-width: none;
+
+    }
+
+    .container {
+        min-width: none;
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .phone-button {
+        display: flex;
+        padding: 5%;
+        background-color: #28a745;
+        font-size: 14px;
+    }
+}
