@@ -31,6 +31,20 @@ sessions work the same tree at the same time and a branch per story would put th
 different heads. The rules that still apply: one commit per story, conventional commit
 subjects, and no direct commits to `main` or `dev`.
 
+## Commands that overwrite the working tree
+
+**Commit before running anything that writes over working-tree files.** Two sessions
+share this tree at the same time, so uncommitted work in it is not necessarily yours.
+
+`git checkout-index -f -a`, `git checkout -- .`, `git restore .`, `git reset --hard`,
+`git clean -fd`, `git stash` without `-u`, and a rebase or a branch switch over a dirty
+tree all replace files that were never staged. There is no reflog for a working-tree
+file: once overwritten it is gone.
+
+Before any of them: `git status --short`, and either commit what is there or stop and
+ask. This rule exists because `git checkout-index -f -a` was run here to work around an
+unrelated Docker problem, and destroyed half a story's uncommitted work.
+
 ## Commit messages
 
 Conventional Commits: `<type>: <short description in imperative mood>`
