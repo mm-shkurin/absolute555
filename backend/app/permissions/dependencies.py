@@ -1,15 +1,19 @@
+"""Role and permission checks, and the FastAPI dependencies that enforce them.
+
+Ownership lives in ownership.py and the guest limits in guests.py; what stays here
+answers one question only -- does this caller's role carry this permission.
+"""
+
 from typing import List
+
 from fastapi import Depends, HTTPException, status
+
 from app.models.users import Users
-from app.models.sale_car import SaleCars
-from app.models.offer import Offer,OfferStatus
 from app.utils.security import get_current_user
-from .roles import UserRole
-from .permissions import Permission
+
 from .mapping import ROLE_PERMISSIONS
-from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.database import get_db
-from sqlalchemy import select,func 
+from .permissions import Permission
+from .roles import UserRole
 
 async def get_user_permissions(user_role: UserRole) -> set[Permission]:
     return ROLE_PERMISSIONS.get(user_role, set())
@@ -76,165 +80,3 @@ def require_all_permissions(permissions: List[Permission]):
             )
         return current_user
     return permission_checker
-
-async def can_manage_sale_car(current_user: Users, sale_car_user_id: str) -> bool:
-    
-    if str(current_user.id) == sale_car_user_id:
-        return True
-    
-    try:
-        user_role = UserRole(current_user.role)
-    except ValueError:
-        return False
-    
-    can_edit_any = await has_permission(user_role, Permission.EDIT_ANY_SALE_CAR)
-    can_delete_any = await has_permission(user_role, Permission.DELETE_ANY_SALE_CAR)
-    
-    return can_edit_any or can_delete_any
-
-async def can_delete_sale_car_photos(current_user: Users, sale_car_user_id: str) -> bool:
-    if str(current_user.id) == sale_car_user_id:
-        return True
-    
-    try:
-        user_role = UserRole(current_user.role)
-    except ValueError:
-        return False
-    
-    return await has_permission(user_role, Permission.DELETE_ANY_SALE_CAR_PHOTOS)
-
-async def can_manage_sale_car(current_user: Users, sale_car_user_id: str) -> bool:
-    if str(current_user.id) == sale_car_user_id:
-        return True
-    
-    try:
-        user_role = UserRole(current_user.role)
-    except ValueError:
-        return False
-    
-    can_edit_any = await has_permission(user_role, Permission.EDIT_ANY_SALE_CAR)
-    can_delete_any = await has_permission(user_role, Permission.DELETE_ANY_SALE_CAR)
-    
-    return can_edit_any or can_delete_any
-
-async def can_delete_sale_car_photos(current_user: Users, sale_car_user_id: str) -> bool:
-    if str(current_user.id) == sale_car_user_id:
-        return True
-    
-    try:
-        user_role = UserRole(current_user.role)
-    except ValueError:
-        return False
-    
-    return await has_permission(user_role, Permission.DELETE_ANY_SALE_CAR_PHOTOS)
-
-async def can_manage_offer_as_owner(
-    current_user: Users,
-    sale_car_id: str,
-    db: AsyncSession
-) -> bool:
-    """
-    Проверяю, является ли текущий пользователь владельцем автомобиля,
-    на который сделано предложение.
-    """
-    # Админ или пользователь с правом EDIT_ANY_SALE_CAR может управлять всеми предложениями на авто
-    try:
-        user_role = UserRole(current_user.role)
-    except ValueError:
-        return False
-    
-    if await has_permission(user_role, Permission.EDIT_ANY_SALE_CAR):
-        return True
-    
-    result = await db.execute(
-        select(SaleCars).where(SaleCars.sale_car_id == sale_car_id)
-    )
-    car = result.scalar_one_or_none()
-    if not car:
-        return False
-    return str(car.user_id) == str(current_user.id)
-
-async def can_manage_offer(
-    current_user: Users,
-    offer: Offer,
-    db: AsyncSession
-) -> bool:
-    """
-    Проверяею, может ли пользователь просматривать/управлять предложением:
-    - автор предложения
-    - владелец автомобиля (через can_manage_offer_as_owner)
-    - администратор или пользователь с правом EDIT_ANY_SALE_CAR
-    """
-    if str(offer.user_id) == str(current_user.id):
-        return True
-    
-    return await can_manage_offer_as_owner(current_user, str(offer.sale_car_id), db)
-
-async def require_guest_can_create_car(
-    current_user: Users = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-) -> Users:
-    if not current_user.is_guest:
-        return current_user  
-    
-    user_service = UserService(db)
-    limits = await user_service.check_guest_limits(current_user.id)
-    
-    if not limits["can_create_car"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Guest limit reached: only 1 car allowed. Please verify your account to create more."
-        )
-    return current_user
-
-
-async def forbid_guest_view_prices(
-    current_user: Users = Depends(get_current_user)
-) -> Users:
-    if current_user.is_guest:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Price information is available only for verified users."
-        )
-    return current_user
-
-
-async def forbid_guest_publish_sale(
-    current_user: Users = Depends(get_current_user)
-) -> Users:
-    if current_user.is_guest:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Publishing cars for sale requires a verified account."
-        )
-    return current_user
-
-async def forbid_guest(current_user: Users = Depends(get_current_user)) -> Users:
-    if current_user.is_guest:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="This action is not available for guest users"
-        )
-    return current_user
-
-
-async def check_guest_car_limit(
-    current_user: Users = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-) -> Users:
-    if not current_user.is_guest:
-        return current_user
-    
-    # Counts listings, not garage entries: the Cars model went with story 1, and a
-    # guest's one allowed object is now the one listing they may publish.
-    result = await db.execute(
-        select(func.count()).where(SaleCars.user_id == current_user.id)
-    )
-    listing_count = result.scalar_one()
-
-    if listing_count >= 1:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Guest users can only create 1 listing. Please verify your account to create more."
-        )
-    return current_user

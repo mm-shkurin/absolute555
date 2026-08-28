@@ -10,11 +10,8 @@ from app.db.database import get_db
 from app.utils.security import get_current_user
 from app.tasks.decode_vin import decode_vin_from_sts_sale_car_task
 from app.tasks.status_updater import TaskStatus
-from app.permissions.dependencies import (
-    require_permission,
-    check_guest_car_limit,
-    forbid_guest,
-)
+from app.permissions.dependencies import require_permission
+from app.permissions.guests import check_guest_car_limit, forbid_guest
 from app.permissions.permissions import Permission
 import uuid
 import base64

@@ -1,77 +1,28 @@
 from app.core.config import MinioSettings
-import boto3
-import uuid
 import json
 from fastapi import UploadFile
 import asyncio
 from typing import Optional
 
+from app.services.s3_bucket import (
+    build_client,
+    ensure_bucket_exists,
+    generate_key,
+    public_base_url,
+)
+
 minio_settings = MinioSettings()
+
 
 class S3Service:
     def __init__(self):
-        self.s3_client = boto3.client(
-            's3',
-            aws_access_key_id=minio_settings.minio_root_user,
-            aws_secret_access_key=minio_settings.minio_root_password,
-            endpoint_url=minio_settings.minio_endpoint_url
-        )
-        
+        self.s3_client = build_client(minio_settings)
         self.bucket = minio_settings.minio_bucket_name
-        endpoint_url = str(minio_settings.minio_endpoint_url)
-        if endpoint_url.startswith('http://'):
-            self.base_url = endpoint_url.replace('http://', 'https://').rstrip('/')
-        else:
-            self.base_url = endpoint_url.rstrip('/')
-        self._ensure_bucket_exists()
+        self.base_url = public_base_url(minio_settings)
+        ensure_bucket_exists(self.s3_client, self.bucket)
 
-    def _ensure_bucket_exists(self):
-        try:
-            self.s3_client.head_bucket(Bucket=self.bucket)
-        except self.s3_client.exceptions.ClientError as e:
-            error_code = e.response['Error']['Code']
-            if error_code == '404':
-                self.s3_client.create_bucket(Bucket=self.bucket)
-                self.s3_client.put_bucket_policy(
-                    Bucket=self.bucket,
-                    Policy=json.dumps({
-                        "Version": "2012-10-17",
-                        "Statement": [
-                            {
-                                "Effect": "Allow",
-                                "Principal": {"AWS": "*"},
-                                "Action": ["s3:GetObject"],
-                                "Resource": [f"arn:aws:s3:::{self.bucket}/*"]
-                            }
-                        ]
-                    })
-                )
-            else:
-                raise
-
-    def _generate_key(self, car_id: str, filename: Optional[str], folder: str) -> str:
-        ext = ""
-        if filename and "." in filename:
-            ext = filename.split(".")[-1]
-        unique = uuid.uuid4().hex
-        suffix = f".{ext}" if ext else ""
-        return f"{car_id}/{folder}/{unique}{suffix}"
-    
     async def upload_file(self, car_id: str, file: UploadFile, folder: str = "photos") -> str:
-        key = self._generate_key(car_id, file.filename, folder)
-
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None,
-            lambda: self.s3_client.upload_fileobj(
-                file.file,
-                self.bucket,
-                key,
-                ExtraArgs={"ACL": "public-read", "ContentType": file.content_type},
-            ),
-        )
-
-        return f"{self.base_url}/{self.bucket}/{key}"
+        return self.make_url(await self.upload_file_get_key(car_id, file, folder))
 
     def make_url(self, key: str) -> str:
         return f"{self.base_url}/{self.bucket}/{key}"
@@ -81,7 +32,7 @@ class S3Service:
         return url[len(prefix):] if url.startswith(prefix) else url
 
     async def upload_file_get_key(self, car_id: str, file: UploadFile, folder: str = "photos") -> str:
-        key = self._generate_key(car_id, file.filename, folder)
+        key = generate_key(car_id, file.filename, folder)
         loop = asyncio.get_event_loop()
         await loop.run_in_executor(
             None,
@@ -95,7 +46,7 @@ class S3Service:
         return key
 
     async def upload_file_from_bytes(self, car_id: str, file_bytes: bytes, filename: Optional[str] = None, content_type: Optional[str] = None, folder: str = "photos") -> str:
-        key = self._generate_key(car_id, filename, folder)
+        key = generate_key(car_id, filename, folder)
 
         extra_args = {"ACL": "public-read"}
         if content_type:
@@ -145,7 +96,7 @@ class S3Service:
         key: Optional[str] = None, 
     ) -> str:
         if key is None:
-            key = self._generate_key(car_id, filename, folder)
+            key = generate_key(car_id, filename, folder)
 
         extra_args = {"ACL": "public-read"}
         if content_type:

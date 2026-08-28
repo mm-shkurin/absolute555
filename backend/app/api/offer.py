@@ -14,12 +14,9 @@ from app.schemas.offer import (
     OfferWithCarResponse
 )
 from app.utils.security import get_current_user
-from app.permissions.dependencies import can_manage_offer, can_manage_offer_as_owner
-from app.permissions.dependencies import (
-    require_permission,
-    check_guest_car_limit,
-    forbid_guest,
-)
+from app.permissions.dependencies import require_permission
+from app.permissions.guests import check_guest_car_limit, forbid_guest
+from app.permissions.ownership import can_manage_offer, can_manage_offer_as_owner
 offer_router = APIRouter()
 @offer_router.post("/", response_model=OfferResponse, status_code=status.HTTP_201_CREATED)
 async def create_offer(

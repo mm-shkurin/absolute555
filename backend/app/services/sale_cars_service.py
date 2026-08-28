@@ -96,7 +96,6 @@ class SaleCarService:
                 "message": "No valid photo keys found to delete"
             }
         
-        from app.services.s3_service import s3_service
         delete_results = await s3_service.delete_files(keys_to_delete)
         
         remaining_keys = [key for key in existing_keys if key not in delete_results["deleted"]]
@@ -135,8 +134,7 @@ class SaleCarService:
 
         if sale_car.s3_photo_car_keys:
             try:
-                from app.services.s3_service import s3_service
-                await s3_service.delete_files(sale_car.s3_photo_car_keys)
+                        await s3_service.delete_files(sale_car.s3_photo_car_keys)
             except Exception as e:
                 logger.warning(f"Failed to delete photos from S3 for sale_car_id={sale_car_id}: {e}")
 

@@ -9,7 +9,7 @@ from fastapi import HTTPException
 
 from app.models.sale_car import SaleCarStatus
 from app.models.users import Users
-from app.permissions.dependencies import can_manage_sale_car
+from app.permissions.ownership import can_manage_sale_car
 from app.services.listing_errors import (
     ListingFrozen,
     ListingIncomplete,

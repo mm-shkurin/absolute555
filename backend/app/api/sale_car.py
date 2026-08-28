@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.models.sale_car import SaleCarStatus
 from app.models.users import Users
-from app.permissions.dependencies import can_delete_sale_car_photos, can_manage_sale_car
+from app.permissions.ownership import can_delete_sale_car_photos, can_manage_sale_car
 from app.schemas.sale_cars import (
     SaleCarPhotoDelete,
     SaleCarPhotoUpload,

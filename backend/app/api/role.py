@@ -17,6 +17,7 @@ from app.schemas.role import (
     RoleRequestUpdate
 )
 from app.services.role_service import RoleService
+from app.services.role_request_service import RoleRequestService
 from app.utils.security import get_current_user
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
@@ -125,7 +126,7 @@ async def create_role_request(
     db: AsyncSession = Depends(get_db)
 ):
     try:
-        service = RoleService(db)
+        service = RoleRequestService(db)
         role_request = await service.create_role_request(current_user.id, request_data)
         
         return RoleRequestResponse.from_orm(role_request)
@@ -140,7 +141,7 @@ async def get_my_role_requests(
     current_user: Users = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    service = RoleService(db)
+    service = RoleRequestService(db)
     role_requests = await service.get_user_role_requests(current_user.id)
     
     return [RoleRequestResponse.from_orm(req) for req in role_requests]
@@ -151,7 +152,7 @@ async def get_all_role_requests(
     current_user: Users = Depends(require_permission(Permission.VIEW_ROLE_REQUESTS)),
     db: AsyncSession = Depends(get_db)
 ):
-    service = RoleService(db)
+    service = RoleRequestService(db)
     role_requests = await service.get_all_role_requests(status)
     
     result = []
@@ -179,7 +180,7 @@ async def update_role_request(
     current_user: Users = Depends(require_permission(Permission.MANAGE_ROLE_REQUESTS)),
     db: AsyncSession = Depends(get_db)
 ):
-    service = RoleService(db)
+    service = RoleRequestService(db)
     role_request = await service.update_role_request(request_id, current_user.id, update_data)
     
     if not role_request:
