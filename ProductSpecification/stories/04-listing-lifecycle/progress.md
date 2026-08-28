@@ -26,24 +26,24 @@
 
 ## Tier 2 — Backend
 
-- [~] api-10 a seller may hold no more than five drafts
-- [ ] api-11 a status sent as an ordinary field is not accepted
-- [ ] api-12 a listing under review cannot be edited
-- [ ] api-13 a rejected listing is corrected as a draft and sent again
-- [ ] api-14 a listing marked sold by mistake is withdrawn
-- [ ] api-15 a price survives saving and reading unchanged
-- [ ] api-16 sending the same draft for review twice changes nothing
-- [ ] api-17 two actions arriving together leave one status
-- [ ] api-18 a published listing records when it was published
+- [x] api-10 a seller may hold no more than five drafts
+- [x] api-11 a status sent as an ordinary field is not accepted
+- [x] api-12 a listing under review cannot be edited
+- [x] api-13 a rejected listing is corrected as a draft and sent again
+- [x] api-14 a listing marked sold by mistake is withdrawn
+- [x] api-15 a price survives saving and reading unchanged
+- [x] api-16 sending the same draft for review twice changes nothing
+- [x] api-17 two actions arriving together leave one status
+- [x] api-18 a published listing records when it was published
 
 ## Tier 2 — Integration
 
-- [ ] int-01 a status change is announced to the Telegram channel
-- [ ] int-02 a failing announcement does not undo the status change
+- [x] int-01 a status change is announced to the Telegram channel
+- [x] int-02 a failing announcement does not undo the status change
 
 ## Tier 2 — Frontend
 
-- [ ] ui-01 my listings are grouped by status
+- [~] ui-01 my listings are grouped by status (frontend lane, not started)
 
 ## Tier 2 — Security
 

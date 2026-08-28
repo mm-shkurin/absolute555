@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Optional
 
 from loguru import logger
-from sqlalchemy import func, select
+from sqlalchemy import func, select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -138,16 +138,28 @@ class ListingLifecycleService:
         return missing
 
     async def _move(self, listing: SaleCars, target: str) -> SaleCars:
-        allowed = ALLOWED_TRANSITIONS.get(listing.status, frozenset())
-        if target not in allowed:
-            raise TransitionNotAllowed(listing.status, sorted(allowed))
-
         previous = listing.status
-        listing.status = target
+        allowed = ALLOWED_TRANSITIONS.get(previous, frozenset())
+        if target not in allowed:
+            raise TransitionNotAllowed(previous, sorted(allowed))
+
+        # The status the check read has to be the status the write finds. Two actions on
+        # one listing arrive on different workers, and a plain assignment would let both
+        # pass the check against `published` and both apply.
+        moved = await self.db.execute(
+            update(SaleCars)
+            .where(SaleCars.sale_car_id == listing.sale_car_id, SaleCars.status == previous)
+            .values(status=target)
+        )
         await self.db.commit()
-        await self._reload(listing)
-        await self._announce(listing, previous)
-        return listing
+        current = await self.get(str(listing.sale_car_id))
+        if moved.rowcount == 0:
+            raise TransitionNotAllowed(
+                current.status, sorted(ALLOWED_TRANSITIONS.get(current.status, frozenset()))
+            )
+
+        await self._announce(current, previous)
+        return current
 
     async def _announce(self, listing: SaleCars, previous: str) -> None:
         # The listing has already moved. An announcement that cannot be delivered is a
