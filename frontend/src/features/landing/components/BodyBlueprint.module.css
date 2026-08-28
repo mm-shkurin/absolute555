@@ -1,0 +1,19 @@
+.line {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+}
+
+.zone {
+  stroke: var(--bg-surface);
+  stroke-width: 1.5;
+  opacity: 0.85;
+}
+
+.caption {
+  font-size: 10px;
+  font-weight: 700;
+  fill: var(--border-strong);
+  letter-spacing: 1px;
+}

@@ -5,7 +5,9 @@
 // `ProductSpecification/frontend-architecture.md`, таблица «Срезы Абсолюта».
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useSession } from './useSession'
-import { ROUTES } from './routes'
+import { LandingPage } from '../features/landing/LandingPage'
+import { FeedPage } from '../features/feed/FeedPage'
+import { ROUTES } from '../shared/navigation/routes'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
 // «временных» пустых компонентов расползаются по кодовой базе и переживают всех.
@@ -31,11 +33,8 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route
-          path={ROUTES.home}
-          element={<Pending screen={signedIn ? 'Лента' : 'Лендинг'} />}
-        />
-        <Route path={ROUTES.feed} element={<Pending screen="Лента" />} />
+        <Route path={ROUTES.home} element={signedIn ? <FeedPage signedIn /> : <LandingPage />} />
+        <Route path={ROUTES.feed} element={<FeedPage signedIn={signedIn} />} />
         <Route path={ROUTES.importFeed} element={<Pending screen="Под заказ" />} />
         <Route path={ROUTES.listing()} element={<Pending screen="Карточка объявления" />} />
         <Route path={ROUTES.thicknessMap()} element={<Pending screen="Карта замеров" />} />

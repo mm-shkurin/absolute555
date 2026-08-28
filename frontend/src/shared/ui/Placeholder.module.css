@@ -1,0 +1,18 @@
+/* Штриховка вместо фотографии. Держится в продукте до появления настоящих кадров и
+   намеренно не притворяется картинкой: пустой серый прямоугольник читается как сломанная
+   загрузка, штриховка с подписью — как «здесь будет фото». */
+.placeholder {
+  background:
+    repeating-linear-gradient(45deg, rgba(13, 20, 31, 0.035) 0 6px, transparent 6px 12px),
+    var(--bg-sunken);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-thumb);
+  display: grid;
+  place-items: center;
+  padding: 8px;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-align: center;
+  letter-spacing: 0.04em;
+}

@@ -1,0 +1,44 @@
+/* Плашка остаётся тёмной в обеих темах — на неё смотрят последней, и она должна отличаться
+   от страницы, а не повторять её. */
+.cta {
+  background: var(--bg-inverse);
+  color: var(--text-inverse);
+  border-radius: 16px;
+  padding: 60px 44px;
+}
+
+.row {
+  display: flex;
+  gap: 32px;
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+
+.text {
+  flex: 1;
+  min-width: 280px;
+}
+
+.title {
+  font-size: 33px;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.028em;
+  margin: 0 0 10px;
+}
+
+.sub {
+  margin: 0;
+  font-size: 16.5px;
+  line-height: 1.55;
+  color: color-mix(in srgb, var(--text-inverse) 65%, transparent);
+}
+
+@media (max-width: 900px) {
+  .cta {
+    padding: 32px 20px;
+  }
+  .title {
+    font-size: 26px;
+  }
+}

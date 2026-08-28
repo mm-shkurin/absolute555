@@ -1,0 +1,100 @@
+.empty {
+  text-align: center;
+  padding: 70px 20px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-surface);
+}
+
+.empty h3 {
+  font-size: 21px;
+  margin: 16px 0 8px;
+}
+
+.empty p {
+  color: var(--text-secondary);
+  margin: 0 0 22px;
+}
+
+.emptyMark {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  margin: 0 auto;
+}
+
+.skeletons {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.skeleton {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+}
+
+.skeletonBody {
+  padding: 14px 16px 18px;
+}
+
+/* Блик по плейсхолдеру: он говорит «ответ ещё идёт». Статичная серая плитка на медленной
+   сети неотличима от пришедшей пустой карточки. */
+.bar {
+  background: linear-gradient(
+    90deg,
+    var(--bg-sunken) 25%,
+    var(--bg-surface) 50%,
+    var(--bg-sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite;
+  border-radius: 6px;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.barPhoto {
+  aspect-ratio: 4 / 3;
+  border-radius: 0;
+}
+
+.barTitle {
+  height: 16px;
+  width: 70%;
+}
+
+.barPrice {
+  height: 22px;
+  width: 45%;
+  margin: 10px 0;
+}
+
+.barSpec {
+  height: 13px;
+  width: 88%;
+}
+
+@media (max-width: 1240px) {
+  .skeletons {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 1100px) {
+  .skeletons {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 520px) {
+  .skeletons {
+    grid-template-columns: 1fr;
+  }
+}
