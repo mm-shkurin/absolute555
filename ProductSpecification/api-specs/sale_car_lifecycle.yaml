@@ -67,6 +67,63 @@ paths:
         '404': { $ref: '#/components/responses/NotFound' }
         '409': { $ref: '#/components/responses/BadTransition' }
 
+  /api/v1/sale_car/{sale_car_id}/revise:
+    parameters: [{ $ref: '#/components/parameters/SaleCarId' }]
+    post:
+      summary: Вернуть отклонённое в черновик (rejected -> draft)
+      operationId: reviseSaleCar
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: Причина отклонения снимается — исправленному объявлению нечего нести.
+      responses:
+        '200': { $ref: '#/components/responses/Transitioned' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/BadTransition' }
+
+  /api/v1/sale_car/{sale_car_id}/approve:
+    parameters: [{ $ref: '#/components/parameters/SaleCarId' }]
+    post:
+      summary: Опубликовать после проверки (moderation -> published)
+      operationId: approveSaleCar
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Требует права edit_any_sale_car. Очередь модератора и разбор жалоб — история 9;
+        здесь только сам переход, без которого недостижима половина матрицы.
+      responses:
+        '200': { $ref: '#/components/responses/Transitioned' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Недостаточно прав }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/BadTransition' }
+
+  /api/v1/sale_car/{sale_car_id}/reject:
+    parameters: [{ $ref: '#/components/parameters/SaleCarId' }]
+    post:
+      summary: Отклонить с причиной (moderation -> rejected)
+      operationId: rejectSaleCar
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason:
+                  type: string
+                  description: Что именно исправить. Отклонение без текста не даёт владельцу зацепки.
+      responses:
+        '200': { $ref: '#/components/responses/Transitioned' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { description: Недостаточно прав }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/BadTransition' }
+        '422': { description: Причина пуста }
+
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
