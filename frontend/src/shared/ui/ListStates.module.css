@@ -1,0 +1,41 @@
+.rows {
+  display: grid;
+  gap: 10px;
+}
+
+.rowBar {
+  height: 84px;
+  border-radius: 16px;
+  background: linear-gradient(
+    90deg,
+    var(--bg-sunken) 25%,
+    var(--bg-surface) 50%,
+    var(--bg-sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite;
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.notice {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-surface);
+}
+
+.notice h3 {
+  font-size: 21px;
+  margin: 0 0 8px;
+}
+
+.notice p {
+  color: var(--text-secondary);
+  margin: 0 0 22px;
+}

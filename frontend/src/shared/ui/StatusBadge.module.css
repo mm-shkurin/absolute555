@@ -1,0 +1,39 @@
+/* Плашка состояния. Пять тонов на весь продукт: ждём, получилось, отказ, нейтральное
+   прошлое и «просто пометка». Цвет здесь несёт смысл, поэтому рядом всегда стоит слово —
+   дальтоник читает текст, а не заливку. */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 9px;
+  border-radius: 5px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.005em;
+}
+
+.wait {
+  background: var(--status-wait-soft);
+  color: var(--status-wait-ink);
+}
+
+.ok {
+  background: var(--status-ok-soft);
+  color: var(--status-ok-ink);
+}
+
+.bad {
+  background: var(--status-bad-soft);
+  color: var(--status-bad-ink);
+}
+
+/* Прошедшее: истёк, отозван, продано. Без цвета — событие закончилось и внимания не просит. */
+.past {
+  background: var(--bg-sunken);
+  color: var(--text-muted);
+}
+
+.info {
+  background: var(--accent-soft);
+  color: var(--text-accent);
+}

@@ -1,0 +1,10 @@
+/* Правило торга под списком, а не над ним: сначала человек видит, что решать, и лишь потом
+   читает, чем обернётся решение. */
+.note {
+  margin-top: 16px;
+  padding-left: 14px;
+  border-left: 2px solid var(--border-subtle);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}
