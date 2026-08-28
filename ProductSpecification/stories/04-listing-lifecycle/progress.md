@@ -52,4 +52,4 @@
 
 ## Tier 2 — Infrastructure
 
-- [ ] inf-01 existing listings survive the move to the six statuses
+- [x] inf-01 existing listings survive the move to the six statuses (pulled forward: schema gates every scenario)

@@ -2,11 +2,10 @@ from pydantic import BaseModel, Field
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
-from enum import Enum
 
-class SaleCarStatus(str, Enum):
-    ON_SALE = "on_sale"  
-    SOLD = "sold" 
+# One vocabulary for the wire and the row. Re-declaring the six values here is how the
+# two drift apart the first time one is extended.
+from app.models.sale_car import SaleCarStatus
 
 
 class SaleCarCreate(BaseModel):
@@ -32,7 +31,6 @@ class SaleCarUpdate(BaseModel):
     price: Optional[float] = None
     milleage: Optional[float] = None
     description: Optional[str] = None
-    status: Optional[SaleCarStatus] = None
     brand: Optional[str] = None
     model: Optional[str] = None
     mark_raw: Optional[str] = None
@@ -79,11 +77,13 @@ class SaleCarResponse(BaseModel):
     s3_photo_car_keys: Optional[List[str]] = None
     task_id: Optional[str] = None
     task_status: Optional[str] = None
-    phone_number: str
-    price: float
-    milleage: float
+    phone_number: Optional[str] = None
+    price: Optional[float] = None
+    milleage: Optional[float] = None
     description: Optional[str] = None
     status: SaleCarStatus
+    reject_reason: Optional[str] = None
+    published_at: Optional[datetime] = None
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
     car_data: Optional[dict] = None
@@ -92,7 +92,3 @@ class SaleCarResponse(BaseModel):
 
     class Config:
         from_attributes = True
-
-
-class SaleCarStatusUpdate(BaseModel):
-    status: SaleCarStatus = Field(..., description="Новый статус объявления")

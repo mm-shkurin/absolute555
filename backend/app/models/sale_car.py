@@ -7,8 +7,40 @@ from datetime import datetime
 from enum import Enum as PyEnum
 
 class SaleCarStatus(str, PyEnum):
-    ON_SALE = "on_sale"
+    DRAFT = "draft"
+    MODERATION = "moderation"
+    PUBLISHED = "published"
+    REJECTED = "rejected"
+    WITHDRAWN = "withdrawn"
     SOLD = "sold"
+
+
+# The lifecycle as data rather than as branches. Sixteen of the twenty-four
+# status-by-action cells are refusals, and a refusal that is a missing branch looks
+# exactly like a refusal that was written -- the table is what makes the absent ones
+# visible. Who may perform a transition is the router's question, not this table's.
+ALLOWED_TRANSITIONS: dict[str, frozenset[str]] = {
+    SaleCarStatus.DRAFT: frozenset({SaleCarStatus.MODERATION}),
+    SaleCarStatus.MODERATION: frozenset({SaleCarStatus.PUBLISHED, SaleCarStatus.REJECTED}),
+    SaleCarStatus.PUBLISHED: frozenset({SaleCarStatus.WITHDRAWN, SaleCarStatus.SOLD}),
+    SaleCarStatus.REJECTED: frozenset({SaleCarStatus.DRAFT}),
+    SaleCarStatus.WITHDRAWN: frozenset({SaleCarStatus.MODERATION}),
+    SaleCarStatus.SOLD: frozenset({SaleCarStatus.WITHDRAWN}),
+}
+
+# What a listing must carry before it can be sent for review. Completeness is checked on
+# the draft -> moderation boundary rather than by the columns, because a draft is
+# incomplete by definition: the wizard saves it on every one of its six steps.
+REQUIRED_TO_SUBMIT: tuple[str, ...] = (
+    "price",
+    "milleage",
+    "phone_number",
+    "brand_id",
+    "model_id",
+    "year",
+)
+
+MAX_DRAFTS_PER_USER = 5
 
 class SaleCars(Base):
     __tablename__ = "sale_cars"
@@ -39,11 +71,16 @@ class SaleCars(Base):
     transmission = Column(String, nullable=True)
     engine_power = Column(Integer, nullable=True)
 
-    price = Column(Float,nullable=False)
-    milleage = Column(Float,nullable=False)
-    phone_number = Column(String,nullable=False)
+    price = Column(Float, nullable=True)
+    milleage = Column(Float, nullable=True)
+    phone_number = Column(String, nullable=True)
     description = Column(Text, nullable=True)
-    status = Column(String, default=SaleCarStatus.ON_SALE, nullable=False)
+    status = Column(String, default=SaleCarStatus.DRAFT, nullable=False, index=True)
+
+    # Set when a moderator rejects, cleared when the listing returns to a draft. A
+    # rejection with no reason gives the seller nothing to correct.
+    reject_reason = Column(Text, nullable=True)
+    published_at = Column(DateTime, nullable=True)
     sts_photos = Column(JSONB,default=[])
     s3_photo_car_keys = Column(JSON, default=[])
 

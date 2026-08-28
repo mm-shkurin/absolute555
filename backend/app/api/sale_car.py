@@ -5,7 +5,7 @@ from loguru import logger
 from app.db.database import get_db
 from app.models.users import Users
 from app.services.sale_cars_service import SaleCarService
-from app.schemas.sale_cars import SaleCarResponse, SaleCarUpdate, SaleCarUpdateResponse, SaleCarPhotoDelete, SaleCarStatusUpdate, SaleCarStatus
+from app.schemas.sale_cars import SaleCarResponse, SaleCarUpdate, SaleCarUpdateResponse, SaleCarPhotoDelete, SaleCarStatus
 from app.utils.security import get_current_user
 from app.permissions.dependencies import can_manage_sale_car, can_delete_sale_car_photos
 from app.services.s3_service import s3_service
@@ -19,7 +19,7 @@ async def list_sale_cars(
 ):
     service = SaleCarService(db)
     if status is None:
-        status = SaleCarStatus.ON_SALE
+        status = SaleCarStatus.PUBLISHED
     cars = await service.get_all_sale_cars(status=status)
     
     enriched_cars = []
@@ -299,126 +299,3 @@ async def delete_sale_car_photos(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error deleting photos: {str(e)}")
-
-@sale_car_router.get("/list/on-sale", response_model=List[SaleCarResponse])
-async def list_sale_cars_on_sale(
-    db: AsyncSession = Depends(get_db),
-):
-    service = SaleCarService(db)
-    cars = await service.get_sale_cars_on_sale()
-    
-    enriched_cars = []
-    for car in cars:
-        car_data = {
-            "sale_car_id": car.sale_car_id,
-            "user_id": car.user_id,
-            "vin": car.vin,
-            "brand": car.brand.name_ru if car.brand else None,
-            "model": car.model.name if car.model else None,
-            "mark_raw": car.mark_raw,
-            "model_raw": car.model_raw,
-            "year": car.year,
-            "transmission": car.transmission,
-            "engine_power": car.engine_power,
-            "s3_photo_car_keys": car.s3_photo_car_keys,
-            "task_id": car.task_id,
-            "task_status": car.task_status,
-            "phone_number": car.phone_number,
-            "price": car.price,
-            "milleage": car.milleage,
-            "description": car.description,
-            "status": car.status,
-            "created_at": car.created_at,
-            "updated_at": car.updated_at,
-        }
-        try:
-            keys = car.s3_photo_car_keys or []
-            if keys:
-                car_data["preview_photo_url"] = await s3_service.generate_presigned_url(keys[0])
-        except Exception:
-            pass
-        
-        enriched_cars.append(car_data)
-    
-    return enriched_cars
-
-@sale_car_router.get("/list/sold", response_model=List[SaleCarResponse])
-async def list_sale_cars_sold(
-    db: AsyncSession = Depends(get_db),
-):
-    service = SaleCarService(db)
-    cars = await service.get_sale_cars_sold()
-    
-    enriched_cars = []
-    for car in cars:
-        car_data = {
-            "sale_car_id": car.sale_car_id,
-            "user_id": car.user_id,
-            "vin": car.vin,
-            "brand": car.brand.name_ru if car.brand else None,
-            "model": car.model.name if car.model else None,
-            "mark_raw": car.mark_raw,
-            "model_raw": car.model_raw,
-            "year": car.year,
-            "transmission": car.transmission,
-            "engine_power": car.engine_power,
-            "s3_photo_car_keys": car.s3_photo_car_keys,
-            "task_id": car.task_id,
-            "task_status": car.task_status,
-            "phone_number": car.phone_number,
-            "price": car.price,
-            "milleage": car.milleage,
-            "description": car.description,
-            "status": car.status,
-            "created_at": car.created_at,
-            "updated_at": car.updated_at,
-        }
-        try:
-            keys = car.s3_photo_car_keys or []
-            if keys:
-                car_data["preview_photo_url"] = await s3_service.generate_presigned_url(keys[0])
-        except Exception:
-            pass
-        
-        enriched_cars.append(car_data)
-    
-    return enriched_cars
-
-@sale_car_router.patch("/{sale_car_id}/status", response_model=SaleCarUpdateResponse)
-async def update_sale_car_status(
-    sale_car_id: str,
-    status_update: SaleCarStatusUpdate,
-    db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
-):
-    service = SaleCarService(db)
-    
-    car = await service.get_sale_car_by_id(sale_car_id)
-    if not car:
-        raise HTTPException(status_code=404, detail="Sale car not found")
-    
-    if not await can_manage_sale_car(current_user, str(car.user_id)):
-        raise HTTPException(status_code=403, detail="Access denied")
-    
-    try:
-        update_data = {"status": status_update.status}
-        updated_car = await service.update_sale_car(sale_car_id, update_data)
-        
-        return SaleCarUpdateResponse(
-            sale_car_id=updated_car.sale_car_id,
-            user_id=updated_car.user_id,
-            vin=updated_car.vin,
-            brand=updated_car.brand.name_ru if updated_car.brand else None,
-            model=updated_car.model.name if updated_car.model else None,
-            year=updated_car.year,
-            transmission=updated_car.transmission,
-            engine_power=updated_car.engine_power,
-            task_status=updated_car.task_status,
-            updated_at=updated_car.updated_at,
-            message=f"Sale car status updated to {status_update.status.value}"
-        )
-    except ValueError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error updating car status: {str(e)}")
-

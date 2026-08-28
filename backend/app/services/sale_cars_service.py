@@ -30,7 +30,7 @@ class SaleCarService:
             price=payload.price,
             milleage=payload.milleage,
             description=payload.description,
-            status=SaleCarStatus.ON_SALE,
+            status=SaleCarStatus.DRAFT,
             sts_photos=payload.sts_photos_b64 or [],
             task_status="PENDING",
         )
@@ -53,12 +53,6 @@ class SaleCarService:
         query = query.order_by(SaleCars.created_at.desc())
         res = await self.db.execute(query)
         return list(res.scalars().all())
-
-    async def get_sale_cars_on_sale(self) -> List[SaleCars]:
-        return await self.get_all_sale_cars(status=SaleCarStatus.ON_SALE)
-
-    async def get_sale_cars_sold(self) -> List[SaleCars]:
-        return await self.get_all_sale_cars(status=SaleCarStatus.SOLD)
 
     async def get_sale_cars_by_user(self, user_id: str, status: Optional[SaleCarStatus] = None) -> List[SaleCars]:
         query = select(SaleCars).where(SaleCars.user_id == uuid.UUID(user_id))
