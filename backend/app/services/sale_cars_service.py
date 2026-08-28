@@ -7,11 +7,9 @@ from app.schemas.sale_cars import SaleCarCreate, SaleCarUpdate
 from typing import List, Optional
 from app.services.webhook_service import WebhookService
 from app.services.s3_service import s3_service
-from app.core.config import FrontendSettings
 from loguru import logger
 import uuid
 
-frontend_settings = FrontendSettings()
 
 
 class SaleCarService:
@@ -124,54 +122,6 @@ class SaleCarService:
         await self.db.refresh(sale_car)
         return sale_car
 
-    async def update_sale_car(self, sale_car_id: str, update_data: dict) -> SaleCars:
-        sale_car = await self.get_sale_car_by_id(sale_car_id)
-        if not sale_car:
-            raise ValueError("Sale car not found")
-        
-        old_status = sale_car.status
-        status_changed = False
-        
-        if "vin" in update_data and update_data["vin"] is not None:
-            sale_car.vin = update_data["vin"]
-        if "phone_number" in update_data and update_data["phone_number"] is not None:
-            sale_car.phone_number = update_data["phone_number"]
-        if "price" in update_data and update_data["price"] is not None:
-            sale_car.price = update_data["price"]
-        if "milleage" in update_data and update_data["milleage"] is not None:
-            sale_car.milleage = update_data["milleage"]
-        if "description" in update_data:
-            sale_car.description = update_data["description"]
-        if "status" in update_data and update_data["status"] is not None:
-            new_status_value = None
-            if isinstance(update_data["status"], SaleCarStatus):
-                new_status_value = update_data["status"].value
-            else:
-                new_status_value = update_data["status"]
-            
-            if sale_car.status != new_status_value:
-                status_changed = True
-                sale_car.status = new_status_value
-        
-        
-        await self.db.commit()
-        await self.db.refresh(sale_car)
-        
-        if status_changed:
-            try:
-                sale_car_data = await self._prepare_webhook_data(sale_car)
-                webhook_service = WebhookService(self.db)
-                await webhook_service.send_tg_webhook_status_change(
-                    sale_car_id=str(sale_car.sale_car_id),
-                    old_status=old_status,
-                    new_status=sale_car.status,
-                    sale_car_data=sale_car_data
-                )
-            except Exception as e:
-                logger.warning(f"Failed to send status change webhook for sale_car_id={sale_car_id}: {e}")
-        
-        return sale_car
-
     async def delete_sale_car(self, sale_car_id: str) -> bool:
         sale_car = await self.get_sale_car_by_id(sale_car_id)
         if not sale_car:
@@ -195,65 +145,3 @@ class SaleCarService:
         )
         await self.db.commit()
         return True
-
-    async def check_and_send_webhook_if_ready(self, sale_car_id: str) -> bool:
-        sale_car = await self.get_sale_car_by_id(sale_car_id)
-        if not sale_car:
-            return False
-        
-        has_photos = bool(
-            sale_car.s3_photo_car_keys and 
-            len(sale_car.s3_photo_car_keys) > 0
-        )
-        
-        if not has_photos:
-            logger.debug(f"Sale car {sale_car_id} has no photos, skipping webhook")
-            return False
-        
-        try:
-            sale_car_data = await self._prepare_webhook_data(sale_car)
-            
-            webhook_service = WebhookService(self.db)
-            await webhook_service.send_tg_webhook(
-                sale_car_id=str(sale_car.sale_car_id),
-                sale_car_data=sale_car_data
-            )
-            
-            return True
-            
-        except Exception as e:
-            logger.error(f"Failed to send webhook for sale_car_id={sale_car_id}: {e}")
-            return False
-
-    async def _prepare_webhook_data(self, sale_car: SaleCars) -> dict:
-        data = {
-            "sale_car_id": str(sale_car.sale_car_id),
-            "user_id": str(sale_car.user_id),
-            "price": sale_car.price,
-            "milleage": sale_car.milleage,
-            "phone_number": sale_car.phone_number,
-            "vin": sale_car.vin,
-            "description": sale_car.description,
-            "photo_count": len(sale_car.s3_photo_car_keys) if sale_car.s3_photo_car_keys else 0,
-            "listing_url": f"{str(frontend_settings.frontend_url).rstrip('/')}/cars/{sale_car.sale_car_id}",
-        }
-        
-        photo_urls = []
-        if sale_car.s3_photo_car_keys:
-            for key in sale_car.s3_photo_car_keys:
-                public_url = s3_service.get_public_photo_url(key)
-                photo_urls.append(public_url)
-        
-        data["photo_urls"] = photo_urls
-        
-        # The decoded СТС fields used to be fetched from ChromaDB by document id and
-        # nested under a "car_data" key. They are columns now, so they are flat here.
-        data["brand"] = sale_car.brand.name_ru if sale_car.brand else None
-        data["model"] = sale_car.model.name if sale_car.model else None
-        data["year"] = sale_car.year
-        data["transmission"] = sale_car.transmission
-        data["engine_power"] = sale_car.engine_power
-
-        return data
-
-    
