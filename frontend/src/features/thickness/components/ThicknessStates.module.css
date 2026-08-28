@@ -1,0 +1,57 @@
+.skeleton {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  gap: 24px;
+  padding: 20px 0 90px;
+}
+
+.bar {
+  background: linear-gradient(
+    90deg,
+    var(--bg-sunken) 25%,
+    var(--bg-surface) 50%,
+    var(--bg-sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite;
+  border-radius: var(--radius-surface);
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.sheet {
+  aspect-ratio: 880 / 640;
+}
+
+.side {
+  height: 420px;
+}
+
+.failure {
+  text-align: center;
+  padding: 70px 20px;
+  margin: 20px 0 90px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-surface);
+}
+
+.failure h3 {
+  font-size: 21px;
+  margin: 0 0 8px;
+}
+
+.failure p {
+  color: var(--text-secondary);
+  margin: 0 0 22px;
+}
+
+@media (max-width: 900px) {
+  .skeleton {
+    grid-template-columns: 1fr;
+  }
+}

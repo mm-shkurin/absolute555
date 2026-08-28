@@ -8,6 +8,7 @@ import { useSession } from './useSession'
 import { LandingPage } from '../features/landing/LandingPage'
 import { FeedPage } from '../features/feed/FeedPage'
 import { ListingPage } from '../features/listing/ListingPage'
+import { ThicknessPage } from '../features/thickness/ThicknessPage'
 import { ROUTES } from '../shared/navigation/routes'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
@@ -38,7 +39,7 @@ export function App() {
         <Route path={ROUTES.feed} element={<FeedPage signedIn={signedIn} />} />
         <Route path={ROUTES.importFeed} element={<Pending screen="Под заказ" />} />
         <Route path={ROUTES.listing()} element={<ListingPage signedIn={signedIn} />} />
-        <Route path={ROUTES.thicknessMap()} element={<Pending screen="Карта замеров" />} />
+        <Route path={ROUTES.thicknessMap()} element={<ThicknessPage signedIn={signedIn} />} />
         <Route path={ROUTES.seller()} element={<Pending screen="Профиль продавца" />} />
         <Route path={ROUTES.supplier()} element={<Pending screen="Профиль поставщика" />} />
         <Route path={ROUTES.importRequest()} element={<Pending screen="Заявка на привоз" />} />
