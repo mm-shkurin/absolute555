@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { countLabel, formatPrice, toListingView } from '../listingView'
+import { countLabel, toListingView } from '../listingView'
+import { formatPrice } from '../../../../shared/format/money'
 import type { ListingWire } from '../../api/listingsApi'
 
 const base: ListingWire = {

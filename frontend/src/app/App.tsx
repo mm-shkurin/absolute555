@@ -7,6 +7,7 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useSession } from './useSession'
 import { LandingPage } from '../features/landing/LandingPage'
 import { FeedPage } from '../features/feed/FeedPage'
+import { ListingPage } from '../features/listing/ListingPage'
 import { ROUTES } from '../shared/navigation/routes'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
@@ -36,7 +37,7 @@ export function App() {
         <Route path={ROUTES.home} element={signedIn ? <FeedPage signedIn /> : <LandingPage />} />
         <Route path={ROUTES.feed} element={<FeedPage signedIn={signedIn} />} />
         <Route path={ROUTES.importFeed} element={<Pending screen="Под заказ" />} />
-        <Route path={ROUTES.listing()} element={<Pending screen="Карточка объявления" />} />
+        <Route path={ROUTES.listing()} element={<ListingPage signedIn={signedIn} />} />
         <Route path={ROUTES.thicknessMap()} element={<Pending screen="Карта замеров" />} />
         <Route path={ROUTES.seller()} element={<Pending screen="Профиль продавца" />} />
         <Route path={ROUTES.supplier()} element={<Pending screen="Профиль поставщика" />} />

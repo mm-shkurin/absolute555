@@ -1,0 +1,119 @@
+/* Каркас карточки объявления: слева всё про машину, справа — всё про сделку.
+   Правая колонка липкая: цена и кнопка «предложить цену» не должны уезжать вверх, пока
+   человек листает характеристики и замеры. */
+.crumbs {
+  padding-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.crumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.crumbs a:hover {
+  color: var(--text-accent);
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+  padding: 24px 0 90px;
+}
+
+.side {
+  position: sticky;
+  top: 88px;
+}
+
+.block {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-surface);
+  padding: 22px;
+  margin-top: 16px;
+}
+
+.blockFirst {
+  margin-top: 0;
+}
+
+.block h3 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 14px;
+}
+
+.blockHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.blockHead h3 {
+  margin: 0;
+}
+
+.specs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 28px;
+}
+
+.specs div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 14.5px;
+}
+
+.specs span {
+  color: var(--text-muted);
+}
+
+.specs b {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.vin {
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+}
+
+.description {
+  margin: 0;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.mapTeaser {
+  aspect-ratio: 16 / 9;
+  border-radius: var(--radius-surface);
+  margin-bottom: 12px;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 12px 0 100px;
+  }
+  .side {
+    position: static;
+  }
+  .specs {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,0 +1,136 @@
+// Перевод карточки с провода в то, что видит человек, и одно решение: в каком режиме
+// показывать правую колонку. Режим считается здесь, а не в разметке — иначе три экрана
+// мокапа превратились бы в три ветки JSX, разъезжающиеся при первой же правке.
+import { formatAmount, formatPrice, pluralize } from '../../../shared/format/money'
+import type { ListingDetailWire, OfferWire } from '../api/listingApi'
+
+export type ViewerMode = 'guest' | 'buyer' | 'sold'
+
+export interface SpecRow {
+  label: string
+  value: string
+  mono?: boolean
+}
+
+export interface OfferRow {
+  id: string
+  when: string
+  amount: string
+}
+
+export interface ListingDetailView {
+  id: string
+  title: string
+  summary: string
+  price: string
+  photos: string[]
+  photosTotal: number
+  description: string | null
+  specs: SpecRow[]
+  hasThicknessMap: boolean
+  thicknessBadge: string | null
+  sellerId: string
+  sellerName: string
+  sellerStars: string
+  sellerRating: string
+  soldOn: string | null
+  phoneAvailable: boolean
+}
+
+export function viewerMode(wire: ListingDetailWire, signedIn: boolean): ViewerMode {
+  if (wire.status === 'sold') return 'sold'
+  return signedIn ? 'buyer' : 'guest'
+}
+
+const DASH = '—'
+
+function specs(wire: ListingDetailWire): SpecRow[] {
+  return [
+    { label: 'Марка и модель', value: `${wire.brand} ${wire.model}`.trim() },
+    { label: 'Год выпуска', value: String(wire.year) },
+    {
+      label: 'Пробег',
+      value: wire.mileage_km === null ? DASH : `${formatAmount(wire.mileage_km)} км`,
+    },
+    { label: 'Коробка', value: wire.transmission ?? DASH },
+    {
+      label: 'Мощность',
+      value: wire.engine_power_hp === null ? DASH : `${wire.engine_power_hp} л.с.`,
+    },
+    // VIN приходит уже замаскированным: полный номер в открытой карточке — подарок
+    // перекупу, который клонирует объявление вместе с историей машины.
+    { label: 'VIN', value: wire.vin_masked ?? DASH, mono: true },
+  ]
+}
+
+function summary(wire: ListingDetailWire): string {
+  const parts = [String(wire.year)]
+  if (wire.mileage_km !== null) parts.push(`${formatAmount(wire.mileage_km)} км`)
+  if (wire.city) parts.push(wire.city)
+  return parts.join(' · ')
+}
+
+const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
+const TIME = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' })
+
+export function toListingDetailView(wire: ListingDetailWire): ListingDetailView {
+  return {
+    id: wire.id,
+    title: `${wire.brand} ${wire.model}`.trim(),
+    summary: summary(wire),
+    price: formatPrice(wire.price),
+    photos: wire.photo_urls,
+    photosTotal: wire.photos_total,
+    description: wire.description,
+    specs: specs(wire),
+    hasThicknessMap: wire.has_thickness_map,
+    thicknessBadge: wire.thickness_map_complete
+      ? 'полная карта'
+      : wire.has_thickness_map
+        ? 'частичная карта'
+        : null,
+    sellerId: wire.seller.id,
+    sellerName: wire.seller.name,
+    sellerStars: stars(wire.seller.rating),
+    sellerRating:
+      wire.seller.rating === null
+        ? 'пока без отзывов'
+        : `${wire.seller.rating.toFixed(1).replace('.', ',')} · ${dealsLabel(wire.seller.deals_count)}`,
+    soldOn: wire.sold_at ? DATE.format(new Date(wire.sold_at)) : null,
+    phoneAvailable: wire.phone_available,
+  }
+}
+
+// Звёзды рисуются по числу, а не пятью подряд: пятизвёздная строка у продавца с рейтингом
+// 3,2 — это ложь, которую видно раньше, чем подпись рядом.
+export function stars(rating: number | null): string {
+  const filled = rating === null ? 0 : Math.round(rating)
+  return '★'.repeat(filled) + '☆'.repeat(5 - filled)
+}
+
+export function dealsLabel(count: number): string {
+  return `${count} ${pluralize(count, 'сделка', 'сделки', 'сделок')}`
+}
+
+export function toOfferRows(offers: OfferWire[], now: Date): OfferRow[] {
+  return offers.map((offer) => {
+    const at = new Date(offer.created_at)
+    return {
+      id: offer.id,
+      when: `${dayWord(at, now)}, ${TIME.format(at)}`,
+      amount: formatPrice(offer.amount),
+    }
+  })
+}
+
+// «Сегодня в 14:55» человек соотносит с торгом мгновенно, полная дата требует вычитания.
+function dayWord(at: Date, now: Date): string {
+  const days = Math.round((startOfDay(now).getTime() - startOfDay(at).getTime()) / 86_400_000)
+  if (days <= 0) return 'сегодня'
+  if (days === 1) return 'вчера'
+  return DATE.format(at)
+}
+
+function startOfDay(value: Date): Date {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate())
+}
