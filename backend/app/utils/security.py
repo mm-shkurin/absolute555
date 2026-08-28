@@ -104,3 +104,18 @@ async def get_current_user(request: Request, token: str = Depends(auth_scheme), 
         raise credentials_exception
     
     return user
+
+
+async def get_current_user_or_none(
+    request: Request, token: str = Depends(auth_scheme), db: AsyncSession = Depends(get_db)
+):
+    """The caller, when there is one.
+
+    A public listing is readable by a guest, but the same path must recognise its owner:
+    an unpublished listing is visible to the person who wrote it and to nobody else. So
+    the token is read when present and its absence is not an error.
+    """
+    try:
+        return await get_current_user(request, token, db)
+    except HTTPException:
+        return None

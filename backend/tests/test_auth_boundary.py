@@ -10,7 +10,7 @@ import pytest
 PROTECTED = [
     ("GET", "/api/v1/user/profile"),
     ("GET", "/api/v1/sale_car/user"),
-    ("PUT", "/api/v1/sale_car/00000000-0000-0000-0000-000000000000"),
+    ("PATCH", "/api/v1/sale_car/00000000-0000-0000-0000-000000000000"),
     ("DELETE", "/api/v1/sale_car/00000000-0000-0000-0000-000000000000"),
     ("GET", "/api/v1/offer/my"),
     ("POST", "/api/v1/offer/"),

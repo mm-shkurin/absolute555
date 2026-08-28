@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
@@ -26,22 +26,32 @@ class SaleCarPhotoDelete(BaseModel):
 
 
 class SaleCarUpdate(BaseModel):
+    """Any subset of a listing's fields.
+
+    Unknown fields are refused rather than ignored: `status` used to be one of these, and
+    a client that can still send it would expect it to have been applied.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
     vin: Optional[str] = None
     phone_number: Optional[str] = None
     price: Optional[float] = None
     milleage: Optional[float] = None
     description: Optional[str] = None
-    brand: Optional[str] = None
-    model: Optional[str] = None
+    brand_id: Optional[UUID] = None
+    model_id: Optional[UUID] = None
     mark_raw: Optional[str] = None
     model_raw: Optional[str] = None
-    year: Optional[str] = None
+    year: Optional[int] = None
     transmission: Optional[str] = None
     engine_power: Optional[int] = None
-    body_type: Optional[str] = None
-    fuel_type: Optional[str] = None
-    drive_type: Optional[str] = None
-    sts_photos_b64: Optional[List[str]] = None
+
+
+class SaleCarStatusChanged(BaseModel):
+    sale_car_id: UUID
+    status: SaleCarStatus
+    updated_at: datetime
 
 
 class SaleCarUpdateResponse(BaseModel):

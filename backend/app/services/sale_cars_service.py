@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
+from sqlalchemy.orm import selectinload
 from app.models.sale_car import SaleCars, SaleCarStatus
 from app.schemas.sale_cars import SaleCarCreate, SaleCarUpdate
 
@@ -41,13 +42,17 @@ class SaleCarService:
 
     async def get_sale_car_by_id(self, sale_car_id: str) -> Optional[SaleCars]:
         res = await self.db.execute(
-            select(SaleCars).where(SaleCars.sale_car_id == uuid.UUID(sale_car_id))
+            select(SaleCars)
+            .options(selectinload(SaleCars.brand), selectinload(SaleCars.model))
+            .where(SaleCars.sale_car_id == uuid.UUID(sale_car_id))
         )
         return res.scalar_one_or_none()
 
 
     async def get_all_sale_cars(self, status: Optional[SaleCarStatus] = None) -> List[SaleCars]:
-        query = select(SaleCars)
+        query = select(SaleCars).options(
+            selectinload(SaleCars.brand), selectinload(SaleCars.model)
+        )
         if status:
             query = query.where(SaleCars.status == status.value)
         query = query.order_by(SaleCars.created_at.desc())
@@ -55,7 +60,11 @@ class SaleCarService:
         return list(res.scalars().all())
 
     async def get_sale_cars_by_user(self, user_id: str, status: Optional[SaleCarStatus] = None) -> List[SaleCars]:
-        query = select(SaleCars).where(SaleCars.user_id == uuid.UUID(user_id))
+        query = (
+            select(SaleCars)
+            .options(selectinload(SaleCars.brand), selectinload(SaleCars.model))
+            .where(SaleCars.user_id == uuid.UUID(user_id))
+        )
         if status:
             query = query.where(SaleCars.status == status.value)
         query = query.order_by(SaleCars.created_at.desc())
