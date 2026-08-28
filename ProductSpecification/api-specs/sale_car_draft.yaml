@@ -1,0 +1,166 @@
+openapi: 3.0.3
+info:
+  title: Sale car draft
+  version: 1.0.0
+
+paths:
+  /api/v1/sale_car:
+    post:
+      summary: Создать пустой черновик объявления
+      operationId: createSaleCarDraft
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Черновик создан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SaleCar' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Достигнут лимит черновиков
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DraftLimitError' }
+
+  /api/v1/sale_car/{sale_car_id}:
+    parameters:
+      - name: sale_car_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      summary: Сохранить любое подмножество полей объявления
+      operationId: patchSaleCar
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SaleCarPatch' }
+      responses:
+        '200':
+          description: Сохранено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SaleCar' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Объявление заморожено — правка допустима в draft и rejected
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TransitionError' }
+    get:
+      summary: Одно объявление
+      operationId: getSaleCar
+      tags: [sale_car]
+      responses:
+        '200':
+          description: Объявление
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SaleCar' }
+        '404':
+          description: |
+            Не найдено. Тот же ответ отдаётся на чужое объявление в статусе draft,
+            moderation или rejected — 403 подтвердил бы, что оно существует.
+
+  /api/v1/sale_car/user:
+    get:
+      summary: Свои объявления
+      operationId: listMySaleCars
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/SaleCarStatus' }
+      responses:
+        '200':
+          description: Список
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SaleCar' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Требуется аутентификация
+    NotFound:
+      description: Объявление не найдено
+
+  schemas:
+    SaleCarStatus:
+      type: string
+      enum: [draft, moderation, published, rejected, withdrawn, sold]
+
+    SaleCarPatch:
+      type: object
+      description: Все поля необязательны. Поле status здесь не принимается.
+      properties:
+        vin: { type: string, nullable: true }
+        phone_number: { type: string, nullable: true }
+        price: { type: number, nullable: true }
+        milleage: { type: number, nullable: true }
+        year: { type: integer, nullable: true }
+        transmission: { type: string, nullable: true }
+        engine_power: { type: integer, nullable: true }
+        description: { type: string, nullable: true }
+        brand_id: { type: string, format: uuid, nullable: true }
+        model_id: { type: string, format: uuid, nullable: true }
+
+    SaleCar:
+      type: object
+      required: [sale_car_id, user_id, status, created_at, updated_at]
+      properties:
+        sale_car_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/SaleCarStatus' }
+        vin: { type: string, nullable: true }
+        brand: { type: string, nullable: true }
+        model: { type: string, nullable: true }
+        mark_raw: { type: string, nullable: true }
+        model_raw: { type: string, nullable: true }
+        year: { type: integer, nullable: true }
+        transmission: { type: string, nullable: true }
+        engine_power: { type: integer, nullable: true }
+        price: { type: number, nullable: true }
+        milleage: { type: number, nullable: true }
+        phone_number: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        photo_urls:
+          type: array
+          items: { type: string }
+        reject_reason:
+          type: string
+          nullable: true
+          description: Заполнено только в статусе rejected
+        published_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    DraftLimitError:
+      type: object
+      required: [detail, limit]
+      properties:
+        detail: { type: string }
+        limit: { type: integer, example: 5 }
+
+    TransitionError:
+      type: object
+      required: [detail, current_status, allowed]
+      properties:
+        detail: { type: string }
+        current_status: { $ref: '#/components/schemas/SaleCarStatus' }
+        allowed:
+          type: array
+          items: { $ref: '#/components/schemas/SaleCarStatus' }

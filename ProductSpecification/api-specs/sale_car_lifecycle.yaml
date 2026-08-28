@@ -1,0 +1,132 @@
+openapi: 3.0.3
+info:
+  title: Sale car lifecycle
+  version: 1.0.0
+  description: |
+    Переходы статусов объявления. Каждое действие — отдельный путь: клиент называет
+    намерение, а не целевое значение, поэтому недопустимый переход невозможно выразить.
+
+paths:
+  /api/v1/sale_car/{sale_car_id}/submit:
+    parameters: [{ $ref: '#/components/parameters/SaleCarId' }]
+    post:
+      summary: Отправить на модерацию (draft -> moderation)
+      operationId: submitSaleCar
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Transitioned' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/BadTransition' }
+        '422':
+          description: Объявление неполно
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/IncompleteError' }
+
+  /api/v1/sale_car/{sale_car_id}/withdraw:
+    parameters: [{ $ref: '#/components/parameters/SaleCarId' }]
+    post:
+      summary: Снять с публикации (published -> withdrawn, sold -> withdrawn)
+      operationId: withdrawSaleCar
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Transitioned' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/BadTransition' }
+
+  /api/v1/sale_car/{sale_car_id}/sold:
+    parameters: [{ $ref: '#/components/parameters/SaleCarId' }]
+    post:
+      summary: Отметить проданным (published -> sold)
+      operationId: markSaleCarSold
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200': { $ref: '#/components/responses/Transitioned' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/BadTransition' }
+
+  /api/v1/sale_car/{sale_car_id}/republish:
+    parameters: [{ $ref: '#/components/parameters/SaleCarId' }]
+    post:
+      summary: Вернуть снятое в продажу (withdrawn -> moderation)
+      operationId: republishSaleCar
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Возврат идёт через модерацию, а не сразу в ленту: между снятием и возвратом
+        объявление могли переписать.
+      responses:
+        '200': { $ref: '#/components/responses/Transitioned' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/BadTransition' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  parameters:
+    SaleCarId:
+      name: sale_car_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    Unauthorized:
+      description: Требуется аутентификация
+    NotFound:
+      description: Объявление не найдено или не принадлежит пользователю
+    Transitioned:
+      description: Статус изменён
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/StatusChanged' }
+    BadTransition:
+      description: Переход недопустим из текущего статуса
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/TransitionError' }
+
+  schemas:
+    SaleCarStatus:
+      type: string
+      enum: [draft, moderation, published, rejected, withdrawn, sold]
+
+    StatusChanged:
+      type: object
+      required: [sale_car_id, status, updated_at]
+      properties:
+        sale_car_id: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/SaleCarStatus' }
+        updated_at: { type: string, format: date-time }
+
+    TransitionError:
+      type: object
+      required: [detail, current_status, allowed]
+      properties:
+        detail: { type: string }
+        current_status: { $ref: '#/components/schemas/SaleCarStatus' }
+        allowed:
+          type: array
+          description: Статусы, достижимые из текущего
+          items: { $ref: '#/components/schemas/SaleCarStatus' }
+
+    IncompleteError:
+      type: object
+      required: [detail, missing_fields]
+      properties:
+        detail: { type: string }
+        missing_fields:
+          type: array
+          description: |
+            Все недостающие поля сразу, не первое: мастер подсвечивает шаги.
+          items:
+            type: string
+            enum: [price, milleage, phone_number, brand_id, model_id, year, photos]
