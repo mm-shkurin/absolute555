@@ -65,6 +65,17 @@
   --status-bad: var(--measure-bad);
   --status-bad-soft: var(--measure-bad-soft);
 
+  /* Текст на мягкой подложке статуса. Сам --status-* слишком светел для букв: плашка
+     «на модерации» с жёлтым текстом на жёлтом фоне читается только вплотную. */
+  --status-ok-ink: #0b6e48;
+  --status-wait-ink: #7a4a08;
+  --status-bad-ink: #7a1e21;
+
+  /* Поле, заполненное распознаванием. Голубая подложка — единственный способ отличить
+     «это подставило приложение» от «это ввёл человек», а именно эти поля надо перечитать. */
+  --field-recognized-bg: #f7fbff;
+  --field-recognized-border: #bbd6ff;
+
   /* Геометрия. Шаг сетки 4px. */
   --radius-surface: 14px;
   --radius-control: 10px;

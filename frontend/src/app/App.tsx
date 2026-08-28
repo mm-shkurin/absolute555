@@ -9,6 +9,7 @@ import { LandingPage } from '../features/landing/LandingPage'
 import { FeedPage } from '../features/feed/FeedPage'
 import { ListingPage } from '../features/listing/ListingPage'
 import { ThicknessPage } from '../features/thickness/ThicknessPage'
+import { SellingWizardPage } from '../features/selling/SellingWizardPage'
 import { ROUTES } from '../shared/navigation/routes'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
@@ -44,7 +45,7 @@ export function App() {
         <Route path={ROUTES.supplier()} element={<Pending screen="Профиль поставщика" />} />
         <Route path={ROUTES.importRequest()} element={<Pending screen="Заявка на привоз" />} />
 
-        <Route path={ROUTES.selling} element={<Pending screen="Мастер продажи" />} />
+        <Route path={ROUTES.selling} element={<SellingWizardPage />} />
         <Route path={ROUTES.myListings} element={<Pending screen="Мои объявления" />} />
         <Route path={ROUTES.offers} element={<Pending screen="Офферы" />} />
         <Route path={ROUTES.chats} element={<Pending screen="Чаты" />} />

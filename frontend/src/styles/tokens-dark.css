@@ -44,6 +44,13 @@
   --measure-bad: #ff6b70;
   --measure-bad-soft: #3a1416;
   --measure-none: #46536b;
+
+  --status-ok-ink: #8ee5bb;
+  --status-wait-ink: #f7d59a;
+  --status-bad-ink: #ffb3b6;
+
+  --field-recognized-bg: #10203a;
+  --field-recognized-border: #2c4a7d;
 }
 
 /* Системная настройка как значение по умолчанию — но только пока человек не выбрал сам.
@@ -79,5 +86,12 @@
     --measure-bad: #ff6b70;
     --measure-bad-soft: #3a1416;
     --measure-none: #46536b;
+
+    --status-ok-ink: #8ee5bb;
+    --status-wait-ink: #f7d59a;
+    --status-bad-ink: #ffb3b6;
+
+    --field-recognized-bg: #10203a;
+    --field-recognized-border: #2c4a7d;
   }
 }
