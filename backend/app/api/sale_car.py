@@ -21,6 +21,7 @@ from app.schemas.sale_cars import (
 )
 from app.services.listing_errors import ListingError
 from app.services.listing_lifecycle import ListingLifecycleService
+from app.services.listing_photos import attach as attach_photos
 from app.services.sale_cars_service import SaleCarService
 from app.utils.security import get_current_user, get_current_user_or_none
 
@@ -130,14 +131,12 @@ async def add_sale_car_photos(
     db: AsyncSession = Depends(get_db),
     current_user: Users = Depends(get_current_user),
 ):
-    service = SaleCarService(db)
-    car = await service.get_sale_car_by_id(sale_car_id)
-    if not car:
-        raise HTTPException(status_code=404, detail="Sale car not found")
-    if not await can_manage_sale_car(current_user, str(car.user_id)):
-        raise HTTPException(status_code=403, detail="Access denied")
-
-    updated = await service.add_sale_car_photos(sale_car_id, payload.photos_b64)
+    service = ListingLifecycleService(db)
+    try:
+        listing = await listing_of(service, sale_car_id, current_user)
+        updated = await attach_photos(db, listing, payload.photos_b64)
+    except ListingError as error:
+        raise to_http(error)
     return {"sale_car_id": sale_car_id, "s3_photo_car_keys": updated.s3_photo_car_keys}
 
 

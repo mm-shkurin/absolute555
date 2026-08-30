@@ -13,6 +13,7 @@
 | POST | /api/v1/sale_car/{sale_car_id}/revise | rejected -> draft, причина отклонения снимается |
 | POST | /api/v1/sale_car/{sale_car_id}/approve | moderation -> published, только модератор |
 | POST | /api/v1/sale_car/{sale_car_id}/reject | moderation -> rejected с причиной, только модератор |
+| POST | /api/v1/sale_car/{sale_car_id}/photos | Добавить снимок в галерею |
 
 ## Notes
 
@@ -25,5 +26,8 @@
 - `approve` и `reject` пришли из истории 9: без них ни один сценарий не доходит до
   `published`, а три перехода, выходящие из него, — Tier 1. Права — существующий
   `EDIT_ANY_SALE_CAR`.
+- `POST /{id}/photos` наполняет галерею объявления. До этой истории он дописывал в
+  `sts_photos` — снимки документа — и заполнить то, что читает проверка полноты, было
+  нечем: `submit` был недостижим. Порядок, обложка и потолок в 15 снимков — история 5.
 - `GET /list/on-sale` и `GET /list/sold` удаляются: с шестью статусами путь на статус не
   масштабируется, а `GET /list?status=` уже есть.

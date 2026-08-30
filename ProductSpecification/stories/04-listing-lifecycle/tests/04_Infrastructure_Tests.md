@@ -12,3 +12,11 @@ And no listing holds a retired status
 And a listing may now be stored with no price, no mileage and no phone number
 ```
 
+### 3. The listing routes are reachable under the versioned prefix
+Tier: 2 (promoted)
+```gherkin
+Given the running application
+When the route table is read
+Then the lifecycle actions are mounted under the versioned listing prefix
+And no route on a single status remains
+```

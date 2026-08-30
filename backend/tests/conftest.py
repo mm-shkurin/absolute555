@@ -1,6 +1,5 @@
 import asyncio
 import itertools
-import json
 import uuid
 
 import jwt
@@ -94,28 +93,25 @@ def catalogue(client) -> tuple:
     return brand_id, models.json()[0]["model_id"]
 
 
+# A one-pixel PNG. The gate asks whether a photo exists, not what it shows.
+PIXEL_PNG = (
+    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQ"
+    "AAAABJRU5ErkJggg=="
+)
+
+
 @pytest.fixture
-def attach_photo():
-    """Give a listing one car photo.
+def attach_photo(client):
+    """Give a listing one photo, through the API the seller uses."""
 
-    Uploading car photos is story 5 — the endpoint that exists today appends to the СТС
-    document photos, not to the listing's own gallery. Until that story lands, the one
-    thing story 4 needs from a photo is that it is there, so the key is written straight
-    to the row.
-    """
-
-    def _attach(listing_id: str, key: str = "listings/test/photo.jpg"):
-        async def _write():
-            async with get_db_session() as session:
-                await session.execute(
-                    text(
-                        "UPDATE sale_cars SET s3_photo_car_keys = :keys "
-                        "WHERE sale_car_id = :id"
-                    ),
-                    {"keys": json.dumps([key]), "id": uuid.UUID(listing_id)},
-                )
-                await session.commit()
-
-        asyncio.run(_write())
+    def _attach(listing_id: str, headers: dict, image_b64: str = PIXEL_PNG):
+        response = client.post(
+            f"/api/v1/sale_car/{listing_id}/photos",
+            headers=headers,
+            json={"photos_b64": [image_b64]},
+        )
+        assert response.status_code == 200, response.text
+        assert response.json()["s3_photo_car_keys"], "the gallery is still empty"
+        return response.json()["s3_photo_car_keys"]
 
     return _attach

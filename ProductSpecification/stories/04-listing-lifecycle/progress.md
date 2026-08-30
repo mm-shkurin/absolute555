@@ -53,3 +53,13 @@
 ## Tier 2 — Infrastructure
 
 - [x] inf-01 existing listings survive the move to the six statuses (pulled forward: schema gates every scenario)
+- [x] inf-03 the listing routes are reachable under the versioned prefix (promoted from tier 3)
+
+## Tier 2 — Backend, promoted from tier 3
+
+- [x] api-19 the gallery accepts a photo, so submit is reachable over HTTP
+- [x] sec-04 a listing under review is hidden from strangers as a draft is
+- [x] sec-05 a rejection reason is not disclosed outside the owner
+- [x] sec-06 an identifier that is not one is refused
+- [x] int-03 sending a draft for review does not wait on photo storage
+- [x] int-04 a make resolved by the catalogue satisfies the completeness check

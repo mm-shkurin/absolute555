@@ -45,6 +45,19 @@ class S3Service:
         )
         return key
 
+    async def upload_file_get_key_from_bytes(
+        self,
+        car_id: str,
+        file_bytes: bytes,
+        filename: Optional[str] = None,
+        content_type: str = "image/jpeg",
+        folder: str = "photos",
+    ) -> str:
+        url = await self.upload_file_from_bytes(
+            car_id, file_bytes, filename=filename, content_type=content_type, folder=folder
+        )
+        return self.extract_key_from_url(url)
+
     async def upload_file_from_bytes(self, car_id: str, file_bytes: bytes, filename: Optional[str] = None, content_type: Optional[str] = None, folder: str = "photos") -> str:
         key = generate_key(car_id, filename, folder)
 

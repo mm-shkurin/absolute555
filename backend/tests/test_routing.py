@@ -53,3 +53,21 @@ def test_should_not_register_auth_routes_twice(client):
     # registered at an address the provider was never told about.
     duplicated = [path for path in _route_table(client) if path.startswith("/auth/")]
     assert duplicated == []
+
+
+LIFECYCLE_ACTIONS = ["submit", "withdraw", "sold", "republish", "revise", "approve", "reject"]
+
+
+@pytest.mark.parametrize("action", LIFECYCLE_ACTIONS)
+def test_should_mount_every_lifecycle_action_under_the_listing_prefix(client, action):
+    table = _route_table(client)
+    path = "/api/v1/sale_car/{sale_car_id}/" + action
+    assert path in table, f"{path} is not registered"
+    assert "POST" in table[path]
+
+
+def test_should_keep_no_route_named_after_a_single_status(client):
+    # A path per status does not survive six of them; the baskets are GET /list?status=
+    # and GET /user?status= instead.
+    retired = [path for path in _route_table(client) if path.endswith(("/list/on-sale", "/list/sold"))]
+    assert retired == []

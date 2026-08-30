@@ -10,6 +10,7 @@ from fastapi import HTTPException
 from app.models.sale_car import SaleCarStatus
 from app.models.users import Users
 from app.permissions.ownership import can_manage_sale_car
+from app.services.listing_photos import PhotoNotReadable
 from app.services.listing_errors import (
     ListingFrozen,
     ListingIncomplete,
@@ -47,6 +48,8 @@ def to_http(error: Exception) -> HTTPException:
     if isinstance(error, TooManyDrafts):
         return HTTPException(status_code=409, detail={"detail": str(error), "limit": error.limit})
     if isinstance(error, RejectionNeedsReason):
+        return HTTPException(status_code=422, detail=str(error))
+    if isinstance(error, PhotoNotReadable):
         return HTTPException(status_code=422, detail=str(error))
     return HTTPException(status_code=500, detail="Listing error")
 
