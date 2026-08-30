@@ -4,6 +4,7 @@ import { NavLink, Link } from 'react-router-dom'
 import { ROUTES } from '../navigation/routes'
 import { Button, ButtonLink } from './Button'
 import { Container } from './Container'
+import { ThemeToggle } from './ThemeToggle'
 import styles from './SiteHeader.module.css'
 
 const SECTIONS = [
@@ -32,6 +33,7 @@ export function SiteHeader({ signedIn, onSignIn }: { signedIn: boolean; onSignIn
         </nav>
         <span className={styles.spacer} />
         <div className={styles.actions}>
+          <ThemeToggle />
           {signedIn ? (
             <Link to={ROUTES.profile} className={styles.avatar} aria-label="Профиль" />
           ) : (

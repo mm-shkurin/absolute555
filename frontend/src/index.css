@@ -5,6 +5,7 @@
    проверяемым диффом двух файлов. Порядок с запасом: `:root[data-theme='dark']` и так
    выигрывает по специфичности, откуда бы ни шёл. */
 @import './styles/palette.css';
+@import './styles/breakpoints.css';
 @import './styles/tokens-light.css';
 @import './styles/tokens-dark.css';
 

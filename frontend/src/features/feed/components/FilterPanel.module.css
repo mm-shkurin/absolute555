@@ -153,8 +153,23 @@
   color: var(--text-accent);
 }
 
-@media (max-width: 900px) {
+/* В шторке панель уже не панель: ни липкости, ни рамки, ни ограничения по высоте — этим
+   управляет сама шторка. */
+.inSheet {
+  position: static;
+  max-height: none;
+  border: 0;
+  border-radius: 0;
+  background: none;
+}
+
+/* Панель держится до телефона: на планшете 236px сбоку стоят дешевле, чем лишний тап по
+   шторке на каждое изменение фильтра. */
+@media (max-width: 767px) {
   .panel {
     display: none;
+  }
+  .inSheet {
+    display: flex;
   }
 }

@@ -28,6 +28,10 @@ export function isAllowed({ fromArea, toArea, fromFile, toPath }) {
   // `app` сшивает экраны — импортировать каждую фичу это вся его работа. `main.tsx` —
   // точка входа и делает одно: монтирует `app`.
   if (fromArea === 'app' || fromArea === 'main.tsx') return true
+  // `dev` — заглушка бэкенда для клика по экранам без сервера. Она обязана знать формы
+  // ответов каждой фичи: в этом вся её работа. В прод-сборку не входит (динамический
+  // импорт под флагом VITE_MOCK) и удаляется целиком, когда появится настоящий бэкенд.
+  if (fromArea === 'dev') return true
   if (fromArea === 'shared') {
     return ALLOWED_SHARED_TO_FEATURE.some(
       (entry) => slashed(fromFile).endsWith(entry.from) && slashed(toPath).includes(entry.to),

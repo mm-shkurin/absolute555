@@ -16,7 +16,8 @@
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "dev:mock": "vite --mode mock"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",

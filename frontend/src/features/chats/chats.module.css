@@ -186,15 +186,39 @@
   color: var(--text-primary);
 }
 
-@media (max-width: 900px) {
+/* Планшет: колонки те же, но список диалогов уже — переписке нужна ширина под сообщения. */
+@media (max-width: 1023px) {
+  .chat {
+    grid-template-columns: 260px 1fr;
+    height: 560px;
+  }
+}
+
+/* Телефон: показывается ровно одна из двух панелей — какая, решает страница. */
+@media (max-width: 767px) {
   .chat {
     grid-template-columns: 1fr;
     height: auto;
   }
-  .dialogs {
+  .chat[data-view='list'] .conversation {
+    display: none;
+  }
+  .chat[data-view='conversation'] .dialogs {
     display: none;
   }
   .body {
-    height: 420px;
+    height: 60vh;
   }
+}
+
+.back {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--bg-sunken);
+  color: var(--text-secondary);
+  font-size: 20px;
+  line-height: 1;
+  flex: none;
 }

@@ -14,11 +14,27 @@ interface Props {
   onChange: (query: FeedQuery) => void
   onReset: () => void
   onPickBrand: () => void
+  // Внутри шторки та же панель, но без липкости и без «спрятана на узком экране»: её туда
+  // как раз и открыли. Отдельный компонент означал бы два списка фильтров, расходящихся
+  // с первым же новым полем.
+  inSheet?: boolean
+  onApply?: () => void
 }
 
-export function FilterPanel({ query, total, onChange, onReset, onPickBrand }: Props) {
+export function FilterPanel({
+  query,
+  total,
+  onChange,
+  onReset,
+  onPickBrand,
+  inSheet,
+  onApply,
+}: Props) {
   return (
-    <aside className={styles.panel} data-testid="filter-panel">
+    <aside
+      className={[styles.panel, inSheet ? styles.inSheet : ''].join(' ')}
+      data-testid="filter-panel"
+    >
       <div className={styles.scroll}>
         <div className={styles.group}>
           <h4>Марка и модель</h4>
@@ -76,7 +92,9 @@ export function FilterPanel({ query, total, onChange, onReset, onPickBrand }: Pr
         </div>
       </div>
       <div className={styles.foot}>
-        <Button data-testid="filter-apply">Показать {countLabel(total)}</Button>
+        <Button data-testid="filter-apply" onClick={onApply}>
+          Показать {countLabel(total)}
+        </Button>
         <button type="button" className={styles.reset} onClick={onReset}>
           Сброс
         </button>

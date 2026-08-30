@@ -55,7 +55,7 @@
   margin-top: 6px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .row {
     grid-template-columns: 60px 1fr;
     gap: 10px;

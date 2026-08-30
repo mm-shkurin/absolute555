@@ -46,7 +46,7 @@
   line-height: 1.6;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .faq summary {
     font-size: 16px;
     padding: 16px 34px 16px 0;

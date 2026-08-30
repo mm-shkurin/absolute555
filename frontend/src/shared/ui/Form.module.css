@@ -119,7 +119,7 @@ textarea.control {
   outline-offset: 2px;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .form {
     grid-template-columns: 1fr;
   }

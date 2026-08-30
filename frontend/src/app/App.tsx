@@ -25,6 +25,7 @@ import { OAuthCallbackPage } from '../features/auth/OAuthCallbackPage'
 import { NewRequestPage } from '../features/importRequest/NewRequestPage'
 import { SupplierApplicationPage } from '../features/profile/SupplierApplicationPage'
 import { ROUTES } from '../shared/navigation/routes'
+import { TabBar } from '../shared/ui/TabBar'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
 // «временных» пустых компонентов расползаются по кодовой базе и переживают всех.
@@ -51,6 +52,7 @@ export function App() {
     <BrowserRouter>
       <Routes>
         <Route path={ROUTES.home} element={signedIn ? <FeedPage signedIn /> : <LandingPage />} />
+        <Route path={ROUTES.landing} element={<LandingPage signedIn={signedIn} />} />
         <Route path={ROUTES.feed} element={<FeedPage signedIn={signedIn} />} />
         <Route path={ROUTES.importFeed} element={<ImportFeedPage signedIn={signedIn} />} />
         <Route path={ROUTES.listing()} element={<ListingPage signedIn={signedIn} />} />
@@ -76,6 +78,7 @@ export function App() {
 
         <Route path="*" element={<Pending screen="Страница не найдена" />} />
       </Routes>
+      <TabBar />
     </BrowserRouter>
   )
 }

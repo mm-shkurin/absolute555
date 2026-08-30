@@ -9,10 +9,18 @@ import { MobileApp } from './components/MobileApp'
 import { FaqSection } from './components/FaqSection'
 import { FinalCta } from './components/FinalCta'
 
-export function LandingPage({ onSignIn }: { onSignIn?: () => void }) {
+// Вошедший тоже читает эту страницу — по ссылке «как это работает» из пустой ленты и из
+// справки, — и шапка у него должна остаться его: с аватаром, а не с кнопкой «Войти».
+export function LandingPage({
+  signedIn = false,
+  onSignIn,
+}: {
+  signedIn?: boolean
+  onSignIn?: () => void
+}) {
   return (
     <>
-      <SiteHeader signedIn={false} onSignIn={onSignIn} />
+      <SiteHeader signedIn={signedIn} onSignIn={onSignIn} />
       <main data-testid="landing">
         <Hero />
         <HowItWorks />

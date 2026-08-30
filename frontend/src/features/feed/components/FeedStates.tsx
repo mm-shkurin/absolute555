@@ -49,7 +49,7 @@ export function EmptyFeed({ filtered, onReset }: { filtered: boolean; onReset: (
       </p>
       <div className={styles.coldActions}>
         <ButtonLink to={ROUTES.selling}>Разместить первым</ButtonLink>
-        <ButtonLink to={ROUTES.home} tone="ghost">
+        <ButtonLink to={ROUTES.landing} tone="ghost">
           Как это работает
         </ButtonLink>
       </div>

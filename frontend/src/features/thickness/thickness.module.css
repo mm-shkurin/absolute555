@@ -107,7 +107,7 @@
   font-weight: 600;
 }
 
-@media (max-width: 900px) {
+@media (max-width: 1023px) {
   .layout {
     grid-template-columns: 1fr;
     gap: 14px;

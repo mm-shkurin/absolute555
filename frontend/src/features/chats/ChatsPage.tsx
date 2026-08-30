@@ -8,6 +8,7 @@ import { PageHeading, PageSection } from '../../shared/ui/PageHeading'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { DialogList } from './components/DialogList'
 import { Conversation } from './components/Conversation'
+import { PHONE, useMediaQuery } from '../../shared/lib/useMediaQuery'
 import { useChats, useConversation } from './useChats'
 import styles from './chats.module.css'
 
@@ -16,7 +17,11 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
   const { chatId } = useParams()
   const chats = useChats(now)
   const [selected, setSelected] = useState<string | null>(chatId ?? null)
-  const current = chats.chats.find((chat) => chat.id === (selected ?? chats.chats[0]?.id)) ?? null
+  // На телефоне список и переписка — два экрана, а не две колонки: переписка занимает
+  // экран целиком, и вернуться к списку надо кнопкой, а не прокруткой в сторону.
+  const phone = useMediaQuery(PHONE)
+  const fallback = phone ? null : (chats.chats[0]?.id ?? null)
+  const current = chats.chats.find((chat) => chat.id === (selected ?? fallback)) ?? null
   const conversation = useConversation(current, now)
 
   return (
@@ -39,7 +44,7 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
               </EmptyNotice>
             ) : null}
             {chats.dialogs.length > 0 ? (
-              <div className={styles.chat}>
+              <div className={styles.chat} data-view={phone && current ? 'conversation' : 'list'}>
                 <DialogList
                   dialogs={chats.dialogs}
                   current={current?.id ?? null}
@@ -50,6 +55,7 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
                     header={conversation.header}
                     messages={conversation.messages}
                     onSend={() => undefined}
+                    onBack={phone ? () => setSelected(null) : undefined}
                   />
                 ) : null}
               </div>

@@ -76,3 +76,16 @@
   color: var(--text-muted);
   font-size: 12.5px;
 }
+
+/* Телефон: пять проекций в 390 точках превращаются в пятно. Схема остаётся своего размера
+   и прокручивается вбок — деталь важнее того, чтобы всё влезло в один экран. */
+@media (max-width: 767px) {
+  .sheet {
+    padding: 12px;
+    overflow-x: auto;
+  }
+  .sheet svg {
+    width: 720px;
+    max-width: none;
+  }
+}

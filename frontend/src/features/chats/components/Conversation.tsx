@@ -12,10 +12,12 @@ export function Conversation({
   header,
   messages,
   onSend,
+  onBack,
 }: {
   header: ConversationHeader
   messages: MessageView[]
   onSend: (text: string) => void
+  onBack?: () => void
 }) {
   const [draft, setDraft] = useState('')
   const send = () => {
@@ -27,6 +29,11 @@ export function Conversation({
   return (
     <div className={styles.conversation} data-testid="conversation">
       <div className={styles.conversationTop}>
+        {onBack ? (
+          <button type="button" className={styles.back} onClick={onBack} aria-label="К диалогам">
+            ‹
+          </button>
+        ) : null}
         <Placeholder className={styles.thumb}>фото</Placeholder>
         <div>
           <div className={styles.who}>{header.name}</div>

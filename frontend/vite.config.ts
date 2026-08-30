@@ -20,7 +20,10 @@ function environment(mode: string): Record<string, string> {
 // тесты до прокси не доходят, и требовать переменную там — уронить прогон из-за значения,
 // которое он не использует.
 function servesBrowser(command: string, env: Record<string, string>): boolean {
-  return command === 'serve' && !env.VITEST
+  // В режиме фикстур (`npm run dev:mock`) прокси не нужен: запросы перехватываются в
+  // браузере и до сервера не доходят. Требовать адрес бэкенда там значило бы требовать
+  // бэкенд ровно у того запуска, который затеян ради его отсутствия.
+  return command === 'serve' && !env.VITEST && env.VITE_MOCK !== '1'
 }
 
 function requireProxyTarget(env: Record<string, string>): string {

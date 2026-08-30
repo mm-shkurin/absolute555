@@ -5,6 +5,7 @@ import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { FeedHead } from './components/FeedHead'
 import { FilterPanel } from './components/FilterPanel'
+import { Sheet } from '../../shared/ui/Sheet'
 import { MobileFilterBar } from './components/MobileFilterBar'
 import { ListingGrid } from '../../shared/domain/listing/ListingCard'
 import { EmptyFeed, FeedFailure, FeedSkeleton } from './components/FeedStates'
@@ -24,6 +25,7 @@ export function FeedPage({
 }) {
   const [query, setQuery] = useState<FeedQuery>(initialQuery)
   const feed = useFeed(query)
+  const [sheetOpen, setSheetOpen] = useState(false)
   const reset = () => setQuery({ ...EMPTY_QUERY, tab: query.tab, sort: query.sort })
 
   return (
@@ -36,7 +38,11 @@ export function FeedPage({
             countText={feed.isLoading ? 'ищем…' : countLabel(feed.total)}
             onChange={setQuery}
           />
-          <MobileFilterBar query={query} onChange={setQuery} />
+          <MobileFilterBar
+            query={query}
+            onChange={setQuery}
+            onOpenSheet={() => setSheetOpen(true)}
+          />
           <div className={styles.grid}>
             <FilterPanel
               query={query}
@@ -60,6 +66,19 @@ export function FeedPage({
           </div>
         </Container>
       </main>
+      {sheetOpen ? (
+        <Sheet title="Фильтры" onClose={() => setSheetOpen(false)} testId="filter-sheet">
+          <FilterPanel
+            query={query}
+            total={feed.total}
+            onChange={setQuery}
+            onReset={reset}
+            onPickBrand={() => undefined}
+            inSheet
+            onApply={() => setSheetOpen(false)}
+          />
+        </Sheet>
+      ) : null}
     </>
   )
 }
