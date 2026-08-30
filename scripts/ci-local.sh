@@ -1,0 +1,208 @@
+#!/usr/bin/env bash
+# Локальный прогон того же, что делает CI (.github/workflows/backend.yml, frontend.yml).
+# Одна команда перед пушем: bash scripts/ci-local.sh
+#
+# Postgres поднимается одноразовым контейнером на свободном порту, а не берётся из
+# infra/docker-compose.yml: прогон не должен трогать базу, в которой лежит рабочее
+# состояние разработчика.
+set -uo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+RUN_BACKEND=1
+RUN_FRONTEND=1
+RUN_E2E=1
+RUN_IMAGES=0
+PG_PORT="${PG_PORT:-55432}"
+PG_CONTAINER="absolute555-ci-pg-$$"
+CI_NETWORK="absolute555-ci-net-$$"
+BACKEND_IMAGE="absolute555-backend:ci-local"
+FAILED=()
+RESULTS=()
+STARTED_AT=$SECONDS
+
+for arg in "$@"; do
+  case "$arg" in
+    --backend)  RUN_FRONTEND=0 ;;
+    --frontend) RUN_BACKEND=0 ;;
+    --no-e2e)   RUN_E2E=0 ;;
+    --images)   RUN_IMAGES=1 ;;
+    -h|--help)
+      echo "usage: bash scripts/ci-local.sh [--backend|--frontend] [--no-e2e] [--images]"
+      exit 0 ;;
+    *) echo "неизвестный аргумент: $arg" >&2; exit 2 ;;
+  esac
+done
+
+# Цвет только в терминал: в файле или в конвейере ANSI-коды превращаются в мусор,
+# который потом ищут глазами в логе. NO_COLOR отключает вручную.
+if [ -t 1 ] && [ -z "${NO_COLOR:-}" ]; then
+  C_OK=$'[32m'; C_FAIL=$'[31m'; C_STEP=$'[1;36m'; C_OFF=$'[0m'
+else
+  C_OK=""; C_FAIL=""; C_STEP=""; C_OFF=""
+fi
+
+step() {
+  local name="$1"; shift
+  local started=$SECONDS
+  echo ""
+  echo "${C_STEP}${name}${C_OFF}"
+  if "$@"; then
+    echo "${C_OK}ok${C_OFF}  ${name}"
+    RESULTS+=("ok|$((SECONDS - started))|$name")
+  else
+    echo "${C_FAIL}fail${C_OFF}  ${name}"
+    RESULTS+=("fail|$((SECONDS - started))|$name")
+    FAILED+=("$name")
+  fi
+}
+
+fmt_time() {
+  printf '%dм %02dс' $(($1 / 60)) $(($1 % 60))
+}
+
+cleanup() {
+  if [ -n "${PG_STARTED:-}" ]; then
+    docker rm -f "$PG_CONTAINER" >/dev/null 2>&1 || true
+  fi
+  if [ -n "${NET_STARTED:-}" ]; then
+    docker network rm "$CI_NETWORK" >/dev/null 2>&1 || true
+  fi
+  if [ -n "${ENV_BACKUP:-}" ] && [ -f "$ENV_BACKUP" ]; then
+    mv -f "$ENV_BACKUP" "$ROOT/backend/.env"
+  elif [ -n "${ENV_WRITTEN:-}" ]; then
+    rm -f "$ROOT/backend/.env"
+  fi
+}
+trap cleanup EXIT
+
+# Docker под Windows не понимает пути вида /c/Users/... , которые даёт MSYS.
+to_docker_path() {
+  if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else printf '%s' "$1"; fi
+}
+
+write_backend_env() {
+  if [ -f "$ROOT/backend/.env" ]; then
+    ENV_BACKUP="$ROOT/backend/.env.ci-local.bak"
+    cp -f "$ROOT/backend/.env" "$ENV_BACKUP"
+  fi
+  ENV_WRITTEN=1
+  cp "$ROOT/infra/.env.example" "$ROOT/backend/.env"
+  {
+    echo "POSTGRES_HOST=$PG_CONTAINER"
+    echo "POSTGRES_PORT=5432"
+    echo "POSTGRES_USER=absolute"
+    echo "POSTGRES_PASSWORD=absolute"
+    echo "POSTGRES_DB=absolute"
+    echo "SECRET_KEY=ci-secret-key-not-used-anywhere-else-0000"
+    echo "REFRESH_TOKEN_SECRET_KEY=ci-refresh-secret-not-used-elsewhere-00"
+    echo "YANDEX_CLIENTID=ci-yandex-client-id-placeholder-000000000"
+    echo "YANDEX_CLIENT_SECRET=ci-yandex-client-secret-placeholder-0000"
+    echo "VK_CLIENT_ID=ci-vk-client-id"
+    echo "VK_CLIENT_SECRET=ci-vk-client-secret"
+    echo "GIGA_AUTH_KEY=ci-giga-auth-key"
+    echo "GIGA_CLIENT_ID=ci-giga-client-id"
+    echo "REDIS_PASSWORD=ci-redis"
+    echo "REDIS_USER=ci"
+    echo "REDIS_USER_PASSWORD=ci-redis-user"
+  } >> "$ROOT/backend/.env"
+}
+
+start_postgres() {
+  docker rm -f "$PG_CONTAINER" >/dev/null 2>&1 || true
+  docker network create "$CI_NETWORK" >/dev/null 2>&1 && NET_STARTED=1
+  docker run -d --name "$PG_CONTAINER" --network "$CI_NETWORK" \
+    -e POSTGRES_USER=absolute -e POSTGRES_PASSWORD=absolute -e POSTGRES_DB=absolute \
+    -p "$PG_PORT:5432" postgres:16-alpine >/dev/null || return 1
+  PG_STARTED=1
+  # Тот же health-gate, что в workflow: без него первый запрос уходит в ещё
+  # поднимающуюся базу и прогон краснеет на connection refused.
+  for _ in $(seq 1 30); do
+    if docker exec "$PG_CONTAINER" pg_isready -U absolute >/dev/null 2>&1; then
+      return 0
+    fi
+    sleep 2
+  done
+  echo "postgres не поднялся за 60 секунд" >&2
+  return 1
+}
+
+# Гейты из прогона `rules`: чтение исходников, зависимость одна — pyyaml. Идут первыми,
+# потому что стоят минуту и ловят то, что дороже всего чинить после пуша.
+rules() {
+  step "правила репозитория" python "$ROOT/scripts/check_repo_rules.py"
+  step "контракт API"        python "$ROOT/scripts/check_api_contract.py"
+}
+
+# Сборка образов из прогонов backend/frontend. Без кэша GHA локально это минуты, поэтому
+# за флагом --images, а не по умолчанию.
+images() {
+  step "образ backend"  docker build -f "$ROOT/infra/docker/backend.Dockerfile" -t absolute555-backend:ci-local "$ROOT"
+  step "образ frontend" docker build -f "$ROOT/infra/docker/frontend.Dockerfile" -t absolute555-frontend:ci-local "$ROOT"
+}
+
+# Бэкенд идёт в контейнере из того же Dockerfile, что едет в прод, а не в хостовом
+# Python. Дело не в чистоте: половина зависимостей — колёса под Linux, и на Windows
+# установка падает на uvloop, то есть локальный прогон бэкенда там был невозможен.
+# Контейнер заодно даёт ту же версию Python и те же системные библиотеки, что в CI.
+backend() {
+  command -v docker >/dev/null 2>&1 || { echo "нужен docker" >&2; return 1; }
+  start_postgres || return 1
+  write_backend_env
+
+  step "backend: образ" docker build -q -f "$ROOT/infra/docker/backend.Dockerfile" \
+    -t "$BACKEND_IMAGE" "$ROOT"
+
+  # Тесты и alembic не входят в рантайм-образ (он ставит только requirements.txt), так
+  # что каталог монтируется поверх /app, а pytest доставляется на время прогона.
+  run_in_backend() {
+    docker run --rm --network "$CI_NETWORK" \
+      -v "$(to_docker_path "$ROOT/backend")":/app \
+      -e POSTGRES_HOST="$PG_CONTAINER" -e POSTGRES_PORT=5432 \
+      --env-file "$ROOT/backend/.env" \
+      "$BACKEND_IMAGE" sh -c "$1"
+  }
+
+  step "backend: миграции"      run_in_backend "alembic upgrade head"
+  # Шаг назад и снова вперёд — как в workflow: ревизия без работающего downgrade
+  # выглядит здоровой ровно до дня, когда релиз надо откатить.
+  step "backend: откат ревизии" run_in_backend "alembic downgrade -1 && alembic upgrade head"
+  step "backend: тесты"         run_in_backend "pip install -q -r requirements-dev.txt && python -m pytest"
+}
+
+frontend() {
+  ( cd "$ROOT/frontend" && npm ci ) || return 1
+  step "frontend: типы"            bash -c "cd '$ROOT/frontend' && npm run typecheck"
+  step "frontend: правила"         bash -c "cd '$ROOT/frontend' && npm run lint"
+  step "frontend: юниты"           bash -c "cd '$ROOT/frontend' && npx vitest run"
+  step "frontend: сборка"          bash -c "cd '$ROOT/frontend' && npm run build"
+  if [ "$RUN_E2E" = 1 ]; then
+    step "frontend: браузер" bash -c "cd '$ROOT/frontend' && CI=true npm run test:e2e"
+  fi
+}
+
+rules
+[ "$RUN_BACKEND" = 1 ]  && { backend  || FAILED+=("backend: подготовка"); }
+[ "$RUN_FRONTEND" = 1 ] && { frontend || FAILED+=("frontend: подготовка"); }
+[ "$RUN_IMAGES" = 1 ]   && images
+
+echo ""
+echo "${C_STEP}итог${C_OFF}"
+if [ ${#RESULTS[@]} -gt 0 ]; then
+  for entry in "${RESULTS[@]}"; do
+    status="${entry%%|*}"; rest="${entry#*|}"
+    # Имя шага в конце строки, а не в колонке фиксированной ширины: printf меряет
+    # ширину в байтах, и кириллица разъезжается.
+    printf '  %s  %8s  %s
+'       "$([ "$status" = ok ] && echo "${C_OK}ok  ${C_OFF}" || echo "${C_FAIL}fail${C_OFF}")"       "$(fmt_time "${rest%%|*}")" "${rest#*|}"
+  done
+fi
+printf '  шагов: %d, красных: %d, всего: %s
+'   "${#RESULTS[@]}" "${#FAILED[@]}" "$(fmt_time $((SECONDS - STARTED_AT)))"
+
+echo ""
+if [ ${#FAILED[@]} -eq 0 ]; then
+  echo "${C_OK}CI локально зелёный — можно пушить.${C_OFF}"
+  exit 0
+fi
+echo "${C_FAIL}красное: ${FAILED[*]}${C_OFF}"
+exit 1
