@@ -1,0 +1,34 @@
+.avatar {
+  border-radius: 50%;
+  background: var(--border-subtle);
+  flex: none;
+}
+
+.rating {
+  color: var(--measure-warn);
+  font-size: 14px;
+  letter-spacing: 2px;
+}
+
+.rating span {
+  color: var(--text-muted);
+  font-size: 13.5px;
+  letter-spacing: 0;
+}
+
+.person {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.personBody {
+  flex: 1;
+  min-width: 200px;
+}
+
+.name {
+  font-size: 21px;
+  font-weight: 800;
+}

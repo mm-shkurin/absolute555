@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { dealsLabel, stars, toListingDetailView, toOfferRows, viewerMode } from '../listingDetail'
+import { toListingDetailView, toOfferRows, viewerMode } from '../listingDetail'
+import { dealsLabel, stars } from '../../../../shared/format/rating'
 import type { ListingDetailWire } from '../../api/listingApi'
 
 const wire: ListingDetailWire = {

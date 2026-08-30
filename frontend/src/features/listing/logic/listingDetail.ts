@@ -1,7 +1,8 @@
 // Перевод карточки с провода в то, что видит человек, и одно решение: в каком режиме
 // показывать правую колонку. Режим считается здесь, а не в разметке — иначе три экрана
 // мокапа превратились бы в три ветки JSX, разъезжающиеся при первой же правке.
-import { formatAmount, formatPrice, pluralize } from '../../../shared/format/money'
+import { formatAmount, formatPrice } from '../../../shared/format/money'
+import { dealsLabel, stars } from '../../../shared/format/rating'
 import type { ListingDetailWire, OfferWire } from '../api/listingApi'
 
 export type ViewerMode = 'guest' | 'buyer' | 'sold'
@@ -99,17 +100,6 @@ export function toListingDetailView(wire: ListingDetailWire): ListingDetailView 
     soldOn: wire.sold_at ? DATE.format(new Date(wire.sold_at)) : null,
     phoneAvailable: wire.phone_available,
   }
-}
-
-// Звёзды рисуются по числу, а не пятью подряд: пятизвёздная строка у продавца с рейтингом
-// 3,2 — это ложь, которую видно раньше, чем подпись рядом.
-export function stars(rating: number | null): string {
-  const filled = rating === null ? 0 : Math.round(rating)
-  return '★'.repeat(filled) + '☆'.repeat(5 - filled)
-}
-
-export function dealsLabel(count: number): string {
-  return `${count} ${pluralize(count, 'сделка', 'сделки', 'сделок')}`
 }
 
 export function toOfferRows(offers: OfferWire[], now: Date): OfferRow[] {

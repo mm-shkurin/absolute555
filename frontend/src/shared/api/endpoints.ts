@@ -49,6 +49,13 @@ export const API = {
     messages: (chatId: string) => `${V1}/chats/${encodeURIComponent(chatId)}/messages`,
     stream: (chatId: string) => `${V1}/chats/${encodeURIComponent(chatId)}/stream`,
   },
+  // Личный кабинет: своя сводка и публичная страница чужого продавца — разные выдачи,
+  // потому что видят их разные люди и полей в них разное количество.
+  users: {
+    me: `${V1}/users/me`,
+    profile: (userId: string) => `${V1}/users/${encodeURIComponent(userId)}`,
+    listings: (userId: string) => `${V1}/users/${encodeURIComponent(userId)}/listings`,
+  },
   reviews: {
     collection: `${V1}/reviews`,
     ofSeller: (userId: string) => `${V1}/users/${encodeURIComponent(userId)}/reviews`,

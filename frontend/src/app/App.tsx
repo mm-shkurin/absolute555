@@ -13,6 +13,8 @@ import { SellingWizardPage } from '../features/selling/SellingWizardPage'
 import { OffersPage } from '../features/offers/OffersPage'
 import { ChatsPage } from '../features/chats/ChatsPage'
 import { MyListingsPage } from '../features/myListings/MyListingsPage'
+import { ProfilePage } from '../features/profile/ProfilePage'
+import { SellerProfilePage } from '../features/sellerProfile/SellerProfilePage'
 import { ROUTES } from '../shared/navigation/routes'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
@@ -44,7 +46,7 @@ export function App() {
         <Route path={ROUTES.importFeed} element={<Pending screen="Под заказ" />} />
         <Route path={ROUTES.listing()} element={<ListingPage signedIn={signedIn} />} />
         <Route path={ROUTES.thicknessMap()} element={<ThicknessPage signedIn={signedIn} />} />
-        <Route path={ROUTES.seller()} element={<Pending screen="Профиль продавца" />} />
+        <Route path={ROUTES.seller()} element={<SellerProfilePage signedIn={signedIn} />} />
         <Route path={ROUTES.supplier()} element={<Pending screen="Профиль поставщика" />} />
         <Route path={ROUTES.importRequest()} element={<Pending screen="Заявка на привоз" />} />
 
@@ -53,7 +55,7 @@ export function App() {
         <Route path={ROUTES.offers} element={<OffersPage />} />
         <Route path={ROUTES.chats} element={<ChatsPage />} />
         <Route path={ROUTES.chat()} element={<ChatsPage />} />
-        <Route path={ROUTES.profile} element={<Pending screen="Профиль" />} />
+        <Route path={ROUTES.profile} element={<ProfilePage />} />
 
         <Route path={ROUTES.oauthCallback} element={<Pending screen="Возврат из OAuth" />} />
 
