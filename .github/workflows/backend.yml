@@ -7,16 +7,12 @@ name: backend
 
 on:
   push:
-    branches: ['**']
+    branches: [dev, main]
     paths:
       - 'backend/**'
       - 'infra/.env.example'
       - '.github/workflows/backend.yml'
-  pull_request:
-    paths:
-      - 'backend/**'
-      - 'infra/.env.example'
-      - '.github/workflows/backend.yml'
+  workflow_dispatch:
 
 concurrency:
   group: backend-${{ github.ref }}
@@ -93,5 +89,33 @@ jobs:
       - name: Миграции
         run: alembic upgrade head
 
+      # Шаг назад и снова вперёд. Ревизия без работающего downgrade выглядит здоровой
+      # ровно до того дня, когда релиз надо откатить, — а откатывать приходится под
+      # давлением и без времени на разбор.
+      - name: Откат последней ревизии и повтор
+        run: |
+          alembic downgrade -1
+          alembic upgrade head
+
       - name: Тесты
         run: python -m pytest
+
+  image:
+    name: сборка образа
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Образ тяжёлый (opencv тянет системные библиотеки), поэтому кэш слоёв в GitHub
+      # Actions обязателен: без него сборка занимает больше, чем весь остальной прогон.
+      - name: Сборка backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/backend.Dockerfile
+          push: false
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend

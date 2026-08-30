@@ -1,0 +1,96 @@
+# Публикация образов и развёртывание.
+#
+# Образы собираются на каждый main и кладутся в GHCR под тегом коммита. Смысл не в
+# экономии времени на сервере, а в том, что развёрнутая версия становится named: «что
+# сейчас в проде» — это тег, а не «то, что было в main в четверг».
+#
+# Само развёртывание — ручное и появится, когда появится сервер. Пока секретов нет, шаг
+# честно сообщает об этом и завершается, а не притворяется успешным.
+name: release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Тег или коммит для развёртывания'
+        required: false
+        default: 'main'
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: образы в реестр
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Бэкенд
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/backend.Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/backend:latest
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend
+
+      - name: Фронтенд
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/frontend.Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+            ghcr.io/${{ github.repository }}/frontend:latest
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  deploy:
+    name: развернуть на сервере
+    needs: publish
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Проверить, что сервер настроен
+        id: check
+        run: |
+          if [ -z "${{ secrets.DEPLOY_HOST }}" ]; then
+            echo "Секреты развёртывания не заданы — сервера ещё нет."
+            echo "Нужны: DEPLOY_HOST, DEPLOY_USER, DEPLOY_KEY, DEPLOY_PATH."
+            echo "ready=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      # Развёртывание — это infra/deploy.sh на сервере: тот же порядок, что руками, но
+      # записанный. Здесь только запуск по SSH, чтобы не держать логику в двух местах.
+      - name: Развернуть
+        if: steps.check.outputs.ready == 'true'
+        env:
+          REF: ${{ inputs.ref || 'main' }}
+        run: |
+          install -m 600 /dev/null key
+          echo "${{ secrets.DEPLOY_KEY }}" > key
+          ssh -i key -o StrictHostKeyChecking=accept-new \
+            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
+            "cd ${{ secrets.DEPLOY_PATH }}/infra && ./deploy.sh origin/$REF"

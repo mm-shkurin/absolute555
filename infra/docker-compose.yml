@@ -96,19 +96,19 @@ services:
 
   # Same image as backend, different command. Migrations are not re-run here —
   # the backend service owns them.
-  celery:
+  worker:
     build:
       context: ..
       dockerfile: infra/docker/backend.Dockerfile
     restart: unless-stopped
     env_file:
       - .env
-    command: celery -A app.celery_worker.celery_app worker --loglevel=INFO
+    command: arq app.worker.WorkerSettings
     # The image's HEALTHCHECK probes http://localhost:8000/health, which only the
-    # backend serves. Inherited here it marks a perfectly healthy worker
-    # unhealthy, so it is replaced with celery's own ping.
+    # backend serves. Inherited here it marks a perfectly healthy worker unhealthy, so
+    # it is replaced with a check that the worker can still reach its own queue.
     healthcheck:
-      test: ["CMD", "celery", "-A", "app.celery_worker.celery_app", "inspect", "ping", "-d", "celery@$$HOSTNAME"]
+      test: ["CMD", "python", "-c", "import asyncio,arq;from app.queue import queue_settings;asyncio.run(arq.create_pool(queue_settings()))"]
       interval: 30s
       timeout: 10s
       retries: 5
@@ -124,8 +124,8 @@ services:
       context: ..
       dockerfile: infra/docker/frontend.Dockerfile
       args:
-        REACT_APP_API_URL: ${REACT_APP_API_URL}
-        REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL}
+        # Пусто — значит тот же источник: nginx внутри образа проксирует /api на backend.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     restart: unless-stopped
     ports:
       - "${FRONTEND_HOST_PORT}:80"

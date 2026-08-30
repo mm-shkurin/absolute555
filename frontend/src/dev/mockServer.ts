@@ -8,18 +8,14 @@
 import { FEED, IMPORT_CARS, LEXUS } from './fixtures/cars'
 import { listingDetail, thicknessMap } from './fixtures/detail'
 import { MY_LISTINGS, PROFILE, offers } from './fixtures/people'
+import { CHATS, MESSAGES, REVIEW_RIGHT, SELLER, SELLER_REVIEWS } from './fixtures/rest'
 import {
   BIDS,
-  CHATS,
-  MESSAGES,
   REQUEST_CARDS,
-  REVIEW_RIGHT,
-  SELLER,
-  SELLER_REVIEWS,
   SUPPLIERS,
   importRequest,
   supplierProfile,
-} from './fixtures/rest'
+} from './fixtures/importing'
 import { COMPLAINTS, QUEUE, ROLE_APPLICATIONS } from './fixtures/moderation'
 import { currentSession, endSession, startSession } from '../shared/session/authSession'
 

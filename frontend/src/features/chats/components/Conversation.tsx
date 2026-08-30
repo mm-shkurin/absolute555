@@ -6,7 +6,7 @@ import { Button, buttonClass } from '../../../shared/ui/Button'
 import { Placeholder } from '../../../shared/ui/Placeholder'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { ConversationHeader, MessageView } from '../logic/conversation'
-import styles from '../chats.module.css'
+import styles from './Conversation.module.css'
 
 export function Conversation({
   header,
@@ -27,7 +27,7 @@ export function Conversation({
   }
 
   return (
-    <div className={styles.conversation} data-testid="conversation">
+    <div className={styles.conversation} data-pane="conversation" data-testid="conversation">
       <div className={styles.conversationTop}>
         {onBack ? (
           <button type="button" className={styles.back} onClick={onBack} aria-label="К диалогам">

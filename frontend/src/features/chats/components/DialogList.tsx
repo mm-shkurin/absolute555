@@ -13,7 +13,7 @@ export function DialogList({
   onSelect: (id: string) => void
 }) {
   return (
-    <div className={styles.dialogs} data-testid="dialog-list">
+    <div className={styles.dialogs} data-pane="list" data-testid="dialog-list">
       {dialogs.map((dialog) => (
         <button
           key={dialog.id}

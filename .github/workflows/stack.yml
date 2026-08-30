@@ -1,0 +1,94 @@
+# Весь стек целиком: собрать образы, поднять compose, дождаться здоровья, прогнать по нему
+# браузерные сценарии.
+#
+# Отдельно от обычных прогонов и не на каждый пуш: этот занимает десятки минут. Зато он
+# единственный проверяет то, что заглушка спрятать не может — настоящие коды ответов,
+# миграции на старте, nginx перед фронтендом и проксирование /api.
+name: stack
+
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+  # Раз в сутки ночью: интеграция ломается не от коммитов, а от версий образов и
+  # просроченных допущений, и такие поломки надо ловить до того, как они понадобятся.
+  schedule:
+    - cron: '0 2 * * *'
+
+concurrency:
+  group: stack-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  integration:
+    name: стек и сценарии по нему
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # Окружение — из примера, как у человека, который поднимает проект впервые. Если
+      # `.env.example` отстал от кода, стек не поднимется здесь, а не у него.
+      - name: Окружение
+        working-directory: infra
+        run: |
+          cp .env.example .env
+          {
+            echo "POSTGRES_PASSWORD=stack-ci"
+            echo "MINIO_ROOT_PASSWORD=stack-ci-minio"
+            echo "SECRET_KEY=stack-ci-secret-key-not-used-anywhere-0000"
+            echo "REFRESH_TOKEN_SECRET_KEY=stack-ci-refresh-key-not-used-anywhere"
+            echo "YANDEX_CLIENTID=stack-ci-yandex-client-id-placeholder-000"
+            echo "YANDEX_CLIENT_SECRET=stack-ci-yandex-secret-placeholder-000"
+            echo "VK_CLIENT_ID=stack-ci-vk"
+            echo "VK_CLIENT_SECRET=stack-ci-vk-secret"
+            echo "GIGA_AUTH_KEY=stack-ci-giga"
+            echo "GIGA_CLIENT_ID=stack-ci-giga-id"
+            echo "REDIS_PASSWORD=stack-ci-redis"
+            echo "REDIS_USER=stack"
+            echo "REDIS_USER_PASSWORD=stack-ci-redis-user"
+          } >> .env
+
+      - name: Поднять стек
+        working-directory: infra
+        run: docker compose up -d --build
+
+      - name: Дождаться здоровья
+        run: |
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://localhost:8000/health > /dev/null; then
+              echo "бэкенд отвечает"
+              curl -fsS -o /dev/null http://localhost:3000/ && echo "фронтенд отдаётся" && exit 0
+            fi
+            sleep 5
+          done
+          echo "стек не поднялся"
+          exit 1
+
+      - name: Сценарии по живому стеку
+        working-directory: frontend
+        run: npm ci && npm run test:e2e
+        env:
+          # Тот же набор сценариев, но против настоящего приложения за nginx. Часть из них
+          # ожидает данные, которых в пустой базе нет: до появления сидов прогон
+          # информационный, его результат не валит ветку.
+          E2E_BASE_URL: http://localhost:3000
+        continue-on-error: true
+
+      # Логи нужны именно при падении: разбирать интеграцию по одному сообщению
+      # «connection refused» бесполезно, а поднять стек заново локально — полчаса.
+      - name: Логи стека
+        if: always()
+        working-directory: infra
+        run: docker compose logs --no-color --tail=200
+
+      - name: Погасить стек
+        if: always()
+        working-directory: infra
+        run: docker compose down -v

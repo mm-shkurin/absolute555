@@ -6,17 +6,13 @@ name: frontend
 
 on:
   push:
-    branches: ['**']
+    branches: [dev, main]
     paths:
       - 'frontend/**'
+      - 'infra/docker/frontend.Dockerfile'
       - '.github/workflows/frontend.yml'
-  pull_request:
-    paths:
-      - 'frontend/**'
-      - '.github/workflows/frontend.yml'
+  workflow_dispatch:
 
-# Новый пуш в ту же ветку отменяет предыдущий прогон: смотреть на результат
-# позапрошлого коммита незачем, а очередь он занимает.
 concurrency:
   group: frontend-${{ github.ref }}
   cancel-in-progress: true
@@ -64,6 +60,25 @@ jobs:
           name: frontend-dist
           path: frontend/dist
           retention-days: 7
+
+  image:
+    name: сборка образа
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      # Образ собирается из репозитория целиком: Dockerfile берёт контекстом корень.
+      # Проверка нужна отдельно от `npm run build` — образ ломается своими способами,
+      # от версии node в базовом слое до пути, по которому лежит собранный бандл.
+      - name: Сборка frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/frontend.Dockerfile
+          push: false
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
 
   browser:
     name: браузерные сценарии
