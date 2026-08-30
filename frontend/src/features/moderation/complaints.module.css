@@ -1,0 +1,78 @@
+.head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.cover {
+  width: 96px;
+  height: 72px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.headBody {
+  flex: 1;
+  min-width: 220px;
+}
+
+.title {
+  font-size: 17px;
+  font-weight: 800;
+}
+
+.seller {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
+
+.flag {
+  padding: 3px 9px;
+  border-radius: var(--radius-pill);
+  background: var(--status-bad-soft);
+  color: var(--status-bad-ink);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.complaints {
+  margin-top: 16px;
+}
+
+.complaint {
+  display: flex;
+  gap: 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.complaint:last-child {
+  border-bottom: 0;
+}
+
+.author {
+  font-weight: 700;
+  font-size: 14.5px;
+}
+
+.author span {
+  color: var(--text-muted);
+  font-weight: 500;
+  font-size: 12.5px;
+}
+
+.body {
+  margin: 4px 0 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}

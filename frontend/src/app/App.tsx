@@ -18,6 +18,8 @@ import { SellerProfilePage } from '../features/sellerProfile/SellerProfilePage'
 import { ImportFeedPage } from '../features/importFeed/ImportFeedPage'
 import { ImportRequestPage } from '../features/importRequest/ImportRequestPage'
 import { SupplierPage } from '../features/supplier/SupplierPage'
+import { ModerationQueuePage } from '../features/moderation/ModerationQueuePage'
+import { ComplaintsPage } from '../features/moderation/ComplaintsPage'
 import { ROUTES } from '../shared/navigation/routes'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
@@ -62,8 +64,8 @@ export function App() {
 
         <Route path={ROUTES.oauthCallback} element={<Pending screen="Возврат из OAuth" />} />
 
-        <Route path={ROUTES.moderationQueue} element={<Pending screen="Очередь модерации" />} />
-        <Route path={ROUTES.moderationComplaints} element={<Pending screen="Жалобы" />} />
+        <Route path={ROUTES.moderationQueue} element={<ModerationQueuePage />} />
+        <Route path={ROUTES.moderationComplaints} element={<ComplaintsPage />} />
         <Route path={ROUTES.moderationRoles} element={<Pending screen="Заявки на роль" />} />
 
         <Route path="*" element={<Pending screen="Страница не найдена" />} />
