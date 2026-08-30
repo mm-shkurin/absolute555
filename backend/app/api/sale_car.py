@@ -13,21 +13,17 @@ from app.core.exceptions import AuthorizationError, ResourceNotFoundError, Valid
 from app.db.database import get_db
 from app.models.sale_car import SaleCarStatus
 from app.models.users import Users
-from app.permissions.ownership import can_delete_sale_car_photos, can_manage_sale_car
-from app.schemas.sale_cars import (
-    SaleCarPhotoDelete,
-    SaleCarPhotoUpload,
-    SaleCarResponse,
-    SaleCarUpdate,
-)
+from app.permissions.ownership import can_manage_sale_car
+from app.schemas.sale_cars import SaleCarResponse, SaleCarUpdate
 from app.services.listing_errors import ListingError
 from app.services.listing_lifecycle import ListingLifecycleService
-from app.services.listing_photos import attach as attach_photos
 from app.services.sale_cars_service import SaleCarService
 from app.utils.security import get_current_user, get_current_user_or_none
 
 from .listing_http import PUBLIC_STATUSES, listing_of, to_http
+from .sale_car_document import document_router
 from .sale_car_lifecycle import lifecycle_router
+from .sale_car_photos import photos_router
 from .sale_car_view import to_view, to_views
 
 sale_car_router = APIRouter()
@@ -125,37 +121,6 @@ async def delete_sale_car(
     return None
 
 
-@sale_car_router.post("/{sale_car_id}/photos")
-async def add_sale_car_photos(
-    sale_car_id: str,
-    payload: SaleCarPhotoUpload,
-    db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
-):
-    service = ListingLifecycleService(db)
-    try:
-        listing = await listing_of(service, sale_car_id, current_user)
-        updated = await attach_photos(db, listing, payload.photos_b64)
-    except ListingError as error:
-        raise to_http(error)
-    return {"sale_car_id": sale_car_id, "s3_photo_car_keys": updated.s3_photo_car_keys}
-
-
-@sale_car_router.delete("/{sale_car_id}/photos")
-async def delete_sale_car_photos(
-    sale_car_id: str,
-    payload: SaleCarPhotoDelete,
-    db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
-):
-    service = SaleCarService(db)
-    car = await service.get_sale_car_by_id(sale_car_id)
-    if not car:
-        raise ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
-    if not await can_delete_sale_car_photos(current_user, str(car.user_id)):
-        raise AuthorizationError("Access denied", code="NOT_LISTING_OWNER")
-
-    return await service.delete_sale_car_photos(sale_car_id, payload.photo_keys)
-
-
 sale_car_router.include_router(lifecycle_router)
+sale_car_router.include_router(photos_router)
+sale_car_router.include_router(document_router)

@@ -5,6 +5,7 @@ tell a listing that exists from one that never did, which is why an unpublished 
 answers 404 and not 403.
 """
 
+from tests.conftest import make_image
 from tests.test_listing_lifecycle import _create, _fill
 
 
@@ -110,3 +111,29 @@ def test_should_refuse_an_identifier_that_is_not_one(client, seller):
 
     assert response.status_code == 404
     assert response.json()["code"] == "LISTING_NOT_FOUND"
+
+
+def test_should_refuse_a_stranger_touching_someone_elses_gallery(
+    client, seller, signed_in, attach_photo
+):
+    listing_id = _create(client, seller)
+    photos = attach_photo(listing_id, seller, count=3)
+    stranger = signed_in()
+
+    added = client.post(
+        f"/api/v1/sale_car/{listing_id}/photos",
+        headers=stranger,
+        files=[("files", ("x.png", make_image(), "image/png"))],
+    )
+    reordered = client.put(
+        f"/api/v1/sale_car/{listing_id}/photos/order",
+        headers=stranger,
+        json={"photo_ids": [photos[1]["photo_id"], photos[0]["photo_id"], photos[2]["photo_id"]]},
+    )
+    removed = client.delete(
+        f"/api/v1/sale_car/{listing_id}/photos/{photos[0]['photo_id']}", headers=stranger
+    )
+
+    assert [added.status_code, reordered.status_code, removed.status_code] == [404, 404, 404]
+    mine = client.get(f"/api/v1/sale_car/{listing_id}", headers=seller).json()["photos"]
+    assert [photo["photo_id"] for photo in mine] == [photo["photo_id"] for photo in photos]

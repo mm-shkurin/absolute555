@@ -28,3 +28,11 @@ class ExternalServiceError(BaseErrorApp):
     default_status = 502
     default_code = "EXTERNAL_SERVICE_ERROR"
     default_message = "An upstream service is unavailable"
+
+
+class PayloadTooLarge(BaseErrorApp):
+    """The request body, or a file in it, is larger than the service accepts."""
+
+    default_status = 413
+    default_code = "PAYLOAD_TOO_LARGE"
+    default_message = "The upload is too large"

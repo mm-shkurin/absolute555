@@ -1,49 +1,133 @@
-"""Attaching photographs to a listing's gallery.
+"""The gallery of a listing: adding photographs, removing one, arranging the order.
 
-Story 4 needs exactly one thing from a photo: that the listing has one, because the
-submit gate refuses a listing with an empty gallery. Ordering, the cover shot and the
-fifteen-photo ceiling are story 5 and are deliberately not here.
+The list's order is the displayed order and its first element is the cover. There is no
+separate cover field on purpose -- two sources of truth would disagree the first time a
+reorder half-applied.
 
-Until this existed, POST /sale_car/{id}/photos appended to sts_photos -- the СТС document
-scans -- so nothing in the API could fill the gallery the gate reads, and no listing
-could be submitted at all.
+An upload applies whole or not at all. A file that fails validation takes with it every
+file already stored in that same request, so a refusal never leaves a half-filled gallery
+and never leaves bytes in the bucket that nothing points at.
 """
 
-import base64
-import binascii
-from typing import List
+import uuid
+from typing import List, Sequence
 
-from app.models.sale_car import SaleCars
-from app.services.listing_errors import ListingError
+from loguru import logger
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.config import PhotoSettings
+from app.models.sale_car import SaleCars, SaleCarStatus
+from app.services.listing_errors import ListingFrozen
+from app.services.photo_errors import (
+    GalleryLimitReached,
+    NoFilesGiven,
+    NotAnImage,
+    OrderMismatch,
+    PhotoNotFound,
+    PhotoTooLarge,
+)
+from app.services.photo_image import build_preview, is_image
 from app.services.s3_service import s3_service
 
+photo_settings = PhotoSettings()
 
-class PhotoNotReadable(ListingError):
-    def __init__(self):
-        super().__init__("a photo could not be read as base64 image data")
+EDITABLE_IN = frozenset({SaleCarStatus.DRAFT, SaleCarStatus.REJECTED})
 
 
-async def attach(db, listing: SaleCars, photos_b64: List[str]) -> SaleCars:
-    keys = list(listing.s3_photo_car_keys or [])
+class ListingGalleryService:
+    def __init__(self, db: AsyncSession):
+        self.db = db
 
-    for encoded in photos_b64:
-        keys.append(
-            await s3_service.upload_file_get_key_from_bytes(
-                str(listing.sale_car_id), _decode(encoded)
+    async def add(self, listing: SaleCars, files: Sequence[tuple]) -> SaleCars:
+        """files: (filename, content_type, bytes) as read from the request."""
+        if not files:
+            raise NoFilesGiven()
+        self._require_editable(listing)
+
+        held = len(listing.photos or [])
+        if held + len(files) > photo_settings.max_photos_per_listing:
+            raise GalleryLimitReached(
+                limit=photo_settings.max_photos_per_listing, held=held, offered=len(files)
             )
+
+        stored: List[str] = []
+        try:
+            added = [await self._store(listing, file, stored) for file in files]
+        except Exception:
+            await self._discard(stored)
+            raise
+
+        listing.photos = list(listing.photos or []) + added
+        await self._save(listing)
+        return listing
+
+    async def remove(self, listing: SaleCars, photo_id: str) -> SaleCars:
+        self._require_editable(listing)
+
+        photos = list(listing.photos or [])
+        doomed = next((photo for photo in photos if photo["photo_id"] == photo_id), None)
+        if doomed is None:
+            raise PhotoNotFound(photo_id)
+
+        listing.photos = [photo for photo in photos if photo["photo_id"] != photo_id]
+        await self._save(listing)
+        await self._discard([doomed["key"], doomed.get("preview_key")])
+        return listing
+
+    async def reorder(self, listing: SaleCars, photo_ids: Sequence[str]) -> SaleCars:
+        # Allowed in any status, unlike adding and removing: these photographs have already
+        # been through moderation, and rearranging them shows a buyer nothing new.
+        photos = list(listing.photos or [])
+        held = {photo["photo_id"] for photo in photos}
+        given = list(photo_ids)
+
+        missing = sorted(held - set(given))
+        unknown = [photo_id for photo_id in given if photo_id not in held]
+        if missing or unknown or len(given) != len(set(given)):
+            raise OrderMismatch(missing=missing, unknown=unknown)
+
+        by_id = {photo["photo_id"]: photo for photo in photos}
+        listing.photos = [by_id[photo_id] for photo_id in given]
+        await self._save(listing)
+        return listing
+
+    async def _store(self, listing: SaleCars, file: tuple, stored: List[str]) -> dict:
+        filename, content_type, body = file
+
+        if len(body) > photo_settings.max_photo_bytes:
+            raise PhotoTooLarge(limit=photo_settings.max_photo_bytes, size=len(body))
+        if not is_image(body):
+            # The content decides, not the extension and not the declared type: a client
+            # supplies both, so neither is evidence of anything.
+            raise NotAnImage(filename)
+
+        listing_id = str(listing.sale_car_id)
+        key = await s3_service.upload_file_get_key_from_bytes(listing_id, body, content_type=content_type)
+        stored.append(key)
+
+        preview_key = await s3_service.upload_file_get_key_from_bytes(
+            listing_id, build_preview(body), content_type="image/jpeg", folder="previews"
         )
+        stored.append(preview_key)
 
-    listing.s3_photo_car_keys = keys
-    await db.commit()
-    await db.refresh(listing, attribute_names=["s3_photo_car_keys", "updated_at"])
-    return listing
+        return {"photo_id": uuid.uuid4().hex, "key": key, "preview_key": preview_key}
 
+    async def _save(self, listing: SaleCars) -> None:
+        await self.db.commit()
+        await self.db.refresh(listing, attribute_names=["photos", "updated_at"])
 
-def _decode(encoded: str) -> bytes:
-    # A data: URI is what a browser's FileReader hands the client, so accept both it and
-    # the bare payload rather than making every caller strip the prefix.
-    payload = encoded.split(",", 1)[1] if encoded.startswith("data:") else encoded
-    try:
-        return base64.b64decode(payload, validate=True)
-    except (binascii.Error, ValueError):
-        raise PhotoNotReadable()
+    @staticmethod
+    def _require_editable(listing: SaleCars) -> None:
+        if listing.status not in EDITABLE_IN:
+            raise ListingFrozen(listing.status)
+
+    @staticmethod
+    async def _discard(keys: Sequence) -> None:
+        alive = [key for key in keys if key]
+        if not alive:
+            return
+        try:
+            await s3_service.delete_files(alive)
+        except Exception as error:
+            # The row is already right. An orphan in the bucket is waste, not corruption.
+            logger.warning(f"could not discard {len(alive)} object(s): {error}")

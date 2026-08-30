@@ -8,6 +8,7 @@ from app.models.sale_car import SaleCars
 from app.models.users import Users
 from app.db.database import get_db
 from app.utils.security import get_current_user
+from app.services.listing_document import ListingDocumentService
 from app.tasks.decode_vin import decode_vin_from_sts_sale_car_task
 from app.tasks.status_updater import TaskStatus
 from app.permissions.dependencies import require_permission
@@ -44,7 +45,6 @@ async def upload_sts_create_sale_car_and_decode(
     sale_car = SaleCars(
         sale_car_id=sale_car_id,
         user_id=current_user.id,
-        sts_photos=[encoded],
         task_status=TaskStatus.PENDING,
         phone_number=phone_number,
         price=price,
@@ -54,6 +54,9 @@ async def upload_sts_create_sale_car_and_decode(
     db.add(sale_car)
     await db.commit()
     await db.refresh(sale_car)
+
+    # The scan goes to the closed bucket, not into the row it used to sit in as base64.
+    await ListingDocumentService(db).attach(sale_car, file_bytes, file.content_type or "image/jpeg")
 
     task = decode_vin_from_sts_sale_car_task.delay(sale_car_id=sale_car_id, file_b64=encoded)
     sale_car.task_id = task.id

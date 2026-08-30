@@ -31,13 +31,21 @@ def public_base_url(settings: MinioSettings) -> str:
     return endpoint.rstrip("/")
 
 
-def ensure_bucket_exists(client, bucket: str) -> None:
+def ensure_bucket_exists(client, bucket: str, public: bool) -> None:
+    """Create the bucket if it is missing, and give it the policy its contents deserve.
+
+    `public` is passed rather than inferred from the name: a store either serves its
+    objects to anyone or it does not, and that is a decision of the caller who knows what
+    goes in it. The gallery is a shop window; a registration document is not.
+    """
     try:
         client.head_bucket(Bucket=bucket)
     except client.exceptions.ClientError as error:
         if error.response["Error"]["Code"] != "404":
             raise
         client.create_bucket(Bucket=bucket)
+
+    if public:
         client.put_bucket_policy(Bucket=bucket, Policy=_read_policy(bucket))
 
 

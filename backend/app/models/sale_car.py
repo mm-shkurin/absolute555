@@ -81,8 +81,16 @@ class SaleCars(Base):
     # rejection with no reason gives the seller nothing to correct.
     reject_reason = Column(Text, nullable=True)
     published_at = Column(DateTime, nullable=True)
-    sts_photos = Column(JSONB,default=[])
-    s3_photo_car_keys = Column(JSON, default=[])
+    # The gallery, in the order the seller arranged it. A list of
+    # {"photo_id", "key", "preview_key"} -- the list's order *is* the display order, and
+    # its first element is the cover. A separate cover column would be a second source of
+    # truth, and the two would disagree the first time a reorder half-applied.
+    photos = Column(JSONB, default=list)
+
+    # The СТС scan lives in the closed bucket; the row keeps only its key. It used to be
+    # base64 in this table, which put a document in every dump and in any SELECT * a
+    # developer ran. Cleared once a moderator has decided (story 5).
+    sts_key = Column(String, nullable=True)
 
     brand = relationship("Brand")
     model = relationship("CarModel")

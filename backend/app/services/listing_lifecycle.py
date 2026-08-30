@@ -15,6 +15,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import PhotoSettings
 from app.models.sale_car import (
     ALLOWED_TRANSITIONS,
     MAX_DRAFTS_PER_USER,
@@ -30,9 +31,11 @@ from app.services.listing_errors import (
     TooManyDrafts,
     TransitionNotAllowed,
 )
+from app.services.listing_document import ListingDocumentService
 from app.services.webhook_service import WebhookService
 
 EDITABLE_IN = frozenset({SaleCarStatus.DRAFT, SaleCarStatus.REJECTED})
+MIN_PHOTOS_TO_SUBMIT = PhotoSettings().min_photos_to_submit
 
 
 class ListingLifecycleService:
@@ -133,7 +136,10 @@ class ListingLifecycleService:
     @staticmethod
     def _missing(listing: SaleCars) -> list[str]:
         missing = [name for name in REQUIRED_TO_SUBMIT if getattr(listing, name) in (None, "")]
-        if not (listing.s3_photo_car_keys or []):
+        if len(listing.photos or []) < MIN_PHOTOS_TO_SUBMIT:
+            # One photograph is nearly useless to a buyer, so the gate asks for three
+            # (story 5). It reports the same "photos" either way: the wizard highlights a
+            # step, not a count.
             missing.append("photos")
         return missing
 

@@ -130,7 +130,24 @@ class MinioSettings(BaseSettings):
     minio_port: int = Field(..., ge=1, le=65535, alias="MINIO_PORT")
     minio_endpoint_url: str = Field(..., alias="MINIO_ENDPOINT_URL")
     minio_bucket_name: str = Field(..., min_length=1, alias="MINIO_BUCKET_NAME")
-    
+
+    # Two stores, not one bucket with a policy per prefix. A typo in a prefix exposes a
+    # registration document silently; the wrong bucket is visible at once.
+    minio_documents_bucket: str = Field("absolute-documents", alias="MINIO_DOCUMENTS_BUCKET")
+
+    # Where a browser reaches the gallery. Hardcoded in s3_service until story 5.
+    public_photo_base_url: str = Field(..., alias="PUBLIC_PHOTO_BASE_URL")
+
+    model_config = BaseConfig.model_config
+
+
+class PhotoSettings(BaseSettings):
+    max_photos_per_listing: int = Field(15, alias="MAX_PHOTOS_PER_LISTING")
+    max_photo_bytes: int = Field(10 * 1024 * 1024, alias="MAX_PHOTO_BYTES")
+    min_photos_to_submit: int = Field(3, alias="MIN_PHOTOS_TO_SUBMIT")
+    preview_max_edge: int = Field(800, alias="PREVIEW_MAX_EDGE")
+    document_link_ttl_seconds: int = Field(300, alias="DOCUMENT_LINK_TTL_SECONDS")
+
     model_config = BaseConfig.model_config
 
 class OllamaSettings(BaseSettings):

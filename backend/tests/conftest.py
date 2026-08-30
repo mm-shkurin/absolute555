@@ -1,4 +1,5 @@
 import asyncio
+import io
 import itertools
 import uuid
 
@@ -93,25 +94,32 @@ def catalogue(client) -> tuple:
     return brand_id, models.json()[0]["model_id"]
 
 
-# A one-pixel PNG. The gate asks whether a photo exists, not what it shows.
-PIXEL_PNG = (
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQ"
-    "AAAABJRU5ErkJggg=="
-)
+# A real PNG, generated rather than pasted: the gate reads the bytes, so a fixture that
+# only looks like an image would pass the wrong test.
+def make_image(width: int = 40, height: int = 30, fmt: str = "PNG") -> bytes:
+    from PIL import Image
+
+    buffer = io.BytesIO()
+    Image.new("RGB", (width, height), (90, 120, 200)).save(buffer, format=fmt)
+    return buffer.getvalue()
+
+
+@pytest.fixture
+def image_bytes():
+    return make_image
 
 
 @pytest.fixture
 def attach_photo(client):
-    """Give a listing one photo, through the API the seller uses."""
+    """Put one photograph in a listing's gallery, through the API the seller uses."""
 
-    def _attach(listing_id: str, headers: dict, image_b64: str = PIXEL_PNG):
+    def _attach(listing_id: str, headers: dict, count: int = 1):
         response = client.post(
             f"/api/v1/sale_car/{listing_id}/photos",
             headers=headers,
-            json={"photos_b64": [image_b64]},
+            files=[("files", (f"photo{i}.png", make_image(), "image/png")) for i in range(count)],
         )
         assert response.status_code == 200, response.text
-        assert response.json()["s3_photo_car_keys"], "the gallery is still empty"
-        return response.json()["s3_photo_car_keys"]
+        return response.json()["photos"]
 
     return _attach

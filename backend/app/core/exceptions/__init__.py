@@ -1,4 +1,9 @@
-from .application import BusinessRuleError, ExternalServiceError, ValidationError
+from .application import (
+    BusinessRuleError,
+    ExternalServiceError,
+    PayloadTooLarge,
+    ValidationError,
+)
 from .authentication import (
     AuthenticationError,
     AuthorizationError,
@@ -16,6 +21,7 @@ __all__ = [
     "ConflictError",
     "ValidationError",
     "BusinessRuleError",
+    "PayloadTooLarge",
     "ExternalServiceError",
     "register_exception_handlers",
 ]

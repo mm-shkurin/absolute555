@@ -25,11 +25,11 @@ def _create(client, headers) -> str:
     return response.json()["sale_car_id"]
 
 
-def _fill(client, headers, listing_id, brand_id, model_id, attach_photo):
+def _fill(client, headers, listing_id, brand_id, model_id, attach_photo, count=3):
     body = dict(COMPLETE, brand_id=brand_id, model_id=model_id)
     response = client.patch(f"/api/v1/sale_car/{listing_id}", headers=headers, json=body)
     assert response.status_code == 200, response.text
-    attach_photo(listing_id, headers)
+    attach_photo(listing_id, headers, count=count)
 
 
 def _status(client, headers, listing_id) -> str:

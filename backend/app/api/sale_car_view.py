@@ -7,7 +7,10 @@ to the model reached whichever of the five somebody remembered.
 from typing import Iterable, List
 
 from app.models.sale_car import SaleCars
+from app.core.config import PhotoSettings
 from app.services.s3_service import s3_service
+
+photo_settings = PhotoSettings()
 
 _FIELDS = (
     "sale_car_id",
@@ -18,7 +21,6 @@ _FIELDS = (
     "year",
     "transmission",
     "engine_power",
-    "s3_photo_car_keys",
     "task_id",
     "task_status",
     "phone_number",
@@ -33,19 +35,34 @@ _FIELDS = (
 )
 
 
+def _photo_view(photo: dict) -> dict:
+    # An old photograph carried over by the migration has no preview of its own; the
+    # original stands in for it until someone re-uploads.
+    preview = photo.get("preview_key") or photo["key"]
+    return {
+        "photo_id": photo["photo_id"],
+        "url": s3_service.get_public_photo_url(photo["key"]),
+        "preview_url": s3_service.get_public_photo_url(preview),
+    }
+
+
 async def to_view(listing: SaleCars) -> dict:
     view = {name: getattr(listing, name) for name in _FIELDS}
     view["brand"] = listing.brand.name_ru if listing.brand else None
     view["model"] = listing.model.name if listing.model else None
 
-    keys = listing.s3_photo_car_keys or []
-    if keys:
-        try:
-            view["preview_photo_url"] = await s3_service.generate_presigned_url(keys[0])
-        except Exception:
-            # A listing with an unreachable photo store is still a listing worth showing.
-            pass
+    photos = [_photo_view(photo) for photo in (listing.photos or [])]
+    view["photos"] = photos
+    view["preview_photo_url"] = photos[0]["preview_url"] if photos else None
     return view
+
+
+def to_gallery(listing: SaleCars) -> dict:
+    return {
+        "sale_car_id": listing.sale_car_id,
+        "photos": [_photo_view(photo) for photo in (listing.photos or [])],
+        "limit": photo_settings.max_photos_per_listing,
+    }
 
 
 async def to_views(listings: Iterable[SaleCars]) -> List[dict]:

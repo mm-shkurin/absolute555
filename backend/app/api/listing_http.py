@@ -6,9 +6,9 @@ service stay free of fastapi imports.
 """
 
 from app.core.exceptions import (
-    AuthorizationError,
     BusinessRuleError,
     ConflictError,
+    PayloadTooLarge,
     ResourceNotFoundError,
     ValidationError,
 )
@@ -23,7 +23,15 @@ from app.services.listing_errors import (
     TooManyDrafts,
     TransitionNotAllowed,
 )
-from app.services.listing_photos import PhotoNotReadable
+from app.services.photo_errors import (
+    DocumentNotFound,
+    GalleryLimitReached,
+    NoFilesGiven,
+    NotAnImage,
+    OrderMismatch,
+    PhotoNotFound,
+    PhotoTooLarge,
+)
 
 PUBLIC_STATUSES = frozenset({SaleCarStatus.PUBLISHED, SaleCarStatus.WITHDRAWN, SaleCarStatus.SOLD})
 
@@ -60,8 +68,39 @@ def to_http(error: Exception):
     if isinstance(error, RejectionNeedsReason):
         return ValidationError(str(error), code="REJECTION_NEEDS_REASON")
 
-    if isinstance(error, PhotoNotReadable):
-        return ValidationError(str(error), code="PHOTO_NOT_READABLE")
+    if isinstance(error, PhotoTooLarge):
+        return PayloadTooLarge(
+            str(error),
+            code="PHOTO_TOO_LARGE",
+            details={"limit_bytes": error.limit, "size_bytes": error.size},
+        )
+
+    if isinstance(error, NotAnImage):
+        return ValidationError(str(error), code="NOT_AN_IMAGE", details={"filename": error.filename})
+
+    if isinstance(error, GalleryLimitReached):
+        return ConflictError(
+            str(error),
+            code="GALLERY_LIMIT_REACHED",
+            details={"limit": error.limit, "current": error.held, "offered": error.offered},
+        )
+
+    if isinstance(error, NoFilesGiven):
+        return ValidationError(str(error), code="NO_FILES_GIVEN")
+
+    if isinstance(error, PhotoNotFound):
+        return ResourceNotFoundError(str(error), code="PHOTO_NOT_FOUND")
+
+    if isinstance(error, OrderMismatch):
+        return ValidationError(
+            str(error),
+            code="ORDER_MISMATCH",
+            details={"missing": error.missing, "unknown": error.unknown},
+        )
+
+    if isinstance(error, DocumentNotFound):
+        # Indistinguishable from a listing that never existed, on purpose.
+        return ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
 
     raise error
 

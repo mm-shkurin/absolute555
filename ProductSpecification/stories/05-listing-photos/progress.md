@@ -8,25 +8,25 @@
 
 ## Tier 1 — Backend
 
-- [~] api-01 seller adds a photograph to a listing
-- [ ] api-02 photographs keep the order they were sent in
-- [ ] api-03 seller rearranges the gallery and the cover follows
-- [ ] api-05 seller removes photographs and the order closes over the gaps
-- [ ] api-07 a gallery holds no more than fifteen photographs
-- [ ] api-08 a photograph larger than ten megabytes is refused
-- [ ] api-09 a file that is not an image is refused whatever it is called
-- [ ] api-12 a listing under review cannot gain or lose photographs
-- [ ] api-14 three photographs are needed before a listing can be reviewed
+- [x] api-01 seller adds a photograph to a listing
+- [x] api-02 photographs keep the order they were sent in
+- [x] api-03 seller rearranges the gallery and the cover follows
+- [x] api-05 seller removes photographs and the order closes over the gaps
+- [x] api-07 a gallery holds no more than fifteen photographs
+- [x] api-08 a photograph larger than ten megabytes is refused
+- [x] api-09 a file that is not an image is refused whatever it is called
+- [x] api-12 a listing under review cannot gain or lose photographs
+- [x] api-14 three photographs are needed before a listing can be reviewed
 
 ## Tier 1 — Security
 
-- [ ] sec-01 a stranger cannot touch someone elses gallery
+- [x] sec-01 a stranger cannot touch someone elses gallery
 
-- [ ] harvest
+- [x] harvest
 
 ## Tier 2 — Backend
 
-- [ ] api-04 an order that does not match what is stored is refused whole
+- [~] api-04 an order that does not match what is stored is refused whole
 - [ ] api-06 removing the cover promotes the next photograph
 - [ ] api-10 a refused upload leaves nothing behind
 - [ ] api-11 an upload with no files at all is refused

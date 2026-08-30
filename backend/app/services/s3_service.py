@@ -18,8 +18,10 @@ class S3Service:
     def __init__(self):
         self.s3_client = build_client(minio_settings)
         self.bucket = minio_settings.minio_bucket_name
+        self.documents_bucket = minio_settings.minio_documents_bucket
         self.base_url = public_base_url(minio_settings)
-        ensure_bucket_exists(self.s3_client, self.bucket)
+        ensure_bucket_exists(self.s3_client, self.bucket, public=True)
+        ensure_bucket_exists(self.s3_client, self.documents_bucket, public=False)
 
     async def upload_file(self, car_id: str, file: UploadFile, folder: str = "photos") -> str:
         return self.make_url(await self.upload_file_get_key(car_id, file, folder))
@@ -44,6 +46,36 @@ class S3Service:
             ),
         )
         return key
+
+    async def put_document(self, listing_id: str, body: bytes, content_type: str) -> str:
+        """Store a document in the closed bucket. No public-read ACL: that is the point."""
+        key = generate_key(listing_id, None, "sts")
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(
+            None,
+            lambda: self.s3_client.put_object(
+                Bucket=self.documents_bucket, Key=key, Body=body, ContentType=content_type
+            ),
+        )
+        return key
+
+    async def sign_document_url(self, key: str, expires_in: int) -> str:
+        loop = asyncio.get_event_loop()
+        return await loop.run_in_executor(
+            None,
+            lambda: self.s3_client.generate_presigned_url(
+                "get_object",
+                Params={"Bucket": self.documents_bucket, "Key": key},
+                ExpiresIn=expires_in,
+            ),
+        )
+
+    async def delete_document(self, key: str) -> None:
+        loop = asyncio.get_event_loop()
+        await loop.run_in_executor(
+            None,
+            lambda: self.s3_client.delete_object(Bucket=self.documents_bucket, Key=key),
+        )
 
     async def upload_file_get_key_from_bytes(
         self,
@@ -78,69 +110,6 @@ class S3Service:
 
         return f"{self.base_url}/{self.bucket}/{key}"
 
-    async def save_photos_json(self, car_id: str, urls: list, folder: str = "photos") -> str:
-        key = f"{car_id}/{folder}/photos.json"
-        body = json.dumps({"photos": urls})
-
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None,
-            lambda: self.s3_client.put_object(
-                Bucket=self.bucket,
-                Key=key,
-                Body=body,
-                ACL="public-read",
-                ContentType="application/json",
-            ),
-        )
-
-        return f"{self.base_url}/{self.bucket}/{key}"
-    
-    async def upload_sts(self, car_id: str, file: UploadFile) -> str:
-        return await self.upload_file(car_id, file, folder="sts")
-
-    async def upload_sts_from_bytes(
-        self,
-        car_id: str,
-        file_bytes: bytes,
-        filename: Optional[str] = None,
-        content_type: Optional[str] = None,
-        folder: str = "sts",
-        key: Optional[str] = None, 
-    ) -> str:
-        if key is None:
-            key = generate_key(car_id, filename, folder)
-
-        extra_args = {"ACL": "public-read"}
-        if content_type:
-            extra_args["ContentType"] = content_type
-
-        loop = asyncio.get_event_loop()
-        await loop.run_in_executor(
-            None,
-            lambda: self.s3_client.put_object(
-                Bucket=self.bucket,
-                Key=key,
-                Body=file_bytes,
-                **extra_args,
-            ),
-        )
-
-        return f"{self.base_url}/{self.bucket}/{key}"
-
-    async def get_file_by_key(self, key: str):
-        
-        loop = asyncio.get_event_loop()
-        try:
-            result = await loop.run_in_executor(
-                None,
-                lambda: self.s3_client.get_object(Bucket=self.bucket, Key=key)
-            )
-            file_bytes = result['Body'].read()
-            content_type = result.get('ContentType', 'application/octet-stream')
-            return file_bytes, content_type
-        except self.s3_client.exceptions.NoSuchKey:
-            raise FileNotFoundError(f"File with key {key} not found")
     async def generate_presigned_url(self, key: str, expires_in: int = 3600) -> str:
         loop = asyncio.get_event_loop()
         url = await loop.run_in_executor(
@@ -157,7 +126,9 @@ class S3Service:
         return url
 
     def get_public_photo_url(self, key: str) -> str:
-        return f"https://absoluteomsk01.ru/auto/{key}"
+        # The address a browser reaches the gallery at, which is not the address this
+        # process talks to MinIO on. It was hardcoded here until story 5.
+        return f"{minio_settings.public_photo_base_url.rstrip('/')}/{key}"
 
     async def delete_file(self, key: str) -> bool:
         loop = asyncio.get_event_loop()

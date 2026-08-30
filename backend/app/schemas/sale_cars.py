@@ -14,15 +14,6 @@ class SaleCarCreate(BaseModel):
     milleage: float
     vin: Optional[str] = None
     description: Optional[str] = None
-    sts_photos_b64: Optional[List[str]] = None
-
-
-class SaleCarPhotoUpload(BaseModel):
-    photos_b64: List[str]
-
-
-class SaleCarPhotoDelete(BaseModel):
-    photo_keys: List[str] = Field(..., min_items=1, description="List of photo keys to delete")
 
 
 class SaleCarUpdate(BaseModel):
@@ -46,6 +37,29 @@ class SaleCarUpdate(BaseModel):
     year: Optional[int] = None
     transmission: Optional[str] = None
     engine_power: Optional[int] = None
+
+
+class Photo(BaseModel):
+    photo_id: str
+    url: str
+    preview_url: str
+
+
+class GalleryResponse(BaseModel):
+    sale_car_id: UUID
+    photos: List[Photo]
+    limit: int
+
+
+class PhotoOrder(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    photo_ids: List[str] = Field(..., min_length=1)
+
+
+class DocumentLink(BaseModel):
+    url: str
+    expires_at: datetime
 
 
 class SaleCarStatusChanged(BaseModel):
@@ -84,7 +98,6 @@ class SaleCarResponse(BaseModel):
     year: Optional[int] = None
     transmission: Optional[str] = None
     engine_power: Optional[int] = None
-    s3_photo_car_keys: Optional[List[str]] = None
     task_id: Optional[str] = None
     task_status: Optional[str] = None
     phone_number: Optional[str] = None
@@ -98,7 +111,7 @@ class SaleCarResponse(BaseModel):
     updated_at: Optional[datetime]
     car_data: Optional[dict] = None
     preview_photo_url: Optional[str] = None
-    photo_urls: Optional[List[str]] = None
+    photos: List[Photo] = []
 
     class Config:
         from_attributes = True

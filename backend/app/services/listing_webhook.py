@@ -16,7 +16,7 @@ frontend_settings = FrontendSettings()
 
 async def announce_when_ready(db, sale_car: SaleCars) -> bool:
     """Tell the channel about a listing, once it has at least one photo."""
-    if not (sale_car.s3_photo_car_keys or []):
+    if not (sale_car.photos or []):
         logger.debug(f"Sale car {sale_car.sale_car_id} has no photos, skipping webhook")
         return False
 
@@ -32,7 +32,7 @@ async def announce_when_ready(db, sale_car: SaleCars) -> bool:
 
 
 def to_payload(sale_car: SaleCars) -> dict:
-    keys = sale_car.s3_photo_car_keys or []
+    keys = [photo["key"] for photo in (sale_car.photos or [])]
     return {
         "sale_car_id": str(sale_car.sale_car_id),
         "user_id": str(sale_car.user_id),
