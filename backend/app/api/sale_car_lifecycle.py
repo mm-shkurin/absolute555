@@ -4,7 +4,7 @@ One path per intent rather than one writable status field: a client that can ass
 value walks straight past the transition table.
 """
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db

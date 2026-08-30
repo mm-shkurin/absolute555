@@ -1,16 +1,20 @@
-"""Where listing domain errors become HTTP.
+"""Where listing domain errors become HTTP errors.
 
 The service layer states the refusal; this is the one place that decides which status
-code says it. Keeping the mapping here is what lets the lifecycle service stay free of
-fastapi imports.
+and which machine code says it. Keeping the mapping here is what lets the lifecycle
+service stay free of fastapi imports.
 """
 
-from fastapi import HTTPException
-
+from app.core.exceptions import (
+    AuthorizationError,
+    BusinessRuleError,
+    ConflictError,
+    ResourceNotFoundError,
+    ValidationError,
+)
 from app.models.sale_car import SaleCarStatus
 from app.models.users import Users
 from app.permissions.ownership import can_manage_sale_car
-from app.services.listing_photos import PhotoNotReadable
 from app.services.listing_errors import (
     ListingFrozen,
     ListingIncomplete,
@@ -19,39 +23,47 @@ from app.services.listing_errors import (
     TooManyDrafts,
     TransitionNotAllowed,
 )
+from app.services.listing_photos import PhotoNotReadable
 
 PUBLIC_STATUSES = frozenset({SaleCarStatus.PUBLISHED, SaleCarStatus.WITHDRAWN, SaleCarStatus.SOLD})
 
 
-def to_http(error: Exception) -> HTTPException:
+def to_http(error: Exception):
+    """The custom error that says this refusal on the wire."""
     if isinstance(error, ListingNotFound):
-        return HTTPException(status_code=404, detail="Sale car not found")
+        return ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
+
     if isinstance(error, TransitionNotAllowed):
-        return HTTPException(
-            status_code=409,
-            detail={
-                "detail": str(error),
-                "current_status": error.current,
-                "allowed": error.allowed,
-            },
+        return ConflictError(
+            str(error),
+            code="TRANSITION_NOT_ALLOWED",
+            details={"current_status": error.current, "allowed": error.allowed},
         )
-    if isinstance(error, ListingIncomplete):
-        return HTTPException(
-            status_code=422,
-            detail={"detail": str(error), "missing_fields": error.missing},
-        )
+
     if isinstance(error, ListingFrozen):
-        return HTTPException(
-            status_code=409,
-            detail={"detail": str(error), "current_status": error.current, "allowed": []},
+        return ConflictError(
+            str(error),
+            code="LISTING_FROZEN",
+            details={"current_status": error.current, "allowed": []},
         )
+
     if isinstance(error, TooManyDrafts):
-        return HTTPException(status_code=409, detail={"detail": str(error), "limit": error.limit})
+        return BusinessRuleError(
+            str(error), code="DRAFT_LIMIT_REACHED", details={"limit": error.limit}
+        )
+
+    if isinstance(error, ListingIncomplete):
+        return ValidationError(
+            str(error), code="LISTING_INCOMPLETE", details={"missing_fields": error.missing}
+        )
+
     if isinstance(error, RejectionNeedsReason):
-        return HTTPException(status_code=422, detail=str(error))
+        return ValidationError(str(error), code="REJECTION_NEEDS_REASON")
+
     if isinstance(error, PhotoNotReadable):
-        return HTTPException(status_code=422, detail=str(error))
-    return HTTPException(status_code=500, detail="Listing error")
+        return ValidationError(str(error), code="PHOTO_NOT_READABLE")
+
+    raise error
 
 
 async def listing_of(service, sale_car_id: str, user: Users):
@@ -61,9 +73,7 @@ async def listing_of(service, sale_car_id: str, user: Users):
     is forbidden: 403 confirms the identifier is real, which is the whole of what a
     scraper walking identifiers wants to learn.
     """
-    from app.services.listing_errors import ListingNotFound as _NotFound
-
     listing = await service.get(sale_car_id)
     if not await can_manage_sale_car(user, str(listing.user_id)):
-        raise _NotFound(sale_car_id)
+        raise ListingNotFound(sale_car_id)
     return listing

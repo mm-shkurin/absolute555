@@ -15,7 +15,7 @@ def test_should_hide_a_draft_from_everyone_but_its_owner(client, seller, signed_
     response = client.get(f"/api/v1/sale_car/{listing_id}", headers=stranger)
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Sale car not found"}
+    assert response.json()["code"] == "LISTING_NOT_FOUND"
 
 
 def test_should_answer_a_stranger_and_an_unknown_identifier_alike(client, seller, signed_in):
@@ -109,4 +109,4 @@ def test_should_refuse_an_identifier_that_is_not_one(client, seller):
     response = client.get("/api/v1/sale_car/not-a-uuid", headers=seller)
 
     assert response.status_code == 404
-    assert response.json() == {"detail": "Sale car not found"}
+    assert response.json()["code"] == "LISTING_NOT_FOUND"

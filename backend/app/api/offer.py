@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from loguru import logger
@@ -13,6 +13,9 @@ from app.schemas.offer import (
     OfferStatusUpdate,
     OfferWithCarResponse
 )
+from app.core.exceptions import AuthorizationError, ResourceNotFoundError
+from app.services.offer_errors import OfferError
+from app.api.offer_http import to_http
 from app.utils.security import get_current_user
 from app.permissions.dependencies import require_permission
 from app.permissions.guests import check_guest_car_limit, forbid_guest
@@ -32,11 +35,8 @@ async def create_offer(
             price=offer_in.price
         )
         return offer
-    except HTTPException:
-        raise
-    except Exception as e:
-        logger.error(f"Error creating offer: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except OfferError as error:
+        raise to_http(error)
 
 @offer_router.get("/my", response_model=List[OfferResponse])
 async def get_my_offers(
@@ -55,7 +55,7 @@ async def get_offers_for_car(
 ):
     service = OfferService(db)
     if not await can_manage_offer_as_owner(current_user, sale_car_id, db):
-        raise HTTPException(status_code=403, detail="Access denied: only car owner can view all offers")
+        raise AuthorizationError("Only the car owner may see every offer", code="NOT_CAR_OWNER")
 
     offers = await service.get_offers_by_sale_car(sale_car_id)
     return offers
@@ -69,10 +69,10 @@ async def get_offer_by_id(
     service = OfferService(db)
     offer = await service.get_offer_by_id(offer_id)
     if not offer:
-        raise HTTPException(status_code=404, detail="Offer not found")
+        raise ResourceNotFoundError("Offer not found", code="OFFER_NOT_FOUND")
 
     if not await can_manage_offer(current_user, offer, db):
-        raise HTTPException(status_code=403, detail="Access denied")
+        raise AuthorizationError("Access denied", code="NOT_OFFER_PARTY")
 
     return offer
 
@@ -86,10 +86,10 @@ async def update_offer_status(
     service = OfferService(db)
     offer = await service.get_offer_by_id(offer_id)
     if not offer:
-        raise HTTPException(status_code=404, detail="Offer not found")
+        raise ResourceNotFoundError("Offer not found", code="OFFER_NOT_FOUND")
 
     if not await can_manage_offer_as_owner(current_user, str(offer.sale_car_id), db):
-        raise HTTPException(status_code=403, detail="Access denied: only car owner can change status")
+        raise AuthorizationError("Only the car owner may change an offer's status", code="NOT_CAR_OWNER")
 
     try:
         updated_offer = await service.update_offer_status(
@@ -98,11 +98,8 @@ async def update_offer_status(
             owner_id=str(current_user.id) 
         )
         return updated_offer
-    except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error updating offer status: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+    except OfferError as error:
+        raise to_http(error)
 """
 @router.delete("/{offer_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_offer(
@@ -113,16 +110,14 @@ async def delete_offer(
     service = OfferService(db)
     offer = await service.get_offer_by_id(offer_id)
     if not offer:
-        raise HTTPException(status_code=404, detail="Offer not found")
+        raise ResourceNotFoundError("Offer not found", code="OFFER_NOT_FOUND")
     if str(offer.user_id) != str(current_user.id):
-        raise HTTPException(status_code=403, detail="Access denied: only the author can delete this offer")
+        raise AuthorizationError("Only the author may delete this offer", code="NOT_OFFER_AUTHOR")
 
     try:
         await service.delete_offer(offer_id)
         return None
-    except Exception as e:
-        logger.error(f"Error deleting offer: {e}")
-        raise HTTPException(status_code=500, detail="Internal server error")
+
 
 @router.get("/{offer_id}/with-details", response_model=OfferWithCarResponse)
 async def get_offer_with_car_details(
@@ -133,10 +128,10 @@ async def get_offer_with_car_details(
     service = OfferService(db)
     offer = await service.get_offer_by_id(offer_id)
     if not offer:
-        raise HTTPException(status_code=404, detail="Offer not found")
+        raise ResourceNotFoundError("Offer not found", code="OFFER_NOT_FOUND")
 
     if not await can_manage_offer(current_user, offer, db):
-        raise HTTPException(status_code=403, detail="Access denied")
+        raise AuthorizationError("Access denied", code="NOT_OFFER_PARTY")
 
     car_data = {}  
     return {

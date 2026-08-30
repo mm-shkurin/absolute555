@@ -18,7 +18,7 @@ def test_should_refuse_more_drafts_than_the_limit(client, seller):
     response = client.post("/api/v1/sale_car", headers=seller)
 
     assert response.status_code == 409, response.text
-    assert response.json()["detail"]["limit"] == MAX_DRAFTS_PER_USER
+    assert response.json()["details"]["limit"] == MAX_DRAFTS_PER_USER
 
 
 def test_should_refuse_a_status_sent_as_an_ordinary_field(client, seller):
@@ -42,7 +42,7 @@ def test_should_freeze_a_listing_under_review(client, seller, catalogue, attach_
     )
 
     assert response.status_code == 409, response.text
-    assert response.json()["detail"]["current_status"] == "moderation"
+    assert response.json()["details"]["current_status"] == "moderation"
     listing = client.get(f"/api/v1/sale_car/{listing_id}", headers=seller).json()
     assert listing["price"] == 4020000.0
 
@@ -121,7 +121,7 @@ def test_should_enter_review_once_when_a_draft_is_sent_twice(
 
     assert first.json()["status"] == "moderation"
     assert second.status_code == 409, second.text
-    assert second.json()["detail"]["current_status"] == "moderation"
+    assert second.json()["details"]["current_status"] == "moderation"
     assert _status(client, seller, listing_id) == "moderation"
 
 

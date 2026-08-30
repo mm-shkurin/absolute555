@@ -7,6 +7,7 @@ from app.core.config import AppSettings
 from app.core.config import CORSSettings
 from loguru import logger
 from app.api import api_router
+from app.core.exceptions import register_exception_handlers
 from app.api.docs import docs_router
 
 sys.path.append('/app')
@@ -61,6 +62,11 @@ def create_app():
     except Exception:
         pass
     
+    # Every failure leaves through one envelope -- error/message/code/details -- so a
+    # client branches on a code instead of parsing prose. Registered before the routers
+    # so nothing can answer in the old shape.
+    register_exception_handlers(app)
+
     @app.get("/")
     def read_root():
         return {"message": "Welcome to API Absolute"}

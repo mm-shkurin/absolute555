@@ -6,9 +6,10 @@ never writes `status`.
 
 from typing import List, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import AuthorizationError, ResourceNotFoundError, ValidationError
 from app.db.database import get_db
 from app.models.sale_car import SaleCarStatus
 from app.models.users import Users
@@ -82,7 +83,7 @@ async def get_sale_car_by_id(
             current_user, str(listing.user_id)
         )
         if not owner:
-            raise HTTPException(status_code=404, detail="Sale car not found")
+            raise ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
 
     return await to_view(listing)
 
@@ -97,7 +98,7 @@ async def update_sale_car(
     service = ListingLifecycleService(db)
     fields = sale_car_update.model_dump(exclude_unset=True)
     if not fields:
-        raise HTTPException(status_code=400, detail="No data to update")
+        raise ValidationError("No data to update", code="EMPTY_PATCH")
 
     try:
         await listing_of(service, sale_car_id, current_user)
@@ -116,9 +117,9 @@ async def delete_sale_car(
     service = SaleCarService(db)
     car = await service.get_sale_car_by_id(sale_car_id)
     if not car:
-        raise HTTPException(status_code=404, detail="Sale car not found")
+        raise ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
     if not await can_manage_sale_car(current_user, str(car.user_id)):
-        raise HTTPException(status_code=403, detail="Access denied")
+        raise AuthorizationError("Access denied", code="NOT_LISTING_OWNER")
 
     await service.delete_sale_car(sale_car_id)
     return None
@@ -150,9 +151,9 @@ async def delete_sale_car_photos(
     service = SaleCarService(db)
     car = await service.get_sale_car_by_id(sale_car_id)
     if not car:
-        raise HTTPException(status_code=404, detail="Sale car not found")
+        raise ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
     if not await can_delete_sale_car_photos(current_user, str(car.user_id)):
-        raise HTTPException(status_code=403, detail="Access denied")
+        raise AuthorizationError("Access denied", code="NOT_LISTING_OWNER")
 
     return await service.delete_sale_car_photos(sale_car_id, payload.photo_keys)
 

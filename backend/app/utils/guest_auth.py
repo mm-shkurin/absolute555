@@ -3,7 +3,9 @@ import hmac
 import httpx
 import json
 from typing import Optional
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
+
+from app.core.exceptions import ValidationError
 from fastapi.responses import PlainTextResponse
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -15,9 +17,9 @@ from app.services.user_service import UserService
 
 async def guest_auth(db: AsyncSession , device_id: Optional[str] = None) -> dict[str,str]:
     if not device_id :
-         raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="device_id is required for guest authentication"
+         raise ValidationError(
+            "device_id is required for guest authentication",
+            code="DEVICE_ID_REQUIRED",
         )
     
     user_service = UserService(db)

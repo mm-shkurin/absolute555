@@ -1,12 +1,13 @@
 from datetime import datetime, timedelta
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, status
 from fastapi import Request
 from fastapi.security import APIKeyHeader
 import jwt
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from app.core.exceptions import AuthenticationError
 from app.core.config import JWTSettings
 from app.core.config import CookieSettings
 from app.db.database import get_db
@@ -46,9 +47,9 @@ async def verify_token(token:str, secret_key:str, algorithm:str):
         payload = jwt.decode(token, secret_key, algorithms=[algorithm])
         return payload
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
+        raise AuthenticationError("Token has expired", code="TOKEN_EXPIRED")
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+        raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
 async def refresh_access_token(refresh_token: str):
     try:
@@ -58,7 +59,7 @@ async def refresh_access_token(refresh_token: str):
             jwt_settings.algorithm
         )
         if refresh_token_payload.get("type") != "refresh":
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
+            raise AuthenticationError("Invalid token type", code="TOKEN_WRONG_TYPE")
         access_token_payload = {
             "id": refresh_token_payload.get("id"),  
         }
@@ -66,16 +67,15 @@ async def refresh_access_token(refresh_token: str):
         new_access_token = await create_access_token(access_token_payload)
         return new_access_token
         
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+    except AuthenticationError:
+        raise
+    except Exception:
+        raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
 async def get_current_user(request: Request, token: str = Depends(auth_scheme), db: AsyncSession = Depends(get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+    credentials_exception = AuthenticationError(
+        "Could not validate credentials",
+        code="CREDENTIALS_INVALID",
     )
     
     if not token:
@@ -117,5 +117,5 @@ async def get_current_user_or_none(
     """
     try:
         return await get_current_user(request, token, db)
-    except HTTPException:
+    except AuthenticationError:
         return None

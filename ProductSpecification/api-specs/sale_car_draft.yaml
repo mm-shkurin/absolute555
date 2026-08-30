@@ -149,18 +149,26 @@ components:
         updated_at: { type: string, format: date-time }
 
     DraftLimitError:
-      type: object
-      required: [detail, limit]
-      properties:
-        detail: { type: string }
-        limit: { type: integer, example: 5 }
+      allOf:
+        - $ref: 'errors.yaml#/components/schemas/Error'
+        - type: object
+          properties:
+            code: { type: string, enum: [DRAFT_LIMIT_REACHED] }
+            details:
+              type: object
+              properties:
+                limit: { type: integer, example: 5 }
 
     TransitionError:
-      type: object
-      required: [detail, current_status, allowed]
-      properties:
-        detail: { type: string }
-        current_status: { $ref: '#/components/schemas/SaleCarStatus' }
-        allowed:
-          type: array
-          items: { $ref: '#/components/schemas/SaleCarStatus' }
+      allOf:
+        - $ref: 'errors.yaml#/components/schemas/Error'
+        - type: object
+          properties:
+            code: { type: string, enum: [TRANSITION_NOT_ALLOWED, LISTING_FROZEN] }
+            details:
+              type: object
+              properties:
+                current_status: { $ref: '#/components/schemas/SaleCarStatus' }
+                allowed:
+                  type: array
+                  items: { $ref: '#/components/schemas/SaleCarStatus' }

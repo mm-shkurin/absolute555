@@ -1,7 +1,7 @@
 from typing import List, Optional
 from uuid import UUID
 from datetime import datetime
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
@@ -16,6 +16,7 @@ from app.schemas.role import (
     RoleRequestListResponse,
     RoleRequestUpdate
 )
+from app.core.exceptions import BusinessRuleError, ResourceNotFoundError
 from app.services.role_service import RoleService
 from app.services.role_request_service import RoleRequestService
 from app.utils.security import get_current_user
@@ -74,7 +75,7 @@ async def update_user_role(
     user = await service.update_user_role(user_id, role_data.new_role)
     
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь не найден")
+        raise ResourceNotFoundError("Пользователь не найден", code="USER_NOT_FOUND")
     
     logger.info(f"User {user_id} role updated to {role_data.new_role.value} by {current_user.id}. Reason: {role_data.reason}")
     
@@ -96,7 +97,7 @@ async def get_user_role_info(
     user = await service.get_user_by_id(user_id)
     
     if not user:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Пользователь не найден")
+        raise ResourceNotFoundError("Пользователь не найден", code="USER_NOT_FOUND")
     
     return UserRoleInfo(
         user_id=user.id,
@@ -131,10 +132,7 @@ async def create_role_request(
         
         return RoleRequestResponse.from_orm(role_request)
     except ValueError as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-    except Exception as e:
-        logger.error(f"Error creating role request: {e}")
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ошибка при создании заявки")
+        raise BusinessRuleError(str(e), code="ROLE_REQUEST_REFUSED")
 
 @role_router.get("/my-role-requests", response_model=List[RoleRequestResponse])
 async def get_my_role_requests(
@@ -184,6 +182,6 @@ async def update_role_request(
     role_request = await service.update_role_request(request_id, current_user.id, update_data)
     
     if not role_request:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Заявка не найдена")
+        raise ResourceNotFoundError("Заявка не найдена", code="ROLE_REQUEST_NOT_FOUND")
     
     return RoleRequestResponse.from_orm(role_request)

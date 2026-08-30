@@ -5,7 +5,9 @@ belongs to no provider -- refreshing a token and the guest account a device gets
 it has signed in with anything.
 """
 
-from fastapi import APIRouter, Body, Depends, HTTPException
+from fastapi import APIRouter, Body, Depends
+
+from app.core.exceptions import BaseErrorApp, ExternalServiceError
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -40,7 +42,7 @@ async def guest_login(
         user_id = await user_service.create_or_get_guest_user(device_id=device_id)
         
         if not user_id:
-            raise HTTPException(status_code=400, detail="Failed to create guest user")
+            raise ExternalServiceError("Failed to create guest user", code="GUEST_CREATE_FAILED")
         
         access_token = await create_access_token({"id": str(user_id), "is_guest": True})
         refresh_token = await create_refresh_token({"id": str(user_id), "is_guest": True})
@@ -53,11 +55,11 @@ async def guest_login(
             token_type="bearer"
         )
         
-    except HTTPException:
+    except BaseErrorApp:
         raise
     except Exception as e:
-        logger.error(f"Guest login error: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Guest login error: {e}")
+        raise ExternalServiceError("Guest login failed", code="GUEST_LOGIN_FAILED")
 
 
 auth_router.include_router(vk_router)

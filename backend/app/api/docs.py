@@ -1,4 +1,6 @@
-from fastapi import APIRouter, Request, Form, Depends, HTTPException, status, Header
+from fastapi import APIRouter, Request, Form, Depends, status, Header
+
+from app.core.exceptions import AuthenticationError
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.templating import Jinja2Templates
@@ -104,4 +106,4 @@ async def get_openapi_schema(request: Request):
             routes=app.routes,
         )
     
-    raise HTTPException(status_code=401, detail="Unauthorized")
+    raise AuthenticationError("Unauthorized", code="DOCS_KEY_INVALID")

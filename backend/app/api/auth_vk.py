@@ -2,7 +2,9 @@
 
 import json
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
+
+from app.core.exceptions import BaseErrorApp, ExternalServiceError, ValidationError
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from loguru import logger
@@ -33,7 +35,7 @@ async def vk_oauth_callback(
     state = request.query_params.get("state")
     
     if not code or not state:
-        raise HTTPException(status_code=400, detail="Missing code or state")
+        raise ValidationError("Missing code or state", code="OAUTH_CALLBACK_INCOMPLETE")
     
     try:
         device_id = request.query_params.get("device_id")
@@ -43,7 +45,7 @@ async def vk_oauth_callback(
         vk_user_info = await get_vk_user_info(vk_access_token, vk_user_id)
         
         if not vk_user_info or not vk_user_info.get("id"):
-            raise HTTPException(status_code=400, detail="Could not get user info from VK")
+            raise ExternalServiceError("Could not get user info from VK", code="VK_USERINFO_FAILED")
         vk_json = json.dumps(vk_user_info)
         
         user_service = UserService(db)
@@ -60,7 +62,8 @@ async def vk_oauth_callback(
             token_type="bearer"
         )
         
-    except HTTPException:
+    except BaseErrorApp:
         raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"VK callback failed: {e}")
+        raise ExternalServiceError("VK sign-in failed", code="VK_LOGIN_FAILED")

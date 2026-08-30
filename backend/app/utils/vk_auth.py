@@ -3,7 +3,9 @@ import hmac
 import httpx
 import json
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
+
+from app.core.exceptions import AuthenticationError, ExternalServiceError
 from fastapi.responses import PlainTextResponse
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -34,9 +36,9 @@ async def get_vk_user_info(access_token: str, user_id: int = None):
 
         if "error" in data:
             error = data["error"]
-            raise HTTPException(
-                status_code=400,
-                detail=f"VK API error: {error.get('error_msg', 'Unknown error')}",
+            raise ExternalServiceError(
+                f"VK API error: {error.get('error_msg', 'Unknown error')}",
+                code="VK_API_ERROR",
             )
 
         return data.get("response", [{}])[0]
@@ -65,7 +67,7 @@ async def validate_callback(code: str, state: str, device_id: str = None) -> tup
 
     if not pkce_data:
         logger.error("No PKCE data found for session")
-        raise HTTPException(status_code = 400, detail="Invalid state")
+        raise AuthenticationError("Invalid state", code="OAUTH_STATE_INVALID")
 
     code_verifier = pkce_data["verifier"]
     logger.debug("Extracted code_verifier")
@@ -115,19 +117,14 @@ async def exchange_code_for_token(code: str, code_verifier: str, device_id: str 
         if not access_token:
             error_msg = token_data.get("error", "Unknown error")
             logger.error("No access token in VK response: %s", error_msg)
-            raise HTTPException(
-                status_code=400, detail=f"Invalid token response from VK: {error_msg}"
+            raise ExternalServiceError(
+                f"Invalid token response from VK: {error_msg}", code="VK_TOKEN_INVALID"
             )
         
         logger.debug("Got user_id from VK response")
         return access_token, user_id
 
 async def vk_auth(user_info, id, db: AsyncSession):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        detail="Could not proof youre VK session",
-    )
-    
     access_token = await create_access_token({"id": str(id)})
     refresh_token = await create_refresh_token({"id": str(id)})
     

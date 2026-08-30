@@ -165,25 +165,33 @@ components:
         updated_at: { type: string, format: date-time }
 
     TransitionError:
-      type: object
-      required: [detail, current_status, allowed]
-      properties:
-        detail: { type: string }
-        current_status: { $ref: '#/components/schemas/SaleCarStatus' }
-        allowed:
-          type: array
-          description: Статусы, достижимые из текущего
-          items: { $ref: '#/components/schemas/SaleCarStatus' }
+      allOf:
+        - $ref: 'errors.yaml#/components/schemas/Error'
+        - type: object
+          properties:
+            code: { type: string, enum: [TRANSITION_NOT_ALLOWED] }
+            details:
+              type: object
+              description: Статусы, достижимые из текущего
+              properties:
+                current_status: { $ref: '#/components/schemas/SaleCarStatus' }
+                allowed:
+                  type: array
+                  items: { $ref: '#/components/schemas/SaleCarStatus' }
 
     IncompleteError:
-      type: object
-      required: [detail, missing_fields]
-      properties:
-        detail: { type: string }
-        missing_fields:
-          type: array
-          description: |
-            Все недостающие поля сразу, не первое: мастер подсвечивает шаги.
-          items:
-            type: string
-            enum: [price, milleage, phone_number, brand_id, model_id, year, photos]
+      allOf:
+        - $ref: 'errors.yaml#/components/schemas/Error'
+        - type: object
+          properties:
+            code: { type: string, enum: [LISTING_INCOMPLETE] }
+            details:
+              type: object
+              properties:
+                missing_fields:
+                  type: array
+                  description: |
+                    Все недостающие поля сразу, не первое: мастер подсвечивает шаги.
+                  items:
+                    type: string
+                    enum: [price, milleage, phone_number, brand_id, model_id, year, photos]

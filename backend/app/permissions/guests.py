@@ -4,7 +4,9 @@ A guest is a real user row created from a device id, so every one of these is a 
 the caller rather than on what they are reaching for.
 """
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
+
+from app.core.exceptions import AuthorizationError
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -26,9 +28,10 @@ async def require_guest_can_create_car(
     limits = await user_service.check_guest_limits(current_user.id)
     
     if not limits["can_create_car"]:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Guest limit reached: only 1 car allowed. Please verify your account to create more."
+        raise AuthorizationError(
+            "Guest limit reached: only 1 car allowed. Verify your account to create more.",
+            code="GUEST_LIMIT_REACHED",
+            details={"limit": 1},
         )
     return current_user
 
@@ -37,9 +40,9 @@ async def forbid_guest_view_prices(
     current_user: Users = Depends(get_current_user)
 ) -> Users:
     if current_user.is_guest:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Price information is available only for verified users."
+        raise AuthorizationError(
+            "Price information is available only for verified users",
+            code="GUEST_FORBIDDEN",
         )
     return current_user
 
@@ -48,17 +51,17 @@ async def forbid_guest_publish_sale(
     current_user: Users = Depends(get_current_user)
 ) -> Users:
     if current_user.is_guest:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Publishing cars for sale requires a verified account."
+        raise AuthorizationError(
+            "Publishing cars for sale requires a verified account",
+            code="GUEST_FORBIDDEN",
         )
     return current_user
 
 async def forbid_guest(current_user: Users = Depends(get_current_user)) -> Users:
     if current_user.is_guest:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="This action is not available for guest users"
+        raise AuthorizationError(
+            "This action is not available for guest users",
+            code="GUEST_FORBIDDEN",
         )
     return current_user
 
@@ -78,8 +81,9 @@ async def check_guest_car_limit(
     listing_count = result.scalar_one()
 
     if listing_count >= 1:
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Guest users can only create 1 listing. Please verify your account to create more."
+        raise AuthorizationError(
+            "Guest users can only create 1 listing. Verify your account to create more.",
+            code="GUEST_LIMIT_REACHED",
+            details={"limit": 1},
         )
     return current_user

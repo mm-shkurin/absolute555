@@ -95,7 +95,7 @@ def test_should_name_every_missing_field_when_a_draft_is_incomplete(client, sell
     response = client.post(f"/api/v1/sale_car/{listing_id}/submit", headers=seller)
 
     assert response.status_code == 422, response.text
-    missing = set(response.json()["detail"]["missing_fields"])
+    missing = set(response.json()["details"]["missing_fields"])
     assert missing == {"phone_number", "brand_id", "model_id", "year", "photos"}
     assert _status(client, seller, listing_id) == "draft"
 
@@ -140,7 +140,7 @@ def test_should_refuse_a_transition_the_current_status_does_not_allow(client, se
     response = client.post(f"/api/v1/sale_car/{listing_id}/sold", headers=seller)
 
     assert response.status_code == 409, response.text
-    detail = response.json()["detail"]
+    detail = response.json()["details"]
     assert detail["current_status"] == "draft"
     assert detail["allowed"] == ["moderation"]
     assert _status(client, seller, listing_id) == "draft"

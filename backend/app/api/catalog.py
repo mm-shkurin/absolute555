@@ -1,9 +1,10 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import ResourceNotFoundError
 from app.db.database import get_db
 from app.schemas.catalog import BrandResponse, CarModelResponse
 from app.services.catalog_service import CatalogService
@@ -22,5 +23,5 @@ async def list_brands(db: AsyncSession = Depends(get_db)):
 async def list_models(brand_id: UUID, db: AsyncSession = Depends(get_db)):
     service = CatalogService(db)
     if await service.get_brand(brand_id) is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Brand not found")
+        raise ResourceNotFoundError("Brand not found", code="BRAND_NOT_FOUND")
     return await service.list_models(brand_id)

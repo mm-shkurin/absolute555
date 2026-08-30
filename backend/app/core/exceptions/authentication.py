@@ -1,58 +1,27 @@
+"""Who the caller is, and what they may do."""
+
 from .base import BaseErrorApp
-from typing import Any, Dict, Optional
-from fastapi.responses import JSONResponse
+
 
 class AuthenticationError(BaseErrorApp):
-    def __init__(
-        self,
-        message="ERROR_AUTHENTICATION",
-        details:Optional[Dict[str, Any]] = None,
-        code:Optional[str] = None,
-    ):
-        super().__init__(
-            http_status=401,
-            message=message,
-            code=code,
-            details=details
-        )
+    default_status = 401
+    default_code = "UNAUTHENTICATED"
+    default_message = "Authentication required"
+
 
 class AuthorizationError(BaseErrorApp):
-    def __init__(
-        self,
-        message="ERROR PERMISSION DENIED",
-        details:Optional[Dict[str, Any]] = None,
-        code:Optional[str] = None,
-    ):
-        super().__init__(
-            http_status=403,
-            message=message,
-            code=code,
-            details=details
-        )
+    default_status = 403
+    default_code = "PERMISSION_DENIED"
+    default_message = "Permission denied"
+
+
 class ResourceNotFoundError(BaseErrorApp):
-    def __init__(
-        self,
-        message="ERROR RESOURCE NOT FOUND",
-        details:Optional[Dict[str, Any]] = None,
-        code:Optional[str] = None,
-    ):
-        super().__init__(
-            http_status=404,
-            message=message,
-            code=code,
-            details=details
-        )
+    default_status = 404
+    default_code = "NOT_FOUND"
+    default_message = "Resource not found"
+
 
 class ConflictError(BaseErrorApp):
-    def __init__(
-        self,
-        message="ERROR CONFLICT",
-        details:Optional[Dict[str, Any]] = None,
-        code:Optional[str] = None,
-    ):
-        super().__init__(
-            http_status=409,
-            message=message,
-            code=code,
-            details=details
-        )
+    default_status = 409
+    default_code = "CONFLICT"
+    default_message = "The resource is not in a state that allows this"

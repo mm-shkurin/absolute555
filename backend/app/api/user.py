@@ -2,7 +2,7 @@ import json
 from typing import Annotated
 from urllib.parse import urlencode
 
-from fastapi import APIRouter, Body, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Body, Depends, Query, status
 from fastapi.requests import Request
 from fastapi.responses import HTMLResponse, RedirectResponse
 import httpx

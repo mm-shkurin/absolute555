@@ -6,7 +6,9 @@ there are two SSO objects and two pairs of routes rather than one parameterised 
 
 import json
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends
+
+from app.core.exceptions import AuthenticationError, BaseErrorApp, ExternalServiceError
 from fastapi.requests import Request
 from fastapi.responses import RedirectResponse
 from fastapi_sso.sso.yandex import YandexSSO
@@ -47,7 +49,7 @@ async def yandex_callback(request: Request, db: AsyncSession = Depends(get_db)):
     
     is_valid = await verify_yandex_user(yandex_data)
     if not is_valid:
-        raise HTTPException(status_code=400, detail="Invalid user data")
+        raise AuthenticationError("Invalid user data", code="OAUTH_USERINFO_INVALID")
     
     yandex_json = json.dumps(yandex_data)
 
@@ -84,7 +86,7 @@ async def yandex_callback_web(request: Request, db: AsyncSession = Depends(get_d
 
     is_valid = await verify_yandex_user(yandex_data)
     if not is_valid:
-        raise HTTPException(status_code=400, detail="Invalid user data")
+        raise AuthenticationError("Invalid user data", code="OAUTH_USERINFO_INVALID")
 
     yandex_json = json.dumps(yandex_data)
 

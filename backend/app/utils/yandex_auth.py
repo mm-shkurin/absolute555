@@ -1,7 +1,9 @@
 import hashlib
 import hmac
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
+
+from app.core.exceptions import AuthenticationError
 from fastapi.responses import PlainTextResponse
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -23,10 +25,6 @@ async def verify_yandex_user(user_data: dict) -> bool:
     return True
     
 async def yandex_auth(id, db: AsyncSession):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-        detail="Could not auth for YandexId",
-    )
     try:
         logger.info(f"Create token for Yandex {id}")
         access_token = await create_access_token({"id": str(id)})
@@ -34,4 +32,5 @@ async def yandex_auth(id, db: AsyncSession):
 
         return refresh_token,access_token
     except Exception as e:
-        raise credentials_exception
+        logger.error(f"Yandex token creation failed: {e}")
+        raise AuthenticationError("Could not authenticate with Yandex", code="YANDEX_AUTH_FAILED")

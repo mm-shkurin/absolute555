@@ -6,7 +6,9 @@ answers one question only -- does this caller's role carry this permission.
 
 from typing import List
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends
+
+from app.core.exceptions import AuthorizationError
 
 from app.models.users import Users
 from app.utils.security import get_current_user
@@ -35,14 +37,12 @@ def require_permission(permission: Permission):
         try:
             user_role = UserRole(current_user.role)
         except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Invalid user role"
-            )
+            raise AuthorizationError("Invalid user role", code="ROLE_UNKNOWN")
         if not await has_permission(user_role, permission):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Permission denied. Required permission: {permission.value}"
+            raise AuthorizationError(
+                "Permission denied",
+                code="PERMISSION_DENIED",
+                details={"required": permission.value},
             )
         return current_user
     return permission_checker
@@ -52,14 +52,12 @@ def require_any_permission(permissions: List[Permission]):
         try:
             user_role = UserRole(current_user.role)
         except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Invalid user role"
-            )
+            raise AuthorizationError("Invalid user role", code="ROLE_UNKNOWN")
         if not await has_any_permission(user_role, permissions):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Permission denied"
+            raise AuthorizationError(
+                "Permission denied",
+                code="PERMISSION_DENIED",
+                details={"required": [p.value for p in permissions]},
             )
         return current_user
     return permission_checker
@@ -69,14 +67,12 @@ def require_all_permissions(permissions: List[Permission]):
         try:
             user_role = UserRole(current_user.role)
         except ValueError:
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Invalid user role"
-            )
+            raise AuthorizationError("Invalid user role", code="ROLE_UNKNOWN")
         if not await has_all_permissions(user_role, permissions):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail="Permission denied"
+            raise AuthorizationError(
+                "Permission denied",
+                code="PERMISSION_DENIED",
+                details={"required": [p.value for p in permissions]},
             )
         return current_user
     return permission_checker

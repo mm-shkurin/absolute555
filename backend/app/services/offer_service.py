@@ -2,9 +2,17 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete, and_
 from app.models.sale_car import SaleCars
 from app.models.offer import Offer, OfferStatus
+from app.services.offer_errors import (
+    DuplicatePendingOffer,
+    MalformedIdentifier,
+    NotCarOwner,
+    OfferAlreadySettled,
+    OfferNotFound,
+    OfferOnOwnCar,
+    SaleCarNotFound,
+)
 from typing import List
 import uuid
-from fastapi import HTTPException, status
 
 class OfferService:
     def __init__(self, db: AsyncSession):
@@ -14,20 +22,20 @@ class OfferService:
         try:
             car_uuid = uuid.UUID(sale_car_id)
         except ValueError:
-            raise HTTPException(status_code=422, detail="Invalid sale_car_id format")
+            raise MalformedIdentifier("sale_car_id")
         result = await self.db.execute(
             select(SaleCars).where(SaleCars.sale_car_id == car_uuid)
         )
         car = result.scalar_one_or_none()
         if not car:
-            raise HTTPException(status_code=404, detail="Sale car not found")
+            raise SaleCarNotFound(sale_car_id)
         return car
 
     async def create_offer(self, user_id: str, sale_car_id: str, price: float) -> Offer:
         car = await self._get_sale_car_or_404(sale_car_id)
 
         if str(car.user_id) == user_id:
-            raise HTTPException(status_code=400, detail="Cannot make offer on your own car")
+            raise OfferOnOwnCar()
 
         existing = await self.db.execute(
             select(Offer).where(
@@ -39,7 +47,7 @@ class OfferService:
             )
         )
         if existing.scalar_one_or_none():
-            raise HTTPException(status_code=400, detail="You already have a pending offer for this car")
+            raise DuplicatePendingOffer()
 
         offer = Offer(
             user_id=uuid.UUID(user_id),
@@ -56,7 +64,7 @@ class OfferService:
         try:
             uuid_ = uuid.UUID(offer_id)
         except ValueError:
-            raise HTTPException(status_code=422, detail="Invalid offer_id format")
+            raise MalformedIdentifier("offer_id")
         result = await self.db.execute(select(Offer).where(Offer.offer_id == uuid_))
         return result.scalar_one_or_none()
 
@@ -64,7 +72,7 @@ class OfferService:
         try:
             car_uuid = uuid.UUID(sale_car_id)
         except ValueError:
-            raise HTTPException(status_code=422, detail="Invalid sale_car_id format")
+            raise MalformedIdentifier("sale_car_id")
         result = await self.db.execute(select(Offer).where(Offer.sale_car_id == car_uuid))
         return result.scalars().all()
 
@@ -72,21 +80,21 @@ class OfferService:
         try:
             user_uuid = uuid.UUID(user_id)
         except ValueError:
-            raise HTTPException(status_code=422, detail="Invalid user_id format")
+            raise MalformedIdentifier("user_id")
         result = await self.db.execute(select(Offer).where(Offer.user_id == user_uuid))
         return result.scalars().all()
 
     async def update_offer_status(self, offer_id: str, new_status: OfferStatus, owner_id: str) -> Offer:
         offer = await self.get_offer_by_id(offer_id)
         if not offer:
-            raise HTTPException(status_code=404, detail="Offer not found")
+            raise OfferNotFound(offer_id)
 
         car = await self._get_sale_car_or_404(str(offer.sale_car_id))
         if str(car.user_id) != owner_id:
-            raise HTTPException(status_code=403, detail="Only car owner can change offer status")
+            raise NotCarOwner()
 
         if offer.status != OfferStatus.PENDING:
-            raise HTTPException(status_code=400, detail="Only pending offers can be updated")
+            raise OfferAlreadySettled(offer.status)
 
         offer.status = new_status
         await self.db.commit()
