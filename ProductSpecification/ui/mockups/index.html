@@ -29,12 +29,29 @@
   --paper:#F1F4F9; --card:#FFF; --ink:#0D141F; --ink2:#3F4B5E; --mut:#78849A;
   --line:#DEE4EE; --brand:#0066FF; --brand-dk:#0047CC; --soft:#E8EFFB;
   --ok:#17A66B; --warn:#F0A020; --bad:#E5484D; --none:#C3CEDF;
+  /* мягкие подложки и текст статусов — пара к каждому цвету шкалы */
+  --ok-soft:#E4F7EE; --ok-ink:#0B6E48;
+  --warn-soft:#FEF3E0; --warn-ink:#7A4A08;
+  --bad-soft:#FDECEC; --bad-ink:#7A1E21;
+  /* поверхности и фактуры */
+  --frame:#D7DFEC;            /* фон вокруг вьюпорта мокапа */
+  --glass:rgba(255,255,255,.9);
+  --badge-bg:var(--badge-bg); --badge-ink:#0D141F;
+  --hatch:var(--hatch); /* штриховка плейсхолдера */
+  --grid:var(--grid);   /* чертёжная сетка героя */
+  --bp-line:#93A9C9;           /* контур кузова */
+  --bp-line-2:#A8BBD8;
+  --auto-bg:#F7FBFF; --auto-line:#BBD6FF;  /* поле, заполненное распознаванием */
+  --sk-a:#EDF2FA; --sk-b:#F6F9FE;          /* скелетон */
+  /* тёмная плашка CTA: остаётся другой поверхностью в обеих темах, поэтому пара
+     фон-текст переворачивается вместе, а не по отдельности */
+  --inverse-bg:#0D141F; --inverse-ink:#FFF; --inverse-mut:#95A3BC;
   --sh:none;
   --r-card:14px; --r-ctl:10px;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
-body{background:#D7DFEC;font-family:'Golos Text',system-ui,sans-serif;color:var(--ink);
+body{background:var(--frame);font-family:'Golos Text',system-ui,sans-serif;color:var(--ink);
   -webkit-font-smoothing:antialiased}
 .mono{font-family:'JetBrains Mono',monospace}
 button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
@@ -63,7 +80,7 @@ a{color:inherit;text-decoration:none}
 .wrap.narrow{max-width:1080px}
 
 /* ───────── шапка десктоп ───────── */
-.hdr{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.9);
+.hdr{position:sticky;top:0;z-index:20;background:var(--glass);
   backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
 .hdr .in{display:flex;align-items:center;gap:24px;height:72px}
 .logo{display:flex;align-items:center;gap:10px;flex:none}
@@ -94,8 +111,8 @@ a{color:inherit;text-decoration:none}
 .vp.m .hero{padding:32px 0 20px}
 .glow{display:none}
 .hero{background:
-  linear-gradient(to right, rgba(13,20,31,.07) 1px, transparent 1px) 0 0/32px 32px,
-  linear-gradient(to bottom, rgba(13,20,31,.07) 1px, transparent 1px) 0 0/32px 32px,
+  linear-gradient(to right, var(--grid) 1px, transparent 1px) 0 0/32px 32px,
+  linear-gradient(to bottom, var(--grid) 1px, transparent 1px) 0 0/32px 32px,
   #FFF;
   border-bottom:1px solid var(--line)}
 .hero .in{position:relative;display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
@@ -112,8 +129,8 @@ h1 em{font-style:normal;color:var(--brand)}
 /* чертёж машины */
 .blueprint{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
 .blueprint svg{width:100%;height:auto;display:block}
-.bp-line{fill:none;stroke:#A8BBD8;stroke-width:1.4;stroke-linejoin:round}
-.bp-zone{cursor:pointer;stroke:#fff;stroke-width:1.5;transition:.15s}
+.bp-line{fill:none;stroke:var(--bp-line-2);stroke-width:1.4;stroke-linejoin:round}
+.bp-zone{cursor:pointer;stroke:var(--card);stroke-width:1.5;transition:.15s}
 .bp-zone:hover{stroke:var(--brand);stroke-width:2.5}
 .bp-cap{display:flex;justify-content:space-between;align-items:center;margin-top:14px;
   font-size:13px;color:var(--mut)}
@@ -141,16 +158,17 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .step h3{font-size:19px;font-weight:700;margin:0 0 8px}
 .step p{margin:0;color:var(--ink2);font-size:15px;line-height:1.5}
 .ph{background:
-  repeating-linear-gradient(45deg,rgba(13,20,31,.035) 0 6px,transparent 6px 12px),
+  repeating-linear-gradient(45deg,var(--hatch) 0 6px,transparent 6px 12px),
   var(--paper);
   border:1px solid var(--line);border-radius:8px;display:grid;place-items:center;
   color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:400;
   text-align:center;padding:8px;letter-spacing:.04em}
 
-.cta{background:var(--ink);color:#fff;border-radius:16px;padding:60px 44px;text-align:left;position:relative;overflow:hidden}
+.cta{background:var(--inverse-bg);color:var(--inverse-ink);border-radius:16px;padding:60px 44px;
+  text-align:left;position:relative;overflow:hidden}
 .vp.m .cta{padding:34px 22px;border-radius:22px}
-.cta h2{color:#fff}
-.cta .sub{color:#95A3BC;margin:0 0 26px}
+.cta h2{color:var(--inverse-ink)}
+.cta .sub{color:var(--inverse-mut);margin:0 0 26px}
 .foot{padding:28px 0 48px;color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:11.5px;
   display:flex;gap:24px;flex-wrap:wrap;border-top:1px solid var(--line);margin-top:56px;
   letter-spacing:.03em;text-transform:uppercase}
@@ -251,14 +269,14 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .acts .two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 .lock{background:var(--paper);border:1px dashed var(--line);border-radius:14px;padding:18px;
   text-align:center;color:var(--ink2);font-size:14.5px;line-height:1.5}
-.sold{background:var(--ink);color:#fff;border-radius:14px;padding:14px 16px;font-weight:700;
+.sold{background:var(--inverse-bg);color:var(--inverse-ink);border-radius:14px;padding:14px 16px;font-weight:700;
   display:flex;align-items:center;gap:10px;font-size:15px}
 .offers{font-size:14.5px}
 .offers .row{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line)}
 .offers .row:last-child{border:0}
 .offers .row b{font-weight:800;color:var(--brand);font-variant-numeric:tabular-nums}
 .offers .row span{color:var(--mut);font-size:13.5px}
-.mbar{display:none;position:sticky;bottom:0;z-index:25;background:rgba(255,255,255,.96);
+.mbar{display:none;position:sticky;bottom:0;z-index:25;background:var(--badge-bg);
   backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:10px 14px 22px;gap:8px}
 .vp.m .mbar{display:grid;grid-template-columns:1fr 1fr}
 
@@ -268,11 +286,11 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .vp.m .tmap{grid-template-columns:1fr;gap:14px;padding:12px 0 100px}
 .sheet{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);padding:20px}
 .sheet svg{width:100%;height:auto;display:block}
-.pz{cursor:pointer;stroke:#fff;stroke-width:1.6;transition:.12s}
+.pz{cursor:pointer;stroke:var(--card);stroke-width:1.6;transition:.12s}
 .pz:hover{stroke:var(--brand);stroke-width:3}
 .pz.sel{stroke:var(--brand);stroke-width:3.5}
-.pl{fill:none;stroke:#93A9C9;stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
-.pt{font-size:11px;font-weight:700;fill:#93A9C9;letter-spacing:.08em;pointer-events:none}
+.pl{fill:none;stroke:var(--bp-line);stroke-width:1.5;stroke-linejoin:round;stroke-linecap:round;pointer-events:none}
+.pt{font-size:11px;font-weight:700;fill:var(--bp-line);letter-spacing:.08em;pointer-events:none}
 .legend2{display:flex;gap:16px;flex-wrap:wrap;margin-top:16px;padding-top:16px;
   border-top:1px solid var(--line);font-size:13.5px;color:var(--ink2)}
 .legend2 i{width:12px;height:12px;border-radius:3px;display:inline-block;margin-right:6px;vertical-align:-1px}
@@ -323,7 +341,7 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .wcard h2{font-size:25px;font-weight:700;letter-spacing:-.028em;margin:0 0 8px}
 .vp.m .wcard h2{font-size:21px}
 .wcard .sub{font-size:15.5px;margin-bottom:22px}
-.drop{border:2px dashed var(--brand);border-radius:18px;background:#F7FBFF;padding:44px 20px;
+.drop{border:2px dashed var(--brand);border-radius:18px;background:var(--auto-bg);padding:44px 20px;
   text-align:center;color:var(--brand);font-weight:700;font-size:15.5px}
 .drop .ic{width:64px;height:64px;border-radius:18px;background:var(--soft);margin:0 auto 14px;
   display:grid;place-items:center;font-size:28px}
@@ -335,15 +353,15 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .f label{display:block;font-size:13px;font-weight:700;color:var(--mut);margin-bottom:6px}
 .f .fld{height:46px}
 .f textarea.fld{height:120px;padding:12px;resize:vertical;font-family:inherit;line-height:1.5}
-.f.auto .fld{background:#F7FBFF;border-color:#BBD6FF}
+.f.auto .fld{background:var(--auto-bg);border-color:var(--auto-line)}
 .tag{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;
   color:var(--brand);background:var(--soft);border-radius:999px;padding:2px 8px;margin-left:6px}
 .wnav{display:flex;gap:10px;margin-top:24px;padding-top:20px;border-top:1px solid var(--line)}
 .wnav .grow{flex:1}
 .alert{border-radius:16px;padding:16px 18px;font-size:14.5px;line-height:1.55;display:flex;gap:12px}
 .alert b{display:block;font-size:15.5px;margin-bottom:4px}
-.alert.bad{background:#FDECEC;color:#7A1E21}
-.alert.warn{background:#FEF3E0;color:#7A4A08}
+.alert.bad{background:var(--bad-soft);color:var(--bad-ink)}
+.alert.warn{background:var(--warn-soft);color:var(--warn-ink)}
 .alert .ic{font-size:20px;flex:none;line-height:1}
 .photos{display:grid;grid-template-columns:repeat(5,1fr);gap:10px}
 .vp.m .photos{grid-template-columns:repeat(3,1fr)}
@@ -358,9 +376,9 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .sum span{color:var(--mut)}
 .status{display:inline-flex;align-items:center;gap:8px;padding:6px 12px;border-radius:6px;
   font-size:13px;font-weight:600}
-.status.mod{background:#FEF3E0;color:#7A4A08}
-.status.pub{background:#E4F7EE;color:#0B6E48}
-.status.rej{background:#FDECEC;color:#7A1E21}
+.status.mod{background:var(--warn-soft);color:var(--warn-ink)}
+.status.pub{background:var(--ok-soft);color:var(--ok-ink)}
+.status.rej{background:var(--bad-soft);color:var(--bad-ink)}
 
 
 /* ───────── офферы / чаты / мои объявления ───────── */
@@ -382,9 +400,9 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .vp.m .orow .acts2{grid-column:1/-1}
 .st-b{display:inline-flex;align-items:center;gap:6px;padding:4px 9px;border-radius:5px;
   font-size:12px;font-weight:600;letter-spacing:-.005em}
-.st-b.wait{background:#FEF3E0;color:#7A4A08}
-.st-b.ok{background:#E4F7EE;color:#0B6E48}
-.st-b.no{background:#FDECEC;color:#7A1E21}
+.st-b.wait{background:var(--warn-soft);color:var(--warn-ink)}
+.st-b.ok{background:var(--ok-soft);color:var(--ok-ink)}
+.st-b.no{background:var(--bad-soft);color:var(--bad-ink)}
 .st-b.gr{background:var(--paper);color:var(--mut)}
 .st-b.bl{background:var(--soft);color:var(--brand)}
 
@@ -428,7 +446,7 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .myrow .m{color:var(--mut);font-size:13.5px;margin-top:3px}
 .myrow .r{display:flex;gap:8px;align-items:center}
 .vp.m .myrow .r{grid-column:1/-1;flex-wrap:wrap}
-.reason{grid-column:1/-1;background:#FDECEC;color:#7A1E21;border-radius:12px;padding:12px 14px;
+.reason{grid-column:1/-1;background:var(--bad-soft);color:var(--bad-ink);border-radius:12px;padding:12px 14px;
   font-size:14px;line-height:1.5;margin-top:4px}
 .tabs2{display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap}
 .tabs2 button{padding:8px 14px;border-radius:8px;font-size:14px;font-weight:600;
@@ -447,7 +465,7 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .qitem .ph{width:88px;height:66px;border-radius:10px;font-size:10px}
 .qitem .t{font-weight:700;font-size:15.5px}
 .qitem .m{color:var(--mut);font-size:13px;margin-top:3px}
-.flag{background:#FDECEC;color:#7A1E21;border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700}
+.flag{background:var(--bad-soft);color:var(--bad-ink);border-radius:999px;padding:3px 9px;font-size:12px;font-weight:700}
 .rev{position:sticky;top:88px;background:var(--card);border:1px solid var(--line);
   border-radius:var(--r-card);padding:20px}
 .rev h3{margin:0 0 4px;font-size:19px;font-weight:800}
@@ -540,18 +558,18 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .fgrp:last-child{border:0}
 .fgrp h4{font-family:'JetBrains Mono',monospace;font-size:10.5px;font-weight:500;
   text-transform:uppercase;letter-spacing:.12em;color:var(--mut);margin:0 0 8px}
-.fld{width:100%;height:38px;border:1px solid var(--line);border-radius:10px;background:#fff;
+.fld{width:100%;height:38px;border:1px solid var(--line);border-radius:10px;background:var(--card);
   padding:0 10px;font:inherit;font-size:14px;color:var(--ink)}
 .fld::placeholder{color:var(--mut)}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .chips{display:flex;gap:6px;flex-wrap:wrap}
-.chip{padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:#fff;
+.chip{padding:6px 11px;border-radius:7px;border:1px solid var(--line);background:var(--card);
   font-size:13.5px;font-weight:500;color:var(--ink2)}
 .chip[aria-pressed=true]{background:var(--soft);border-color:var(--brand);color:var(--brand)}
 .switch{display:flex;align-items:center;gap:10px;font-size:14.5px;font-weight:600;cursor:pointer}
 .switch .box{width:44px;height:26px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:.15s}
 .switch .box::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;
-  border-radius:50%;background:#fff;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  border-radius:50%;background:#FFF;transition:.15s;box-shadow:0 1px 3px rgba(0,0,0,.35)}
 .switch input{display:none}
 .switch input:checked+.box{background:var(--brand)}
 .switch input:checked+.box::after{transform:translateX(18px)}
@@ -565,9 +583,9 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .card .img{aspect-ratio:4/3;position:relative}
 .vp.m .card .img{aspect-ratio:16/10}
 .card .badges{position:absolute;left:10px;top:10px;display:flex;gap:6px;flex-wrap:wrap}
-.bdg{padding:4px 9px;border-radius:4px;font-size:11.5px;font-weight:600;background:rgba(255,255,255,.96);
+.bdg{padding:4px 9px;border-radius:4px;font-size:11.5px;font-weight:600;background:var(--badge-bg);
   color:var(--ink);letter-spacing:-.005em}
-.bdg.map,.bdg.imp{background:rgba(255,255,255,.96);color:var(--ink);display:inline-flex;align-items:center;gap:6px}
+.bdg.map,.bdg.imp{background:var(--badge-bg);color:var(--ink);display:inline-flex;align-items:center;gap:6px}
 .bdg.map::before,.bdg.imp::before{content:"";width:7px;height:7px;border-radius:50%;flex:none}
 .bdg.map::before{background:var(--ok)}
 .bdg.imp::before{background:var(--brand)}
@@ -583,7 +601,7 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
   letter-spacing:.02em}
 
 /* мобильные фильтры */
-.mfilters{display:none;position:sticky;top:58px;z-index:15;background:rgba(255,255,255,.9);
+.mfilters{display:none;position:sticky;top:58px;z-index:15;background:var(--glass);
   backdrop-filter:blur(12px);padding:10px 16px;margin:0 -16px 14px;gap:8px;overflow-x:auto;
   border-bottom:1px solid var(--line)}
 .vp.m .mfilters{display:flex}
@@ -596,12 +614,12 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 .empty h3{font-size:21px;margin:16px 0 8px}
 .empty p{color:var(--ink2);margin:0 0 22px}
 .sk{background:var(--card);border:1px solid var(--line);border-radius:var(--r-card);overflow:hidden}
-.sk .l{background:linear-gradient(90deg,#EDF2FA 25%,#F6F9FE 50%,#EDF2FA 75%);
+.sk .l{background:linear-gradient(90deg,var(--sk-a) 25%,var(--sk-b) 50%,var(--sk-a) 75%);
   background-size:200% 100%;animation:sh 1.3s infinite}
 @keyframes sh{to{background-position:-200% 0}}
 
 /* таб-бар */
-.tabbar{display:none;position:sticky;bottom:0;z-index:30;background:rgba(255,255,255,.94);
+.tabbar{display:none;position:sticky;bottom:0;z-index:30;background:var(--glass);
   backdrop-filter:blur(16px);border-top:1px solid var(--line);padding:8px 6px 22px;
   grid-template-columns:repeat(5,1fr);align-items:end}
 .vp.m .tabbar{display:grid}
@@ -614,6 +632,41 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
   background:var(--bad);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center}
 .rel{position:relative}
 .hide{display:none !important}
+
+/* ───────── тёмная тема: только переопределения ─────────
+   Ни один токен здесь не рождается. Токен без светлой пары разрешился бы в ничто —
+   чёрный текст на прозрачном фоне, что читается как баг рендера, а не забытый токен. */
+:root[data-theme="dark"]{
+  --paper:#0D141F; --card:#1A2334; --ink:#F1F4F9; --ink2:#AEBBD0; --mut:#7D8AA3;
+  --line:#23304A;
+  /* чистый #0066FF на тёмном вибрирует и проваливает контраст на мелком тексте:
+     осветляем сам акцент, а не размываем фон под ним */
+  --brand:#4D94FF; --brand-dk:#7AB0FF; --soft:#14284D;
+  --ok:#35C98A; --warn:#F5B74F; --bad:#FF6B70; --none:#46536B;
+  --ok-soft:#10301F; --ok-ink:#8FE3BE;
+  --warn-soft:#33260C; --warn-ink:#F2CF92;
+  --bad-soft:#3A1416; --bad-ink:#FFB3B6;
+  --frame:#05080E;
+  --glass:rgba(26,35,52,.9);
+  --badge-bg:rgba(13,20,31,.88); --badge-ink:#F1F4F9;
+  --hatch:rgba(255,255,255,.05);
+  --grid:rgba(255,255,255,.055);
+  --bp-line:#4A5D7C; --bp-line-2:#3C4E6B;
+  --auto-bg:#16233A; --auto-line:#2F4A7A;
+  --sk-a:#1A2334; --sk-b:#222E44;
+  /* плашка CTA светлеет: в тёмной теме тёмная плашка перестала бы быть другой
+     поверхностью, а весь её смысл — отличаться от страницы */
+  --inverse-bg:#E8EDF5; --inverse-ink:#0D141F; --inverse-mut:#4A5768;
+}
+/* фон героя в тёмной — та же сетка, но на карточной поверхности, иначе она сливается
+   со страницей и секция теряет границу */
+:root[data-theme="dark"] .hero{background:
+  linear-gradient(to right, var(--grid) 1px, transparent 1px) 0 0/32px 32px,
+  linear-gradient(to bottom, var(--grid) 1px, transparent 1px) 0 0/32px 32px,
+  var(--card)}
+/* тень под мобильным вьюпортом на почти чёрном фоне не видна — заменяем на обводку */
+:root[data-theme="dark"] .vp.m{box-shadow:0 0 0 1px var(--line)}
+
 /* ───────── настоящая адаптивность окна браузера ───────── */
 @media(max-width:1100px){
   .cards{grid-template-columns:repeat(2,1fr)}
@@ -702,6 +755,11 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
       <option value="complaints">Жалобы</option>
     </optgroup>
   </select>
+  <span class="t">тема</span>
+  <div class="seg" id="segTheme">
+    <button data-th="light" aria-pressed="true">Светлая</button>
+    <button data-th="dark" aria-pressed="false">Тёмная</button>
+  </div>
   <span class="t">ширина</span>
   <div class="seg" id="segView">
     <button data-v="d" aria-pressed="true">Десктоп</button>
@@ -772,8 +830,8 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
             <path class="bp-line" d="M132 24 L132 86 M268 24 L268 86 M150 34 L250 34 M150 76 L250 76"/>
             <path class="bp-line" d="M84 26 L84 84 M352 26 L352 84"/>
           </g>
-          <text x="18" y="186" font-size="10" font-weight="700" fill="#A8BBD8" letter-spacing="1">БОК</text>
-          <text x="18" y="326" font-size="10" font-weight="700" fill="#A8BBD8" letter-spacing="1">СВЕРХУ</text>
+          <text x="18" y="186" font-size="10" font-weight="700" fill="var(--bp-line-2)" letter-spacing="1">БОК</text>
+          <text x="18" y="326" font-size="10" font-weight="700" fill="var(--bp-line-2)" letter-spacing="1">СВЕРХУ</text>
         </svg>
         <div class="bp-cap">
           <span class="scale">
@@ -2740,7 +2798,7 @@ h2{font-size:33px;line-height:1.12;font-weight:700;letter-spacing:-.028em;margin
 <main id="s-oauthErr" class="hide">
   <div class="wrap page">
     <div class="big-empty" style="padding-top:110px">
-      <div class="ic" style="background:#FDECEC;color:#B4353A">×</div>
+      <div class="ic" style="background:var(--bad-soft);color:#B4353A">×</div>
       <h2>Войти не получилось</h2>
       <p>Провайдер не подтвердил вход — возможно, вы закрыли окно или отклонили доступ.
         Данные не пострадали, объявление и черновик на месте.</p>
@@ -2950,7 +3008,7 @@ document.getElementById('skBox').innerHTML = Array.from({length:6}).map(()=>`
 
 const SCREENS = ['landing','feed','empty','loading','listing','listingGuest','listingSold','thickness','wizard','offers','chats','my','profile','queue','roles','importer','seller','request','import','cold','listingOwner','complaints','requestNew','supplierForm','oauth','oauthErr'];
 const vp = document.getElementById('vp');
-const st = JSON.parse(localStorage.getItem('abs-mock')||'{"s":"landing","v":"d"}');
+const st = JSON.parse(localStorage.getItem('abs-mock')||'{"s":"landing","v":"d","th":"light"}');
 
 function show(s){
   st.s = s; save();
@@ -2976,6 +3034,13 @@ function save(){ localStorage.setItem('abs-mock', JSON.stringify(st)); }
 
 document.getElementById('segScreen').onchange = e => show(e.target.value);
 document.querySelectorAll('#segView button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+function setTheme(th){
+  st.th = th; save();
+  document.documentElement.setAttribute('data-theme', th);
+  document.querySelectorAll('#segTheme button').forEach(b=>
+    b.setAttribute('aria-pressed', b.dataset.th===th));
+}
+document.querySelectorAll('#segTheme button').forEach(b=>b.onclick=()=>setTheme(b.dataset.th));
 document.addEventListener('click',e=>{
   const g = e.target.closest('[data-go]');
   if(g){ e.preventDefault(); show(g.dataset.go); }
@@ -3105,7 +3170,9 @@ document.querySelectorAll('#s-import .kind').forEach(k=>k.onclick=()=>{
 
 const H = location.hash.replace("#","");
 if(SCREENS.includes(H)) st.s = H;
-show(st.s); setView(st.v);
+const TH = new URLSearchParams(location.search).get('theme');
+if(TH === 'dark' || TH === 'light') st.th = TH;
+show(st.s); setView(st.v); setTheme(st.th || 'light');
 </script>
 </body>
 </html>

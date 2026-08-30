@@ -1,0 +1,12 @@
+{
+  "name": "Абсолют — дизайн-система",
+  "id": "absolute555-design-system",
+  "api": "1.0.0",
+  "main": "dist/code.js",
+  "editorType": ["figma"],
+  "documentAccess": "dynamic-page",
+  "networkAccess": {
+    "allowedDomains": ["none"],
+    "reasoning": "Плагин строит слои из значений, вшитых в код. Наружу не ходит."
+  }
+}

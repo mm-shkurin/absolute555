@@ -41,7 +41,9 @@ for (const file of sourceFiles(root)) {
 }
 
 if (problems.length > 0) {
-  console.error('Границы модулей: импорт проходит сквозь стену, в которой архитектура не делала двери.')
+  console.error(
+    'Границы модулей: импорт проходит сквозь стену, в которой архитектура не делала двери.',
+  )
   console.error(problems.join('\n'))
   process.exit(1)
 }
