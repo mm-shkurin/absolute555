@@ -19,11 +19,18 @@ function environment(mode: string): Record<string, string> {
 // `command` равен 'serve' и для `vite dev`, и для `vitest`, который грузит этот же конфиг;
 // тесты до прокси не доходят, и требовать переменную там — уронить прогон из-за значения,
 // которое он не использует.
-function servesBrowser(command: string, env: Record<string, string>): boolean {
+function servesBrowser(command: string, mode: string, env: Record<string, string>): boolean {
   // В режиме фикстур (`npm run dev:mock`) прокси не нужен: запросы перехватываются в
   // браузере и до сервера не доходят. Требовать адрес бэкенда там значило бы требовать
   // бэкенд ровно у того запуска, который затеян ради его отсутствия.
-  return command === 'serve' && !env.VITEST && env.VITE_MOCK !== '1'
+  return command === 'serve' && !env.VITEST && !isMock(mode)
+}
+
+// Признак режима — сам `--mode mock`, а не переменная в `.env.mock`: файлы `.env.*`
+// не хранятся в репозитории, и прогон в CI остался бы без фикстур, молча пытаясь
+// достучаться до бэкенда, которого там нет.
+function isMock(mode: string): boolean {
+  return mode === 'mock'
 }
 
 function requireProxyTarget(env: Record<string, string>): string {
@@ -45,6 +52,9 @@ export default defineConfig(({ command, mode }) => {
   const env = environment(mode)
   return {
     plugins: [react()],
+    // Флаг живёт в сборке, а не в окружении: код проверяет `import.meta.env.VITE_MOCK`,
+    // и в обычной сборке эта ветка вырезается целиком вместе с папкой `src/dev`.
+    define: isMock(mode) ? { 'import.meta.env.VITE_MOCK': JSON.stringify('1') } : {},
     css: {
       modules: {
         // Имена классов читаемы в девтулзах и хешируются в проде: через полсотни таблиц
@@ -62,7 +72,7 @@ export default defineConfig(({ command, mode }) => {
           // Дефолта нет намеренно. Порт бэкенда свой у каждой копии; дефолт был бы неверен
           // для всех, кроме автора, и неверен тихо — сервер бы поднялся, приложение
           // загрузилось, а запросы уходили бы туда, что ещё держит этот порт.
-          target: servesBrowser(command, env) ? requireProxyTarget(env) : '',
+          target: servesBrowser(command, mode, env) ? requireProxyTarget(env) : '',
           changeOrigin: true,
         },
       },

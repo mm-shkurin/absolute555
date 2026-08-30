@@ -1,0 +1,97 @@
+# Бэкенд: миграции применяются, приложение импортируется, тесты идут против настоящего
+# Postgres.
+#
+# Против настоящего, а не SQLite: схема ведётся Alembic'ом под Postgres, и прогон на другой
+# базе проверял бы не то приложение, которое поедет в прод.
+name: backend
+
+on:
+  push:
+    branches: ['**']
+    paths:
+      - 'backend/**'
+      - 'infra/.env.example'
+      - '.github/workflows/backend.yml'
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'infra/.env.example'
+      - '.github/workflows/backend.yml'
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  tests:
+    name: миграции и тесты
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: absolute
+          POSTGRES_PASSWORD: absolute
+          POSTGRES_DB: absolute
+        ports:
+          - 5432:5432
+        # Без проверки готовности первый же запрос приходит в ещё поднимающуюся базу, и
+        # прогон падает по connection refused — на ошибке, которой в коде нет.
+        options: >-
+          --health-cmd "pg_isready -U absolute"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Зависимости
+        run: pip install -r requirements-dev.txt
+
+      # Конфиг собирается из того же `.env.example`, что читают разработчики: список
+      # переменных живёт в одном месте, и забытая новая переменная валит прогон здесь,
+      # а не у человека, который завтра поднимает проект впервые.
+      - name: Конфигурация
+        run: |
+          cp ../infra/.env.example .env
+          {
+            echo "POSTGRES_HOST=localhost"
+            echo "POSTGRES_PORT=5432"
+            echo "POSTGRES_USER=absolute"
+            echo "POSTGRES_PASSWORD=absolute"
+            echo "POSTGRES_DB=absolute"
+            echo "SECRET_KEY=ci-secret-key-not-used-anywhere-else-0000"
+            echo "REFRESH_TOKEN_SECRET_KEY=ci-refresh-secret-not-used-elsewhere-00"
+            echo "YANDEX_CLIENTID=ci-yandex-client-id-placeholder-000000000"
+            echo "YANDEX_CLIENT_SECRET=ci-yandex-client-secret-placeholder-0000"
+            echo "VK_CLIENT_ID=ci-vk-client-id"
+            echo "VK_CLIENT_SECRET=ci-vk-client-secret"
+            echo "GIGA_AUTH_KEY=ci-giga-auth-key"
+            echo "GIGA_CLIENT_ID=ci-giga-client-id"
+            echo "REDIS_PASSWORD=ci-redis"
+            echo "REDIS_USER=ci"
+            echo "REDIS_USER_PASSWORD=ci-redis-user"
+          } >> .env
+
+      # Миграции — часть проверки, а не подготовка к ней: сломанная ревизия ломает
+      # развёртывание так же надёжно, как упавший тест, и увидеть это надо здесь.
+      - name: Миграции
+        run: alembic upgrade head
+
+      - name: Тесты
+        run: python -m pytest
