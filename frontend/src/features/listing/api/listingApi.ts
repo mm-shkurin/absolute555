@@ -36,6 +36,16 @@ export interface ListingDetailWire {
   thickness_map_complete: boolean
   has_thickness_map: boolean
   phone_available: boolean
+  chat_allowed: boolean
+  // Своё объявление показывается тому же адресу, но другой колонкой: владельцу нужны
+  // счётчики и управление, а не кнопка «предложить цену» самому себе.
+  owned_by_me: boolean
+  published_at: string | null
+  views_count: number
+  opens_count: number
+  offers_count: number
+  measured_panels: number
+  total_panels: number
   seller: SellerWire
   offers: OfferWire[] | null
 }

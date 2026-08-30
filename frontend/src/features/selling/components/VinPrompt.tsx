@@ -2,7 +2,7 @@
 // характеристики без VIN не подставятся, и просить надо ровно одно.
 import { Button } from '../../../shared/ui/Button'
 import { Alert } from './Alert'
-import { Form, Field, TextInput } from './Form'
+import { Form, Field, TextInput } from '../../../shared/ui/Form'
 import type { DocumentHandlers } from './StepDocument'
 import { WizardCard, NavSpacer } from './WizardCard'
 import styles from '../selling.module.css'

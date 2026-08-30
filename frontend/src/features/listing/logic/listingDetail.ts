@@ -5,7 +5,7 @@ import { formatAmount, formatPrice } from '../../../shared/format/money'
 import { dealsLabel, stars } from '../../../shared/format/rating'
 import type { ListingDetailWire, OfferWire } from '../api/listingApi'
 
-export type ViewerMode = 'guest' | 'buyer' | 'sold'
+export type ViewerMode = 'guest' | 'buyer' | 'sold' | 'owner'
 
 export interface SpecRow {
   label: string
@@ -36,9 +36,18 @@ export interface ListingDetailView {
   sellerRating: string
   soldOn: string | null
   phoneAvailable: boolean
+  chatAllowed: boolean
+  publishedOn: string | null
+  stats: { label: string; value: string }[]
+  measuredPanels: number
+  totalPanels: number
+  thicknessPercent: number
 }
 
+// Владелец видит своё объявление и после продажи: архивная карточка — тоже его, и
+// счётчики по ней остаются единственным итогом сделки.
 export function viewerMode(wire: ListingDetailWire, signedIn: boolean): ViewerMode {
+  if (wire.owned_by_me) return 'owner'
   if (wire.status === 'sold') return 'sold'
   return signedIn ? 'buyer' : 'guest'
 }
@@ -99,6 +108,17 @@ export function toListingDetailView(wire: ListingDetailWire): ListingDetailView 
         : `${wire.seller.rating.toFixed(1).replace('.', ',')} · ${dealsLabel(wire.seller.deals_count)}`,
     soldOn: wire.sold_at ? DATE.format(new Date(wire.sold_at)) : null,
     phoneAvailable: wire.phone_available,
+    chatAllowed: wire.chat_allowed,
+    publishedOn: wire.published_at ? DATE.format(new Date(wire.published_at)) : null,
+    stats: [
+      { label: 'показов', value: formatAmount(wire.views_count) },
+      { label: 'открытий', value: formatAmount(wire.opens_count) },
+      { label: 'офферов', value: formatAmount(wire.offers_count) },
+    ],
+    measuredPanels: wire.measured_panels,
+    totalPanels: wire.total_panels,
+    thicknessPercent:
+      wire.total_panels === 0 ? 0 : Math.round((wire.measured_panels / wire.total_panels) * 100),
   }
 }
 

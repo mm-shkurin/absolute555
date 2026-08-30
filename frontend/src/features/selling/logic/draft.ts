@@ -1,9 +1,9 @@
 // Черновик объявления: поля, происхождение каждого значения и сводка перед отправкой.
 import { formatAmount } from '../../../shared/format/money'
 
-// Откуда взялось значение. Ради этого различия и затевалось распознавание: подставленное
-// приложением поле надо перечитать, введённое руками — уже прочитано автором.
-export type FieldSource = 'manual' | 'vin' | 'document'
+import type { FieldSource } from '../../../shared/ui/fieldSource'
+
+export type { FieldSource }
 
 export interface DraftField {
   value: string

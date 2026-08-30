@@ -1,7 +1,7 @@
 // Третий шаг: цена, пробег и связь. Телефон обязателен, но его показ — выбор продавца.
 import { Button } from '../../../shared/ui/Button'
 import type { Draft } from '../logic/draft'
-import { Form, Field, Select, Switch, TextArea, TextInput } from './Form'
+import { Form, Field, Select, Switch, TextArea, TextInput } from '../../../shared/ui/Form'
 import { WizardCard, NavSpacer } from './WizardCard'
 import styles from '../selling.module.css'
 

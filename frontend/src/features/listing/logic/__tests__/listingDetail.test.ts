@@ -22,6 +22,14 @@ const wire: ListingDetailWire = {
   thickness_map_complete: true,
   has_thickness_map: true,
   phone_available: true,
+  chat_allowed: true,
+  owned_by_me: false,
+  published_at: new Date(2026, 7, 22).toISOString(),
+  views_count: 1284,
+  opens_count: 96,
+  offers_count: 4,
+  measured_panels: 11,
+  total_panels: 13,
   seller: { id: 'u1', name: 'Михаил', rating: 4.8, deals_count: 12 },
   offers: null,
 }
@@ -34,6 +42,22 @@ describe('карточка объявления', () => {
   it('показывает замаскированный VIN как есть и помечает его моноширинным', () => {
     const vin = toListingDetailView(wire).specs.find((row) => row.label === 'VIN')
     expect(vin).toEqual({ label: 'VIN', value: 'JTJHY00W***40218', mono: true })
+  })
+
+  it('владелец видит своё объявление своей колонкой, в том числе проданное', () => {
+    expect(viewerMode({ ...wire, owned_by_me: true }, true)).toBe('owner')
+    expect(viewerMode({ ...wire, owned_by_me: true, status: 'sold' }, true)).toBe('owner')
+  })
+
+  it('считает воронку и заполненность карты для владельца', () => {
+    const view = toListingDetailView(wire)
+    expect(view.stats.map((stat) => `${stat.value} ${stat.label}`)).toEqual([
+      '1 284 показов',
+      '96 открытий',
+      '4 офферов',
+    ])
+    expect(view.thicknessPercent).toBe(85)
+    expect(view.publishedOn).toBe('22 августа')
   })
 
   it('проданное объявление даёт режим «продано» даже вошедшему', () => {

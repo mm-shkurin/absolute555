@@ -98,3 +98,10 @@
     grid-template-columns: 1fr;
   }
 }
+
+.coldActions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}

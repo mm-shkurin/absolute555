@@ -1,0 +1,97 @@
+.title {
+  margin-top: 12px;
+  font-size: 20px;
+  font-weight: 800;
+}
+
+.price {
+  margin: 8px 0 4px;
+  font-size: 33px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.summary {
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
+
+/* Три счётчика в ряд: показы, открытия, офферы — воронка объявления слева направо. Она
+   отвечает на вопрос «почему нет предложений» раньше, чем владелец его задаст. */
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-top: 16px;
+  padding: 14px 0;
+  border-top: 1px solid var(--border-subtle);
+  border-bottom: 1px solid var(--border-subtle);
+  text-align: center;
+}
+
+.stats b {
+  display: block;
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.stats span {
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.hint {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.progressRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 14.5px;
+}
+
+.progressRow span {
+  color: var(--text-muted);
+}
+
+.progress {
+  height: 6px;
+  margin-top: 8px;
+  border-radius: 3px;
+  background: var(--border-subtle);
+  overflow: hidden;
+}
+
+.progress i {
+  display: block;
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+}
+
+.note {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.mapLink {
+  margin-top: 12px;
+}

@@ -1,6 +1,7 @@
-// Поля мастера. Одна обёртка на все шаги: подпись, отметка происхождения и сам контрол.
+// Поля формы. Одна обёртка на все формы приложения: подпись, отметка происхождения
+// значения и сам контрол.
 import type { ChangeEvent, ReactNode } from 'react'
-import type { FieldSource } from '../logic/draft'
+import type { FieldSource } from './fieldSource'
 import styles from './Form.module.css'
 
 const SOURCE_TAG: Record<FieldSource, string | null> = {

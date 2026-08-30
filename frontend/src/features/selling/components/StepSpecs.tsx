@@ -3,7 +3,7 @@
 import { Button } from '../../../shared/ui/Button'
 import type { Draft, FieldSource } from '../logic/draft'
 import { Alert } from './Alert'
-import { Form, Field, Select, TextInput } from './Form'
+import { Form, Field, Select, TextInput } from '../../../shared/ui/Form'
 import { WizardCard, NavSpacer } from './WizardCard'
 
 const TRANSMISSIONS = ['АКПП', 'МКПП', 'Вариатор', 'Робот']

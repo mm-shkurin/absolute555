@@ -1,16 +1,18 @@
 // Карточка объявления. Три состояния смотрящего — гость, покупатель, продано — различаются
 // только правой колонкой; левая одинакова, потому что машина от этого не меняется.
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { ROUTES } from '../../shared/navigation/routes'
 import { ListingBody } from './components/ListingBody'
 import { MobileActionBar, SidePanel, type SideHandlers } from './components/SidePanel'
+import { OwnerPanel } from './components/OwnerPanel'
 import { ListingFailure, ListingSkeleton } from './components/ListingStates'
 import { useListing } from './useListing'
 import styles from './listing.module.css'
 
 export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignIn?: () => void }) {
+  const navigate = useNavigate()
   const { listingId = '' } = useParams()
   const listing = useListing(listingId, signedIn, new Date())
 
@@ -38,17 +40,30 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
           {listing.view ? (
             <div className={styles.layout}>
               <ListingBody listing={listing.view} />
-              <SidePanel
-                view={listing.view}
-                mode={listing.mode}
-                offers={listing.offers}
-                handlers={handlers}
-              />
+              {listing.mode === 'owner' ? (
+                <OwnerPanel
+                  view={listing.view}
+                  sold={listing.sold}
+                  onEdit={() => navigate(ROUTES.selling)}
+                  onUnpublish={() => undefined}
+                  onMarkSold={() => undefined}
+                  onSetting={() => undefined}
+                />
+              ) : (
+                <SidePanel
+                  view={listing.view}
+                  mode={listing.mode}
+                  offers={listing.offers}
+                  handlers={handlers}
+                />
+              )}
             </div>
           ) : null}
         </Container>
       </main>
-      {listing.view ? <MobileActionBar mode={listing.mode} handlers={handlers} /> : null}
+      {listing.view && listing.mode !== 'owner' ? (
+        <MobileActionBar mode={listing.mode} handlers={handlers} />
+      ) : null}
     </>
   )
 }

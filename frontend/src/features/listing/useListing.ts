@@ -12,6 +12,9 @@ import {
 export interface ListingResult {
   view: ListingDetailView | null
   mode: ViewerMode
+  // Продано ли объявление — отдельно от режима: владелец видит свою колонку и после
+  // продажи, но действия в ней уже не нужны.
+  sold: boolean
   offers: OfferRow[] | null
   isLoading: boolean
   error: Error | null
@@ -28,6 +31,7 @@ export function useListing(id: string, signedIn: boolean, now: Date): ListingRes
   return {
     view: wire ? toListingDetailView(wire) : null,
     mode: wire ? viewerMode(wire, signedIn) : 'guest',
+    sold: wire?.status === 'sold',
     // `null` на проводе значит «закрыто до входа», пустой массив — «предложений ещё нет».
     // Разные вещи, и на экране они выглядят по-разному.
     offers: wire?.offers ? toOfferRows(wire.offers, now) : null,

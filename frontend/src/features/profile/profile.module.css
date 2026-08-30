@@ -95,3 +95,26 @@
     text-align: left;
   }
 }
+
+.crumbs {
+  padding-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.crumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.note {
+  margin-top: 16px;
+}
+
+.gaps {
+  margin: 12px 0 0;
+  color: var(--status-bad-ink);
+  font-size: 14px;
+}

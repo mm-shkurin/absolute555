@@ -20,6 +20,10 @@ import { ImportRequestPage } from '../features/importRequest/ImportRequestPage'
 import { SupplierPage } from '../features/supplier/SupplierPage'
 import { ModerationQueuePage } from '../features/moderation/ModerationQueuePage'
 import { ComplaintsPage } from '../features/moderation/ComplaintsPage'
+import { RoleApplicationsPage } from '../features/moderation/RoleApplicationsPage'
+import { OAuthCallbackPage } from '../features/auth/OAuthCallbackPage'
+import { NewRequestPage } from '../features/importRequest/NewRequestPage'
+import { SupplierApplicationPage } from '../features/profile/SupplierApplicationPage'
 import { ROUTES } from '../shared/navigation/routes'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
@@ -61,12 +65,14 @@ export function App() {
         <Route path={ROUTES.chats} element={<ChatsPage />} />
         <Route path={ROUTES.chat()} element={<ChatsPage />} />
         <Route path={ROUTES.profile} element={<ProfilePage />} />
+        <Route path={ROUTES.supplierApplication} element={<SupplierApplicationPage />} />
+        <Route path={ROUTES.newImportRequest} element={<NewRequestPage />} />
 
-        <Route path={ROUTES.oauthCallback} element={<Pending screen="Возврат из OAuth" />} />
+        <Route path={ROUTES.oauthCallback} element={<OAuthCallbackPage />} />
 
         <Route path={ROUTES.moderationQueue} element={<ModerationQueuePage />} />
         <Route path={ROUTES.moderationComplaints} element={<ComplaintsPage />} />
-        <Route path={ROUTES.moderationRoles} element={<Pending screen="Заявки на роль" />} />
+        <Route path={ROUTES.moderationRoles} element={<RoleApplicationsPage />} />
 
         <Route path="*" element={<Pending screen="Страница не найдена" />} />
       </Routes>

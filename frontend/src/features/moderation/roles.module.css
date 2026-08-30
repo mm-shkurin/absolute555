@@ -1,0 +1,76 @@
+.head {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.headBody {
+  flex: 1;
+  min-width: 240px;
+}
+
+.name {
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.meta {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.terms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 28px;
+  margin-top: 18px;
+}
+
+.terms div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 14.5px;
+}
+
+.terms span {
+  color: var(--text-muted);
+}
+
+.terms b {
+  font-weight: 700;
+}
+
+.about {
+  margin-top: 16px;
+}
+
+.about p {
+  margin: 6px 0 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.rejection {
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+@media (max-width: 900px) {
+  .terms {
+    grid-template-columns: 1fr;
+  }
+}
