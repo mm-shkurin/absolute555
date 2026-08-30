@@ -18,7 +18,7 @@ tech-profile:
 | Database | PostgreSQL (+PostGIS) |
 | Migrations | Alembic |
 | Cache / broker | Redis, RabbitMQ (amqp) |
-| Background jobs | Celery |
+| Background jobs | ARQ |
 | Object storage | MinIO / boto3 (S3) |
 | Auth | PyJWT, argon2/bcrypt, fastapi-sso, PKCE |
 | AI / vectors | ChromaDB, GigaChat, HuggingFace tokenizers, onnxruntime |

@@ -1,6 +1,6 @@
 """Reading an uploaded file as an image, and making the small copy the feed shows.
 
-Previews are built in the request rather than on Celery. Resizing a ten-megabyte photo is
+Previews are built in the request rather than on the queue. Resizing a ten-megabyte photo is
 a few hundred milliseconds, and at tens of listings a day that is cheaper than a "preview
 not ready yet" state the feed, the listing card and My Listings would each have to render.
 """

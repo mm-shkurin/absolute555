@@ -1,7 +1,7 @@
 """The SSE stream a listing's decode task publishes on.
 
 Two sources feed one client: the in-process queue the SSE manager fans out to, and the
-Redis channel the Celery worker publishes to -- the workers are separate processes, so
+Redis channel the ARQ worker publishes to -- the worker is a separate process, so
 the queue alone would only ever reach the worker that happens to share the request's
 process.
 """

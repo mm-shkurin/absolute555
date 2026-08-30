@@ -18,6 +18,11 @@ from app.ml.sts_image import prepare_candidates
 from app.ml.sts_ocr import read_text
 
 
+def _read_document(file_bytes: bytes) -> str:
+    image, candidates = prepare_candidates(file_bytes)
+    return read_text(image, candidates)
+
+
 async def decode_vin(file_bytes: bytes, car_id: str = None) -> dict:
 
     if not file_bytes:
@@ -25,8 +30,10 @@ async def decode_vin(file_bytes: bytes, car_id: str = None) -> dict:
         return {"error": "file_bytes is required"}
 
     try:
-        image, candidates = prepare_candidates(file_bytes)
-        ocr_text = read_text(image, candidates)
+        # tesseract, OpenCV and Pillow run to completion on a core. On the worker this is
+        # the event loop everything else shares, so the whole reading goes to a thread.
+        loop = asyncio.get_running_loop()
+        ocr_text = await loop.run_in_executor(None, _read_document, file_bytes)
     except Exception as e:
         logger.error(f"OCR failed: {e}")
         return {"error": "ocr_failed"}

@@ -1,13 +1,12 @@
-import base64
 from loguru import logger
 from sqlalchemy import select
 
-from app.tasks.decorators import async_task
-from app.tasks.status_updater import update_task_status, TaskStatus
-from app.ml.decode_vin import decode_vin
 from app.db.database import get_db_session
+from app.ml.decode_vin import decode_vin
 from app.models.sale_car import SaleCars
 from app.services.catalog_resolver import CatalogResolver
+from app.services.s3_service import s3_service
+from app.tasks.status_updater import TaskStatus, update_task_status
 
 
 def _apply_decoded(sale_car: SaleCars, result: dict) -> None:
@@ -40,13 +39,17 @@ def _apply_decoded(sale_car: SaleCars, result: dict) -> None:
         sale_car.transmission = result["transmission"]
 
 
-@async_task("decode_vin_from_sts_sale_car")
-async def decode_vin_from_sts_sale_car_task(sale_car_id: str, file_b64: str):
+async def decode_vin_from_sts(ctx: dict, sale_car_id: str, sts_key: str):
+    """Read the СТС scan of one listing and write what it says onto the row.
 
+    The scan is fetched from the closed bucket by key rather than carried through the
+    queue: a photograph base64-encoded into a Redis job is megabytes of payload sitting in
+    the broker, and the bytes are already in object storage anyway.
+    """
     try:
         await update_task_status(sale_car_id, TaskStatus.STARTED, entity_type="sale_car")
 
-        file_bytes = base64.b64decode(file_b64)
+        file_bytes = await s3_service.get_document(sts_key)
 
         await update_task_status(sale_car_id, TaskStatus.OcrStarted, entity_type="sale_car")
 
@@ -104,7 +107,7 @@ async def decode_vin_from_sts_sale_car_task(sale_car_id: str, file_b64: str):
         return {"sale_car_id": sale_car_id, "result": result}
 
     except Exception as e:
-        logger.exception(f"Error in decode_vin_from_sts_sale_car_task sale_car_id={sale_car_id}: {e}")
+        logger.exception(f"decode_vin_from_sts failed for sale_car_id={sale_car_id}: {e}")
 
         await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
 

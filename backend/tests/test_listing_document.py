@@ -11,7 +11,7 @@ import pytest
 from sqlalchemy import text
 
 from app.core.config import MinioSettings, PhotoSettings
-from app.db.database import get_db_session
+from tests.conftest import test_session
 from app.services.s3_service import s3_service
 from tests.conftest import make_image
 from tests.test_listing_lifecycle import _create, _fill
@@ -25,7 +25,7 @@ def with_document(client):
 
     def _attach(listing_id: str) -> str:
         async def _store():
-            async with get_db_session() as session:
+            async with test_session()() as session:
                 key = await s3_service.put_document(listing_id, make_image(), "image/png")
                 await session.execute(
                     text("UPDATE sale_cars SET sts_key = :key WHERE sale_car_id = :id"),

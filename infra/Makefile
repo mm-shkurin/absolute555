@@ -22,7 +22,7 @@ logs:
 	docker compose logs -f --tail=100
 
 restart:
-	docker compose restart backend celery
+	docker compose restart backend worker
 
 migrate:
 	docker compose exec backend alembic upgrade head

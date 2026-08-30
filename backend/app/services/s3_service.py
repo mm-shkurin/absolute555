@@ -59,6 +59,14 @@ class S3Service:
         )
         return key
 
+    async def get_document(self, key: str) -> bytes:
+        loop = asyncio.get_event_loop()
+        response = await loop.run_in_executor(
+            None,
+            lambda: self.s3_client.get_object(Bucket=self.documents_bucket, Key=key),
+        )
+        return response["Body"].read()
+
     async def sign_document_url(self, key: str, expires_in: int) -> str:
         loop = asyncio.get_event_loop()
         return await loop.run_in_executor(

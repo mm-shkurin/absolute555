@@ -8,7 +8,7 @@ against: `.claude/guidelines/hazard-catalogue/`.
 
 ## Deployment
 
-- The backend runs as multiple instances (uvicorn workers plus a Celery worker on the
+- The backend runs as multiple instances (uvicorn workers plus an ARQ worker on the
   same image). Never store application state in-memory — module-level `dict`/`set`,
   mutable default arguments, singleton caches in closures, class-level mutable
   attributes. State that must be consistent across instances goes to Postgres or Redis.
@@ -25,7 +25,7 @@ framework assumes. The layer map here is the real one:
 - `app/models/` — SQLAlchemy models. Columns, relationships, and behaviour that belongs
   to the row itself. No service or API imports.
 - `app/schemas/` — Pydantic request and response types. The wire contract.
-- `app/tasks/` and `app/ml/` — Celery tasks and the OCR/VIN pipeline they call.
+- `app/tasks/` and `app/ml/` — ARQ jobs and the OCR/VIN pipeline they call.
 - `app/permissions/` — roles, permissions, and the FastAPI dependencies that enforce them.
 
 Dependency direction, enforced by `.claude/skills/sprint-check/probes/config.json`:

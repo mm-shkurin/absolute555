@@ -7,7 +7,7 @@
   tens of new listings a day.
 - Read-heavy: the feed and listing pages take the overwhelming majority of requests.
   Writes are rare and bursty (listing creation, offers, chat messages).
-- The one expensive path is СТС OCR + VIN decode. It runs on Celery, not in the request,
+- The one expensive path is СТС OCR + VIN decode. It runs on ARQ, not in the request,
   and is bounded by how often a seller creates a listing — tens per day, not per second.
 - Photo storage in MinIO/S3: assume up to 15 photos per listing at a few MB each.
 - Chat is low-volume: a handful of messages per deal, delivered over SSE.

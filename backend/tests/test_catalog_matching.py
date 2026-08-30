@@ -9,7 +9,7 @@ import pytest
 import pytest_asyncio
 from sqlalchemy import select
 
-from app.db.database import get_db_session
+from tests.conftest import test_session
 from app.models.catalog import Brand
 from app.services.catalog_service import CatalogService
 
@@ -19,7 +19,7 @@ pytestmark = pytest.mark.asyncio
 @pytest_asyncio.fixture
 async def service():
     try:
-        async with get_db_session() as db:
+        async with test_session()() as db:
             seeded = await db.execute(select(Brand).limit(1))
             if seeded.scalar_one_or_none() is None:
                 pytest.skip("catalogue is empty; run python -m app.data.seed_catalog")

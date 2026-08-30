@@ -7,9 +7,41 @@ import jwt
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import text
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.pool import NullPool
 
-from app.db.database import get_db_session
+from app.core.config import DatabaseSettings
 from app.main import app
+
+
+def test_session():
+    """A session maker on a connection of the test's own, pooling disabled.
+
+    Called as test_session()() -- the maker is built per use so nothing is shared between
+    one test's event loop and another's.
+    """
+    engine = create_async_engine(DatabaseSettings().database_url, poolclass=NullPool)
+    return async_sessionmaker(bind=engine, expire_on_commit=False)
+
+
+def run_sql(statement: str, params: dict) -> None:
+    """Run one statement on a connection of this fixture's own.
+
+    Not the application's engine: it pools, and a pooled connection belongs to the loop
+    that opened it. A fixture calling asyncio.run here and the TestClient's portal there
+    are two loops, and sharing a pool between them is what produces "attached to a
+    different loop" -- in the *application's* next request, not in the fixture.
+    """
+
+    async def _run():
+        engine = create_async_engine(DatabaseSettings().database_url, poolclass=NullPool)
+        try:
+            async with engine.begin() as connection:
+                await connection.execute(text(statement), params)
+        finally:
+            await engine.dispose()
+
+    asyncio.run(_run())
 
 
 @pytest.fixture(scope="session")
@@ -26,7 +58,11 @@ def client() -> TestClient:
     storage. Tests that need real rows belong in an acceptance suite against the running
     stack (see .claude/templates/tdd/README.md).
     """
-    return TestClient(app)
+    # As a context manager on purpose: TestClient outside one opens a fresh event loop
+    # per request, and a pooled asyncpg connection belongs to the loop that made it. The
+    # application has one loop per process in production; this gives the suite the same.
+    with TestClient(app) as client:
+        yield client
 
 
 @pytest.fixture
@@ -59,15 +95,7 @@ def moderator(client, signed_in):
     token = headers["Authorization"].removeprefix("Bearer ")
     user_id = jwt.decode(token, options={"verify_signature": False})["id"]
 
-    async def _promote():
-        async with get_db_session() as session:
-            await session.execute(
-                text("UPDATE users SET role = 'manager' WHERE id = :id"),
-                {"id": uuid.UUID(user_id)},
-            )
-            await session.commit()
-
-    asyncio.run(_promote())
+    run_sql("UPDATE users SET role = 'manager' WHERE id = :id", {"id": uuid.UUID(user_id)})
     return headers
 
 
