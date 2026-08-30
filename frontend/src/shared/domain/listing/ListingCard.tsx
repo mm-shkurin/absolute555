@@ -13,10 +13,14 @@ export function ListingCard({ listing }: { listing: ListingView }) {
         {listing.photoUrl ? <img src={listing.photoUrl} alt="" /> : 'фото автомобиля'}
         <div className={styles.badges}>
           {listing.hasThicknessMap ? (
-            <span className={styles.badge}>полная карта замеров</span>
+            <span className={styles.badge} data-badge="thickness">
+              полная карта замеров
+            </span>
           ) : null}
           {listing.isImport ? (
-            <span className={`${styles.badge} ${styles.import}`}>под заказ</span>
+            <span className={`${styles.badge} ${styles.import}`} data-badge="import">
+              под заказ
+            </span>
           ) : null}
         </div>
       </Placeholder>

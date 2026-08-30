@@ -104,8 +104,10 @@ function listingsCollection(query: URLSearchParams): unknown {
 // Фильтры работают по-настоящему: иначе пустое состояние ленты — единственное, которое
 // нельзя увидеть, а именно оно чаще всего и ломается.
 function filtered(query: URLSearchParams): typeof FEED {
-  const priceMax = Number(query.get('price_max') ?? '')
-  const withMap = query.get('has_thickness_map') === 'true'
+  // Имена параметров — те же, что шлёт `feedQuery.toSearchParams`. Разойдутся — заглушка
+  // молча вернёт всё, и фильтр будет выглядеть сломанным ровно так же, как сломанный.
+  const priceMax = Number(query.get('price_to') ?? '')
+  const withMap = query.get('thickness_map') === 'true'
   return FEED.filter((car) => {
     if (Number.isFinite(priceMax) && priceMax > 0 && car.price > priceMax) return false
     if (withMap && !car.has_thickness_map) return false

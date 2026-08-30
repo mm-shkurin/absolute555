@@ -33,6 +33,7 @@ export function BodySchematic({ rows, selected, onSelect }: Props) {
                 fill={colorOf(zone.code)}
                 onClick={() => onSelect(zone.code)}
                 data-panel={zone.code}
+                data-selected={zone.code === selected}
               >
                 <title>{labelOf(zone.code)}</title>
               </path>

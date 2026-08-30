@@ -17,7 +17,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "dev:mock": "vite --mode mock"
+    "dev:mock": "vite --mode mock",
+    "test:e2e": "vitest run --config e2e/vitest.config.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",
@@ -35,11 +36,13 @@
     "@types/node": "^24.13.2",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
+    "@types/selenium-webdriver": "^4.35.6",
     "@vitejs/plugin-react": "^6.0.3",
     "@vitest/coverage-v8": "^4.1.10",
     "jsdom": "^29.1.1",
     "oxlint": "^1.71.0",
     "prettier": "^3.9.5",
+    "selenium-webdriver": "^4.48.0",
     "typescript": "~6.0.2",
     "vite": "^8.1.1",
     "vitest": "^4.1.10"

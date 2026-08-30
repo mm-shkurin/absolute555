@@ -51,8 +51,8 @@ export function FilterPanel({
         />
         <RangePair
           label="Цена, ₽"
-          from={{ value: query.priceFrom, placeholder: 'от' }}
-          to={{ value: query.priceTo, placeholder: 'до 5 млн' }}
+          from={{ value: query.priceFrom, placeholder: 'от', testId: 'filter-price-from' }}
+          to={{ value: query.priceTo, placeholder: 'до 5 млн', testId: 'filter-price-to' }}
           onFrom={(priceFrom) => onChange({ ...query, priceFrom })}
           onTo={(priceTo) => onChange({ ...query, priceTo })}
         />
@@ -80,7 +80,7 @@ export function FilterPanel({
           </div>
         </div>
         <div className={styles.group}>
-          <label className={styles.switch}>
+          <label className={styles.switch} data-testid="filter-thickness-toggle">
             <input
               type="checkbox"
               checked={query.withThicknessMap}

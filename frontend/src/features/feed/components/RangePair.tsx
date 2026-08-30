@@ -6,6 +6,9 @@ interface Bound {
   value?: string
   placeholder: string
   disabled?: boolean
+  // Локатор для сценариев: поля пары различаются только порядком в разметке, а порядок
+  // тест читать не должен.
+  testId?: string
 }
 
 export function RangePair({
@@ -31,6 +34,7 @@ export function RangePair({
           value={from.value ?? ''}
           placeholder={from.placeholder}
           disabled={from.disabled}
+          data-testid={from.testId}
           onChange={(event) => onFrom(event.target.value)}
         />
         <input
@@ -39,6 +43,7 @@ export function RangePair({
           value={to.value ?? ''}
           placeholder={to.placeholder}
           disabled={to.disabled}
+          data-testid={to.testId}
           onChange={(event) => onTo(event.target.value)}
         />
       </div>
