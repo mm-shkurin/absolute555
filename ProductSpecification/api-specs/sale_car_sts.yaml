@@ -1,0 +1,62 @@
+openapi: 3.0.3
+info:
+  title: Sale car registration document
+  version: 1.0.0
+  description: |
+    Снимок СТС — документ, а не витрина: VIN, серия и номер. Он лежит в закрытом бакете,
+    отдельном от галереи, и наружу уходит только подписанной ссылкой с коротким сроком.
+
+    Политика задана на бакете, а не на объекте, потому что опечатка в префиксе внутри
+    одного бакета выставляет документ наружу молча, а промах бакетом виден сразу.
+
+paths:
+  /api/v1/sale_car/{sale_car_id}/sts:
+    parameters:
+      - name: sale_car_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Подписанная ссылка на снимок СТС
+      operationId: getSaleCarStsLink
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Отдаётся ссылка, а не файл: сам файл пойдёт из хранилища напрямую, минуя воркер.
+
+        Владельцу и модератору. Чужому — 404, тот же ответ, что на неопубликованное
+        объявление: 403 подтвердил бы, что документ существует.
+
+        Ссылка живёт минуты, не часы. Она попадёт в историю браузера и в реферер, и её
+        срок — единственное, что ограничивает утечку по пересланной ссылке.
+      responses:
+        '200':
+          description: Ссылка и момент, когда она перестанет работать
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StsLink' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: |
+            Объявление не найдено, снимок уже удалён после решения модератора, или
+            вызывающий не владелец и не модератор — все три неотличимы снаружи.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  schemas:
+    StsLink:
+      type: object
+      required: [url, expires_at]
+      properties:
+        url:
+          type: string
+          description: Подписанная ссылка в закрытый бакет.
+        expires_at:
+          type: string
+          format: date-time
+          description: После этого момента ссылка не работает.

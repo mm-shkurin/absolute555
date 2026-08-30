@@ -1,0 +1,189 @@
+openapi: 3.0.3
+info:
+  title: Sale car photos
+  version: 1.0.0
+  description: |
+    Галерея объявления. Порядок задаёт пользователь на клиенте; сервер его сохраняет и
+    проверяет пределы. Обложка — первый элемент списка, отдельного поля нет: два
+    источника правды разойдутся в первый же день.
+
+paths:
+  /api/v1/sale_car/{sale_car_id}/photos:
+    parameters: [{ $ref: '#/components/parameters/SaleCarId' }]
+    post:
+      summary: Загрузить снимки в галерею
+      operationId: uploadSaleCarPhotos
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        multipart, а не base64: пятнадцать снимков по 10 МБ в base64 — около 200 МБ JSON
+        целиком в памяти воркера, а воркеров несколько на образ.
+
+        Загрузка применяется целиком. Если хотя бы один файл не проходит — превышен
+        предел, не изображение, не влезает в потолок — не сохраняется ни один, и всё уже
+        залитое в этом запросе удаляется из хранилища.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [files]
+              properties:
+                files:
+                  type: array
+                  items: { type: string, format: binary }
+      responses:
+        '200':
+          description: Галерея после загрузки
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Gallery' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+        '409':
+          description: |
+            GALLERY_LIMIT_REACHED — не влезает в 15, или LISTING_FROZEN — объявление не
+            в draft и не в rejected.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GalleryLimitError' }
+        '413':
+          description: PHOTO_TOO_LARGE — снимок больше 10 МБ
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422':
+          description: NOT_AN_IMAGE — содержимое файла не является изображением
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/sale_car/{sale_car_id}/photos/{photo_id}:
+    parameters:
+      - { $ref: '#/components/parameters/SaleCarId' }
+      - name: photo_id
+        in: path
+        required: true
+        schema: { type: string }
+    delete:
+      summary: Удалить один снимок
+      operationId: deleteSaleCarPhoto
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: Порядок смыкается — дыры на месте удалённого не остаётся.
+      responses:
+        '200':
+          description: Галерея после удаления
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Gallery' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+        '409': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/sale_car/{sale_car_id}/photos/order:
+    parameters: [{ $ref: '#/components/parameters/SaleCarId' }]
+    put:
+      summary: Задать порядок снимков
+      operationId: reorderSaleCarPhotos
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Клиент присылает весь список в нужном порядке, а не перестановку двух элементов:
+        сервер не должен собирать состояние из последовательности сдвигов, а клиенту
+        нечего терять при пропущенном запросе. Первый элемент становится обложкой.
+
+        Разрешено в любом статусе, включая published: снимки уже прошли модерацию, и
+        перестановка не показывает покупателю ничего, чего не видел модератор.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [photo_ids]
+              properties:
+                photo_ids:
+                  type: array
+                  minItems: 1
+                  items: { type: string }
+      responses:
+        '200':
+          description: Галерея в новом порядке
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Gallery' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+        '422':
+          description: |
+            ORDER_MISMATCH — присланный состав не совпадает с тем, что лежит: пропущен
+            снимок, добавлен чужой или продублирован свой. Порядок не применяется частично.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/OrderMismatchError' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  parameters:
+    SaleCarId:
+      name: sale_car_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  schemas:
+    Photo:
+      type: object
+      required: [photo_id, url, preview_url]
+      properties:
+        photo_id: { type: string }
+        url:
+          type: string
+          description: Оригинал, публично читаемый.
+        preview_url:
+          type: string
+          description: Уменьшенная копия для ленты и карточки.
+
+    Gallery:
+      type: object
+      required: [sale_car_id, photos, limit]
+      properties:
+        sale_car_id: { type: string, format: uuid }
+        photos:
+          type: array
+          description: В порядке показа. Первый — обложка.
+          items: { $ref: '#/components/schemas/Photo' }
+        limit: { type: integer, example: 15 }
+
+    GalleryLimitError:
+      allOf:
+        - $ref: 'errors.yaml#/components/schemas/Error'
+        - type: object
+          properties:
+            code: { type: string, enum: [GALLERY_LIMIT_REACHED, LISTING_FROZEN] }
+            details:
+              type: object
+              properties:
+                limit: { type: integer, example: 15 }
+                current: { type: integer, example: 14 }
+                offered: { type: integer, example: 3 }
+
+    OrderMismatchError:
+      allOf:
+        - $ref: 'errors.yaml#/components/schemas/Error'
+        - type: object
+          properties:
+            code: { type: string, enum: [ORDER_MISMATCH] }
+            details:
+              type: object
+              properties:
+                missing:
+                  type: array
+                  items: { type: string }
+                unknown:
+                  type: array
+                  items: { type: string }

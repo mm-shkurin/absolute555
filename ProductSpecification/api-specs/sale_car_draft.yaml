@@ -137,9 +137,12 @@ components:
         milleage: { type: number, nullable: true }
         phone_number: { type: string, nullable: true }
         description: { type: string, nullable: true }
-        photo_urls:
+        photos:
           type: array
-          items: { type: string }
+          description: |
+            В порядке показа, первый — обложка. Заменяет прежний photo_urls, который
+            порядка не выражал (история 5).
+          items: { $ref: 'sale_car_photos.yaml#/components/schemas/Photo' }
         reject_reason:
           type: string
           nullable: true
