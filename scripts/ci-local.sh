@@ -14,8 +14,11 @@ RUN_E2E=1
 RUN_IMAGES=0
 PG_PORT="${PG_PORT:-55432}"
 PG_CONTAINER="absolute555-ci-pg-$$"
+REDIS_CONTAINER="absolute555-ci-redis-$$"
+MINIO_CONTAINER="absolute555-ci-minio-$$"
 CI_NETWORK="absolute555-ci-net-$$"
 BACKEND_IMAGE="absolute555-backend:ci-local"
+TEST_IMAGE="absolute555-backend:ci-local-tests"
 FAILED=()
 RESULTS=()
 STARTED_AT=$SECONDS
@@ -62,7 +65,7 @@ fmt_time() {
 
 cleanup() {
   if [ -n "${PG_STARTED:-}" ]; then
-    docker rm -f "$PG_CONTAINER" >/dev/null 2>&1 || true
+    docker rm -f "$PG_CONTAINER" "$REDIS_CONTAINER" "$MINIO_CONTAINER" >/dev/null 2>&1 || true
   fi
   if [ -n "${NET_STARTED:-}" ]; then
     docker network rm "$CI_NETWORK" >/dev/null 2>&1 || true
@@ -101,28 +104,93 @@ write_backend_env() {
     echo "VK_CLIENT_SECRET=ci-vk-client-secret"
     echo "GIGA_AUTH_KEY=ci-giga-auth-key"
     echo "GIGA_CLIENT_ID=ci-giga-client-id"
-    echo "REDIS_PASSWORD=ci-redis"
-    echo "REDIS_USER=ci"
-    echo "REDIS_USER_PASSWORD=ci-redis-user"
+    # Пустые: redis в прогоне поднимается без пароля, а заполненные учётные данные
+    # заставили бы клиент здороваться AUTH и получать отказ.
+    echo "REDIS_HOST=$REDIS_CONTAINER"
+    echo "REDIS_NETWORK_NAME=$REDIS_CONTAINER"
+    echo "REDIS_PORT=6379"
+    echo "REDIS_PASSWORD="
+    echo "REDIS_USER="
+    echo "REDIS_USER_PASSWORD="
+    echo "MINIO_NETWORK_NAME=$MINIO_CONTAINER"
+    echo "MINIO_ENDPOINT_URL=http://$MINIO_CONTAINER:9000"
+    echo "MINIO_ROOT_USER=minioadmin"
+    echo "MINIO_ROOT_PASSWORD=minioadmin"
+    echo "MINIO_BUCKET_NAME=absolute"
+    echo "MINIO_DOCUMENTS_BUCKET=absolute-documents"
+    echo "PUBLIC_PHOTO_BASE_URL=http://localhost:9000/absolute"
   } >> "$ROOT/backend/.env"
 }
 
-start_postgres() {
-  docker rm -f "$PG_CONTAINER" >/dev/null 2>&1 || true
+# Пути для docker под Windows. MSYS переписывает всё, что похоже на путь, и портит и
+# -v, и --env-file, и контекст сборки; поэтому переписывание глушится на время вызова, а
+# путь заранее переводится в вид, который понимает Docker Desktop. На Linux и macOS
+# cygpath отсутствует и обе функции сводятся к прямому вызову docker.
+to_docker_path() {
+  if command -v cygpath >/dev/null 2>&1; then cygpath -w "$1"; else printf '%s' "$1"; fi
+}
+
+docker_run() {
+  MSYS_NO_PATHCONV=1 docker "$@"
+}
+
+build_backend_image() {
+  docker_run build -q \
+    -f "$(to_docker_path "$ROOT/infra/docker/backend.Dockerfile")" \
+    -t "$BACKEND_IMAGE" "$(to_docker_path "$ROOT")" >/dev/null
+}
+
+# Собирается из stdin: отдельный Dockerfile ради трёх строк, которые нужны только
+# локальному прогону, пришлось бы держать в репозитории и объяснять.
+build_test_image() {
+  printf '%s\n' \
+    "FROM $BACKEND_IMAGE" \
+    "COPY requirements.txt requirements-dev.txt ./" \
+    "RUN pip install --no-cache-dir -r requirements-dev.txt" \
+    | docker_run build -q -f - -t "$TEST_IMAGE" "$(to_docker_path "$ROOT/backend")" >/dev/null
+}
+
+# Каталог монтируется поверх /app: тесты и alembic в рантайм-образ не входят, а код в
+# нём — тот, что был при сборке, а не тот, что в рабочем дереве.
+run_in_backend() {
+  docker_run run --rm --network "$CI_NETWORK" \
+    -v "$(to_docker_path "$ROOT/backend")":/app \
+    -e POSTGRES_HOST="$PG_CONTAINER" -e POSTGRES_PORT=5432 \
+    --env-file "$(to_docker_path "$ROOT/backend/.env")" \
+    "$TEST_IMAGE" sh -c "$1"
+}
+
+# Postgres, Redis и MinIO поднимаются одноразовыми контейнерами, а не берутся из
+# infra/docker-compose.yml: прогон не должен трогать базу и бакеты, в которых лежит
+# рабочее состояние разработчика.
+start_services() {
+  docker rm -f "$PG_CONTAINER" "$REDIS_CONTAINER" "$MINIO_CONTAINER" >/dev/null 2>&1 || true
   docker network create "$CI_NETWORK" >/dev/null 2>&1 && NET_STARTED=1
-  docker run -d --name "$PG_CONTAINER" --network "$CI_NETWORK" \
+  PG_STARTED=1
+
+  docker_run run -d --name "$PG_CONTAINER" --network "$CI_NETWORK" \
     -e POSTGRES_USER=absolute -e POSTGRES_PASSWORD=absolute -e POSTGRES_DB=absolute \
     -p "$PG_PORT:5432" postgres:16-alpine >/dev/null || return 1
-  PG_STARTED=1
+
+  # Без пароля: приложение читает учётные данные из окружения, и пустые значения там
+  # означают ровно это соединение.
+  docker_run run -d --name "$REDIS_CONTAINER" --network "$CI_NETWORK" \
+    redis:7-alpine >/dev/null || return 1
+
+  docker_run run -d --name "$MINIO_CONTAINER" --network "$CI_NETWORK" \
+    -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+    minio/minio:latest server /data >/dev/null || return 1
+
   # Тот же health-gate, что в workflow: без него первый запрос уходит в ещё
   # поднимающуюся базу и прогон краснеет на connection refused.
   for _ in $(seq 1 30); do
-    if docker exec "$PG_CONTAINER" pg_isready -U absolute >/dev/null 2>&1; then
+    if docker exec "$PG_CONTAINER" pg_isready -U absolute >/dev/null 2>&1 \
+       && docker exec "$REDIS_CONTAINER" redis-cli ping >/dev/null 2>&1; then
       return 0
     fi
     sleep 2
   done
-  echo "postgres не поднялся за 60 секунд" >&2
+  echo "postgres или redis не поднялись за 60 секунд" >&2
   return 1
 }
 
@@ -136,41 +204,55 @@ rules() {
 # Сборка образов из прогонов backend/frontend. Без кэша GHA локально это минуты, поэтому
 # за флагом --images, а не по умолчанию.
 images() {
-  step "образ backend"  docker build -f "$ROOT/infra/docker/backend.Dockerfile" -t absolute555-backend:ci-local "$ROOT"
-  step "образ frontend" docker build -f "$ROOT/infra/docker/frontend.Dockerfile" -t absolute555-frontend:ci-local "$ROOT"
+  step "образ backend"  build_backend_image
+  step "образ frontend" docker_run build -q \
+    -f "$(to_docker_path "$ROOT/infra/docker/frontend.Dockerfile")" \
+    -t absolute555-frontend:ci-local "$(to_docker_path "$ROOT")"
 }
 
 # Бэкенд идёт в контейнере из того же Dockerfile, что едет в прод, а не в хостовом
 # Python. Дело не в чистоте: половина зависимостей — колёса под Linux, и на Windows
 # установка падает на uvloop, то есть локальный прогон бэкенда там был невозможен.
 # Контейнер заодно даёт ту же версию Python и те же системные библиотеки, что в CI.
+# Бэкенд идёт в контейнере из того же Dockerfile, что едет в прод, а не в хостовом
+# Python: половина зависимостей — колёса под Linux, и на Windows установка падает на
+# uvloop, то есть локальный прогон бэкенда там был невозможен. Контейнер заодно даёт ту
+# же версию Python и те же системные библиотеки, что в CI.
 backend() {
   command -v docker >/dev/null 2>&1 || { echo "нужен docker" >&2; return 1; }
-  start_postgres || return 1
+  start_services || return 1
   write_backend_env
 
-  step "backend: образ" docker build -q -f "$ROOT/infra/docker/backend.Dockerfile" \
-    -t "$BACKEND_IMAGE" "$ROOT"
-
-  # Тесты и alembic не входят в рантайм-образ (он ставит только requirements.txt), так
-  # что каталог монтируется поверх /app, а pytest доставляется на время прогона.
-  run_in_backend() {
-    docker run --rm --network "$CI_NETWORK" \
-      -v "$(to_docker_path "$ROOT/backend")":/app \
-      -e POSTGRES_HOST="$PG_CONTAINER" -e POSTGRES_PORT=5432 \
-      --env-file "$ROOT/backend/.env" \
-      "$BACKEND_IMAGE" sh -c "$1"
-  }
+  step "backend: образ"        build_backend_image
+  # Тестовые зависимости ставятся на сборке, а не на каждом шаге прогона: иначе это
+  # минута ожидания трижды и ещё одна причина покраснеть, никак не связанная с кодом.
+  # Рантайм-образ их не несёт намеренно — он ставит только requirements.txt.
+  step "backend: образ тестов" build_test_image
 
   step "backend: миграции"      run_in_backend "alembic upgrade head"
+  # Каталог марок — данные, без которых не проходит проверка полноты объявления: тесты,
+  # доводящие объявление до модерации, требуют существующей марки и модели.
+  step "backend: справочник"    run_in_backend "python -m app.data.seed_catalog"
   # Шаг назад и снова вперёд — как в workflow: ревизия без работающего downgrade
   # выглядит здоровой ровно до дня, когда релиз надо откатить.
   step "backend: откат ревизии" run_in_backend "alembic downgrade -1 && alembic upgrade head"
-  step "backend: тесты"         run_in_backend "pip install -q -r requirements-dev.txt && python -m pytest"
+  step "backend: тесты"         run_in_backend "python -m pytest"
+}
+
+# npm ci стирает node_modules целиком, и на Windows это регулярно упирается в EPERM:
+# файл .node держит антивирус, OneDrive или ещё живой vite. Поэтому переустановка
+# делается только когда её действительно не хватает, а при отказе есть запасной путь.
+frontend_deps() {
+  cd "$ROOT/frontend" || return 1
+  if [ -d node_modules ] && [ node_modules/.package-lock.json -nt package-lock.json ]; then
+    echo "зависимости на месте, переустановка не нужна"
+    return 0
+  fi
+  npm ci --no-audit --no-fund || npm install --no-audit --no-fund
 }
 
 frontend() {
-  ( cd "$ROOT/frontend" && npm ci ) || return 1
+  step "frontend: зависимости" frontend_deps || return 1
   step "frontend: типы"            bash -c "cd '$ROOT/frontend' && npm run typecheck"
   step "frontend: правила"         bash -c "cd '$ROOT/frontend' && npm run lint"
   step "frontend: юниты"           bash -c "cd '$ROOT/frontend' && npx vitest run"
