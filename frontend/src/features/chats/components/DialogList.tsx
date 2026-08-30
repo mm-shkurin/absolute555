@@ -22,7 +22,7 @@ export function DialogList({
           onClick={() => onSelect(dialog.id)}
         >
           <span className={styles.avatar} />
-          <span>
+          <span className={styles.dialogBody}>
             <span className={styles.dialogName}>
               {dialog.name}
               <span>{dialog.when}</span>

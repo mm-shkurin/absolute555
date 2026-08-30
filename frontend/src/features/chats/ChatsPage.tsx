@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
-import { PageHeading, PageSection } from '../../shared/ui/PageHeading'
+import { PageHeading } from '../../shared/ui/PageHeading'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { DialogList } from './components/DialogList'
 import { Conversation } from './components/Conversation'
@@ -29,7 +29,7 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
       <SiteHeader signedIn onSignIn={onSignIn} />
       <main data-testid="chats">
         <Container>
-          <PageSection>
+          <div className={styles.screen}>
             <PageHeading
               title="Чаты"
               sub="Переписка привязана к объявлению. Телефон в чат не подставляется — продавец даёт его сам, если хочет."
@@ -60,7 +60,7 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
                 ) : null}
               </div>
             ) : null}
-          </PageSection>
+          </div>
         </Container>
       </main>
     </>

@@ -1,6 +1,6 @@
 // Переписка: шапка с машиной, лента сообщений, поле ввода. Разделители дней приходят из
 // логики вместе с сообщениями — компонент про календарь ничего не знает.
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, buttonClass } from '../../../shared/ui/Button'
 import { Placeholder } from '../../../shared/ui/Placeholder'
@@ -20,6 +20,15 @@ export function Conversation({
   onBack?: () => void
 }) {
   const [draft, setDraft] = useState('')
+  const feed = useRef<HTMLDivElement>(null)
+
+  // Переписку открывают ради последней реплики, а не первой: без этого человек каждый раз
+  // прокручивает месяц разговора вниз руками.
+  useEffect(() => {
+    const element = feed.current
+    if (element) element.scrollTop = element.scrollHeight
+  }, [messages])
+
   const send = () => {
     if (!draft.trim()) return
     onSend(draft.trim())
@@ -35,7 +44,7 @@ export function Conversation({
           </button>
         ) : null}
         <Placeholder className={styles.thumb}>фото</Placeholder>
-        <div>
+        <div className={styles.headText}>
           <div className={styles.who}>{header.name}</div>
           <div className={styles.about}>{header.subtitle}</div>
         </div>
@@ -46,7 +55,7 @@ export function Conversation({
           К объявлению
         </Link>
       </div>
-      <div className={styles.body}>
+      <div className={styles.body} ref={feed}>
         {messages.map((message) =>
           message.kind === 'system' ? (
             <div key={message.id} className={styles.system}>

@@ -1,9 +1,21 @@
-/* Чат: слева диалоги, справа переписка. Фиксированная высота, а не рост по содержимому —
-   иначе поле ввода уезжает под сгиб на длинной переписке. */
+/* Экран чата занимает окно целиком: заголовок сверху, карточка растягивается на остаток.
+   Числом высоту задавать нельзя — 620px вылезали за край ноутбука и оставляли карточку
+   висеть посреди пустоты на большом мониторе. */
+.screen {
+  display: flex;
+  flex-direction: column;
+  /* Именно height, а не min-height: минимум не ограничивает сверху, и карточка растёт
+     по содержимому переписки, выталкивая поле ввода за край экрана. */
+  height: calc(100dvh - 72px);
+  min-height: 480px;
+  padding: 20px 0 24px;
+}
+
 .chat {
   display: grid;
   grid-template-columns: 320px 1fr;
-  height: 620px;
+  flex: 1;
+  min-height: 420px;
   background: var(--bg-card);
   border: 1px solid var(--border-subtle);
   border-radius: var(--radius-surface);
@@ -13,6 +25,9 @@
 .dialogs {
   border-right: 1px solid var(--border-subtle);
   overflow-y: auto;
+  /* Без этого колонка внутри сетки не сжимается ниже своего содержимого, и список
+     диалогов выпихивает карточку за нижний край экрана вместо того, чтобы прокручиваться. */
+  min-height: 0;
 }
 
 .dialog {
@@ -44,20 +59,31 @@
 
 .dialogName {
   display: flex;
+  gap: 8px;
   justify-content: space-between;
   font-weight: 700;
   font-size: 14.5px;
 }
 
 .dialogName span {
+  flex: none;
   color: var(--text-muted);
   font-size: 12px;
   font-weight: 600;
 }
 
+/* Строки диалога — блоки: имя, машина и последняя реплика стоят одна под другой. Без
+   этого они складываются в одно предложение, и «Lexus LX 570» перетекает в текст
+   сообщения — ровно то, что видно на узком экране раньше всего. */
+.dialogBody {
+  display: block;
+  min-width: 0;
+}
+
 /* Объявление названо в каждом диалоге: у одного человека может идти торг по двум машинам,
    и «Дмитрий» без машины — это два одинаковых диалога подряд. */
 .dialogListing {
+  display: block;
   margin-top: 3px;
   font-size: 12px;
   font-weight: 700;
@@ -65,6 +91,7 @@
 }
 
 .preview {
+  display: block;
   margin-top: 3px;
   font-size: 13px;
   color: var(--text-muted);
@@ -92,9 +119,16 @@
 
 /* Телефон: показывается ровно одна из двух панелей — какая, решает страница. */
 @media (max-width: 767px) {
+  .screen {
+    /* Телефон: сверху шапка 59px, снизу панель навигации 92px — экран чата живёт ровно
+       между ними, и страница не прокручивается. */
+    height: calc(100dvh - 151px);
+    min-height: 360px;
+    padding: 10px 0 6px;
+  }
   .chat {
     grid-template-columns: 1fr;
-    height: auto;
+    min-height: 320px;
   }
   .chat[data-view='list'] [data-pane='conversation'] {
     display: none;
@@ -103,4 +137,3 @@
     display: none;
   }
 }
-

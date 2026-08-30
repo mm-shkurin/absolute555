@@ -106,4 +106,3 @@ export const REVIEW_RIGHT: ReviewRightWire = {
   deal_closed_at: new Date(Date.now() - 6 * DAYS).toISOString(),
   existing_review_id: null,
 }
-
