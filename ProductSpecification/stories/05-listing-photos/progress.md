@@ -51,3 +51,13 @@
 ## Tier 2 — Infrastructure
 
 - [x] inf-02 documents already in the database move to the closed store
+
+## Отложено
+
+Разобрано в `deferred.md`. Сюда вынесены только те пункты, которые иначе выглядели бы
+как забытые.
+
+- [S] перенос старых снимков СТС из `sts_photos` в закрытый бакет — разовая задача
+- [S] удаление колонок `sts_photos` и `s3_photo_car_keys` — после переноса
+- [S] уборка сирот при падении между заливкой и коммитом — принятая деградация
+- [S] ui-01..ui-03 галереи — фронтовая полоса, `frontend-requirements.md`
