@@ -5,7 +5,6 @@
 pytest==8.3.4
 pytest-asyncio==0.25.0
 
-# Starlette 0.27's TestClient calls httpx.Client(app=...), a shortcut httpx dropped in
-# 0.28. Runtime pins httpx==0.28.1, so tests pin it back down; this line must go when
-# starlette moves past 0.28's removal.
-httpx==0.27.2
+# httpx is not pinned here any more: the runtime pin is 0.27.2 for the same reason the
+# tests needed it, and two files naming different versions is a conflict no resolver can
+# satisfy. When starlette moves past 0.28's removal, raise it in requirements.txt.
