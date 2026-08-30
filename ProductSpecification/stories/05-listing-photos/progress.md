@@ -26,28 +26,28 @@
 
 ## Tier 2 — Backend
 
-- [~] api-04 an order that does not match what is stored is refused whole
-- [ ] api-06 removing the cover promotes the next photograph
-- [ ] api-10 a refused upload leaves nothing behind
-- [ ] api-11 an upload with no files at all is refused
-- [ ] api-13 a published listing can still be rearranged
-- [ ] api-15 every photograph is stored with a smaller copy beside it
-- [ ] api-16 a listing carries its gallery in order
-- [ ] api-17 two uploads arriving together cannot overfill the gallery
-- [ ] api-18 one request cannot carry more than the gallery could ever hold
+- [x] api-04 an order that does not match what is stored is refused whole
+- [x] api-06 removing the cover promotes the next photograph
+- [x] api-10 a refused upload leaves nothing behind
+- [x] api-11 an upload with no files at all is refused
+- [x] api-13 a published listing can still be rearranged
+- [x] api-15 every photograph is stored with a smaller copy beside it
+- [x] api-16 a listing carries its gallery in order
+- [x] api-17 two uploads arriving together cannot overfill the gallery
+- [x] api-18 one request cannot carry more than the gallery could ever hold
 
 ## Tier 2 — Security
 
-- [ ] sec-02 photograph upload requires a signed-in caller
-- [ ] sec-03 the registration document is not readable by a stranger
-- [ ] sec-05 a link to the document stops working when it expires
-- [ ] sec-06 the document is not readable without a signature
+- [x] sec-02 photograph upload requires a signed-in caller
+- [x] sec-03 the registration document is not readable by a stranger
+- [x] sec-05 a link to the document stops working when it expires
+- [x] sec-06 the document is not readable without a signature
 
 ## Tier 2 — Integration
 
-- [ ] int-01 the registration document is stored apart from the gallery
-- [ ] int-02 the document is discarded once a moderator has decided
+- [x] int-01 the registration document is stored apart from the gallery
+- [x] int-02 the document is discarded once a moderator has decided
 
 ## Tier 2 — Infrastructure
 
-- [ ] inf-02 documents already in the database move to the closed store
+- [x] inf-02 documents already in the database move to the closed store

@@ -105,6 +105,7 @@ class ListingLifecycleService:
         listing = await self._move(await self.get(listing_id), SaleCarStatus.PUBLISHED)
         listing.published_at = datetime.utcnow()
         listing.reject_reason = None
+        await ListingDocumentService(self.db).discard(listing)
         await self.db.commit()
         await self._reload(listing)
         return listing
@@ -114,6 +115,8 @@ class ListingLifecycleService:
             raise RejectionNeedsReason()
         listing = await self._move(await self.get(listing_id), SaleCarStatus.REJECTED)
         listing.reject_reason = reason.strip()
+        # The scan has done its work: a moderator has now compared it with what OCR read.
+        await ListingDocumentService(self.db).discard(listing)
         await self.db.commit()
         await self._reload(listing)
         return listing
@@ -130,7 +133,7 @@ class ListingLifecycleService:
         # the next attribute read would try to lazy-load them outside the greenlet.
         await self.db.refresh(
             listing,
-            attribute_names=["status", "updated_at", "reject_reason", "published_at"],
+            attribute_names=["status", "updated_at", "reject_reason", "published_at", "sts_key"],
         )
 
     @staticmethod

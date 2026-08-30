@@ -64,3 +64,37 @@ async def test_should_index_status_so_the_baskets_stay_cheap():
         )
         names = {row[0] for row in result}
     assert "ix_sale_cars_status" in names
+
+
+@pytest.mark.parametrize("name", ["photos", "sts_key"])
+async def test_should_carry_the_columns_the_gallery_needs(name):
+    assert (await _column(name)) is not None
+
+
+async def test_should_start_a_listing_with_an_empty_gallery():
+    default = (await _column("photos"))["column_default"] or ""
+    assert "[]" in default
+
+
+async def test_should_leave_no_document_sitting_in_the_listing_row():
+    # The scans that were base64 in this table are the reason the closed bucket exists.
+    async with get_db_session() as session:
+        result = await session.execute(
+            text("SELECT count(*) FROM sale_cars WHERE sts_key IS NOT NULL AND sts_key LIKE 'data:%'")
+        )
+        assert result.scalar_one() == 0
+
+
+async def test_should_have_carried_every_old_photograph_into_the_new_shape():
+    # Only rows that predate the migration carry the retired column; everything created
+    # since leaves it empty, so comparing every row would compare the wrong ones.
+    async with get_db_session() as session:
+        result = await session.execute(
+            text(
+                "SELECT count(*) FROM sale_cars "
+                "WHERE COALESCE(json_array_length(s3_photo_car_keys), 0) > 0 "
+                "  AND jsonb_array_length(COALESCE(photos, '[]'::jsonb)) "
+                "      <> json_array_length(s3_photo_car_keys)"
+            )
+        )
+        assert result.scalar_one() == 0

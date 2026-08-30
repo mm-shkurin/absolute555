@@ -13,6 +13,7 @@ import uuid
 from typing import List, Sequence
 
 from loguru import logger
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import PhotoSettings
@@ -44,22 +45,43 @@ class ListingGalleryService:
             raise NoFilesGiven()
         self._require_editable(listing)
 
-        held = len(listing.photos or [])
-        if held + len(files) > photo_settings.max_photos_per_listing:
-            raise GalleryLimitReached(
-                limit=photo_settings.max_photos_per_listing, held=held, offered=len(files)
-            )
+        # Checked twice on purpose. Once here, so a request that could never fit is
+        # refused before a byte is uploaded; and once under a row lock below, because
+        # between the two checks another upload of the same listing may have landed.
+        self._require_room(listing, len(files), len(listing.photos or []))
 
         stored: List[str] = []
         try:
             added = [await self._store(listing, file, stored) for file in files]
+            locked = await self._lock(listing)
+            self._require_room(listing, len(files), len(locked.photos or []))
+            locked.photos = list(locked.photos or []) + added
+            await self._save(locked)
         except Exception:
             await self._discard(stored)
             raise
 
-        listing.photos = list(listing.photos or []) + added
-        await self._save(listing)
-        return listing
+        return locked
+
+    async def _lock(self, listing: SaleCars) -> SaleCars:
+        """Re-read the row for update, so two uploads cannot both see room for one more."""
+        # populate_existing, or the identity map hands back the instance this session
+        # already loaded -- with the photo list it had before the lock was taken, which
+        # is exactly the stale value the lock exists to avoid reading.
+        found = await self.db.execute(
+            select(SaleCars)
+            .where(SaleCars.sale_car_id == listing.sale_car_id)
+            .with_for_update()
+            .execution_options(populate_existing=True)
+        )
+        return found.scalar_one()
+
+    @staticmethod
+    def _require_room(listing: SaleCars, offered: int, held: int) -> None:
+        if held + offered > photo_settings.max_photos_per_listing:
+            raise GalleryLimitReached(
+                limit=photo_settings.max_photos_per_listing, held=held, offered=offered
+            )
 
     async def remove(self, listing: SaleCars, photo_id: str) -> SaleCars:
         self._require_editable(listing)

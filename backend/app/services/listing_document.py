@@ -50,8 +50,11 @@ class ListingDocumentService:
         key = listing.sts_key
         if not key:
             return
+        # The row is cleared here and committed by the caller, which owns the transaction
+        # this sits inside. Deleting the object only after that commit means a crash in
+        # between leaves an orphan rather than a listing pointing at nothing.
         listing.sts_key = None
-        await self.db.commit()
+        await self.db.flush()
         await self._discard(key)
 
     @staticmethod
