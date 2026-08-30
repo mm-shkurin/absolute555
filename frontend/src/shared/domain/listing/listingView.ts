@@ -1,8 +1,8 @@
 // Перевод объявления с провода в то, что читает человек в карточке. Чистые функции: числа
 // форматируются одинаково в ленте, в карточке и в офферах, а неразрывный пробел в цене
 // нельзя увидеть в коде — только в тесте.
-import { formatAmount, formatPrice, pluralize } from '../../../shared/format/money'
-import type { ListingWire } from '../api/listingsApi'
+import { formatAmount, formatPrice, pluralize } from '../../format/money'
+import type { ListingWire } from './listingWire'
 
 export interface ListingView {
   id: string

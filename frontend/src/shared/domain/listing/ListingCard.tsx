@@ -1,9 +1,9 @@
 // Карточка ленты. Ссылка целиком, а не карточка с кнопкой внутри: средняя кнопка мыши и
 // «открыть в новой вкладке» — обычный способ сравнивать машины.
 import { Link } from 'react-router-dom'
-import { Placeholder } from '../../../shared/ui/Placeholder'
-import { ROUTES } from '../../../shared/navigation/routes'
-import type { ListingView } from '../logic/listingView'
+import { Placeholder } from '../../ui/Placeholder'
+import { ROUTES } from '../../navigation/routes'
+import type { ListingView } from './listingView'
 import styles from './ListingCard.module.css'
 
 export function ListingCard({ listing }: { listing: ListingView }) {

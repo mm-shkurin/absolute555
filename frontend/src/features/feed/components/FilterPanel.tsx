@@ -2,7 +2,7 @@
 // `logic/feedQuery.ts`, здесь только разметка и вызовы.
 import { Button } from '../../../shared/ui/Button'
 import { toggleTransmission, type FeedQuery } from '../logic/feedQuery'
-import { countLabel } from '../logic/listingView'
+import { countLabel } from '../../../shared/domain/listing/listingView'
 import { RangePair } from './RangePair'
 import styles from './FilterPanel.module.css'
 

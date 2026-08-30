@@ -3,7 +3,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchFeed } from './api/listingsApi'
 import type { FeedQuery } from './logic/feedQuery'
-import { toListingView, type ListingView } from './logic/listingView'
+import { toListingView, type ListingView } from '../../shared/domain/listing/listingView'
 
 export interface FeedResult {
   listings: ListingView[]
