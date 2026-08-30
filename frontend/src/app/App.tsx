@@ -15,6 +15,9 @@ import { ChatsPage } from '../features/chats/ChatsPage'
 import { MyListingsPage } from '../features/myListings/MyListingsPage'
 import { ProfilePage } from '../features/profile/ProfilePage'
 import { SellerProfilePage } from '../features/sellerProfile/SellerProfilePage'
+import { ImportFeedPage } from '../features/importFeed/ImportFeedPage'
+import { ImportRequestPage } from '../features/importRequest/ImportRequestPage'
+import { SupplierPage } from '../features/supplier/SupplierPage'
 import { ROUTES } from '../shared/navigation/routes'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
@@ -43,12 +46,12 @@ export function App() {
       <Routes>
         <Route path={ROUTES.home} element={signedIn ? <FeedPage signedIn /> : <LandingPage />} />
         <Route path={ROUTES.feed} element={<FeedPage signedIn={signedIn} />} />
-        <Route path={ROUTES.importFeed} element={<Pending screen="Под заказ" />} />
+        <Route path={ROUTES.importFeed} element={<ImportFeedPage signedIn={signedIn} />} />
         <Route path={ROUTES.listing()} element={<ListingPage signedIn={signedIn} />} />
         <Route path={ROUTES.thicknessMap()} element={<ThicknessPage signedIn={signedIn} />} />
         <Route path={ROUTES.seller()} element={<SellerProfilePage signedIn={signedIn} />} />
-        <Route path={ROUTES.supplier()} element={<Pending screen="Профиль поставщика" />} />
-        <Route path={ROUTES.importRequest()} element={<Pending screen="Заявка на привоз" />} />
+        <Route path={ROUTES.supplier()} element={<SupplierPage signedIn={signedIn} />} />
+        <Route path={ROUTES.importRequest()} element={<ImportRequestPage signedIn={signedIn} />} />
 
         <Route path={ROUTES.selling} element={<SellingWizardPage />} />
         <Route path={ROUTES.myListings} element={<MyListingsPage />} />

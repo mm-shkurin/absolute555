@@ -1,0 +1,126 @@
+.top {
+  padding-top: 18px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+
+.count {
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+/* Три вида содержимого названы карточками-переключателями, а не вкладками: у каждого своя
+   подпись, объясняющая, что это вообще такое. «Заявки покупателей» без пояснения читается
+   как список чужих проблем. */
+.kinds {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin-bottom: 18px;
+}
+
+.kind {
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-card);
+  text-align: left;
+}
+
+.kind[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--bg-selected);
+}
+
+.kind b {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.kind span {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.note {
+  margin-bottom: 16px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  padding-bottom: 90px;
+}
+
+.card {
+  padding: 16px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-surface);
+}
+
+.supplierTop {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.supplierName {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.supplierBody {
+  margin-top: 12px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.requestTitle {
+  margin-top: 10px;
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.requestSpec {
+  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
+
+.requestBudget {
+  margin: 8px 0 4px;
+  font-size: 20px;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.requestMeta {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+.cardAction {
+  margin-top: 12px;
+}
+
+@media (max-width: 900px) {
+  .kinds {
+    grid-template-columns: 1fr;
+  }
+}

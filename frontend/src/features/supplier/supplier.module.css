@@ -1,0 +1,160 @@
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+  padding-top: 14px;
+}
+
+.side {
+  position: sticky;
+  top: 88px;
+}
+
+.crumbs {
+  padding-top: 18px;
+  font-family: var(--font-mono);
+  font-size: 11.5px;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+}
+
+.crumbs a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.head {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.headBody {
+  flex: 1;
+  min-width: 220px;
+}
+
+.name {
+  font-size: 24px;
+  font-weight: 800;
+}
+
+.terms {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 28px;
+  margin-top: 18px;
+}
+
+.terms div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 14.5px;
+}
+
+.terms span {
+  color: var(--text-muted);
+}
+
+.terms b {
+  font-weight: 700;
+}
+
+.about {
+  margin: 16px 0 0;
+  font-size: 15.5px;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.review {
+  display: flex;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.review:last-child {
+  border-bottom: 0;
+}
+
+.reviewName {
+  font-weight: 700;
+}
+
+.reviewStars {
+  color: var(--measure-warn);
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+
+.reviewBody {
+  margin: 4px 0 0;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.actions {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+/* Порядок работы нумерован: это последовательность, а не список свойств, и человек должен
+   видеть, на каком он шаге, когда вернётся сюда из переписки. */
+.steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: step;
+  font-size: 14.5px;
+}
+
+.steps li {
+  position: relative;
+  padding: 10px 0 10px 30px;
+  counter-increment: step;
+  line-height: 1.5;
+}
+
+.steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 10px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  color: var(--text-accent);
+  display: grid;
+  place-items: center;
+  font-size: 11.5px;
+  font-weight: 800;
+}
+
+@media (max-width: 900px) {
+  .layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  .side {
+    position: static;
+  }
+  .terms,
+  .cards {
+    grid-template-columns: 1fr;
+  }
+}

@@ -1,7 +1,6 @@
 // Шапка выдачи: канал, счётчик и сортировка. Счётчик — рядом с вкладками намеренно: он
 // относится к выбранному каналу, а не ко всей площадке.
-import { ROUTES } from '../../../shared/navigation/routes'
-import { useNavigate } from 'react-router-dom'
+import { ChannelTabs } from '../../../shared/ui/ChannelTabs'
 import type { FeedQuery, FeedSort } from '../logic/feedQuery'
 import styles from '../feed.module.css'
 
@@ -20,26 +19,9 @@ export function FeedHead({
   countText: string
   onChange: (query: FeedQuery) => void
 }) {
-  const navigate = useNavigate()
-
   return (
     <div className={styles.head} data-testid="feed-head">
-      <div className={styles.tabs}>
-        <button
-          type="button"
-          aria-pressed={query.tab === 'available'}
-          onClick={() => onChange({ ...query, tab: 'available' })}
-        >
-          В наличии
-        </button>
-        <button
-          type="button"
-          aria-pressed={query.tab === 'import'}
-          onClick={() => navigate(ROUTES.importFeed)}
-        >
-          Под заказ
-        </button>
-      </div>
+      <ChannelTabs current="available" />
       <span className={styles.count} data-testid="feed-count">
         {countText}
       </span>
