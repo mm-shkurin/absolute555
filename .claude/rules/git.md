@@ -22,7 +22,7 @@ Flow: `features/<name>` -> `dev` -> `main`.
 
 ## Current working branch
 
-**One shared working branch at a time — currently `features/listing-lifecycle`.** Do not
+**One shared working branch at a time — currently `features/listing-photos`.** Do not
 open a second branch beside it: both sessions work the same tree, and two branches over
 one tree put them on different heads.
 
@@ -35,7 +35,8 @@ Merging into `dev` from a session whose tree is dirty: push the branch to `dev` 
 (`git push origin <branch>:dev`) and update the local ref with `git fetch origin
 dev:dev`. Checking `dev` out would overwrite whatever the other session has open.
 
-Previous working branches: `features/marketplace-scope-cut` (stories 1-3, merged).
+Previous working branches: `features/marketplace-scope-cut` (stories 1-3, merged),
+`features/listing-lifecycle` (story 4, merged).
 
 The rules that still apply: one commit per story, conventional commit subjects, and no
 direct commits to `main`.
