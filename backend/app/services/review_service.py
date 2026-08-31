@@ -70,9 +70,12 @@ class ReviewService:
         await self.db.refresh(review)
         return review
 
-    async def update(
-        self, review_id: str, author_id: str, rating: Optional[int], text: Optional[str], text_given: bool
-    ) -> Review:
+    async def update(self, review_id: str, author_id: str, changes: dict) -> Review:
+        """Only the fields the author actually sent: a correction is not a rewrite.
+
+        The caller passes what was in the request rather than every field plus a flag
+        saying which of them were meant -- a flag the service could only obey blindly.
+        """
         found = await self.db.execute(
             select(Review).where(Review.review_id == as_uuid(review_id, "review_id"))
         )
@@ -84,10 +87,10 @@ class ReviewService:
         if settled is not None and datetime.utcnow() > settled:
             raise EditWindowClosed(EDIT_WINDOW_HOURS)
 
-        if rating is not None:
-            review.rating = rating
-        if text_given:
-            review.text = text or None
+        if "rating" in changes and changes["rating"] is not None:
+            review.rating = changes["rating"]
+        if "text" in changes:
+            review.text = changes["text"] or None
 
         await self.db.flush()
         await self._recount(review.seller_id)

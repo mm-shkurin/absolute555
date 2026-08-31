@@ -57,9 +57,7 @@ async def update_review(
         review = await ReviewService(db).update(
             review_id=review_id,
             author_id=str(current_user.id),
-            rating=body.rating,
-            text=body.text,
-            text_given="text" in body.model_fields_set,
+            changes=body.model_dump(exclude_unset=True),
         )
     except ReviewError as error:
         raise to_http(error)
