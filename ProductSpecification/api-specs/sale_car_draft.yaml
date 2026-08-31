@@ -108,19 +108,12 @@ components:
       description: Все поля необязательны. Поле status здесь не принимается.
       properties:
         vin: { type: string, nullable: true }
-        phone_number:
-          type: string
-          nullable: true
-          description: |
-            Только владельцу и модератору. Всем остальным null, пока они не спросят
-            телефон явно — POST /sale_car/{id}/reveal-phone (история 8).
-        seller:
-          allOf: [{ $ref: 'sale_car_feed.yaml#/components/schemas/Seller' }]
-          nullable: true
-          description: |
-            Кто продаёт: имя и аватар. Рейтинг и число сделок приезжают с историей 12.
+        phone_number: { type: string, nullable: true }
         price: { type: number, nullable: true }
         milleage: { type: number, nullable: true }
+        # Сырые написания с документа: продавец правит их так же, как остальное.
+        mark_raw: { type: string, nullable: true }
+        model_raw: { type: string, nullable: true }
         year: { type: integer, nullable: true }
         transmission: { type: string, nullable: true }
         engine_power: { type: integer, nullable: true }
@@ -152,8 +145,32 @@ components:
         engine_power: { type: integer, nullable: true }
         price: { type: number, nullable: true }
         milleage: { type: number, nullable: true }
-        phone_number: { type: string, nullable: true }
+        phone_number:
+          type: string
+          nullable: true
+          description: |
+            Только владельцу и модератору. Всем остальным null, пока они не спросят
+            телефон явно — POST /sale_car/{id}/reveal-phone (история 8).
+        seller:
+          allOf: [{ $ref: 'sale_car_feed.yaml#/components/schemas/Seller' }]
+          nullable: true
+          description: |
+            Кто продаёт: имя и аватар. Рейтинг и число сделок приезжают с историей 12.
         description: { type: string, nullable: true }
+        task_id:
+          type: string
+          nullable: true
+          description: Задача чтения СТС, поставленная в очередь при загрузке снимка.
+        task_status:
+          type: string
+          nullable: true
+          description: |
+            Словарь очереди, а не то, что показывают продавцу: для экрана есть
+            autofill.state (история 6).
+        preview_photo_url:
+          type: string
+          nullable: true
+          description: Обложка — превью первой фотографии галереи.
         photos:
           type: array
           description: |
@@ -163,7 +180,13 @@ components:
         reject_reason:
           type: string
           nullable: true
-          description: Заполнено только в статусе rejected
+          description: Текст модератора. Заполнен только в статусе rejected
+        reject_label:
+          allOf: [{ $ref: 'moderation.yaml#/components/schemas/RejectionLabel' }]
+          nullable: true
+          description: |
+            За что вернули, из пяти ярлыков. Обязателен при отклонении, в отличие от
+            текста (история 9).
         autofill:
           allOf: [{ $ref: 'sale_car_sts.yaml#/components/schemas/Autofill' }]
           description: |

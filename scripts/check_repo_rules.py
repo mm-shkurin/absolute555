@@ -8,7 +8,7 @@
 сторона храповика важнее прямой: когда нарушение чинят, скрипт требует убрать строку из
 списка — иначе список превращается в кладбище, которое никто не разбирает.
 
-Запуск: python scripts/check_repo_rules.py [--update-baseline]
+Запуск: python scripts/check_repo_rules.py [--scope back|front] [--update-baseline]
 """
 
 from __future__ import annotations
@@ -34,6 +34,32 @@ def load_config() -> dict:
     return json.loads(CONFIG.read_text(encoding="utf-8"))
 
 
+def scoped(config: dict, scope: str | None) -> dict:
+    """Оставить в конфигурации только слои запрошенной полосы.
+
+    Две сессии идут параллельно, и без этого гейт красный у обеих из-за файлов одной:
+    прогон, который всегда красный по чужой причине, перестают читать — а это худшее,
+    что может случиться с проверкой. Общий прогон по-прежнему берёт всё.
+    """
+    if not scope:
+        return config
+
+    kept = {name: layer for name, layer in config["layers"].items() if name == scope}
+    if not kept:
+        known = ", ".join(sorted(config["layers"]))
+        raise SystemExit(f"неизвестная полоса: {scope}. Есть: {known}")
+    return dict(config, layers=kept)
+
+
+def requested_scope(argv: list[str]) -> str | None:
+    for index, argument in enumerate(argv):
+        if argument == "--scope" and index + 1 < len(argv):
+            return argv[index + 1]
+        if argument.startswith("--scope="):
+            return argument.split("=", 1)[1]
+    return None
+
+
 def source_files(patterns: list[str], roots: list[str]) -> list[Path]:
     found: list[Path] = []
     for root in roots:
@@ -47,6 +73,13 @@ def source_files(patterns: list[str], roots: list[str]) -> list[Path]:
 
 def relative(path: Path) -> str:
     return path.relative_to(ROOT).as_posix()
+
+
+def _belongs(item: str, config: dict) -> bool:
+    """Относится ли строка списка к слоям этой конфигурации."""
+    name = item.split(":", 1)[0]
+    roots = [root for layer in config["layers"].values() for root in layer["code"]]
+    return any(name.startswith(root) for root in roots)
 
 
 def check_line_limit(config: dict) -> list[str]:
@@ -77,10 +110,14 @@ def check_forbidden_imports(config: dict) -> list[str]:
 
 
 def main() -> int:
-    config = load_config()
+    scope = requested_scope(sys.argv)
+    config = scoped(load_config(), scope)
     found = sorted(check_line_limit(config) + check_forbidden_imports(config))
 
     if "--update-baseline" in sys.argv:
+        if scope:
+            raise SystemExit("--update-baseline пишет список целиком; уберите --scope")
+
         BASELINE.write_text(
             json.dumps({"known": found}, ensure_ascii=False, indent=2) + "\n", encoding="utf-8"
         )
@@ -89,7 +126,11 @@ def main() -> int:
 
     known = set(json.loads(BASELINE.read_text(encoding="utf-8"))["known"]) if BASELINE.exists() else set()
     new = [item for item in found if item not in known]
-    fixed = sorted(known - set(found))
+
+    # В прогоне одной полосы про чужие нарушения ничего не известно: файлов другой полосы
+    # он не читал, и молчание о них — не признак того, что их починили.
+    mine = {item for item in known if not scope or _belongs(item, config)}
+    fixed = sorted(mine - set(found))
 
     if new:
         print("Новые нарушения правил репозитория:")

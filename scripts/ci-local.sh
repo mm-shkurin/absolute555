@@ -12,11 +12,15 @@ RUN_BACKEND=1
 RUN_FRONTEND=1
 RUN_E2E=1
 RUN_IMAGES=0
+# Быстрый круг: стек живёт между прогонами, поэтому имена постоянные, а не по PID.
+FAST=0
+SUITE=""
 PG_PORT="${PG_PORT:-55432}"
-PG_CONTAINER="absolute555-ci-pg-$$"
-REDIS_CONTAINER="absolute555-ci-redis-$$"
-MINIO_CONTAINER="absolute555-ci-minio-$$"
-CI_NETWORK="absolute555-ci-net-$$"
+STACK="$$"
+PG_CONTAINER="absolute555-ci-pg-$STACK"
+REDIS_CONTAINER="absolute555-ci-redis-$STACK"
+MINIO_CONTAINER="absolute555-ci-minio-$STACK"
+CI_NETWORK="absolute555-ci-net-$STACK"
 BACKEND_IMAGE="absolute555-backend:ci-local"
 TEST_IMAGE="absolute555-backend:ci-local-tests"
 FAILED=()
@@ -29,8 +33,15 @@ for arg in "$@"; do
     --frontend) RUN_BACKEND=0 ;;
     --no-e2e)   RUN_E2E=0 ;;
     --images)   RUN_IMAGES=1 ;;
+    --fast)     FAST=1; RUN_FRONTEND=0 ;;
+    --scope=*)  ;;
+    tests/*)    SUITE="$SUITE $arg" ;;
     -h|--help)
       echo "usage: bash scripts/ci-local.sh [--backend|--frontend] [--no-e2e] [--images]"
+      echo "       bash scripts/ci-local.sh --fast [tests/test_x.py ...]"
+      echo ""
+      echo "  --fast  круг по коду: стек и образы переиспользуются, миграции и справочник"
+      echo "          пропускаются, если база уже готова. Перед пушем — полный прогон."
       exit 0 ;;
     *) echo "неизвестный аргумент: $arg" >&2; exit 2 ;;
   esac
@@ -64,6 +75,14 @@ fmt_time() {
 }
 
 cleanup() {
+  # В быстром круге стек намеренно остаётся жить: подъём Postgres, Redis и MinIO — это
+  # и есть основное время такого прогона.
+  if [ "$FAST" = 1 ]; then
+    if [ -n "${ENV_BACKUP:-}" ] && [ -f "$ENV_BACKUP" ]; then
+      mv -f "$ENV_BACKUP" "$ROOT/backend/.env"
+    fi
+    return 0
+  fi
   if [ -n "${PG_STARTED:-}" ]; then
     docker rm -f "$PG_CONTAINER" "$REDIS_CONTAINER" "$MINIO_CONTAINER" >/dev/null 2>&1 || true
   fi
@@ -163,14 +182,31 @@ run_in_backend() {
 # Postgres, Redis и MinIO поднимаются одноразовыми контейнерами, а не берутся из
 # infra/docker-compose.yml: прогон не должен трогать базу и бакеты, в которых лежит
 # рабочее состояние разработчика.
+# Стек уже поднят и отвечает?
+stack_is_up() {
+  docker exec "$PG_CONTAINER" pg_isready -U absolute >/dev/null 2>&1 \
+    && docker exec "$REDIS_CONTAINER" redis-cli ping >/dev/null 2>&1
+}
+
 start_services() {
+  if [ "$FAST" = 1 ] && stack_is_up; then
+    echo "стек уже поднят — переиспользую"
+    PG_STARTED=1
+    return 0
+  fi
+
   docker rm -f "$PG_CONTAINER" "$REDIS_CONTAINER" "$MINIO_CONTAINER" >/dev/null 2>&1 || true
   docker network create "$CI_NETWORK" >/dev/null 2>&1 && NET_STARTED=1
   PG_STARTED=1
 
+  # Порт наружу — только у одноразового стека. Постоянный держал бы его между прогонами,
+  # и полный прогон падал бы на занятом порту, ничего не сказав про код.
+  PUBLISH=""
+  [ "$FAST" = 0 ] && PUBLISH="-p $PG_PORT:5432"
+
   docker_run run -d --name "$PG_CONTAINER" --network "$CI_NETWORK" \
     -e POSTGRES_USER=absolute -e POSTGRES_PASSWORD=absolute -e POSTGRES_DB=absolute \
-    -p "$PG_PORT:5432" postgres:16-alpine >/dev/null || return 1
+    $PUBLISH postgres:16-alpine >/dev/null || return 1
 
   # Без пароля: приложение читает учётные данные из окружения, и пустые значения там
   # означают ровно это соединение.
@@ -197,8 +233,15 @@ start_services() {
 # Гейты из прогона `rules`: чтение исходников, зависимость одна — pyyaml. Идут первыми,
 # потому что стоят минуту и ловят то, что дороже всего чинить после пуша.
 rules() {
-  step "правила репозитория" python "$ROOT/scripts/check_repo_rules.py"
+  # Полосе — её собственные правила: прогон, всегда красный по чужой причине, перестают
+  # читать. Общий прогон в CI по-прежнему берёт обе.
+  local scope=""
+  [ "$RUN_FRONTEND" = 0 ] && scope="--scope back"
+  [ "$RUN_BACKEND" = 0 ] && scope="--scope front"
+
+  step "правила репозитория" python "$ROOT/scripts/check_repo_rules.py" $scope
   step "контракт API"        python "$ROOT/scripts/check_api_contract.py"
+  step "типы фронтенда"      python "$ROOT/scripts/check_contract_types.py"
 }
 
 # Сборка образов из прогонов backend/frontend. Без кэша GHA локально это минуты, поэтому
@@ -218,6 +261,33 @@ images() {
 # Python: половина зависимостей — колёса под Linux, и на Windows установка падает на
 # uvloop, то есть локальный прогон бэкенда там был невозможен. Контейнер заодно даёт ту
 # же версию Python и те же системные библиотеки, что в CI.
+# Каталог уже залит? Тогда второй заливки не нужно: сидер идемпотентен, но стоит
+# восемь секунд на каждом круге.
+catalogue_is_seeded() {
+  docker exec "$PG_CONTAINER" psql -U absolute -d absolute -tAc \
+    "SELECT 1 FROM brands LIMIT 1" 2>/dev/null | grep -q 1
+}
+
+backend_fast() {
+  command -v docker >/dev/null 2>&1 || { echo "нужен docker" >&2; return 1; }
+  start_services || return 1
+  write_backend_env
+
+  docker image inspect "$TEST_IMAGE" >/dev/null 2>&1 || {
+    step "backend: образ"        build_backend_image
+    step "backend: образ тестов" build_test_image
+  }
+
+  step "backend: миграции" run_in_backend "alembic upgrade head"
+  if ! catalogue_is_seeded; then
+    step "backend: справочник" run_in_backend "python -m app.data.seed_catalog"
+  fi
+
+  # Без отката ревизии и без гейтов правил: круг по коду отвечает на один вопрос —
+  # проходят ли тесты. Всё остальное спрашивается полным прогоном перед пушем.
+  step "backend: тесты" run_in_backend "python -m pytest ${SUITE:-} -x -q"
+}
+
 backend() {
   command -v docker >/dev/null 2>&1 || { echo "нужен docker" >&2; return 1; }
   start_services || return 1
@@ -262,10 +332,19 @@ frontend() {
   fi
 }
 
+if [ "$FAST" = 1 ]; then
+  STACK="fast"
+  PG_CONTAINER="absolute555-ci-pg-fast"
+  REDIS_CONTAINER="absolute555-ci-redis-fast"
+  MINIO_CONTAINER="absolute555-ci-minio-fast"
+  CI_NETWORK="absolute555-ci-net-fast"
+  backend_fast || FAILED+=("backend: подготовка")
+else
 rules
 [ "$RUN_BACKEND" = 1 ]  && { backend  || FAILED+=("backend: подготовка"); }
 [ "$RUN_FRONTEND" = 1 ] && { frontend || FAILED+=("frontend: подготовка"); }
 [ "$RUN_IMAGES" = 1 ]   && images
+fi
 
 echo ""
 echo "${C_STEP}итог${C_OFF}"
@@ -283,7 +362,13 @@ printf '  шагов: %d, красных: %d, всего: %s
 
 echo ""
 if [ ${#FAILED[@]} -eq 0 ]; then
-  echo "${C_OK}CI локально зелёный — можно пушить.${C_OFF}"
+  if [ "$FAST" = 1 ]; then
+    # Быстрый круг не спрашивал про правила, контракт и откат ревизии — сказать «можно
+    # пушить» здесь значило бы выдать ответ на вопрос, который не задавали.
+    echo "${C_OK}Тесты зелёные. Перед пушем — полный прогон.${C_OFF}"
+  else
+    echo "${C_OK}CI локально зелёный — можно пушить.${C_OFF}"
+  fi
   exit 0
 fi
 echo "${C_FAIL}красное: ${FAILED[*]}${C_OFF}"

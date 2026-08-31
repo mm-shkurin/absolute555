@@ -129,7 +129,6 @@ class SaleCarResponse(BaseModel):
     published_at: Optional[datetime] = None
     created_at: Optional[datetime]
     updated_at: Optional[datetime]
-    car_data: Optional[dict] = None
     preview_photo_url: Optional[str] = None
     photos: List[Photo] = []
     autofill: Optional[Autofill] = None
