@@ -4,3 +4,4 @@ from app.models.catalog import Brand, BrandAlias, CarModel, CatalogSuggestion, M
 from app.models.sale_car import SaleCars
 from app.models.offer import Offer
 from app.models.complaint import Complaint
+from app.models.chat import Dialog, Message

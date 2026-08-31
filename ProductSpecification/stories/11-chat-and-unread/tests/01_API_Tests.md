@@ -109,7 +109,8 @@ Tier: 2
 ```gherkin
 Given a dialogue between a buyer and a seller
 When the buyer sends a message asking for it to be a system line
-Then the message is stored as an ordinary message from the buyer
+Then the request is refused
+And nothing is added to the dialogue
 ```
 
 ### 14. An empty message is refused

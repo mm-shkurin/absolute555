@@ -5,7 +5,6 @@ exactly like a cold one, and a stream that ends without saying why looks like a 
 that went away — so both are held here directly.
 """
 
-import json
 import uuid
 
 import pytest
@@ -63,11 +62,13 @@ async def test_should_keep_two_prefixes_apart(cache):
     assert (await cache.get("two", document))["which"] == "two"
 
 
-def test_should_end_the_stream_with_a_reason_when_the_listing_id_is_not_one(client):
-    with client.stream("GET", "/api/v1/task/sse/not-a-uuid") as stream:
-        assert stream.status_code == 200
-        frames = [line for line in stream.iter_lines() if line.startswith("data:")]
+def test_should_refuse_the_stream_to_a_caller_who_has_not_signed_in(client):
+    """Story 11 shut this: it used to answer anyone who could spell an identifier."""
+    assert client.get("/api/v1/task/sse/not-a-uuid").status_code == 401
 
-    assert frames, "the stream closed without saying anything"
-    first = json.loads(frames[0].removeprefix("data:").strip())
-    assert first["type"] == "error"
+
+def test_should_report_a_listing_that_is_not_one_before_opening_a_stream(client, seller):
+    response = client.get("/api/v1/task/sse/not-a-uuid", headers=seller)
+
+    assert response.status_code == 404, response.text
+    assert response.json()["code"] == "LISTING_NOT_FOUND"

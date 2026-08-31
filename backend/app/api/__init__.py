@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api import auth, user, role, task, sale_car, offer, catalog, moderation
+from app.api import auth, user, role, task, sale_car, offer, catalog, moderation, chat
 
 api_router = APIRouter()
 
@@ -11,4 +11,5 @@ api_router.include_router(sale_car.sale_car_router, prefix="/sale_car", tags=["s
 api_router.include_router(offer.offer_router, prefix="/offer", tags=["offer"])
 api_router.include_router(catalog.catalog_router, prefix="/catalog", tags=["catalog"])
 api_router.include_router(moderation.moderation_router, prefix="/moderation", tags=["moderation"])
+api_router.include_router(chat.chat_router, prefix="/chat", tags=["chat"])
 __all__ = ["api_router"]

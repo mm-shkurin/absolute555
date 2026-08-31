@@ -6,6 +6,7 @@ from sqlalchemy import select, delete, and_
 from app.core.config import OfferSettings
 from app.models.sale_car import SaleCars, SaleCarStatus
 from app.models.offer import LIVE, Offer, OfferStatus
+from app.services.offer_notices import OfferNotices
 from app.services.offer_errors import (
     DuplicatePendingOffer,
     NotOfferAuthor,
@@ -69,6 +70,11 @@ class OfferService:
             expires_at=datetime.utcnow() + timedelta(hours=offer_settings.offer_life_hours),
         )
         self.db.add(offer)
+
+        # The conversation opens with the offer rather than from the card: the talk
+        # begins with a price. A second offer on the same car joins the same room.
+        await OfferNotices(self.db).offered(car, user_id, price)
+
         await self.db.commit()
         await self.db.refresh(offer)
         return offer
@@ -169,10 +175,15 @@ class OfferService:
                 Offer.status == OfferStatus.PENDING.value,
             )
         )
-        for other in others.scalars():
+        closed = list(others.scalars())
+        for other in closed:
             # car_sold, not rejected: the seller turned nobody down, somebody else simply
             # bought the car first, and the screen says exactly that.
             other.status = OfferStatus.CAR_SOLD.value
 
         accepted.status = OfferStatus.ACCEPTED.value
         car.status = SaleCarStatus.SOLD
+
+        await OfferNotices(self.db).sold(
+            car, accepted.user_id, [other.user_id for other in closed]
+        )

@@ -16,7 +16,6 @@
     "/api/v1/listings/{}/submit",
     "/api/v1/listings/{}/thickness",
     "/api/v1/listings/{}/thickness/{}",
-    "/api/v1/moderation/complaints",
     "/api/v1/moderation/listings",
     "/api/v1/moderation/listings/{}/publish",
     "/api/v1/moderation/listings/{}/reject",
