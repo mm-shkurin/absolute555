@@ -8,8 +8,8 @@ export type RejectionLabel =
   | 'plate_or_face_visible'
   | 'photos_of_another_car'
   | 'bait_price'
+  | 'too_few_photos'
   | 'contacts_in_description'
-  | 'other'
 
 export type ComplaintReason =
   'bait_price' | 'photos_of_another_car' | 'contacts_in_description' | 'sold_already' | 'other'

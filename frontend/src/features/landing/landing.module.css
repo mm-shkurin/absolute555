@@ -77,77 +77,6 @@
   align-items: center;
 }
 
-/* Шаг и плитка — одна и та же стеклянная поверхность; отличает их только служебная метка
-   сверху. Линия-разделитель, которой они держались на белом листе, на стекле не читается. */
-.step {
-  composes: glass from './glass.module.css';
-  composes: lift from './glass.module.css';
-  padding: 24px 22px;
-}
-
-.step h3,
-.tile h3 {
-  font-size: 19px;
-  font-weight: 700;
-  margin: 0 0 8px;
-}
-
-.step p,
-.tile p {
-  margin: 0;
-  color: var(--text-secondary);
-  font-size: 15px;
-  line-height: 1.5;
-}
-
-.number {
-  display: inline-grid;
-  place-items: center;
-  width: 30px;
-  height: 30px;
-  margin-bottom: 14px;
-  border-radius: 9px;
-  background: var(--accent);
-  color: var(--text-inverse);
-  font-family: var(--font-mono);
-  font-size: 13px;
-  font-weight: 700;
-}
-
-.tile {
-  composes: glass from './glass.module.css';
-  composes: lift from './glass.module.css';
-  padding: 24px 22px;
-}
-
-.tileKey {
-  display: block;
-  margin-bottom: 10px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--text-muted);
-}
-
-.band {
-  composes: glass from './glass.module.css';
-  padding: 44px 40px;
-  border-radius: var(--radius-glass-large);
-}
-
-/* Заметка на полях: не предупреждение и не ошибка, поэтому цвет только у линии слева. */
-.note {
-  border-left: 2px solid var(--accent);
-  padding: 2px 0 2px 16px;
-  margin-top: 28px;
-  max-width: 64ch;
-  font-size: 14.5px;
-  line-height: 1.55;
-  color: var(--text-secondary);
-}
-
 .ctaRow {
   display: flex;
   gap: 12px;
@@ -177,30 +106,10 @@
     grid-template-columns: 1fr;
     gap: 24px;
   }
-  .band {
-    padding: 22px;
-    border-radius: 20px;
-  }
 }
 
 /* Кадр под текстом шага — до появления настоящих снимков экрана. */
 .shot {
   height: 120px;
   margin-top: 16px;
-}
-
-/* Внутри стеклянной плашки плитки перестают быть стеклянными: карточка в карточке —
-   запрещённая вложенность, а на стекле она ещё и мутит фон дважды. */
-.band .tile {
-  background: none;
-  border: 0;
-  box-shadow: none;
-  backdrop-filter: none;
-  -webkit-backdrop-filter: none;
-  padding: 0;
-}
-
-.band .tile:hover {
-  transform: none;
-  box-shadow: none;
 }

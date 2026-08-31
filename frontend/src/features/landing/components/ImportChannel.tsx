@@ -2,6 +2,7 @@ import { Container } from '../../../shared/ui/Container'
 import { IMPORT_TILES, SAFETY_TILES } from '../content/tiles'
 import { SectionHead, TileList } from './SectionParts'
 import styles from '../landing.module.css'
+import blocks from '../blocks.module.css'
 
 export function ImportChannel() {
   return (
@@ -29,7 +30,7 @@ export function SafetyBand() {
   return (
     <section className={`${styles.section} ${styles.tight}`} data-testid="landing-safety">
       <Container>
-        <div className={styles.band}>
+        <div className={blocks.band}>
           <SectionHead
             eyebrow="Почему безопаснее"
             title="Ни одного анонимного объявления"

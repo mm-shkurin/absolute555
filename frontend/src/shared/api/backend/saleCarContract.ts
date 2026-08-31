@@ -62,7 +62,6 @@ export interface SaleCarWire {
   published_at: string | null
   created_at: string | null
   updated_at: string | null
-  car_data: Record<string, unknown> | null
   preview_photo_url: string | null
   photos: PhotoWire[]
   autofill: AutofillWire | null

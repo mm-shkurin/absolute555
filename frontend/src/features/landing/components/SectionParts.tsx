@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { Placeholder } from '../../../shared/ui/Placeholder'
 import styles from '../landing.module.css'
+import blocks from '../blocks.module.css'
 
 export function SectionHead({
   eyebrow,
@@ -32,8 +33,8 @@ export function StepList({ steps, numbered }: { steps: Step[]; numbered?: boolea
   return (
     <div className={styles.cols3}>
       {steps.map((step, index) => (
-        <div key={step.title} className={styles.step}>
-          {numbered ? <div className={styles.number}>{`0${index + 1} —`}</div> : null}
+        <div key={step.title} className={blocks.step}>
+          {numbered ? <div className={blocks.number}>{`0${index + 1} —`}</div> : null}
           <h3>{step.title}</h3>
           <p>{step.text}</p>
           {step.shot ? <Placeholder className={styles.shot}>{step.shot}</Placeholder> : null}
@@ -53,8 +54,8 @@ export function TileList({ tiles, wide }: { tiles: Tile[]; wide?: boolean }) {
   return (
     <div className={wide ? styles.cols4 : styles.cols3}>
       {tiles.map((tile) => (
-        <div key={tile.title} className={styles.tile}>
-          {tile.key ? <span className={styles.tileKey}>{tile.key}</span> : null}
+        <div key={tile.title} className={blocks.tile}>
+          {tile.key ? <span className={blocks.tileKey}>{tile.key}</span> : null}
           <h3>{tile.title}</h3>
           <p>{tile.text}</p>
         </div>

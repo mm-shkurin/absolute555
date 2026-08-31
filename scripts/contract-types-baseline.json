@@ -1,7 +1,3 @@
 {
-  "known_drift": [
-    "moderationContract.ts: RejectionLabel допускает 'other', контракт — нет",
-    "moderationContract.ts: RejectionLabel не знает значения 'too_few_photos' из RejectionLabel",
-    "saleCarContract.ts: SaleCarWire.car_data — нет в схеме SaleCar"
-  ]
+  "known_drift": []
 }

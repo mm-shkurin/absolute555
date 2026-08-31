@@ -18,6 +18,8 @@ import {
 } from './fixtures/importing'
 import { COMPLAINTS, QUEUE, ROLE_APPLICATIONS } from './fixtures/moderation'
 import * as wire from './fixtures/wire'
+import * as chatWire from './fixtures/wireChat'
+import { mutation } from './fixtures/mutations'
 import { currentSession, endSession, startSession } from '../shared/session/authSession'
 
 const LATENCY_MS = 250
@@ -51,15 +53,15 @@ function route(url: URL, method: string): unknown {
   if (path === '/sale_car/list') return wire.feedPage(query)
   if (path === '/sale_car/user') return wire.myCars()
   if (path === '/user/profile') return wire.user()
-  if (path === '/moderation/queue') return wire.queuePage()
-  if (path === '/moderation/counts') return wire.queueCounts()
-  if (path === '/moderation/complaints') return wire.complaintPage()
-  if (path === '/chat/dialogs') return wire.dialogs()
+  if (path === '/moderation/queue') return chatWire.queuePage()
+  if (path === '/moderation/counts') return chatWire.queueCounts()
+  if (path === '/moderation/complaints') return chatWire.complaintPage()
+  if (path === '/chat/dialogs') return chatWire.dialogs()
   if (path === '/chat/unread') return { unread: 3 }
   if (path === '/offer/my') return wire.myOffers()
 
   const dialogId = match(path, /^\/chat\/dialogs\/([^/]+)\/messages$/)
-  if (dialogId) return { items: wire.messages(dialogId), total: 3, page: 1, size: 50 }
+  if (dialogId) return { items: chatWire.messages(dialogId), total: 3, page: 1, size: 50 }
 
   const offersOf = match(path, /^\/offer\/car\/([^/]+)$/)
   if (offersOf) return wire.carOffers(offersOf)
@@ -103,24 +105,6 @@ function route(url: URL, method: string): unknown {
 
 // Мутации мастера отвечают по-настоящему: черновик без идентификатора и снимок без ответа
 // уводят мастер в откат, и сценарий останавливается на первом же шаге.
-function mutation(path: string): unknown {
-  if (path === '/sale_car') return wire.saleCar('l1')
-
-  const stsFor = match(path, /^\/sale_car\/([^/]+)\/sts$/)
-  if (stsFor) {
-    return {
-      sale_car_id: stsFor,
-      autofill: { state: 'pending', brand_source: null, model_source: null, updated_at: null },
-    }
-  }
-
-  const patched = match(path, /^\/sale_car\/([^/]+)$/)
-  if (patched) return wire.saleCar(patched)
-
-  // Остальные кнопки, дошедшие до сети, не должны падать посреди клика.
-  return { ok: true }
-}
-
 function listingsCollection(query: URLSearchParams): unknown {
   if (query.get('owner') === 'me') return { items: MY_LISTINGS }
   if (query.get('channel') === 'import') {

@@ -15,97 +15,23 @@ import { StepThickness } from './components/StepThickness'
 import { StepReview } from './components/StepReview'
 import { StepSent } from './components/StepSent'
 import { useDraftState } from './useDraftState'
-import { useDraftSync } from './useDraftSync'
-import { useStsRecognition } from './useStsRecognition'
-import { useGallery } from './useGallery'
-import { submitDraft } from './api/draftApi'
-import { stageFor } from './logic/recognition'
-import { useEffect, useState } from 'react'
+import { useWizardServer } from './useWizardServer'
 import styles from './selling.module.css'
 
 export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
   const navigate = useNavigate()
   const wizard = useDraftState()
   const { draft, state } = wizard
-  // Черновик заводится на сервере при входе в мастер и досылается при каждом переходе
-  // между шагами: шаг — это законченная порция ввода, и сохранять чаще значит слать
-  // запрос на каждое нажатие клавиши.
   const { saleCarId } = useParams()
-  const sync = useDraftSync(true, saleCarId)
-  const goNext = () => {
-    void sync.save(draft)
-    wizard.goNext()
-  }
-
-  // Отправка на модерацию: сначала досылается последняя правка, иначе на проверку уедет
-  // объявление без того, что человек дописал на шаге сводки.
-  //
-  // Отказ сервера показывается текстом и НЕ переводит мастер на экран «отправлено»: чего
-  // именно не хватает, знает сервер, и молча объявить успех значит соврать продавцу.
-  const [submitError, setSubmitError] = useState<string | null>(null)
-  const submit = async () => {
-    setSubmitError(null)
-    await sync.save(draft)
-    if (!sync.saleCarId) {
-      setSubmitError('Черновик не сохранён на сервере. Проверьте связь и попробуйте ещё раз.')
-      return
-    }
-    try {
-      await submitDraft(sync.saleCarId)
-    } catch (failure) {
-      setSubmitError(failure instanceof Error ? failure.message : 'Не удалось отправить.')
-      return
-    }
-    wizard.submit()
-  }
-
-  // Поток слушается только пока идёт распознавание: держать соединение открытым на
-  // остальных шагах незачем, а сервер шлёт по нему пульс каждые тридцать секунд.
-  const recognition = useStsRecognition(sync.saleCarId, state.stage === 'recognizing')
-  const gallery = useGallery(sync.saleCarId)
-
-  // Открытый по ссылке черновик подтягивается целиком: поля, их происхождение и снимки.
-  // Без этого «Продолжить» открывало бы пустой мастер поверх уже начатого объявления.
-  useEffect(() => {
-    if (!saleCarId) return
-    void sync.reload().then((loaded) => {
-      if (loaded) wizard.applyDraft(loaded)
-    })
-    void gallery.refresh()
-    // Загрузка делается один раз на открытие: дальше состоянием владеет мастер.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [saleCarId])
+  // Весь разговор с сервером — в одном хуке: страница остаётся разметкой шести шагов.
+  const server = useWizardServer({ ...wizard, stage: state.stage }, saleCarId)
+  const goNext = () => server.saveAnd(wizard.goNext)
   // Число фотографий — это то, что лежит на сервере, а не счётчик нажатий: сводка перед
   // отправкой обязана совпадать с тем, что увидит модератор.
-  const review = { ...draft, photosCount: gallery.photos.length }
-
-  useEffect(() => {
-    if (!recognition.outcome) return
-    if (recognition.outcome === 'done') {
-      // Распознанное перечитывается из объявления целиком: там же лежит и происхождение
-      // каждого поля, а без него подставленные значения неотличимы от введённых.
-      void sync.reload().then((loaded) => {
-        if (loaded) wizard.applyDraft(loaded)
-        wizard.goStage(stageFor('done'))
-        wizard.goStep('specs')
-      })
-      return
-    }
-    wizard.goStage(stageFor(recognition.outcome))
-    // Хук возвращает шаги мастера, и они не меняются между рендерами.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recognition.outcome])
+  const review = { ...draft, photosCount: server.gallery.photos.length }
 
   const documentHandlers = {
-    onPick: (file: File) => {
-      wizard.goStage('recognizing')
-      recognition.reset()
-      void sync.attachDocument(file).then((accepted) => {
-        // Снимок не приняли — черновика на сервере нет или сеть отказала. Возвращаем на
-        // выбор файла: «распознаём» без загрузки крутилось бы вечно.
-        if (!accepted) wizard.goStage('await')
-      })
-    },
+    onPick: server.pickDocument,
     onManual: () => {
       wizard.goStage('manual')
       wizard.goStep('specs')
@@ -172,12 +98,12 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
               ) : null}
               {state.step === 'photos' ? (
                 <StepPhotos
-                  photos={gallery.photos}
-                  limit={gallery.limit}
-                  busy={gallery.busy}
-                  error={gallery.error}
-                  onAdd={(files) => void gallery.add(files)}
-                  onRemove={(photoId) => void gallery.remove(photoId)}
+                  photos={server.gallery.photos}
+                  limit={server.gallery.limit}
+                  busy={server.gallery.busy}
+                  error={server.gallery.error}
+                  onAdd={(files) => void server.gallery.add(files)}
+                  onRemove={(photoId) => void server.gallery.remove(photoId)}
                   onBack={wizard.goBack}
                   onNext={goNext}
                 />
@@ -188,10 +114,10 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
               {state.step === 'review' ? (
                 <StepReview
                   draft={review}
-                  error={submitError}
+                  error={server.submitError}
                   onBack={wizard.goBack}
                   onSaveDraft={() => navigate(ROUTES.myListings)}
-                  onSubmit={() => void submit()}
+                  onSubmit={() => void server.submitForReview()}
                   onFillThickness={() => wizard.goStep('thickness')}
                 />
               ) : null}
