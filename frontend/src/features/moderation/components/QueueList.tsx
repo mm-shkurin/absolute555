@@ -18,6 +18,7 @@ export function QueueList({
         <button
           key={row.id}
           type="button"
+          data-testid="queue-row"
           className={[styles.item, row.id === current ? styles.current : ''].join(' ')}
           onClick={() => onSelect(row.id)}
         >

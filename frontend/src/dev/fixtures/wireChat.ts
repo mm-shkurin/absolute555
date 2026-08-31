@@ -11,8 +11,10 @@ import { CHATS, MESSAGES } from './rest'
 import { COMPLAINTS, QUEUE } from './moderation'
 import { toCard, VIEWER_ID } from './wire'
 
-export function queuePage(): QueuePageWire {
-  const items = QUEUE.map((item, index) => ({
+/** Вкладка меняет выдачу, а не только число на кнопке: одинаковый список на трёх
+ *  вкладках скрыл бы, что параметр `tab` до сервера не доезжает. */
+export function queuePage(tab: string): QueuePageWire {
+  const all = QUEUE.map((item, index) => ({
     ...toCard(FEED[index % FEED.length]),
     sale_car_id: item.listing_id,
     status: 'moderation' as const,
@@ -20,6 +22,12 @@ export function queuePage(): QueuePageWire {
     open_complaints: item.complaints_count,
     submitted_at: item.submitted_at,
   }))
+  const items =
+    tab === 'complained'
+      ? all.filter((item) => item.open_complaints > 0)
+      : tab === 'handled_today'
+        ? []
+        : all
   return { items, total: items.length, page: 1, size: 20 }
 }
 

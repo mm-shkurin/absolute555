@@ -7,16 +7,24 @@ import type {
   ComplaintWire,
   QueueCountsWire,
   QueuePageWire,
+  RejectionLabel,
 } from './moderationContract'
 import type { StatusChangedWire } from './saleCarContract'
+
+/** Вкладки очереди — значения сервера, не экрана: перевод живёт в фиче. */
+export type QueueTabWire = 'waiting' | 'complained' | 'handled_today'
 
 interface Page {
   page?: number
   size?: number
+  tab?: QueueTabWire
+  status?: 'open' | 'handled'
 }
 
-function paged(path: string, { page, size }: Page): string {
+function paged(path: string, { page, size, tab, status }: Page): string {
   const params = new URLSearchParams()
+  if (tab !== undefined) params.set('tab', tab)
+  if (status !== undefined) params.set('status', status)
   if (page !== undefined) params.set('page', String(page))
   if (size !== undefined) params.set('size', String(size))
   const query = params.toString()
@@ -45,9 +53,13 @@ export function dismissComplaint(complaintId: string) {
 }
 
 /** Снять с публикации по жалобе — не то же самое, что отклонить черновик: карточка уже
- *  была видна людям, и продавец узнаёт об этом постфактум. */
-export function unpublishListing(saleCarId: string) {
-  return send<StatusChangedWire>(BACKEND.moderation.unpublish(saleCarId), { method: 'POST' })
+ *  была видна людям, и продавец узнаёт об этом постфактум. Причина обязательна по той же
+ *  причине, что и при отклонении: без ярлыка продавец не знает, что править. */
+export function unpublishListing(saleCarId: string, label: RejectionLabel, comment?: string) {
+  return send<StatusChangedWire>(BACKEND.moderation.unpublish(saleCarId), {
+    method: 'POST',
+    body: comment?.trim() ? { label, comment: comment.trim() } : { label },
+  })
 }
 
 /** Пожаловаться на объявление. Одна жалоба на человека и объявление — повторную сервер

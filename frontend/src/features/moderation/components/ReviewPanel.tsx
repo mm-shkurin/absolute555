@@ -5,28 +5,31 @@ import { Link } from 'react-router-dom'
 import { Button, buttonClass } from '../../../shared/ui/Button'
 import { Placeholder } from '../../../shared/ui/Placeholder'
 import { ROUTES } from '../../../shared/navigation/routes'
-import { REJECTION_REASONS, type ReviewCardView } from '../logic/queueView'
+import { REJECTION_REASONS } from '../../../shared/domain/moderationReasons'
+import type { RejectionLabel } from '../../../shared/api/backend/moderationContract'
+import type { ReviewCardView } from '../logic/queueView'
 import styles from '../moderation.module.css'
 
 export function ReviewPanel({
   card,
   listingId,
+  busy,
+  readOnly,
   onPublish,
   onReject,
 }: {
   card: ReviewCardView
   listingId: string
+  busy?: boolean
+  readOnly?: boolean
   onPublish: () => void
-  onReject: (reasons: string[], comment: string) => void
+  onReject: (label: RejectionLabel, comment: string) => void
 }) {
   const [rejecting, setRejecting] = useState(false)
-  const [reasons, setReasons] = useState<string[]>([])
+  // Ярлык один: сервер принимает одну причину, и множественный выбор обещал бы продавцу
+  // разбор, которого он не получит.
+  const [label, setLabel] = useState<RejectionLabel | null>(null)
   const [comment, setComment] = useState('')
-
-  const toggle = (reason: string) =>
-    setReasons((current) =>
-      current.includes(reason) ? current.filter((item) => item !== reason) : [...current, reason],
-    )
 
   return (
     <aside className={styles.review} data-testid="review-panel">
@@ -46,28 +49,30 @@ export function ReviewPanel({
         ))}
       </div>
 
-      <div className={styles.actions}>
-        <Button block onClick={onPublish}>
+      {/* Разобранное показывается без кнопок: решение уже принято, и повторить его
+          нельзя — сервер отвечает на второе решение отказом, а не тишиной. */}
+      <div className={styles.actions} hidden={readOnly}>
+        <Button block disabled={busy} onClick={onPublish}>
           Опубликовать
         </Button>
-        <Button tone="ghost" block onClick={() => setRejecting((value) => !value)}>
+        <Button tone="ghost" block disabled={busy} onClick={() => setRejecting((value) => !value)}>
           Отклонить с причиной
         </Button>
       </div>
 
-      {rejecting ? (
+      {rejecting && !readOnly ? (
         <div className={styles.rejection} data-testid="rejection-form">
           <div className={styles.label}>Причина отклонения — обязательна</div>
           <div className={styles.chips}>
             {REJECTION_REASONS.map((reason) => (
               <button
-                key={reason}
+                key={reason.value}
                 type="button"
                 className={styles.chip}
-                aria-pressed={reasons.includes(reason)}
-                onClick={() => toggle(reason)}
+                aria-pressed={label === reason.value}
+                onClick={() => setLabel(reason.value)}
               >
-                {reason}
+                {reason.text}
               </button>
             ))}
           </div>
@@ -78,11 +83,7 @@ export function ReviewPanel({
             placeholder="Что именно поправить. Текст увидит продавец."
           />
           <div className={styles.actions}>
-            <Button
-              block
-              disabled={reasons.length === 0}
-              onClick={() => onReject(reasons, comment)}
-            >
+            <Button block disabled={busy || label === null} onClick={() => label && onReject(label, comment)}>
               Отклонить и отправить причину
             </Button>
             <Button tone="ghost" block onClick={() => setRejecting(false)}>

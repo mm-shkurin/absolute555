@@ -1,5 +1,7 @@
 // Карточка объявления. Три состояния смотрящего — гость, покупатель, продано — различаются
 // только правой колонкой; левая одинакова, потому что машина от этого не меняется.
+import { useState } from 'react'
+import { useMutation } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
@@ -8,6 +10,9 @@ import { ListingBody } from './components/ListingBody'
 import { MobileActionBar, SidePanel, type SideHandlers } from './components/SidePanel'
 import { OwnerPanel } from './components/OwnerPanel'
 import { ListingFailure, ListingSkeleton } from './components/ListingStates'
+import { ComplainSheet } from './components/ComplainSheet'
+import { complain } from '../../shared/api/backend/moderationApi'
+import type { ComplaintReason } from '../../shared/api/backend/moderationContract'
 import { useListing } from './useListing'
 import styles from './listing.module.css'
 
@@ -15,13 +20,24 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
   const navigate = useNavigate()
   const { listingId = '' } = useParams()
   const listing = useListing(listingId, signedIn, new Date())
+  const [complaining, setComplaining] = useState(false)
+
+  // Повторная жалоба и жалоба на своё объявление — ответ сервера, а не поломка экрана:
+  // текст отказа показывается в шторке, и она остаётся открытой.
+  const complaint = useMutation({
+    mutationFn: ({ reason, text }: { reason: ComplaintReason; text: string }) =>
+      complain(listingId, reason, text),
+  })
 
   const handlers: SideHandlers = {
     onOffer: () => undefined,
     onMessage: () => undefined,
     onShowPhone: () => undefined,
     onSignIn: () => onSignIn?.(),
-    onComplain: () => undefined,
+    onComplain: () => {
+      complaint.reset()
+      setComplaining(true)
+    },
   }
 
   return (
@@ -63,6 +79,15 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
       </main>
       {listing.view && listing.mode !== 'owner' ? (
         <MobileActionBar mode={listing.mode} handlers={handlers} />
+      ) : null}
+      {complaining ? (
+        <ComplainSheet
+          busy={complaint.isPending}
+          failure={(complaint.error as Error | null)?.message ?? null}
+          sent={complaint.isSuccess}
+          onClose={() => setComplaining(false)}
+          onSend={(reason, text) => complaint.mutate({ reason, text })}
+        />
       ) : null}
     </>
   )

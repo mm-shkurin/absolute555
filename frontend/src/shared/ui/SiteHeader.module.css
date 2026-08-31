@@ -82,6 +82,31 @@
   gap: 10px;
 }
 
+.chats {
+  position: relative;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Бейдж на шапке, а не только в нижней панели: панель — телефонная, и на широком экране
+   непрочитанные иначе не видны нигде. */
+.unread {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 17px;
+  padding: 1px 4px;
+  border-radius: 9px;
+  background: var(--status-bad-ink);
+  color: var(--bg-card);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
 .avatar {
   width: 38px;
   height: 38px;

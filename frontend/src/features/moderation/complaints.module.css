@@ -76,3 +76,16 @@
   flex-wrap: wrap;
   margin-top: 16px;
 }
+
+.reasons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.reasonsLabel {
+  flex-basis: 100%;
+  color: var(--text-muted);
+  font-size: 13px;
+}

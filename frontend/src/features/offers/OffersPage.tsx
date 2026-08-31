@@ -10,7 +10,7 @@ import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListSt
 import { ROUTES } from '../../shared/navigation/routes'
 import { OfferRow } from './components/OfferRow'
 import type { OfferDirection } from './api/offersApi'
-import type { OfferAction } from './logic/offerRows'
+import type { OfferAction, OfferRowView } from './logic/offerRows'
 import { useOffers } from './useOffers'
 import styles from './offers.module.css'
 
@@ -19,10 +19,12 @@ export function OffersPage({ onSignIn }: { onSignIn?: () => void }) {
   const [direction, setDirection] = useState<OfferDirection>('incoming')
   const offers = useOffers(direction, new Date())
 
-  // Принять, отклонить, отозвать и оставить отзыв — мутации; они появятся вместе с
-  // подключением бэкенда. Переходы работают уже сейчас.
-  const onAction = (action: OfferAction['id']) => {
-    if (action === 'chat' || action === 'message') navigate(ROUTES.chats)
+  // Отзыв о сделке — история 12; остальные действия уже обслуживаются сервером.
+  const onAction = (action: OfferAction['id'], offer: OfferRowView) => {
+    if (action === 'chat' || action === 'message') return navigate(ROUTES.chats)
+    if (action === 'accept') return offers.decide('accept', offer.id)
+    if (action === 'reject') return offers.decide('reject', offer.id)
+    if (action === 'withdraw') return offers.decide('withdraw', offer.id)
   }
 
   return (
@@ -57,7 +59,7 @@ export function OffersPage({ onSignIn }: { onSignIn?: () => void }) {
               </EmptyNotice>
             ) : null}
             {offers.rows.map((offer) => (
-              <OfferRow key={offer.id} offer={offer} onAction={onAction} />
+              <OfferRow key={offer.id} offer={offer} busy={offers.deciding} onAction={onAction} />
             ))}
             {direction === 'incoming' && offers.rows.length > 0 ? (
               <p className={styles.note}>

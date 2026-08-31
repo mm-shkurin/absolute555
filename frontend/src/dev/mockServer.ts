@@ -53,7 +53,7 @@ function route(url: URL, method: string): unknown {
   if (path === '/sale_car/list') return wire.feedPage(query)
   if (path === '/sale_car/user') return wire.myCars()
   if (path === '/user/profile') return wire.user()
-  if (path === '/moderation/queue') return chatWire.queuePage()
+  if (path === '/moderation/queue') return chatWire.queuePage(query.get('tab') ?? 'waiting')
   if (path === '/moderation/counts') return chatWire.queueCounts()
   if (path === '/moderation/complaints') return chatWire.complaintPage()
   if (path === '/chat/dialogs') return chatWire.dialogs()

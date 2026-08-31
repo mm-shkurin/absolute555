@@ -10,9 +10,11 @@ import styles from './OfferRow.module.css'
 
 export function OfferRow({
   offer,
+  busy,
   onAction,
 }: {
   offer: OfferRowView
+  busy?: boolean
   onAction: (action: OfferAction['id'], offer: OfferRowView) => void
 }) {
   return (
@@ -33,6 +35,7 @@ export function OfferRow({
                 key={action.id}
                 size="small"
                 tone={action.primary ? 'solid' : 'ghost'}
+                disabled={busy}
                 onClick={() => onAction(action.id, offer)}
               >
                 {action.label}

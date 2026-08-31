@@ -2,6 +2,7 @@
 // того, вошёл человек или нет: остальное публично, и гость видит те же разделы.
 import { NavLink, Link } from 'react-router-dom'
 import { ROUTES } from '../navigation/routes'
+import { useUnreadMessages } from '../session/useUnread'
 import { Button, ButtonLink } from './Button'
 import { Container } from './Container'
 import { ThemeToggle } from './ThemeToggle'
@@ -24,6 +25,11 @@ export function SiteHeader({
   onSignIn?: () => void
   floating?: boolean
 }) {
+  // Число непрочитанных читает сама шапка: панель внизу живёт только на телефоне, и на
+  // широком экране бейдж иначе не появляется нигде. Прокинуть его пропом через каждый
+  // экран значит забыть его ровно там, где новый экран добавят завтра.
+  const unread = useUnreadMessages()
+
   return (
     <header
       className={[styles.header, floating ? styles.floating : ''].filter(Boolean).join(' ')}
@@ -49,6 +55,16 @@ export function SiteHeader({
         <span className={styles.spacer} />
         <div className={styles.actions}>
           <ThemeToggle />
+          {signedIn ? (
+            <Link to={ROUTES.chats} className={styles.chats} aria-label="Чаты">
+              Чаты
+              {unread > 0 ? (
+                <span className={styles.unread} data-testid="header-unread">
+                  {unread > 9 ? '9+' : unread}
+                </span>
+              ) : null}
+            </Link>
+          ) : null}
           {signedIn ? (
             <Link to={ROUTES.profile} className={styles.avatar} aria-label="Профиль" />
           ) : (

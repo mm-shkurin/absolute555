@@ -66,14 +66,29 @@ import {
   fetchQueue as fetchQueuePage,
   fetchCounts,
   fetchComplaints as fetchComplaintPage,
+  dismissComplaint as dismissComplaintCall,
+  unpublishListing as unpublishListingCall,
+  type QueueTabWire,
 } from '../../../shared/api/backend/moderationApi'
+import {
+  approveListing as approveListingCall,
+  rejectListing as rejectListingCall,
+} from '../../../shared/api/backend/saleCarApi'
 import type {
   ComplaintGroupWire,
   QueueItemWire as WireQueueItem,
+  RejectionLabel,
 } from '../../../shared/api/backend/moderationContract'
+import { complaintReasonText } from '../../../shared/domain/moderationReasons'
 
-// Очередь на сервере одна: объявления, ждущие проверки. Вкладка «жалобы» — своя выдача,
-// а «сделано» сервер не хранит вовсе, поэтому она пуста, а не выдумана.
+// Вкладки экрана и вкладки сервера названы по-разному: экран говорит о работе модератора,
+// сервер — о состоянии объявления. Перевод здесь, чтобы имя с провода не расползлось.
+const TAB: Record<QueueTab, QueueTabWire> = {
+  pending: 'waiting',
+  flagged: 'complained',
+  done: 'handled_today',
+}
+
 function toQueueItem(item: WireQueueItem): QueueItemWire {
   return {
     id: item.sale_car_id,
@@ -103,11 +118,11 @@ export async function fetchQueue(
   signal?: AbortSignal,
 ): Promise<{ items: QueueItemWire[]; pending: number; flagged: number; done_today: number }> {
   const [page, counts] = await Promise.all([
-    tab === 'pending' ? fetchQueuePage({}, signal) : Promise.resolve(null),
+    fetchQueuePage({ tab: TAB[tab] }, signal),
     fetchCounts(signal),
   ])
   return {
-    items: (page?.items ?? []).map(toQueueItem),
+    items: page.items.map(toQueueItem),
     pending: counts.waiting,
     flagged: counts.complained,
     done_today: counts.handled_today,
@@ -128,7 +143,7 @@ function toComplaintCase(group: ComplaintGroupWire): ComplaintCaseWire {
       id: complaint.complaint_id,
       author_name: complaint.author?.name ?? '',
       created_at: complaint.created_at,
-      reason: complaint.reason,
+      reason: complaintReasonText(complaint.reason),
       body: complaint.text ?? '',
     })),
   }
@@ -147,4 +162,20 @@ export async function fetchRoleApplications(
   signal?: AbortSignal,
 ): Promise<{ items: RoleApplicationWire[] }> {
   return send(API.moderation.roleApplications, { signal })
+}
+
+export function approveListing(saleCarId: string) {
+  return approveListingCall(saleCarId)
+}
+
+export function rejectListing(saleCarId: string, label: RejectionLabel, comment?: string) {
+  return rejectListingCall(saleCarId, label, comment)
+}
+
+export function dismissComplaint(complaintId: string) {
+  return dismissComplaintCall(complaintId)
+}
+
+export function unpublishListing(saleCarId: string, label: RejectionLabel, comment?: string) {
+  return unpublishListingCall(saleCarId, label, comment)
 }

@@ -1,6 +1,11 @@
 // Офферы обеих сторон одним запросом с параметром направления: экран переключает вкладку
 // мгновенно, а два разных пути к одному списку разошлись бы в форме ответа.
-import { fetchMyOffers, fetchOffersForCar } from '../../../shared/api/backend/offerApi'
+import {
+  answerOffer,
+  fetchMyOffers,
+  fetchOffersForCar,
+  withdrawOffer,
+} from '../../../shared/api/backend/offerApi'
 import type {
   OfferStatus,
   OfferWire as BackendOffer,
@@ -91,3 +96,13 @@ export async function fetchOffers(
     outgoing_total: direction === 'outgoing' ? items.length : 0,
   }
 }
+
+export function acceptOffer(offerId: string) {
+  return answerOffer(offerId, 'accepted')
+}
+
+export function rejectOffer(offerId: string) {
+  return answerOffer(offerId, 'rejected')
+}
+
+export { withdrawOffer }
