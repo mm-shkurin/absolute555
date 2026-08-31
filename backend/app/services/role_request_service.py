@@ -23,6 +23,13 @@ class RoleRequestService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
+    async def get_user_by_id(self, id: UUID) -> Optional[Users]:
+        """The applicant. Left behind in RoleService when this class was split out of it,
+        which made both call sites below raise AttributeError -- every application, and
+        every approval of one."""
+        result = await self.db.execute(select(Users).where(Users.id == id))
+        return result.scalar_one_or_none()
+
     async def create_role_request(self, user_id: UUID, request_data: RoleRequestCreate) -> RoleRequest:
 
         user = await self.get_user_by_id(user_id)
