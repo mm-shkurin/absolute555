@@ -39,7 +39,12 @@ class OfferResponse(BaseModel):
     status: OfferStatusEnum
     expires_at: datetime | None = None
     created_at: datetime
-    updated_at: datetime | None = None  
+    updated_at: datetime | None = None
+
+    # Only meaningful on one's own offers: the review is left by the buyer, so a seller
+    # reading offers received always sees both empty.
+    can_review: bool = False
+    review_id: UUID4 | None = None
 
     model_config = {
         "from_attributes": True  

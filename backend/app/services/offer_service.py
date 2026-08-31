@@ -6,6 +6,7 @@ from sqlalchemy import select, and_
 from app.core.config import OfferSettings
 from app.models.sale_car import SaleCars, SaleCarStatus
 from app.models.offer import LIVE, Offer, OfferStatus
+from app.models.users import Users
 from app.services.offer_notices import OfferNotices
 from app.services.offer_errors import (
     DuplicatePendingOffer,
@@ -183,6 +184,13 @@ class OfferService:
 
         accepted.status = OfferStatus.ACCEPTED.value
         car.status = SaleCarStatus.SOLD
+
+        # The deal counter moves here rather than being counted per read: the number sits
+        # beside the rating on every card, and an accepted offer is the only thing that
+        # moves it (story 12).
+        seller = await self.db.get(Users, car.user_id)
+        if seller is not None:
+            seller.deals_count = (seller.deals_count or 0) + 1
 
         await OfferNotices(self.db).sold(
             car, accepted.user_id, [other.user_id for other in closed]

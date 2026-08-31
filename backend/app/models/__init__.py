@@ -5,3 +5,4 @@ from app.models.sale_car import SaleCars
 from app.models.offer import Offer
 from app.models.complaint import Complaint
 from app.models.chat import Dialog, Message
+from app.models.review import Review

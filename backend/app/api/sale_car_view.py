@@ -70,7 +70,14 @@ def seller_view(owner) -> Optional[dict]:
     name = " ".join(
         part for part in (profile.get("first_name"), profile.get("last_name")) if part
     ).strip()
-    return {"user_id": owner.id, "name": name or None, "avatar_url": None}
+    return {
+        "user_id": owner.id,
+        "name": name or None,
+        "avatar_url": None,
+        "rating": owner.rating_avg,
+        "reviews_count": owner.reviews_count or 0,
+        "deals_count": owner.deals_count or 0,
+    }
 
 
 async def to_view(listing: SaleCars, viewer=None) -> dict:

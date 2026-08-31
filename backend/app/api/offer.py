@@ -16,6 +16,8 @@ from app.schemas.offer import (
 from app.core.exceptions import AuthorizationError, ResourceNotFoundError
 from app.services.offer_errors import OfferError
 from app.api.offer_http import to_http
+from app.api.review_view import offer_view
+from app.services.review_service import ReviewService
 from app.utils.security import get_current_user
 from app.permissions.dependencies import require_permission
 from app.permissions.guests import check_guest_car_limit, forbid_guest
@@ -47,11 +49,25 @@ async def get_my_offers(
     current_user: Users = Depends(get_current_user)
 ):
     """Two tabs, two queries: an offer carries the buyer and not the seller, so one
-    combined list could not be split by the client that received it."""
+    combined list could not be split by the client that received it.
+
+    An offer of one's own also says whether the deal it closed may be reviewed, and which
+    review already stands: the screen draws one button from those two answers.
+    """
     service = OfferService(db)
     if side == "received":
-        return await service.get_offers_received(str(current_user.id))
-    return await service.get_offers_by_user(str(current_user.id))
+        return [offer_view(offer, None, False) for offer in await service.get_offers_received(str(current_user.id))]
+
+    offers = await service.get_offers_by_user(str(current_user.id))
+    written = await ReviewService(db).reviews_by_offer([offer.offer_id for offer in offers])
+    return [
+        offer_view(
+            offer,
+            written.get(str(offer.offer_id)),
+            offer.status == OfferStatusEnum.ACCEPTED.value,
+        )
+        for offer in offers
+    ]
 
 
 @offer_router.post("/{offer_id}/withdraw", response_model=OfferResponse)

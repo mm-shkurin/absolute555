@@ -1,7 +1,7 @@
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 import uuid
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, String, Text, Enum, func
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text, Enum, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import declarative_base
 from datetime import datetime
@@ -23,6 +23,14 @@ class Users(BaseModel):
     role = Column(String, default=UserRole.USER.value, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     is_guest = Column(Boolean, default = False)
+    # The aggregate lives on the seller rather than being averaged per read: it is shown
+    # on every card of the feed, on every row of the moderation queue and on the profile,
+    # and an AVG subquery per row is a query per card. Recalculated in the transaction
+    # that writes the review.
+    rating_avg = Column(Float, nullable=True)
+    reviews_count = Column(Integer, default=0, nullable=False, server_default="0")
+    deals_count = Column(Integer, default=0, nullable=False, server_default="0")
+
     role_requests = relationship("RoleRequest", foreign_keys="RoleRequest.user_id", back_populates="user")
     offers = relationship("Offer", back_populates="user", cascade="all, delete-orphan")
     

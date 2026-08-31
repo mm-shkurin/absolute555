@@ -86,6 +86,14 @@ class Seller(BaseModel):
     name: Optional[str] = None
     avatar_url: Optional[str] = None
 
+    # The aggregate travels with the seller block wherever it appears -- the card, the
+    # moderation row -- rather than through a call of its own: three numbers do not earn
+    # a request per screen. None rather than 0 for an unrated seller: a zero reads as a
+    # rating of zero rather than as no ratings.
+    rating: Optional[float] = None
+    reviews_count: int = 0
+    deals_count: int = 0
+
 
 class PhoneRevealed(BaseModel):
     phone_number: str

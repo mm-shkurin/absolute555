@@ -27,6 +27,8 @@
 | `PATCH /offer/{id}/status` | ответ на предложение | `offerApi.answerOffer` |
 | `GET /role/*`, `PUT /role/users/{id}/role`, заявки на роль | роли и заявки | `accountApi` |
 | `GET /task/sse/{id}` | `text/event-stream` о распознавании | `listingStream.openListingStream` |
+| `POST /offer/{id}/review`, `PATCH /review/{id}` | отзыв по закрытой сделке | клиента ещё нет |
+| `GET /seller/{id}`, `/seller/{id}/reviews`, `/seller/{id}/listings` | публичный профиль продавца | клиента ещё нет |
 
 ## Расхождения с тем, что фронт уже предполагает
 
