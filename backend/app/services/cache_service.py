@@ -89,6 +89,26 @@ class CacheService:
             logger.warning(f"Failed to delete from cache: {e}")
             return False
     
+    async def take(self, prefix: str, document_id: str) -> Optional[Dict[str, Any]]:
+        """Read a key and delete it in the same round trip.
+
+        A get followed by a delete is two round trips, and a single-use token read on two
+        instances between them is used twice. GETDEL is what makes "once" mean once.
+        """
+        if not self.redis_client:
+            return None
+
+        try:
+            key = self._get_key(prefix, document_id)
+            loop = asyncio.get_event_loop()
+            taken = await loop.run_in_executor(None, self.redis_client.getdel, key)
+            if taken:
+                return json.loads(taken)
+        except Exception as e:
+            logger.warning(f"Failed to take from cache: {e}")
+
+        return None
+
     async def delete_many(self, prefix: str, document_ids: list[str]) -> int:
        
         if not self.redis_client or not document_ids:

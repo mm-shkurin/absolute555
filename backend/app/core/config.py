@@ -81,6 +81,26 @@ class YandexSettings(BaseSettings):
     yandex_redirect_uri_web: HttpUrl = Field(..., alias="YANDEX_REDIRECT_URI_WEB")
     model_config = BaseConfig.model_config
 
+class OAuthSettings(BaseSettings):
+    """The sign-in handshake, apart from the provider's own credentials.
+
+    `oauth_provider` is `fake` in tests: the flow's own rules -- a state good once, a
+    handoff code good once, an account created on first sign-in -- are the subject, and
+    they cannot be exercised against a provider that requires a browser and a human.
+    """
+
+    oauth_provider: str = Field(default="yandex", alias="OAUTH_PROVIDER")
+    oauth_frontend_callback_url: str = Field(
+        default="http://localhost:3000/auth/callback", alias="OAUTH_FRONTEND_CALLBACK_URL"
+    )
+    # Minutes, not hours: a state is alive only while a person is on the provider's
+    # consent screen, and a handoff code only while the browser is being redirected back.
+    oauth_state_ttl_seconds: int = Field(default=600, alias="OAUTH_STATE_TTL_SECONDS")
+    oauth_handoff_ttl_seconds: int = Field(default=120, alias="OAUTH_HANDOFF_TTL_SECONDS")
+
+    model_config = BaseConfig.model_config
+
+
 # VKSettings lived here. VK OAuth left the repository with its router: the flow needs a
 # VK business account this project does not have, so the settings only demanded secrets
 # for a provider nothing could call.

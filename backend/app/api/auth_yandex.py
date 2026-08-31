@@ -1,125 +1,97 @@
-"""Yandex OAuth, in two flavours.
+"""Yandex ID sign-in: start, callback, exchange.
 
-The mobile client and the web client are given different redirect URIs, which is why
-there are two SSO objects and two pairs of routes rather than one parameterised pair.
+The browser never carries a session token. The callback hands the frontend a one-time
+handoff code in the redirect and the frontend trades it for a token pair over POST — a
+redirect carrying the token itself would leave it in the browser's history and in the
+referer of whatever the page loads next.
+
+The state is minted here before the browser leaves and required back on the callback: it
+is what stops a callback forged by someone else from signing a victim into an account
+they control.
 """
 
 import json
 
-from fastapi import APIRouter, Depends
-
-from app.core.exceptions import AuthenticationError, BaseErrorApp, ExternalServiceError
-from fastapi.requests import Request
+from fastapi import APIRouter, Body, Depends
 from fastapi.responses import RedirectResponse
-from fastapi_sso.sso.yandex import YandexSSO
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
+from urllib.parse import urlencode
 
-from app.core.config import CookieSettings, FrontendSettings, JWTSettings, YandexSettings
+from app.core.config import OAuthSettings
+from app.core.exceptions import AuthenticationError
 from app.db.database import get_db
 from app.schemas.token import Token
+from app.services.oauth_provider import OAuthFailed, provider_for
+from app.services.oauth_store import OAuthStore
 from app.services.user_service import UserService
 from app.utils.security import create_access_token, create_refresh_token
-from app.utils.yandex_auth import verify_yandex_user, yandex_auth
 
 yandex_router = APIRouter()
-yandex_auth_settings = YandexSettings()
-jwt_settings = JWTSettings()
-cookie_settings = CookieSettings()
-frontend_settings = FrontendSettings()
+oauth_settings = OAuthSettings()
 
-yandex_sso = YandexSSO(
-    client_id=yandex_auth_settings.yandex_clientid,
-    client_secret=yandex_auth_settings.yandex_client_secret,
-    redirect_uri=yandex_auth_settings.yandex_redirect_uri,
-    scope=["login:info", "login:avatar"] 
-)
 
-@yandex_router.get("/yandex/login")
-async def yandex_login():
-    async with yandex_sso:
-        return await yandex_sso.get_login_redirect()
+@yandex_router.get("/oauth/yandex/start")
+async def start_yandex_sign_in():
+    provider = provider_for()
+    state = await OAuthStore().mint_state(provider.name)
+    return RedirectResponse(provider.authorization_url(state), status_code=302)
 
-@yandex_router.get("/yandex/callback", response_model=Token)
-async def yandex_callback(request: Request, db: AsyncSession = Depends(get_db)):
-    async with yandex_sso:
-        user = await yandex_sso.verify_and_process(request)
 
-    yandex_data = getattr(user, "__dict__", {})
-    
-    is_valid = await verify_yandex_user(yandex_data)
-    if not is_valid:
-        raise AuthenticationError("Invalid user data", code="OAUTH_USERINFO_INVALID")
-    
-    yandex_json = json.dumps(yandex_data)
+@yandex_router.get("/oauth/yandex/callback")
+async def finish_yandex_sign_in(
+    code: str = "", state: str = "", db: AsyncSession = Depends(get_db)
+):
+    """Where Yandex sends the browser back.
 
-    user_service = UserService(db)
-    yandex_id = str(user.id)
-    id = await user_service.create_or_get_yandex_user(
-        yandex_id=yandex_id,
-        yandex_json=yandex_json
+    Answers a redirect in every case, success or failure: this URL is opened by the
+    browser itself, so an error body would be shown as a page. The frontend decides what
+    to say about `error`.
+    """
+    provider = provider_for()
+
+    if not await OAuthStore().take_state(state, provider.name):
+        # Covers a forged state, a replayed one, one minted for another provider, and one
+        # that expired while the person sat on the consent screen.
+        return _back_to_frontend(error="state_invalid", provider=provider.name)
+
+    if not code:
+        return _back_to_frontend(error="code_missing", provider=provider.name)
+
+    try:
+        identity = await provider.fetch_identity(code)
+    except OAuthFailed as failure:
+        logger.warning(f"yandex sign-in failed: {failure}")
+        return _back_to_frontend(error="provider_failed", provider=provider.name)
+
+    user_id = await UserService(db).create_or_get_yandex_user(
+        yandex_id=identity.subject, yandex_json=json.dumps(identity.raw, ensure_ascii=False)
     )
+    handoff = await OAuthStore().mint_handoff(str(user_id))
+    return _back_to_frontend(code=handoff, provider=provider.name)
 
-    refresh_token, access_token = await yandex_auth(id=id, db=db)
+
+@yandex_router.post("/oauth/exchange", response_model=Token)
+async def exchange_handoff_code(code: str = Body(..., embed=True)):
+    """The handoff code, once, for a token pair.
+
+    Good exactly once: the code travelled in a URL, so anything that reads that URL
+    afterwards — history, an extension, a referer — finds a code already spent.
+    """
+    user_id = await OAuthStore().take_handoff(code)
+    if not user_id:
+        raise AuthenticationError("This sign-in code is not valid", code="HANDOFF_INVALID")
+
     return Token(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        token_type="bearer"
-    )
-yandex_sso_web = YandexSSO(
-    client_id=yandex_auth_settings.yandex_clientid,
-    client_secret=yandex_auth_settings.yandex_client_secret,
-    redirect_uri=yandex_auth_settings.yandex_redirect_uri_web,
-    scope=["login:info", "login:avatar"] 
-)
-@yandex_router.get("/yandex/login/web")
-async def yandex_login_web():
-    async with yandex_sso_web:
-        return await yandex_sso_web.get_login_redirect()
-
-@yandex_router.get("/yandex/callback/web")
-async def yandex_callback_web(request: Request, db: AsyncSession = Depends(get_db)):
-    async with yandex_sso_web:
-        user = await yandex_sso_web.verify_and_process(request)
-
-    yandex_data = getattr(user, "__dict__", {})
-
-    is_valid = await verify_yandex_user(yandex_data)
-    if not is_valid:
-        raise AuthenticationError("Invalid user data", code="OAUTH_USERINFO_INVALID")
-
-    yandex_json = json.dumps(yandex_data)
-
-    user_service = UserService(db)
-    yandex_id = str(user.id)
-    id = await user_service.create_or_get_yandex_user(
-        yandex_id=yandex_id,
-        yandex_json=yandex_json
+        access_token=await create_access_token({"id": user_id}),
+        refresh_token=await create_refresh_token({"id": user_id}),
+        token_type="bearer",
     )
 
-    refresh_token, access_token = await yandex_auth(id=id, db=db)
 
-    response = RedirectResponse(url=str(frontend_settings.frontend_url))
-
-    response.set_cookie(
-        key=cookie_settings.access_cookie_name,
-        value=access_token,
-        httponly=True,
-        secure=cookie_settings.cookie_secure,
-        samesite=cookie_settings.cookie_samesite,
-        domain=cookie_settings.cookie_domain,
-        path=cookie_settings.cookie_path,
-        max_age=jwt_settings.access_token_expire_minutes * 60,
+def _back_to_frontend(**params) -> RedirectResponse:
+    separator = "&" if "?" in oauth_settings.oauth_frontend_callback_url else "?"
+    return RedirectResponse(
+        f"{oauth_settings.oauth_frontend_callback_url}{separator}{urlencode(params)}",
+        status_code=302,
     )
-    response.set_cookie(
-        key=cookie_settings.refresh_cookie_name,
-        value=refresh_token,
-        httponly=True,
-        secure=cookie_settings.cookie_secure,
-        samesite=cookie_settings.cookie_samesite,
-        domain=cookie_settings.cookie_domain,
-        path=cookie_settings.cookie_path,
-        max_age=jwt_settings.refresh_token_expire_minutes * 60,
-    )
-
-    return response

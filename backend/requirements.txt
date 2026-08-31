@@ -29,7 +29,6 @@ durationpy==0.10
 ecdsa==0.19.1
 email-validator==2.3.0
 fastapi==0.104.1
-fastapi-sso==0.18.0
 filelock==3.19.1
 flatbuffers==25.2.10
 fsspec==2025.9.0

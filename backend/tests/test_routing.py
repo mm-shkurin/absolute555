@@ -12,7 +12,7 @@ import pytest
 # table: the point is that each router is mounted, and a full inventory here would need
 # editing on every new endpoint without catching anything the sample misses.
 MOUNTED_ROUTES = [
-    ("GET", "/api/v1/auth/yandex/login"),
+    ("GET", "/api/v1/auth/oauth/yandex/start"),
     ("POST", "/api/v1/auth/guest/login"),
     ("GET", "/api/v1/user/profile"),
     ("POST", "/api/v1/sale_car/{sale_car_id}/sts"),

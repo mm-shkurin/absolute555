@@ -17,9 +17,12 @@ export const BACKEND = {
   auth: {
     // Вход по OAuth начинается редиректом на сервер, а не запросом из приложения:
     // ответ провайдера приходит на серверный callback.
-    yandexLogin: `${V1}/auth/yandex/login`,
-    yandexLoginWeb: `${V1}/auth/yandex/login/web`,
-    vkLogin: `${V1}/auth/vk/login`,
+    // Вход начинается редиректом на start, ответ провайдера приходит на серверный
+    // callback, а обратно во фронт приезжает одноразовый код: сессия выдаётся только
+    // в ответе на exchange, потому что токен в адресной строке остаётся в истории
+    // браузера и в referer.
+    yandexStart: `${V1}/auth/oauth/yandex/start`,
+    oauthExchange: `${V1}/auth/oauth/exchange`,
     refresh: `${V1}/auth/refresh`,
     guestLogin: `${V1}/auth/guest/login`,
   },
