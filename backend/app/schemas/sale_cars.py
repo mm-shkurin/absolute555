@@ -125,6 +125,7 @@ class SaleCarResponse(BaseModel):
     description: Optional[str] = None
     status: SaleCarStatus
     reject_reason: Optional[str] = None
+    reject_label: Optional[str] = None
     published_at: Optional[datetime] = None
     created_at: Optional[datetime]
     updated_at: Optional[datetime]

@@ -11,11 +11,17 @@ from app.db.database import get_db
 from app.models.users import Users
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
+from app.schemas.moderation import ComplaintCreate, ComplaintResponse, RejectionReason
 from app.schemas.sale_cars import SaleCarStatusChanged
 from app.services.listing_errors import ListingError
+from app.services.complaint_errors import ComplaintError
+from app.services.complaint_service import ComplaintService
 from app.services.listing_lifecycle import ListingLifecycleService
+from app.services.listing_review import ListingReviewService
 from app.utils.security import get_current_user
 from .listing_http import listing_of, to_http
+from .moderation_http import to_http as complaint_to_http
+from .moderation_view import complaint_view
 
 lifecycle_router = APIRouter()
 
@@ -88,9 +94,8 @@ async def approve(
     db: AsyncSession = Depends(get_db),
     moderator: Users = Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
 ):
-    service = ListingLifecycleService(db)
     try:
-        return _changed(await service.approve(sale_car_id))
+        return _changed(await ListingReviewService(db).approve(sale_car_id, str(moderator.id)))
     except ListingError as error:
         raise to_http(error)
 
@@ -98,12 +103,36 @@ async def approve(
 @lifecycle_router.post("/{sale_car_id}/reject", response_model=SaleCarStatusChanged)
 async def reject(
     sale_car_id: str,
-    reason: str = Body(..., embed=True),
+    reason: RejectionReason,
     db: AsyncSession = Depends(get_db),
     moderator: Users = Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
 ):
-    service = ListingLifecycleService(db)
+    """Turn a listing back. The label is required; the comment the seller reads is not."""
     try:
-        return _changed(await service.reject(sale_car_id, reason))
+        turned_back = await ListingReviewService(db).reject(
+            sale_car_id, reason.label.value, reason.comment, str(moderator.id)
+        )
+        return _changed(turned_back)
     except ListingError as error:
         raise to_http(error)
+
+
+@lifecycle_router.post(
+    "/{sale_car_id}/complaints", response_model=ComplaintResponse, status_code=201
+)
+async def complain(
+    sale_car_id: str,
+    complaint: ComplaintCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: Users = Depends(get_current_user),
+):
+    """Anyone signed in, once per listing. Only about a listing that is published."""
+    try:
+        recorded = await ComplaintService(db).complain(
+            sale_car_id, str(current_user.id), complaint.reason.value, complaint.text
+        )
+    except ListingError as error:
+        raise to_http(error)
+    except ComplaintError as error:
+        raise complaint_to_http(error)
+    return complaint_view(recorded)

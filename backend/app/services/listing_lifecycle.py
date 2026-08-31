@@ -1,9 +1,12 @@
-"""The listing lifecycle: what a listing may become, and from where.
+"""The listing lifecycle as the seller drives it: what a listing may become, and from where.
 
 Every transition goes through `_move`, which consults the table on the model rather than
-a branch per case. The seller-facing actions differ only in their target status; the two
-boundaries that carry a rule of their own -- submit, which checks completeness, and
-reject, which requires a reason -- say so explicitly.
+a branch per case. The one boundary carrying a rule of its own is submit, which checks
+completeness.
+
+The moderator's side -- publishing, turning a listing back with a reason, and taking a
+published one down over complaints -- lives in `listing_review.py`: it needs the reason
+labels and the complaint queue, and neither belongs to the seller's path.
 """
 
 import uuid
@@ -27,12 +30,10 @@ from app.services.listing_errors import (
     ListingFrozen,
     ListingIncomplete,
     ListingNotFound,
-    RejectionNeedsReason,
     TooManyDrafts,
     TransitionNotAllowed,
 )
 from app.services.listing_autofill import ListingAutofillService
-from app.services.listing_document import ListingDocumentService
 from app.services.webhook_service import WebhookService
 
 EDITABLE_IN = frozenset({SaleCarStatus.DRAFT, SaleCarStatus.REJECTED})
@@ -99,39 +100,29 @@ class ListingLifecycleService:
         missing = self._missing(listing)
         if missing and listing.status == SaleCarStatus.DRAFT:
             raise ListingIncomplete(missing)
-        return await self._move(listing, SaleCarStatus.MODERATION)
+        moved = await self.move_to(listing, SaleCarStatus.MODERATION)
+        # Stamped here rather than read off updated_at: the queue is ordered by when the
+        # seller sent the listing in, and any later edit moves updated_at.
+        moved.submitted_at = datetime.utcnow()
+        await self.db.commit()
+        # Re-read rather than return the committed instance: the commit expired every
+        # attribute on it, and the router reads updated_at outside the greenlet.
+        return await self.get(listing_id)
 
     async def withdraw(self, listing_id: str) -> SaleCars:
-        return await self._move(await self.get(listing_id), SaleCarStatus.WITHDRAWN)
+        return await self.move_to(await self.get(listing_id), SaleCarStatus.WITHDRAWN)
 
     async def mark_sold(self, listing_id: str) -> SaleCars:
-        return await self._move(await self.get(listing_id), SaleCarStatus.SOLD)
+        return await self.move_to(await self.get(listing_id), SaleCarStatus.SOLD)
 
     async def republish(self, listing_id: str) -> SaleCars:
-        return await self._move(await self.get(listing_id), SaleCarStatus.MODERATION)
-
-    async def approve(self, listing_id: str) -> SaleCars:
-        listing = await self._move(await self.get(listing_id), SaleCarStatus.PUBLISHED)
-        listing.published_at = datetime.utcnow()
-        listing.reject_reason = None
-        await ListingDocumentService(self.db).discard(listing)
+        moved = await self.move_to(await self.get(listing_id), SaleCarStatus.MODERATION)
+        moved.submitted_at = datetime.utcnow()
         await self.db.commit()
-        await self._reload(listing)
-        return listing
-
-    async def reject(self, listing_id: str, reason: Optional[str]) -> SaleCars:
-        if not reason or not reason.strip():
-            raise RejectionNeedsReason()
-        listing = await self._move(await self.get(listing_id), SaleCarStatus.REJECTED)
-        listing.reject_reason = reason.strip()
-        # The scan has done its work: a moderator has now compared it with what OCR read.
-        await ListingDocumentService(self.db).discard(listing)
-        await self.db.commit()
-        await self._reload(listing)
-        return listing
+        return await self.get(listing_id)
 
     async def revise(self, listing_id: str) -> SaleCars:
-        listing = await self._move(await self.get(listing_id), SaleCarStatus.DRAFT)
+        listing = await self.move_to(await self.get(listing_id), SaleCarStatus.DRAFT)
         listing.reject_reason = None
         await self.db.commit()
         await self._reload(listing)
@@ -155,7 +146,9 @@ class ListingLifecycleService:
             missing.append("photos")
         return missing
 
-    async def _move(self, listing: SaleCars, target: str) -> SaleCars:
+    async def move_to(self, listing: SaleCars, target: str) -> SaleCars:
+        """One transition, checked against the table. Public because the review service
+        drives the moderator's three transitions through the same gate."""
         previous = listing.status
         allowed = ALLOWED_TRANSITIONS.get(previous, frozenset())
         if target not in allowed:

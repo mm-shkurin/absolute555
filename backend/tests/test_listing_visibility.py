@@ -94,7 +94,7 @@ def test_should_not_disclose_a_rejection_reason_outside_the_owner(
     client.post(
         f"/api/v1/sale_car/{listing_id}/reject",
         headers=moderator,
-        json={"reason": "a licence plate is readable"},
+        json={"label": "plate_or_face_visible", "comment": "a licence plate is readable"},
     )
     stranger = signed_in()
 

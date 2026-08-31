@@ -7,7 +7,6 @@ to the model reached whichever of the five somebody remembered.
 from typing import Iterable, List, Optional
 
 from app.models.sale_car import SaleCars
-from app.models.users import Users
 from app.core.config import PhotoSettings
 from app.services.s3_service import s3_service
 
@@ -30,6 +29,7 @@ _FIELDS = (
     "description",
     "status",
     "reject_reason",
+    "reject_label",
     "published_at",
     "created_at",
     "updated_at",
@@ -57,7 +57,7 @@ def _photo_view(photo: dict) -> dict:
     }
 
 
-def seller_view(owner: Optional[Users]) -> Optional[dict]:
+def seller_view(owner) -> Optional[dict]:
     """Who is selling: a name and a face, nothing that identifies them off-platform.
 
     The name comes from whatever provider the seller signed in with. A guest has none,
@@ -73,7 +73,7 @@ def seller_view(owner: Optional[Users]) -> Optional[dict]:
     return {"user_id": owner.id, "name": name or None, "avatar_url": None}
 
 
-async def to_view(listing: SaleCars, viewer: Optional[Users] = None) -> dict:
+async def to_view(listing: SaleCars, viewer=None) -> dict:
     """One listing, as the caller in front of it may see it.
 
     The phone number is the one field that depends on who is asking: it is the seller's
@@ -104,7 +104,7 @@ def to_gallery(listing: SaleCars) -> dict:
     }
 
 
-def _may_read_phone(listing: SaleCars, viewer: Optional[Users]) -> bool:
+def _may_read_phone(listing: SaleCars, viewer) -> bool:
     if viewer is None:
         return False
     return str(viewer.id) == str(listing.user_id) or viewer.role in ("manager", "admin")
@@ -131,5 +131,5 @@ def to_card(listing: SaleCars) -> dict:
     }
 
 
-async def to_views(listings: Iterable[SaleCars], viewer: Optional[Users] = None) -> List[dict]:
+async def to_views(listings: Iterable[SaleCars], viewer=None) -> List[dict]:
     return [await to_view(listing, viewer) for listing in listings]

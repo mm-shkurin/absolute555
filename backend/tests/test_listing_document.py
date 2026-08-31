@@ -127,7 +127,7 @@ def test_should_discard_the_document_when_a_listing_is_rejected(
     client.post(
         f"/api/v1/sale_car/{listing_id}/reject",
         headers=moderator,
-        json={"reason": "the plate is readable"},
+        json={"label": "plate_or_face_visible", "comment": "the plate is readable"},
     )
 
     assert client.get(f"/api/v1/sale_car/{listing_id}/sts", headers=seller).status_code == 404

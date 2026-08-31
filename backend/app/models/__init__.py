@@ -3,3 +3,4 @@ from app.models.role_request import RoleRequest
 from app.models.catalog import Brand, BrandAlias, CarModel, CatalogSuggestion, ModelAlias
 from app.models.sale_car import SaleCars
 from app.models.offer import Offer
+from app.models.complaint import Complaint

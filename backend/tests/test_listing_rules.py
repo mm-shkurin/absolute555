@@ -56,7 +56,7 @@ def test_should_correct_a_rejected_listing_and_send_it_again(
     client.post(
         f"/api/v1/sale_car/{listing_id}/reject",
         headers=moderator,
-        json={"reason": "a licence plate is readable on three of the photos"},
+        json={"label": "plate_or_face_visible", "comment": "a licence plate is readable on three of the photos"},
     )
 
     rejected = client.get(f"/api/v1/sale_car/{listing_id}", headers=seller).json()
@@ -71,7 +71,7 @@ def test_should_correct_a_rejected_listing_and_send_it_again(
     assert again.json()["status"] == "moderation"
 
 
-def test_should_refuse_a_rejection_with_no_reason(
+def test_should_refuse_a_rejection_with_no_label(
     client, seller, moderator, catalogue, attach_photo
 ):
     listing_id = _create(client, seller)
@@ -79,7 +79,7 @@ def test_should_refuse_a_rejection_with_no_reason(
     client.post(f"/api/v1/sale_car/{listing_id}/submit", headers=seller)
 
     response = client.post(
-        f"/api/v1/sale_car/{listing_id}/reject", headers=moderator, json={"reason": "   "}
+        f"/api/v1/sale_car/{listing_id}/reject", headers=moderator, json={"comment": "   "}
     )
 
     assert response.status_code == 422, response.text

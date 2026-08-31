@@ -9,50 +9,53 @@
 
 ## Tier 1 — Backend
 
-- [~] api-01 the queue holds what is waiting, oldest first
-- [ ] api-02 the queue holds nothing that is not waiting
-- [ ] api-03 a rejection carries a label the seller can act on
-- [ ] api-07 anyone signed in may complain about a published listing
-- [ ] api-08 one person complains about one listing once
-- [ ] api-11 complaints reach the moderator grouped by listing
-- [ ] api-12 taking a listing down answers its complaints in one decision
+- [x] api-01 the queue holds what is waiting, oldest first
+- [x] api-02 the queue holds nothing that is not waiting
+- [x] api-03 a rejection carries a label the seller can act on
+- [x] api-07 anyone signed in may complain about a published listing
+- [x] api-08 one person complains about one listing once
+- [x] api-11 complaints reach the moderator grouped by listing
+- [x] api-12 taking a listing down answers its complaints in one decision
 
 ## Tier 1 — Integration
 
-- [ ] int-01 a listing walks the whole loop and the queue follows it
+- [x] int-01 a listing walks the whole loop and the queue follows it
 
 ## Tier 1 — Security
 
-- [ ] sec-01 the queue is closed to everyone but a moderator
-- [ ] sec-02 moderator actions are closed the same way
+- [x] sec-01 the queue is closed to everyone but a moderator
+- [x] sec-02 moderator actions are closed the same way
 
-- [ ] harvest
+- [x] harvest
 
 ## Tier 2 — Backend
 
-- [ ] api-04 a rejection without a label is refused
-- [ ] api-05 a label the moderator invented is refused
-- [ ] api-06 a rejected listing is corrected and comes back
-- [ ] api-09 a seller cannot complain about their own listing
-- [ ] api-10 there is nothing to complain about until a listing is published
-- [ ] api-13 a complaint the moderator disagrees with is closed as unfounded
-- [ ] api-14 a complaint is settled once
-- [ ] api-15 nothing is taken down by the number of complaints alone
-- [ ] api-16 a listing that is not published cannot be taken down
-- [ ] api-17 the tabs count what they say they count
-- [ ] api-18 the complained tab holds the listings that were complained about
+- [x] api-04 a rejection without a label is refused
+- [x] api-05 a label the moderator invented is refused
+- [x] api-06 a rejected listing is corrected and comes back
+- [x] api-09 a seller cannot complain about their own listing
+- [x] api-10 there is nothing to complain about until a listing is published
+- [x] api-13 a complaint the moderator disagrees with is closed as unfounded
+- [x] api-14 a complaint is settled once
+- [x] api-15 nothing is taken down by the number of complaints alone
+- [x] api-16 a listing that is not published cannot be taken down
+- [x] api-17 the tabs count what they say they count
+- [x] api-18 the complained tab holds the listings that were complained about
 
 ## Tier 2 — Security
 
-- [ ] sec-03 a complaint requires signing in
-- [ ] sec-04 a complaint does not carry its author to the seller
+- [x] sec-03 a complaint requires signing in
+- [x] sec-04 a complaint does not carry its author to the seller
 
 ## Tier 2 — Infrastructure
 
-- [ ] inf-01 one person cannot hold two complaints about one listing
-- [ ] inf-02 listings rejected before the labels existed keep their text
+- [x] inf-01 one person cannot hold two complaints about one listing
+- [S] inf-02 listings rejected before the labels existed keep their text
 
 ## Отложено
+
+- [S] inf-02 — миграция добавляет `reject_label` как nullable и ничего не трогает в
+  существующих строках; проверять нечему, кроме самого отката ревизии в CI
 
 - [S] api-19 страницы очереди — `tests/tier3/`, тот же механизм проверен на ленте
 - [S] чат с продавцом с экрана жалоб — история 11
