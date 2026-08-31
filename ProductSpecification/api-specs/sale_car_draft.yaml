@@ -115,7 +115,14 @@ components:
         transmission: { type: string, nullable: true }
         engine_power: { type: integer, nullable: true }
         description: { type: string, nullable: true }
-        brand_id: { type: string, format: uuid, nullable: true }
+        brand_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: |
+            Выбор из справочника. Проставленный здесь ключ объявляется выбором
+            продавца: распознавание его больше не перетирает, а предложение
+            модератору по этому написанию закрывается (история 6).
         model_id: { type: string, format: uuid, nullable: true }
 
     SaleCar:
@@ -147,6 +154,11 @@ components:
           type: string
           nullable: true
           description: Заполнено только в статусе rejected
+        autofill:
+          allOf: [{ $ref: 'sale_car_sts.yaml#/components/schemas/Autofill' }]
+          description: |
+            Исход распознавания СТС и источник марки и модели. Повторяет то, что
+            приезжает по SSE, чтобы перезагрузка страницы не теряла исход.
         published_at: { type: string, format: date-time, nullable: true }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }

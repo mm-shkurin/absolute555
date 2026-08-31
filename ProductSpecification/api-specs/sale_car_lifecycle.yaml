@@ -192,6 +192,11 @@ components:
                   type: array
                   description: |
                     Все недостающие поля сразу, не первое: мастер подсвечивает шаги.
+
+                    Марки и модели здесь нет с истории 6: редкая марка не должна
+                    блокировать публикацию. Объявление уходит на модерацию с сырыми
+                    строками из СТС и до решения модератора просто не попадает под
+                    фильтр по марке и модели.
                   items:
                     type: string
-                    enum: [price, milleage, phone_number, brand_id, model_id, year, photos]
+                    enum: [price, milleage, phone_number, year, photos]

@@ -16,6 +16,54 @@ paths:
         in: path
         required: true
         schema: { type: string, format: uuid }
+    post:
+      summary: Приложить снимок СТС к черновику и запустить распознавание
+      operationId: uploadSaleCarSts
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Первый шаг мастера продажи — фотография документа и ничего больше. Цены,
+        телефона и пробега на этом шаге ещё нет, поэтому ручка их и не спрашивает:
+        черновик уже создан POST /api/v1/sale_car.
+
+        Ответ приходит сразу, до распознавания: читает фон, а не запрос. Исход
+        приезжает по SSE и повторяется полем autofill в выдаче объявления.
+
+        Повторная загрузка заменяет снимок и перезапускает распознавание. То, что
+        продавец успел поправить руками, распознавание не трогает.
+
+        Разрешено в draft и rejected — там же, где разрешена правка полей.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: Снимок СТС. Уходит в закрытый бакет, не в галерею.
+      responses:
+        '202':
+          description: Снимок принят, распознавание поставлено в очередь
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StsAccepted' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: Объявление не найдено или принадлежит другому пользователю.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: |
+            Статус объявления не допускает правки — снимок принимается только в draft
+            и rejected.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
     get:
       summary: Подписанная ссылка на снимок СТС
       operationId: getSaleCarStsLink
@@ -49,6 +97,52 @@ components:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
 
   schemas:
+    StsAccepted:
+      type: object
+      required: [sale_car_id, autofill]
+      properties:
+        sale_car_id: { type: string, format: uuid }
+        autofill: { $ref: '#/components/schemas/Autofill' }
+
+    AutofillState:
+      type: string
+      description: |
+        Исход распознавания снимка, каким его видит продавец.
+
+        none — снимка нет; pending — читаем; unreadable — фото не прочитали, чинится
+        новым снимком; undecoded — фото прочли, данные не разобрали, чинится ручным
+        вводом; done — подставили.
+
+        unreadable и undecoded разделены намеренно: подсказка на экране у них разная, а
+        в логах эта разница уже есть и без выдачи.
+      enum: [none, pending, unreadable, undecoded, done]
+
+    FieldSource:
+      type: string
+      description: |
+        Откуда в поле приехало значение. seller побеждает всегда: повторное
+        распознавание не перетирает то, что человек уже исправил, и правка закрывает
+        предложение модератору по этому написанию.
+      enum: [ocr, seller]
+
+    Autofill:
+      type: object
+      required: [state]
+      properties:
+        state: { $ref: '#/components/schemas/AutofillState' }
+        brand_source:
+          allOf: [{ $ref: '#/components/schemas/FieldSource' }]
+          nullable: true
+          description: null, пока марка не заполнена ни распознаванием, ни продавцом.
+        model_source:
+          allOf: [{ $ref: '#/components/schemas/FieldSource' }]
+          nullable: true
+        updated_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Когда исход в последний раз менялся.
+
     StsLink:
       type: object
       required: [url, expires_at]
