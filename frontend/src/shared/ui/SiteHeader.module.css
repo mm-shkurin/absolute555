@@ -36,6 +36,16 @@
   letter-spacing: -0.02em;
 }
 
+/* 555 из названия ООО. Моноширинный, потому что это цифры-идентификатор, а не слово. */
+.numeral {
+  margin-left: 5px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-accent);
+}
+
 .nav {
   display: flex;
   align-items: center;
@@ -92,5 +102,51 @@
 @media (max-width: 767px) {
   .nav {
     display: none;
+  }
+}
+
+/* Плавающий вариант: сама шапка прозрачна, стеклом становится её содержимое. */
+.floating {
+  background: none;
+  backdrop-filter: none;
+  border-bottom: 0;
+  padding: 18px 0;
+}
+
+.floating .inner {
+  height: auto;
+  gap: 12px;
+  padding: 13px 13px 13px 24px;
+  border-radius: 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow:
+    var(--shadow-glass),
+    0 0 0 1px var(--border-glass-outer);
+}
+
+.floating .logo b {
+  font-size: 20px;
+}
+
+.floating .logo img {
+  height: 30px;
+}
+
+@media (max-width: 767px) {
+  .floating {
+    padding: 10px 0;
+  }
+  .floating .inner {
+    padding: 8px 8px 8px 14px;
+    gap: 10px;
+  }
+  .floating .logo b {
+    font-size: 16px;
+  }
+  .floating .logo img {
+    height: 22px;
   }
 }

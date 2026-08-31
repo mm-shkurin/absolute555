@@ -90,4 +90,22 @@
 
   /* Тач-цель. Ниже этого значения кнопка на телефоне промахивается мимо пальца. */
   --tap-target: 44px;
+
+  /* Стеклянная поверхность лендинга. В продукте она не используется: граница между двумя
+     поверхностями и её обоснование записаны в `ProductSpecification/ui/ui-conventions.md`,
+     раздел «Две поверхности». */
+  --bg-glass-page: #e4efff;
+  --bg-glass: rgba(255, 255, 255, 0.55);
+  --border-glass: rgba(255, 255, 255, 0.75);
+  --border-glass-outer: rgba(13, 20, 31, 0.06);
+  --glass-blur: 24px;
+  --shadow-glass: 0 18px 48px -24px rgba(13, 20, 31, 0.35);
+  --shadow-glass-lifted: 0 30px 64px -28px rgba(13, 20, 31, 0.45);
+  /* Свечение под страницей и белая пелена, гасящая его к низу. */
+  --glow-brand: #1883ff;
+  --glow-opacity: 0.42;
+  --glass-veil: rgba(255, 255, 255, 0.62);
+  --glass-grid-line: rgba(0, 78, 224, 0.1);
+  --radius-glass: 20px;
+  --radius-glass-large: 28px;
 }

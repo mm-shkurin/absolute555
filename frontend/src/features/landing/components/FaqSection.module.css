@@ -1,10 +1,16 @@
+/* На стекле разделительные линии не нужны: каждый вопрос — своя панель, и раскрытие
+   видно по тому, что панель выросла. */
 .faq {
-  border-top: 1px solid var(--border-subtle);
+  display: grid;
+  gap: 10px;
   margin-top: 28px;
 }
 
-.faq details {
-  border-bottom: 1px solid var(--border-subtle);
+.item {
+  composes: glass from '../glass.module.css';
+  composes: lift from '../glass.module.css';
+  padding: 0 20px;
+  border-radius: 16px;
 }
 
 .faq summary {
@@ -26,12 +32,12 @@
 .faq summary::after {
   content: '+';
   position: absolute;
-  right: 8px;
-  top: 18px;
+  right: 4px;
+  top: 16px;
   font-family: var(--font-mono);
   font-size: 20px;
   font-weight: 400;
-  color: var(--text-muted);
+  color: var(--accent);
 }
 
 .faq details[open] summary::after {
@@ -39,7 +45,7 @@
 }
 
 .faq p {
-  margin: 0 0 22px;
+  margin: 0 0 18px;
   max-width: 62ch;
   color: var(--text-secondary);
   font-size: 16px;
@@ -47,9 +53,13 @@
 }
 
 @media (max-width: 1023px) {
+  .item {
+    padding: 0 16px;
+    border-radius: 14px;
+  }
   .faq summary {
-    font-size: 16px;
-    padding: 16px 34px 16px 0;
+    font-size: 15.5px;
+    padding: 15px 34px 15px 0;
   }
   .faq p {
     font-size: 15px;

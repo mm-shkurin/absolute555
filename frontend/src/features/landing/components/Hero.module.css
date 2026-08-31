@@ -1,114 +1,96 @@
-/* Сетка на фоне героя — тот же чертёж, что и в схеме кузова справа: обещание «здесь меряют,
-   а не рассказывают» держится картинкой, а не прилагательными. */
 .hero {
   position: relative;
-  padding: 66px 0;
-  overflow: hidden;
-  border-bottom: 1px solid var(--border-subtle);
-  background:
-    linear-gradient(
-        to right,
-        color-mix(in srgb, var(--text-primary) 7%, transparent) 1px,
-        transparent 1px
-      )
-      0 0 / 32px 32px,
-    linear-gradient(
-        to bottom,
-        color-mix(in srgb, var(--text-primary) 7%, transparent) 1px,
-        transparent 1px
-      )
-      0 0 / 32px 32px,
-    var(--bg-surface);
+  padding: 56px 0 72px;
 }
 
-.inner {
-  display: grid;
-  grid-template-columns: 1.15fr 0.85fr;
-  gap: 56px;
-  align-items: center;
+/* Чертёжная сетка героя гаснет к краям маской: без неё прямоугольник сетки читается как
+   вставленная картинка, а не как фактура страницы. */
+.grid {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 20px;
+  height: 640px;
+  z-index: 1;
+  display: block;
+  background-image:
+    repeating-linear-gradient(to bottom, var(--glass-grid-line) 0 1px, transparent 1px 60px),
+    repeating-linear-gradient(to right, var(--glass-grid-line) 0 1px, transparent 1px 60px);
+  mask-image: radial-gradient(ellipse at 50% 30%, #000 26%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 30%, #000 26%, transparent 70%);
+}
+
+.intro {
+  position: relative;
+  z-index: 2;
+  max-width: 760px;
+  margin-bottom: 38px;
 }
 
 .title {
-  font-size: 60px;
-  line-height: 1.02;
+  margin: 0 0 18px;
+  font-size: 54px;
+  line-height: 1.04;
   font-weight: 800;
   letter-spacing: -0.035em;
-  margin: 0 0 20px;
+  text-wrap: balance;
 }
 
 .title em {
   font-style: normal;
-  color: var(--accent);
+  color: var(--text-accent);
 }
 
 .lead {
-  font-size: 18.5px;
+  margin: 0 0 26px;
+  max-width: 52ch;
+  font-size: 18px;
   line-height: 1.55;
   color: var(--text-secondary);
-  margin: 0 0 28px;
-  max-width: 34em;
+  text-wrap: pretty;
 }
 
 .actions {
   display: flex;
+  align-items: center;
   gap: 12px;
   flex-wrap: wrap;
 }
 
 .note {
-  margin-top: 18px;
+  margin-left: 6px;
   font-size: 14px;
   color: var(--text-muted);
 }
 
-.blueprint {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-surface);
-  padding: 18px;
-}
-
-.blueprint svg {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.scale {
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-top: 14px;
-  font-size: 12.5px;
-  color: var(--text-secondary);
-}
-
-.scale i {
-  width: 11px;
-  height: 11px;
-  border-radius: 3px;
-  display: inline-block;
-  margin-right: 5px;
-  vertical-align: -1px;
-}
-
-@media (max-width: 1023px) {
+@media (max-width: 767px) {
   .hero {
-    padding: 32px 0 20px;
+    padding: 24px 0 32px;
   }
-  .inner {
-    grid-template-columns: 1fr;
-    gap: 24px;
+  .grid {
+    top: 0;
+    height: 420px;
+  }
+  .intro {
+    margin-bottom: 24px;
   }
   .title {
+    margin-bottom: 14px;
     font-size: 34px;
-    line-height: 1.1;
   }
   .lead {
-    font-size: 16px;
     margin-bottom: 20px;
+    font-size: 16px;
   }
-  .actions > * {
+  .actions {
+    width: 100%;
+  }
+  .actions a {
     flex: 1;
+  }
+  .note {
+    width: 100%;
+    margin: 10px 0 0;
+    text-align: center;
   }
 }

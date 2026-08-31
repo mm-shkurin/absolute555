@@ -1,0 +1,164 @@
+.head {
+  display: flex;
+  align-items: flex-end;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+
+.head > div {
+  flex: 1;
+  min-width: 280px;
+}
+
+/* Подзаголовок секции внутри шапки уже отбит кнопкой справа — нижний отступ лишний. */
+.head p {
+  margin-bottom: 0;
+}
+
+.feed {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+
+.card {
+  composes: glass from '../glass.module.css';
+  composes: lift from '../glass.module.css';
+  display: flex;
+  flex-direction: column;
+  border-radius: 18px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.card:hover {
+  box-shadow:
+    var(--shadow-glass-lifted),
+    0 0 0 1px var(--border-accent);
+}
+
+.shotWrap {
+  position: relative;
+}
+
+.shot {
+  aspect-ratio: 4 / 3;
+  border: 0;
+  border-radius: 0;
+}
+
+.tag {
+  position: absolute;
+  left: 10px;
+  top: 10px;
+  z-index: 1;
+  padding: 4px 9px;
+  border-radius: var(--radius-chip);
+  background: var(--measure-ok);
+  color: var(--text-inverse);
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* Машина под заказ ещё не в стране: замерять нечего, и метка о канале, а не о кузове. */
+.import {
+  background: var(--accent);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  padding: 14px 16px 16px;
+}
+
+.name {
+  font-size: 15.5px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.price {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.meta {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+}
+
+.bar {
+  display: flex;
+  gap: 2px;
+  margin-top: auto;
+  padding-top: 10px;
+}
+
+.bar i {
+  flex: 1;
+  height: 5px;
+  display: block;
+  border-radius: 2px;
+}
+
+.ok {
+  background: var(--measure-ok);
+}
+.warn {
+  background: var(--measure-warn);
+}
+.bad {
+  background: var(--measure-bad);
+}
+.none {
+  background: var(--measure-none);
+  opacity: 0.6;
+}
+
+@media (max-width: 1023px) {
+  .feed {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 599px) {
+  .feed {
+    gap: 10px;
+  }
+  .head {
+    margin-bottom: 18px;
+  }
+  .head a {
+    width: 100%;
+  }
+  .card {
+    border-radius: 15px;
+  }
+  .body {
+    gap: 4px;
+    padding: 10px 12px 12px;
+  }
+  .name {
+    font-size: 13.5px;
+  }
+  .price {
+    font-size: 16px;
+  }
+  .meta {
+    font-size: 9.5px;
+  }
+  .tag {
+    left: 8px;
+    top: 8px;
+    font-size: 10px;
+    padding: 3px 7px;
+  }
+}

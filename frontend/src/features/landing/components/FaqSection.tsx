@@ -13,7 +13,7 @@ export function FaqSection() {
         <SectionHead eyebrow="Вопросы" title="Коротко о непонятном" />
         <div className={own.faq}>
           {FAQ.map((item, index) => (
-            <details key={item.question} open={index === 0}>
+            <details key={item.question} className={own.item} open={index === 0}>
               <summary>{item.question}</summary>
               <p>{item.answer}</p>
             </details>

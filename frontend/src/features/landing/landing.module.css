@@ -1,3 +1,13 @@
+/* Лендинг — единственная стеклянная поверхность продукта: своя страница-фон, свечения под
+   ней и полупрозрачные панели поверх. Обоснование границы — `ui-conventions.md`,
+   «Две поверхности». */
+.page {
+  position: relative;
+  min-height: 100dvh;
+  background: var(--bg-glass-page);
+  overflow-x: clip;
+}
+
 /* Общая типографика и сетки секций лендинга. Переносится из `ui/mockups/index.html`,
    значения — из `ui/ui-conventions.md`: там таблица размеров, здесь её применение. */
 .section {
@@ -21,14 +31,15 @@
   letter-spacing: 0.14em;
 }
 
-/* Линия после надзаголовка — единственный горизонтальный штрих на лендинге: она отбивает
-   секцию, не добавляя ещё одной рамки в макет, где рамок и так много. */
-.eyebrow::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  max-width: 180px;
-  background: var(--border-subtle);
+/* Ромб вместо линии: на стеклянном фоне горизонтальный штрих спорит с кромками панелей. */
+.eyebrow {
+  display: inline-flex;
+}
+
+.eyebrow::before {
+  content: 'C6';
+  font-size: 9px;
+  color: var(--accent);
 }
 
 .heading {
@@ -50,13 +61,13 @@
 .cols3 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 32px;
+  gap: 20px;
 }
 
 .cols4 {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 28px;
+  gap: 16px;
 }
 
 .split {
@@ -66,11 +77,12 @@
   align-items: center;
 }
 
-/* Шаг: жирная линия сверху вместо карточки. Три карточки подряд читаются как три кнопки,
-   линия — как оглавление, чем список шагов и является. */
+/* Шаг и плитка — одна и та же стеклянная поверхность; отличает их только служебная метка
+   сверху. Линия-разделитель, которой они держались на белом листе, на стекле не читается. */
 .step {
-  padding-top: 20px;
-  border-top: 2px solid var(--text-primary);
+  composes: glass from './glass.module.css';
+  composes: lift from './glass.module.css';
+  padding: 24px 22px;
 }
 
 .step h3,
@@ -89,17 +101,23 @@
 }
 
 .number {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  margin-bottom: 14px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--text-inverse);
   font-family: var(--font-mono);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
-  color: var(--accent);
-  letter-spacing: 0.1em;
-  margin-bottom: 12px;
 }
 
 .tile {
-  padding-top: 18px;
-  border-top: 1px solid var(--border-subtle);
+  composes: glass from './glass.module.css';
+  composes: lift from './glass.module.css';
+  padding: 24px 22px;
 }
 
 .tileKey {
@@ -114,10 +132,9 @@
 }
 
 .band {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: 16px;
-  padding: 40px;
+  composes: glass from './glass.module.css';
+  padding: 44px 40px;
+  border-radius: var(--radius-glass-large);
 }
 
 /* Заметка на полях: не предупреждение и не ошибка, поэтому цвет только у линии слева. */
@@ -170,4 +187,20 @@
 .shot {
   height: 120px;
   margin-top: 16px;
+}
+
+/* Внутри стеклянной плашки плитки перестают быть стеклянными: карточка в карточке —
+   запрещённая вложенность, а на стекле она ещё и мутит фон дважды. */
+.band .tile {
+  background: none;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+  padding: 0;
+}
+
+.band .tile:hover {
+  transform: none;
+  box-shadow: none;
 }

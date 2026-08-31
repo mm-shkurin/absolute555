@@ -2,12 +2,15 @@
 // есть, это текст продукта; первый запрос человек делает уже в ленте.
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { Hero } from './components/Hero'
+import { PageGlow } from './components/PageGlow'
+import { FeedShowcase } from './components/FeedShowcase'
 import { HowItWorks, ThicknessPitch } from './components/HowItWorks'
 import { ListingContents } from './components/ListingContents'
 import { ImportChannel, SafetyBand } from './components/ImportChannel'
 import { MobileApp } from './components/MobileApp'
 import { FaqSection } from './components/FaqSection'
 import { FinalCta } from './components/FinalCta'
+import styles from './landing.module.css'
 
 // Вошедший тоже читает эту страницу — по ссылке «как это работает» из пустой ленты и из
 // справки, — и шапка у него должна остаться его: с аватаром, а не с кнопкой «Войти».
@@ -19,10 +22,12 @@ export function LandingPage({
   onSignIn?: () => void
 }) {
   return (
-    <>
-      <SiteHeader signedIn={signedIn} onSignIn={onSignIn} />
+    <div className={styles.page}>
+      <PageGlow />
+      <SiteHeader signedIn={signedIn} onSignIn={onSignIn} floating />
       <main data-testid="landing">
         <Hero />
+        <FeedShowcase />
         <HowItWorks />
         <ThicknessPitch />
         <ListingContents />
@@ -32,6 +37,6 @@ export function LandingPage({
         <FaqSection />
         <FinalCta />
       </main>
-    </>
+    </div>
   )
 }

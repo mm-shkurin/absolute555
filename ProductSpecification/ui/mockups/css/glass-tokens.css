@@ -1,0 +1,65 @@
+/* Вариант лендинга «стекло». Токены бренда те же, что в index.html; здесь добавлен
+   только слой поверхностей — свет, стекло, сетка. Фирменный синий не меняется. */
+:root{
+  --paper:#F1F4F9; --card:#FFF; --ink:#0D141F; --ink2:#3F4B5E; --mut:#78849A;
+  --line:#DEE4EE; --brand:#0066FF; --brand-dk:#0047CC; --soft:#E8EFFB;
+  --ok:#17A66B; --warn:#F0A020; --bad:#E5484D; --none:#C3CEDF;
+  --bp-line-2:#A8BBD8;
+  --inverse-bg:#0D141F; --inverse-ink:#FFF; --inverse-mut:#95A3BC;
+
+  /* слой «стекло» */
+  --sky:#E4EFFF;                       /* фон страницы под свечениями */
+  --glow:#1883FF;                      /* цвет размытых пятен */
+  --glow-op:.42;
+  --veil:rgba(255,255,255,.62);        /* белая пелена, гасит свечение к низу */
+  --grid-line:rgba(0,78,224,.10);
+  --g-bg:rgba(255,255,255,.55);        /* стеклянная поверхность */
+  --g-bd:rgba(255,255,255,.75);        /* её кромка */
+  --g-bd-2:rgba(13,20,31,.06);         /* внешняя тень-обводка */
+  --g-blur:24px;
+  --g-sh:0 18px 48px -24px rgba(13,20,31,.35);
+  --r-g:20px; --r-gl:28px;
+}
+[data-theme="dark"]{
+  --sky:#0B0E14; --card:#161C26; --ink:#F2F5FA; --ink2:#B4C0D2; --mut:#8492A8;
+  --line:rgba(255,255,255,.10); --brand:#4D94FF; --brand-dk:#7AB0FF;
+  --soft:rgba(77,148,255,.14); --bp-line-2:#4E5D74;
+  --inverse-bg:#E8EDF5; --inverse-ink:#0D141F; --inverse-mut:#3F4B5E;
+  --glow-op:.26; --veil:transparent; --grid-line:rgba(255,255,255,.06);
+  --g-bg:rgba(255,255,255,.06); --g-bd:rgba(255,255,255,.12);
+  --g-bd-2:rgba(0,0,0,.4); --g-sh:0 18px 48px -24px rgba(0,0,0,.7);
+}
+
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--sky);color:var(--ink);font-family:'Golos Text',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased;overflow-x:hidden}
+.mono{font-family:'JetBrains Mono',monospace}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+.wrap{max-width:1160px;margin:0 auto;padding:0 32px;position:relative;z-index:2}
+.wrap.narrow{max-width:820px}
+
+/* Свечения и пелена лежат за содержимым всей страницы, поэтому они fixed-подобны по
+   смыслу, но абсолютны: при прокрутке пятна должны уезжать вместе с секциями. */
+.bg{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.blob{position:absolute;border-radius:50%;background:var(--glow);filter:blur(200px);
+  opacity:var(--glow-op)}
+.blob.b1{left:-380px;top:-260px;width:900px;height:900px}
+.blob.b2{right:-420px;top:-320px;width:960px;height:960px}
+.blob.b3{left:-500px;top:1700px;width:1100px;height:1100px;opacity:calc(var(--glow-op)*.7)}
+.blob.b4{right:-520px;top:2900px;width:1100px;height:1100px;opacity:calc(var(--glow-op)*.6)}
+.veil{position:absolute;left:-40%;width:180%;height:1400px;top:900px;background:var(--veil);
+  border-radius:50%;filter:blur(60px)}
+
+/* Стеклянная поверхность — один класс, все карточки собираются из него. */
+.glass{background:var(--g-bg);border:1px solid var(--g-bd);border-radius:var(--r-g);
+  -webkit-backdrop-filter:blur(var(--g-blur));backdrop-filter:blur(var(--g-blur));
+  box-shadow:var(--g-sh),0 0 0 1px var(--g-bd-2)}
+
+/* Наведение: блок слегка приближается к читателю, оставаясь в своих границах —
+   поднимается на пару процентов и получает более глубокую тень. Масштаб мелкий
+   намеренно: крупный сдвинул бы соседей визуально и разболтал бы сетку. */
+.lift{transition:transform .18s cubic-bezier(.2,.7,.3,1),box-shadow .18s;will-change:transform}
+.lift:hover{transform:scale(1.022);box-shadow:0 30px 64px -28px rgba(13,20,31,.45),
+  0 0 0 1px var(--g-bd-2);z-index:4}
+@media(prefers-reduced-motion:reduce){.lift,.lift:hover{transition:none;transform:none}}

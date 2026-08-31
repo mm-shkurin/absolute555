@@ -1,3 +1,12 @@
+/* Чертёж занимает всю ширину плитки и прижимается к её низу: над ним стоит служебная
+   метка, и она не должна отрываться от верхнего края. */
+.chart {
+  display: block;
+  width: 100%;
+  height: auto;
+  margin-top: auto;
+}
+
 .line {
   fill: none;
   stroke: var(--border-strong);

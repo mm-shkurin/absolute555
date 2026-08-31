@@ -49,6 +49,17 @@
   --status-wait-ink: #f7d59a;
   --status-bad-ink: #ffb3b6;
 
+  --bg-glass-page: #0b0e14;
+  --bg-glass: rgba(255, 255, 255, 0.06);
+  --border-glass: rgba(255, 255, 255, 0.12);
+  --border-glass-outer: rgba(0, 0, 0, 0.4);
+  --shadow-glass: 0 18px 48px -24px rgba(0, 0, 0, 0.7);
+  --shadow-glass-lifted: 0 30px 64px -28px rgba(0, 0, 0, 0.8);
+  /* Пелена в тёмной теме гасила бы свечение в серое пятно: свечение само приглушается. */
+  --glow-opacity: 0.26;
+  --glass-veil: transparent;
+  --glass-grid-line: rgba(255, 255, 255, 0.06);
+
   --field-recognized-bg: #10203a;
   --field-recognized-border: #2c4a7d;
 }
@@ -90,6 +101,17 @@
     --status-ok-ink: #8ee5bb;
     --status-wait-ink: #f7d59a;
     --status-bad-ink: #ffb3b6;
+
+    --bg-glass-page: #0b0e14;
+    --bg-glass: rgba(255, 255, 255, 0.06);
+    --border-glass: rgba(255, 255, 255, 0.12);
+    --border-glass-outer: rgba(0, 0, 0, 0.4);
+    --shadow-glass: 0 18px 48px -24px rgba(0, 0, 0, 0.7);
+    --shadow-glass-lifted: 0 30px 64px -28px rgba(0, 0, 0, 0.8);
+    /* Пелена в тёмной теме гасила бы свечение в серое пятно: свечение само приглушается. */
+    --glow-opacity: 0.26;
+    --glass-veil: transparent;
+    --glass-grid-line: rgba(255, 255, 255, 0.06);
 
     --field-recognized-bg: #10203a;
     --field-recognized-border: #2c4a7d;

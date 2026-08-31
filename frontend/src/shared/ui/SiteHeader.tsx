@@ -12,13 +12,28 @@ const SECTIONS = [
   { to: ROUTES.importFeed, label: 'Под заказ' },
 ]
 
-export function SiteHeader({ signedIn, onSignIn }: { signedIn: boolean; onSignIn?: () => void }) {
+// `floating` — вариант для лендинга: не полоса во всю ширину, а стеклянная панель внутри
+// контейнера. На рабочих экранах шапка остаётся полосой, иначе она перестанет отделять
+// содержимое от края окна при прокрутке списка.
+export function SiteHeader({
+  signedIn,
+  onSignIn,
+  floating,
+}: {
+  signedIn: boolean
+  onSignIn?: () => void
+  floating?: boolean
+}) {
   return (
-    <header className={styles.header} data-testid="site-header">
+    <header
+      className={[styles.header, floating ? styles.floating : ''].filter(Boolean).join(' ')}
+      data-testid="site-header"
+    >
       <Container className={styles.inner}>
         <Link to={ROUTES.home} className={styles.logo} data-testid="header-logo">
           <img src="/brand/logo-mark.svg" alt="" aria-hidden="true" />
           <b>Абсолют</b>
+          <span className={styles.numeral}>555</span>
         </Link>
         <nav className={styles.nav}>
           {SECTIONS.map((section) => (

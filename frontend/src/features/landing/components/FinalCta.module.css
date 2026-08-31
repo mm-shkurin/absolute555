@@ -3,8 +3,8 @@
 .cta {
   background: var(--bg-inverse);
   color: var(--text-inverse);
-  border-radius: 16px;
-  padding: 60px 44px;
+  border-radius: var(--radius-glass-large);
+  padding: 52px 44px;
 }
 
 .row {

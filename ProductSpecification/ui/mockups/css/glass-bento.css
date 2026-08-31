@@ -1,0 +1,66 @@
+/* Бенто героя: объявление, разобранное на восемь плиток 4×2. Каждая плитка — то, что
+   покупатель обычно выпытывает в переписке; вместе они и есть обещание лендинга. */
+.bento{position:relative;z-index:2;display:grid;grid-template-columns:repeat(4,1fr);
+  grid-auto-rows:184px;gap:14px}
+.b{padding:20px;border-radius:18px;display:flex;flex-direction:column;overflow:hidden}
+.b .k{font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--mut);display:block}
+.b .t{font-size:17px;font-weight:700;letter-spacing:-.02em;margin-top:auto}
+.b .s{font-size:13.5px;line-height:1.4;color:var(--ink2);margin-top:6px}
+.b .num{font-size:30px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  margin-top:auto}
+
+/* Главная плитка — фото и цена, занимает четверть сетки. */
+.b.main{grid-column:span 2;grid-row:span 2;padding:0;position:relative}
+.b.main .shot{flex:1;background:
+  repeating-linear-gradient(45deg,rgba(120,132,154,.10) 0 8px,transparent 8px 16px),
+  linear-gradient(160deg,var(--soft),transparent);
+  display:grid;place-items:center;color:var(--mut);font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;letter-spacing:.06em}
+.b.main .meta{padding:18px 20px;display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.b.main .meta .t{margin:0;font-size:20px}
+.b.main .meta .price{margin-left:auto;font-size:28px;font-weight:700;letter-spacing:-.03em;
+  font-variant-numeric:tabular-nums}
+.badge{position:absolute;left:16px;top:16px;display:inline-flex;align-items:center;gap:6px;
+  padding:6px 12px;border-radius:9px;background:var(--ok);color:#fff;font-size:12px;font-weight:600}
+
+/* Плитка замера: цвет шкалы — единственный второй цвет на странице. */
+.b.meas .val{font-size:34px;font-weight:700;letter-spacing:-.03em;font-variant-numeric:tabular-nums;
+  color:var(--ok);margin-top:auto}
+.b.meas .bar{display:flex;gap:3px;margin-top:12px}
+.b.meas .bar i{flex:1;height:7px;border-radius:2px;background:var(--none);display:block}
+.b.meas .bar i.ok{background:var(--ok)}
+.b.meas .bar i.warn{background:var(--warn)}
+.b.meas .bar i.bad{background:var(--bad)}
+
+.b.vin .code{font-family:'JetBrains Mono',monospace;font-size:15px;letter-spacing:.02em;
+  margin-top:auto;word-break:break-all;color:var(--brand)}
+.b.rate .stars{margin-top:auto;font-size:22px;color:var(--warn);letter-spacing:2px}
+.b.body svg{width:100%;height:auto;display:block;margin-top:auto}
+.bp-line{fill:none;stroke:var(--bp-line-2);stroke-width:1.4;stroke-linejoin:round}
+.bp-zone{stroke:transparent;stroke-width:1.5;transition:.15s;cursor:pointer}
+.bp-zone:hover{stroke:var(--brand);stroke-width:2.5}
+
+@container (max-width:1000px){
+  .bento{grid-template-columns:repeat(2,1fr);grid-auto-rows:160px}
+  .b.main{grid-column:span 2}
+}
+@container (max-width:560px){
+  .bento{grid-template-columns:repeat(2,1fr);grid-auto-rows:142px;gap:10px}
+  .b{padding:14px;border-radius:15px}
+  .b .k{font-size:9.5px}
+  .b .t{font-size:15px}
+  .b .s{font-size:12.5px}
+  .b.main{grid-column:span 2;grid-row:span 2}
+  .b.main .meta{padding:14px}
+  .b.main .meta .t{font-size:17px}
+  .b.main .meta .price{font-size:22px;margin-left:0;width:100%}
+  .b.meas .val{font-size:26px}
+  .b.vin .code{font-size:13px}
+  .b.rate .stars{font-size:18px}
+  .badge{font-size:10.5px;padding:5px 9px;left:12px;top:12px}
+}
+
+/* VIN показывается частично: полный номер — это личные данные владельца, в публичной
+   карточке он маскируется, видны только первые и последние знаки. */
+.b.vin .code .hide{color:var(--mut);letter-spacing:.14em}
