@@ -4,9 +4,10 @@ Five endpoints assembled this dictionary field by field, identically, and a fiel
 to the model reached whichever of the five somebody remembered.
 """
 
-from typing import Iterable, List
+from typing import Iterable, List, Optional
 
 from app.models.sale_car import SaleCars
+from app.models.users import Users
 from app.core.config import PhotoSettings
 from app.services.s3_service import s3_service
 
@@ -56,12 +57,38 @@ def _photo_view(photo: dict) -> dict:
     }
 
 
-async def to_view(listing: SaleCars) -> dict:
+def seller_view(owner: Optional[Users]) -> Optional[dict]:
+    """Who is selling: a name and a face, nothing that identifies them off-platform.
+
+    The name comes from whatever provider the seller signed in with. A guest has none,
+    and the screen says so rather than inventing one.
+    """
+    if owner is None:
+        return None
+
+    profile = owner.yandex_json if isinstance(owner.yandex_json, dict) else {}
+    name = " ".join(
+        part for part in (profile.get("first_name"), profile.get("last_name")) if part
+    ).strip()
+    return {"user_id": owner.id, "name": name or None, "avatar_url": None}
+
+
+async def to_view(listing: SaleCars, viewer: Optional[Users] = None) -> dict:
+    """One listing, as the caller in front of it may see it.
+
+    The phone number is the one field that depends on who is asking: it is the seller's
+    personal number, and a payload carrying it to everyone is one scrape away from every
+    number on the platform (story 8).
+    """
     view = {name: getattr(listing, name) for name in _FIELDS}
     view["brand"] = listing.brand.name_ru if listing.brand else None
     view["model"] = listing.model.name if listing.model else None
 
     view["autofill"] = autofill_view(listing)
+
+    if not _may_read_phone(listing, viewer):
+        view["phone_number"] = None
+    view["seller"] = seller_view(getattr(listing, "owner", None))
 
     photos = [_photo_view(photo) for photo in (listing.photos or [])]
     view["photos"] = photos
@@ -77,5 +104,32 @@ def to_gallery(listing: SaleCars) -> dict:
     }
 
 
-async def to_views(listings: Iterable[SaleCars]) -> List[dict]:
-    return [await to_view(listing) for listing in listings]
+def _may_read_phone(listing: SaleCars, viewer: Optional[Users]) -> bool:
+    if viewer is None:
+        return False
+    return str(viewer.id) == str(listing.user_id) or viewer.role in ("manager", "admin")
+
+
+def to_card(listing: SaleCars) -> dict:
+    """A listing as the feed shows it.
+
+    Deliberately not `to_view` with fields removed: the feed answers twenty at a time,
+    and a field added to the card view would silently be added twenty-fold here.
+    """
+    photos = [_photo_view(photo) for photo in (listing.photos or [])]
+    return {
+        "sale_car_id": listing.sale_car_id,
+        "brand": listing.brand.name_ru if listing.brand else None,
+        "model": listing.model.name if listing.model else None,
+        "year": listing.year,
+        "price": listing.price,
+        "milleage": listing.milleage,
+        "transmission": listing.transmission,
+        "status": listing.status,
+        "preview_photo_url": photos[0]["preview_url"] if photos else None,
+        "published_at": listing.published_at.isoformat() if listing.published_at else None,
+    }
+
+
+async def to_views(listings: Iterable[SaleCars], viewer: Optional[Users] = None) -> List[dict]:
+    return [await to_view(listing, viewer) for listing in listings]

@@ -40,7 +40,11 @@ class SaleCarService:
     async def get_sale_car_by_id(self, sale_car_id: str) -> Optional[SaleCars]:
         res = await self.db.execute(
             select(SaleCars)
-            .options(selectinload(SaleCars.brand), selectinload(SaleCars.model))
+            .options(
+                selectinload(SaleCars.brand),
+                selectinload(SaleCars.model),
+                selectinload(SaleCars.owner),
+            )
             .where(SaleCars.sale_car_id == uuid.UUID(sale_car_id))
         )
         return res.scalar_one_or_none()
@@ -48,7 +52,9 @@ class SaleCarService:
 
     async def get_all_sale_cars(self, status: Optional[SaleCarStatus] = None) -> List[SaleCars]:
         query = select(SaleCars).options(
-            selectinload(SaleCars.brand), selectinload(SaleCars.model)
+            selectinload(SaleCars.brand),
+            selectinload(SaleCars.model),
+            selectinload(SaleCars.owner),
         )
         if status:
             query = query.where(SaleCars.status == status.value)
@@ -59,7 +65,11 @@ class SaleCarService:
     async def get_sale_cars_by_user(self, user_id: str, status: Optional[SaleCarStatus] = None) -> List[SaleCars]:
         query = (
             select(SaleCars)
-            .options(selectinload(SaleCars.brand), selectinload(SaleCars.model))
+            .options(
+                selectinload(SaleCars.brand),
+                selectinload(SaleCars.model),
+                selectinload(SaleCars.owner),
+            )
             .where(SaleCars.user_id == uuid.UUID(user_id))
         )
         if status:

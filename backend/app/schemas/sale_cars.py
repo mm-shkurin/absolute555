@@ -6,6 +6,7 @@ from datetime import datetime
 # One vocabulary for the wire and the row. Re-declaring the six values here is how the
 # two drift apart the first time one is extended.
 from app.models.sale_car import AutofillState, FieldSource, SaleCarStatus
+from app.schemas.feed import Seller
 
 
 class SaleCarCreate(BaseModel):
@@ -131,6 +132,7 @@ class SaleCarResponse(BaseModel):
     preview_photo_url: Optional[str] = None
     photos: List[Photo] = []
     autofill: Optional[Autofill] = None
+    seller: Optional[Seller] = None
 
     class Config:
         from_attributes = True

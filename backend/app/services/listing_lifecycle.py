@@ -65,7 +65,11 @@ class ListingLifecycleService:
             raise ListingNotFound(listing_id)
         found = await self.db.execute(
             select(SaleCars)
-            .options(selectinload(SaleCars.brand), selectinload(SaleCars.model))
+            .options(
+                selectinload(SaleCars.brand),
+                selectinload(SaleCars.model),
+                selectinload(SaleCars.owner),
+            )
             .where(SaleCars.sale_car_id == key)
         )
         listing = found.scalar_one_or_none()

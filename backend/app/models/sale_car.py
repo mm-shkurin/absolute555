@@ -123,6 +123,9 @@ class SaleCars(Base):
     model_source = Column(String, nullable=True)
     autofill_updated_at = Column(DateTime, nullable=True)
 
+    # The seller, for the card: a listing without a name attached is a listing whose
+    # counterparty is anonymous, which is the thing this marketplace is against.
+    owner = relationship("Users")
     brand = relationship("Brand")
     model = relationship("CarModel")
     offers = relationship("Offer", back_populates="sale_car", cascade="all, delete-orphan")

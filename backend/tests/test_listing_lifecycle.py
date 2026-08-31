@@ -132,8 +132,9 @@ def test_should_return_a_withdrawn_listing_through_review(client, seller, modera
     assert response.status_code == 200, response.text
     assert response.json()["status"] == "moderation"
 
+    # The feed answers a page and a count since story 7, not a bare array.
     feed = client.get("/api/v1/sale_car/list").json()
-    assert listing_id not in [car["sale_car_id"] for car in feed]
+    assert listing_id not in [car["sale_car_id"] for car in feed["items"]]
 
 
 def test_should_refuse_a_transition_the_current_status_does_not_allow(client, seller, catalogue):
