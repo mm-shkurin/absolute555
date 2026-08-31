@@ -5,6 +5,7 @@
 // `ProductSpecification/frontend-architecture.md`, таблица «Срезы Абсолюта».
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useSession } from './useSession'
+import { beginSignIn } from '../shared/session/signIn'
 import { LandingPage } from '../features/landing/LandingPage'
 import { FeedPage } from '../features/feed/FeedPage'
 import { ListingPage } from '../features/listing/ListingPage'
@@ -51,22 +52,46 @@ export function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path={ROUTES.home} element={signedIn ? <FeedPage signedIn /> : <LandingPage />} />
-        <Route path={ROUTES.landing} element={<LandingPage signedIn={signedIn} />} />
-        <Route path={ROUTES.feed} element={<FeedPage signedIn={signedIn} />} />
+        <Route
+          path={ROUTES.home}
+          element={
+            signedIn ? (
+              <FeedPage signedIn onSignIn={beginSignIn} />
+            ) : (
+              <LandingPage onSignIn={beginSignIn} />
+            )
+          }
+        />
+        <Route
+          path={ROUTES.landing}
+          element={<LandingPage signedIn={signedIn} onSignIn={beginSignIn} />}
+        />
+        <Route
+          path={ROUTES.feed}
+          element={<FeedPage signedIn={signedIn} onSignIn={beginSignIn} />}
+        />
         <Route path={ROUTES.importFeed} element={<ImportFeedPage signedIn={signedIn} />} />
-        <Route path={ROUTES.listing()} element={<ListingPage signedIn={signedIn} />} />
-        <Route path={ROUTES.thicknessMap()} element={<ThicknessPage signedIn={signedIn} />} />
+        <Route
+          path={ROUTES.listing()}
+          element={<ListingPage signedIn={signedIn} onSignIn={beginSignIn} />}
+        />
+        <Route
+          path={ROUTES.thicknessMap()}
+          element={<ThicknessPage signedIn={signedIn} onSignIn={beginSignIn} />}
+        />
         <Route path={ROUTES.seller()} element={<SellerProfilePage signedIn={signedIn} />} />
         <Route path={ROUTES.supplier()} element={<SupplierPage signedIn={signedIn} />} />
         <Route path={ROUTES.importRequest()} element={<ImportRequestPage signedIn={signedIn} />} />
 
-        <Route path={ROUTES.selling} element={<SellingWizardPage />} />
-        <Route path={ROUTES.sellingDraft()} element={<SellingWizardPage />} />
-        <Route path={ROUTES.myListings} element={<MyListingsPage />} />
-        <Route path={ROUTES.offers} element={<OffersPage />} />
-        <Route path={ROUTES.chats} element={<ChatsPage />} />
-        <Route path={ROUTES.chat()} element={<ChatsPage />} />
+        <Route path={ROUTES.selling} element={<SellingWizardPage onSignIn={beginSignIn} />} />
+        <Route
+          path={ROUTES.sellingDraft()}
+          element={<SellingWizardPage onSignIn={beginSignIn} />}
+        />
+        <Route path={ROUTES.myListings} element={<MyListingsPage onSignIn={beginSignIn} />} />
+        <Route path={ROUTES.offers} element={<OffersPage onSignIn={beginSignIn} />} />
+        <Route path={ROUTES.chats} element={<ChatsPage onSignIn={beginSignIn} />} />
+        <Route path={ROUTES.chat()} element={<ChatsPage onSignIn={beginSignIn} />} />
         <Route path={ROUTES.profile} element={<ProfilePage />} />
         <Route path={ROUTES.supplierApplication} element={<SupplierApplicationPage />} />
         <Route path={ROUTES.newImportRequest} element={<NewRequestPage />} />
