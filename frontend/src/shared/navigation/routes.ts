@@ -35,7 +35,7 @@ export const ROUTES = {
   supplierApplication: '/my/supplier-application',
   newImportRequest: '/import-requests/new',
 
-  // Возврат от провайдера. Адрес зарегистрирован у Яндекса и VK — менять его нельзя,
+  // Возврат от провайдера. Адрес зарегистрирован у Яндекса — менять его нельзя,
   // не поменяв настройки приложения на их стороне.
   oauthCallback: '/auth/callback',
 

@@ -13,7 +13,8 @@ const V1 = `/${MOUNT}/${API_VERSION}`
 
 export const API = {
   auth: {
-    // Пароля нет: вход только через Яндекс ID и VK ID — UserFlows, поток 1.
+    // Пароля нет: вход только через Яндекс ID. VK описан в UserFlows, потоке 1, но не
+    // реализован ни на сервере, ни здесь.
     oauthStart: (provider: string) => `${V1}/auth/oauth/${encodeURIComponent(provider)}/start`,
     oauthExchange: `${V1}/auth/oauth/exchange`,
     refresh: `${V1}/auth/refresh`,

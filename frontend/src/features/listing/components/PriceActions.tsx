@@ -53,8 +53,8 @@ export function PriceActions({
       </div>
       {guest ? (
         <div className={styles.locked}>
-          Чтобы предложить цену или написать — войдите через <b>Яндекс&nbsp;ID</b> или{' '}
-          <b>VK&nbsp;ID</b>. Вернётесь на эту же карточку.
+          Чтобы предложить цену или написать — войдите через <b>Яндекс&nbsp;ID</b>. Вернётесь на эту
+          же карточку.
           <Button size="small" block onClick={handlers.onSignIn} data-testid="side-sign-in">
             Войти
           </Button>

@@ -14,7 +14,7 @@ export function FinalCta() {
             <div className={own.text}>
               <h2 className={own.title}>Разместить объявление — две минуты</h2>
               <p className={own.sub}>
-                Вход через Яндекс ID или VK ID. Ни пароля, ни почты, ни подтверждения по СМС.
+                Вход через Яндекс ID. Ни пароля, ни почты, ни подтверждения по СМС.
               </p>
             </div>
             <ButtonLink to={ROUTES.selling} size="big" data-testid="cta-start">
