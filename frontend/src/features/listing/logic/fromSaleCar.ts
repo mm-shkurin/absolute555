@@ -40,9 +40,11 @@ export function toListingDetailWire(
     sold_at: sold ? car.updated_at : null,
     thickness_map_complete: false,
     has_thickness_map: false,
-    // Телефон есть, если продавец его указал. Скрыть его отдельной настройкой сервер
-    // пока не умеет, поэтому «доступен» здесь означает «заполнен».
-    phone_available: Boolean(car.phone_number),
+    // По контракту истории 7 телефон — отдельный запрос `POST /{id}/reveal-phone`, а не
+    // поле карточки: полем телефоны площадки выкачиваются одним проходом. Поэтому для
+    // чужого объявления кнопка доступна всем вошедшим, а решает сервер; владельцу же
+    // показывать нечего, кроме того, что он сам вписал.
+    phone_available: owned ? Boolean(car.phone_number) : true,
     chat_allowed: false,
     owned_by_me: owned,
     published_at: car.published_at,

@@ -1,14 +1,9 @@
-// Клиент ленты. Ходит на `GET /sale_car/list` — единственную выдачу объявлений, которую
-// сервер отдаёт сегодня, — и переводит её в форму карточки.
-//
-// Отбор и сортировка делаются здесь же, на полученном списке: параметров отбора у сервера
-// нет. Как только они появятся, `applyQuery` уходит, а `toSearchParams` начинает
-// подставляться в путь.
-import { fetchPublished } from '../../../shared/api/backend/saleCarApi'
-import { toListingWire } from '../../../shared/domain/listing/fromSaleCar'
+// Клиент ленты. Ходит по контракту истории 7 (`api-specs/sale_car_feed.yaml`): страница,
+// точный счётчик, фильтры и сортировка — всё на стороне сервера.
+import { fetchFeed as fetchFeedPage } from '../../../shared/api/backend/saleCarApi'
+import type { FeedCardWire } from '../../../shared/api/backend/feedContract'
 import type { ListingWire } from '../../../shared/domain/listing/listingWire'
-import type { FeedQuery } from '../logic/feedQuery'
-import { applyQuery } from '../logic/filterListings'
+import { toFeedFilters, type FeedQuery } from '../logic/feedQuery'
 
 export type { ListingWire }
 
@@ -17,10 +12,29 @@ export interface FeedWire {
   total: number
 }
 
+// Карточка списка беднее объявления целиком, и перевод у неё свой: ни VIN, ни фотографий,
+// кроме обложки, в ленте нет — по контракту, а не по недосмотру.
+function toListing(card: FeedCardWire): ListingWire {
+  return {
+    id: card.sale_car_id,
+    brand: card.brand ?? '',
+    model: card.model ?? '',
+    year: card.year ?? 0,
+    price: card.price,
+    mileage_km: card.milleage,
+    engine_power_hp: null,
+    transmission: card.transmission,
+    city: null,
+    photo_url: card.preview_photo_url,
+    // Замеры — история 14, канал «под заказ» — история 17. До них ни одно объявление в
+    // ленте не может заявить ни карту, ни срок доставки.
+    has_thickness_map: false,
+    vin_verified: false,
+    import_delivery_days: null,
+  }
+}
+
 export async function fetchFeed(query: FeedQuery, signal?: AbortSignal): Promise<FeedWire> {
-  const cars = await fetchPublished(undefined, signal)
-  const items = applyQuery(cars.map(toListingWire), query)
-  // Общее число — это число найденного, а не всего в базе: страниц у выдачи пока нет,
-  // и обещать «248 объявлений» при двадцати показанных было бы неправдой.
-  return { items, total: items.length }
+  const page = await fetchFeedPage(toFeedFilters(query), signal)
+  return { items: page.items.map(toListing), total: page.total }
 }

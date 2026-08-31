@@ -1,6 +1,8 @@
 // Состояние фильтров и его перевод в параметры запроса. Чистые функции: ни fetch, ни React —
 // то же состояние из адресной строки, из шторки на телефоне и из панели на десктопе даёт
 // один и тот же запрос.
+import type { FeedFilters, FeedSort as BackendSort } from '../../../shared/api/backend/feedContract'
+
 export type FeedTab = 'available' | 'import'
 export type FeedSort = 'newest' | 'price-asc' | 'price-desc'
 
@@ -25,33 +27,35 @@ export const EMPTY_QUERY: FeedQuery = {
   withThicknessMap: false,
 }
 
-const SORT_PARAM: Record<FeedSort, string> = {
-  newest: 'created_at:desc',
-  'price-asc': 'price:asc',
-  'price-desc': 'price:desc',
+// Имена сортировок — из `api-specs/sale_car_feed.yaml`, а не свои: сервер принимает
+// ровно эти три значения.
+const SORT_PARAM: Record<FeedSort, BackendSort> = {
+  newest: 'newest',
+  'price-asc': 'price_asc',
+  'price-desc': 'price_desc',
 }
 
-// Пустая строка в поле «от» и отсутствие фильтра — одно и то же для сервера, но разные
-// параметры на проводе: `price_from=` сервер обязан разобрать, и разбирает по-разному.
-function put(params: URLSearchParams, key: string, value?: string) {
-  const trimmed = value?.trim()
-  if (trimmed) params.set(key, trimmed)
+const numeric = (value?: string): number | undefined => {
+  const parsed = Number(value?.trim())
+  return value?.trim() && Number.isFinite(parsed) ? parsed : undefined
 }
 
-export function toSearchParams(query: FeedQuery): URLSearchParams {
-  const params = new URLSearchParams()
-  params.set('kind', query.tab === 'import' ? 'import' : 'available')
-  params.set('sort', SORT_PARAM[query.sort])
-  put(params, 'brand', query.brand)
-  put(params, 'year_from', query.yearFrom)
-  put(params, 'year_to', query.yearTo)
-  put(params, 'price_from', query.priceFrom)
-  put(params, 'price_to', query.priceTo)
-  put(params, 'mileage_from', query.mileageFrom)
-  put(params, 'mileage_to', query.mileageTo)
-  if (query.transmissions.length > 0) params.set('transmission', query.transmissions.join(','))
-  if (query.withThicknessMap) params.set('thickness_map', 'true')
-  return params
+/** Перевод состояния фильтров в параметры ленты. Двух фильтров экрана сервер не знает:
+ *  вкладка «под заказ» ждёт истории 17, «с картой замеров» — истории 14, и параметров под
+ *  них в контракте нет. Отправлять их наугад значит получить отказ на весь запрос. */
+export function toFeedFilters(query: FeedQuery, page = 1): FeedFilters {
+  return {
+    brand_id: query.brand?.trim() || undefined,
+    year_from: numeric(query.yearFrom),
+    year_to: numeric(query.yearTo),
+    price_from: numeric(query.priceFrom),
+    price_to: numeric(query.priceTo),
+    mileage_from: numeric(query.mileageFrom),
+    mileage_to: numeric(query.mileageTo),
+    transmission: query.transmissions.length > 0 ? query.transmissions : undefined,
+    sort: SORT_PARAM[query.sort],
+    page,
+  }
 }
 
 export function toggleTransmission(query: FeedQuery, value: string): FeedQuery {

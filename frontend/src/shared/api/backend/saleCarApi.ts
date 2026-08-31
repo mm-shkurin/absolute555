@@ -4,6 +4,7 @@
 // здесь нет — это решает фича.
 import { send } from '../send'
 import { BACKEND } from './paths'
+import type { FeedFilters, FeedPageWire, RevealedPhone } from './feedContract'
 import type {
   DocumentLinkWire,
   GalleryWire,
@@ -17,7 +18,31 @@ import type {
 const withStatus = (path: string, status?: SaleCarStatus) =>
   status ? `${path}?status=${encodeURIComponent(status)}` : path
 
-/** Опубликованные объявления. Без параметра сервер отдаёт только `published`. */
+function feedQuery(filters: FeedFilters): string {
+  const params = new URLSearchParams()
+  for (const [key, value] of Object.entries(filters)) {
+    if (value === undefined) continue
+    // Коробка повторяется параметром, а не склеивается запятой: так записано в спеке,
+    // и склейка потребовала бы от сервера разбирать значение, в котором запятая законна.
+    if (Array.isArray(value)) for (const item of value) params.append(key, item)
+    else params.set(key, String(value))
+  }
+  const query = params.toString()
+  return query ? `?${query}` : ''
+}
+
+/** Лента по контракту истории 7: страница, точный счётчик, фильтры и сортировка. */
+export function fetchFeed(filters: FeedFilters = {}, signal?: AbortSignal) {
+  return send<FeedPageWire>(`${BACKEND.saleCar.published}${feedQuery(filters)}`, { signal })
+}
+
+/** Телефон — отдельный запрос, а не поле выдачи: полем телефоны всей площадки
+ *  выкачиваются одним проходом, и кнопка «Показать телефон» тогда ничего не значит. */
+export function revealPhone(saleCarId: string) {
+  return send<RevealedPhone>(BACKEND.saleCar.revealPhone(saleCarId), { method: 'POST' })
+}
+
+/** Прежняя выдача без страниц. Останется, пока история 7 не доедет на сервер. */
 export function fetchPublished(status?: SaleCarStatus, signal?: AbortSignal) {
   return send<SaleCarWire[]>(withStatus(BACKEND.saleCar.published, status), { signal })
 }

@@ -37,6 +37,7 @@ export const BACKEND = {
     // POST без тела — сервер сам заводит черновик текущему пользователю.
     draft: `${V1}/sale_car`,
     published: `${V1}/sale_car/list`,
+    revealPhone: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/reveal-phone`,
     mine: `${V1}/sale_car/user`,
     one: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}`,
     photos: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/photos`,
