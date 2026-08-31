@@ -57,8 +57,10 @@ async def get_offers_for_car(
     if not await can_manage_offer_as_owner(current_user, sale_car_id, db):
         raise AuthorizationError("Only the car owner may see every offer", code="NOT_CAR_OWNER")
 
-    offers = await service.get_offers_by_sale_car(sale_car_id)
-    return offers
+    try:
+        return await service.get_offers_by_sale_car(sale_car_id)
+    except OfferError as error:
+        raise to_http(error)
 
 @offer_router.get("/{offer_id}", response_model=OfferResponse)
 async def get_offer_by_id(
@@ -67,7 +69,13 @@ async def get_offer_by_id(
     current_user: Users = Depends(get_current_user)
 ):
     service = OfferService(db)
-    offer = await service.get_offer_by_id(offer_id)
+    try:
+        # Inside the guard: an identifier that is not one is a refusal the service
+        # states, and reading it outside turned "not-a-uuid" into a 500.
+        offer = await service.get_offer_by_id(offer_id)
+    except OfferError as error:
+        raise to_http(error)
+
     if not offer:
         raise ResourceNotFoundError("Offer not found", code="OFFER_NOT_FOUND")
 
@@ -84,7 +92,11 @@ async def update_offer_status(
     current_user: Users = Depends(get_current_user)
 ):
     service = OfferService(db)
-    offer = await service.get_offer_by_id(offer_id)
+    try:
+        offer = await service.get_offer_by_id(offer_id)
+    except OfferError as error:
+        raise to_http(error)
+
     if not offer:
         raise ResourceNotFoundError("Offer not found", code="OFFER_NOT_FOUND")
 
