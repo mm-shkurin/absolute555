@@ -22,7 +22,7 @@ Flow: `features/<name>` -> `dev` -> `main`.
 
 ## Current working branch
 
-**One shared working branch at a time — currently `features/moderation-queue`.** Do not
+**One shared working branch at a time — currently `features/offer-lifecycle`.** Do not
 open a second branch beside it: both sessions work the same tree, and two branches over
 one tree put them on different heads.
 
@@ -38,7 +38,7 @@ dev:dev`. Checking `dev` out would overwrite whatever the other session has open
 Previous working branches: `features/marketplace-scope-cut` (stories 1-3, merged),
 `features/listing-lifecycle` (story 4, merged), `features/listing-photos` (story 5, merged),
 `features/sts-autofill-catalog` (story 6, merged), `features/feed-and-listing-card`
-(stories 7 and 8, merged).
+(stories 7 and 8, merged), `features/moderation-queue` (story 9, merged).
 
 The rules that still apply: one commit per story, conventional commit subjects, and no
 direct commits to `main`.
