@@ -108,7 +108,17 @@ components:
       description: Все поля необязательны. Поле status здесь не принимается.
       properties:
         vin: { type: string, nullable: true }
-        phone_number: { type: string, nullable: true }
+        phone_number:
+          type: string
+          nullable: true
+          description: |
+            Только владельцу и модератору. Всем остальным null, пока они не спросят
+            телефон явно — POST /sale_car/{id}/reveal-phone (история 8).
+        seller:
+          allOf: [{ $ref: 'sale_car_feed.yaml#/components/schemas/Seller' }]
+          nullable: true
+          description: |
+            Кто продаёт: имя и аватар. Рейтинг и число сделок приезжают с историей 12.
         price: { type: number, nullable: true }
         milleage: { type: number, nullable: true }
         year: { type: integer, nullable: true }

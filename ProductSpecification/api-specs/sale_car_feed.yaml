@@ -1,0 +1,151 @@
+openapi: 3.0.3
+info:
+  title: Listing feed and listing card
+  version: 1.0.0
+  description: |
+    Лента и карточка — единственные две выдачи, открытые человеку, который ещё не
+    вошёл. Он листает, фильтрует и читает характеристики; предложения, чат и телефон
+    продавца требуют входа.
+
+    Счётчик в ленте точный, а не оценка: кнопка на экране обещает конкретное число
+    объявлений, и оценка сделала бы это обещание ложным.
+
+paths:
+  /api/v1/sale_car/list:
+    get:
+      summary: Лента опубликованных объявлений
+      operationId: listSaleCars
+      tags: [sale_car]
+      description: |
+        Только опубликованные. Черновик, объявление на модерации и отклонённое видны
+        владельцу через `GET /sale_car/user`, а не отсюда.
+
+        Отдаёт объект, а не массив: без общего числа экран не может ни показать
+        счётчик, ни нарисовать страницы.
+      parameters:
+        - name: brand_id
+          in: query
+          schema: { type: string, format: uuid }
+        - name: model_id
+          in: query
+          description: |
+            Только вместе с `brand_id`. Модель вне марки не значит ничего — `Focus`
+            есть у трёх производителей.
+          schema: { type: string, format: uuid }
+        - { name: year_from, in: query, schema: { type: integer } }
+        - { name: year_to, in: query, schema: { type: integer } }
+        - { name: price_from, in: query, schema: { type: number } }
+        - { name: price_to, in: query, schema: { type: number } }
+        - { name: mileage_from, in: query, schema: { type: number } }
+        - { name: mileage_to, in: query, schema: { type: number } }
+        - name: transmission
+          in: query
+          description: Повторяемый — коробка выбирается несколькими значениями сразу.
+          schema:
+            type: array
+            items: { type: string }
+        - name: sort
+          in: query
+          schema:
+            type: string
+            enum: [newest, price_asc, price_desc]
+            default: newest
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 60, default: 20 }
+      responses:
+        '200':
+          description: |
+            Страница выдачи. Страница за концом ленты — пустой `items` и честный
+            `total`, а не 404: лента, из которой удалили объявления, не ломается под
+            курсором читателя.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/FeedPage' }
+        '422':
+          description: |
+            Диапазон задан наоборот, модель прислана без марки, или сортировка не из
+            списка. Пустая выдача на опечатку выглядит как честный ответ и потому хуже.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/sale_car/{sale_car_id}/reveal-phone:
+    post:
+      summary: Показать телефон продавца
+      operationId: revealSellerPhone
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Отдельный запрос, а не поле выдачи: полем телефоны всей площадки выкачиваются
+        одним проходом, и кнопка «Показать телефон» на экране тогда не значит ничего.
+
+        Только вошедшему и только по опубликованному объявлению.
+      parameters:
+        - name: sale_car_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Телефон
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [phone_number]
+                properties:
+                  phone_number: { type: string }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: Объявление не найдено, или оно не опубликовано.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  schemas:
+    FeedPage:
+      type: object
+      required: [items, total, page, size]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/FeedCard' }
+        total:
+          type: integer
+          description: |
+            Точное число объявлений под текущими фильтрами, а не под текущей страницей.
+        page: { type: integer }
+        size: { type: integer }
+
+    Seller:
+      type: object
+      required: [user_id]
+      properties:
+        user_id: { type: string, format: uuid }
+        name: { type: string, nullable: true }
+        avatar_url: { type: string, nullable: true }
+
+    FeedCard:
+      type: object
+      description: |
+        Ровно то, что нарисовано на карточке списка. Описание, телефон и снимок СТС
+        сюда не входят — лента отдаёт двадцать объявлений за раз, и каждое лишнее поле
+        умножается на двадцать.
+      required: [sale_car_id, price, status]
+      properties:
+        sale_car_id: { type: string, format: uuid }
+        brand: { type: string, nullable: true }
+        model: { type: string, nullable: true }
+        year: { type: integer, nullable: true }
+        price: { type: number }
+        milleage: { type: number, nullable: true }
+        transmission: { type: string, nullable: true }
+        status: { $ref: 'sale_car_draft.yaml#/components/schemas/SaleCarStatus' }
+        preview_photo_url: { type: string, nullable: true }
+        published_at: { type: string, format: date-time, nullable: true }
