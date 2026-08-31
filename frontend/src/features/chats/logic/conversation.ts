@@ -42,7 +42,9 @@ export function toDialogs(chats: ChatWire[], now: Date): DialogView[] {
   return chats.map((chat) => ({
     id: chat.id,
     name: chat.counterparty_name,
-    when: shortWhen(new Date(chat.last_message_at), now),
+    // Диалог заводится вместе с предложением по цене и до первого сообщения пуст: времени
+    // у него нет, и `new Date('')` уронил бы форматирование вместе со всем списком.
+    when: chat.last_message_at ? shortWhen(new Date(chat.last_message_at), now) : '',
     listingTitle: chat.listing_title,
     preview: chat.last_message,
     unread: chat.unread_count,

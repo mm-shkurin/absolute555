@@ -54,7 +54,7 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
                   <Conversation
                     header={conversation.header}
                     messages={conversation.messages}
-                    onSend={() => undefined}
+                    onSend={conversation.send}
                     onBack={phone ? () => setSelected(null) : undefined}
                   />
                 ) : null}

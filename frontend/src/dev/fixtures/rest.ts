@@ -48,6 +48,7 @@ export const MESSAGES: MessageWire[] = [
     body: 'Дмитрий предложил 3 850 000 ₽',
     created_at: new Date(Date.now() - 28 * HOURS).toISOString(),
     outgoing: false,
+    read_at: null,
   },
   {
     id: 'm1',
@@ -55,6 +56,7 @@ export const MESSAGES: MessageWire[] = [
     body: 'Здравствуйте. Крыло переднее правое красили — что там было?',
     created_at: new Date(Date.now() - 27 * HOURS).toISOString(),
     outgoing: false,
+    read_at: null,
   },
   {
     id: 'm2',
@@ -62,6 +64,7 @@ export const MESSAGES: MessageWire[] = [
     body: 'Парковочный контакт, задели столб. Лонжерон целый, красили только крыло — это видно в карте замеров.',
     created_at: new Date(Date.now() - 26 * HOURS).toISOString(),
     outgoing: true,
+    read_at: null,
   },
   {
     id: 'm3',
@@ -69,6 +72,7 @@ export const MESSAGES: MessageWire[] = [
     body: 'Понял, спасибо. А по документам всё чисто?',
     created_at: new Date(Date.now() - 2 * HOURS).toISOString(),
     outgoing: false,
+    read_at: null,
   },
 ]
 

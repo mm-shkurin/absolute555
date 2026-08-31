@@ -27,6 +27,7 @@ import { NewRequestPage } from '../features/importRequest/NewRequestPage'
 import { SupplierApplicationPage } from '../features/profile/SupplierApplicationPage'
 import { ROUTES } from '../shared/navigation/routes'
 import { TabBar } from '../shared/ui/TabBar'
+import { useUnreadMessages } from '../shared/session/useUnread'
 
 // Заглушка до появления первой фичи. Ровно одна, названная заглушкой: несколько
 // «временных» пустых компонентов расползаются по кодовой базе и переживают всех.
@@ -48,6 +49,7 @@ function Pending({ screen }: { screen: string }) {
 export function App() {
   const session = useSession()
   const signedIn = session !== null
+  const unread = useUnreadMessages()
 
   return (
     <BrowserRouter>
@@ -104,7 +106,7 @@ export function App() {
 
         <Route path="*" element={<Pending screen="Страница не найдена" />} />
       </Routes>
-      <TabBar />
+      <TabBar counts={{ chats: unread }} />
     </BrowserRouter>
   )
 }

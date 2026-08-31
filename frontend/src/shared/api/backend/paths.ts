@@ -59,6 +59,15 @@ export const BACKEND = {
     status: (offerId: string) => `${V1}/offer/${id(offerId)}/status`,
     withdraw: (offerId: string) => `${V1}/offer/${id(offerId)}/withdraw`,
   },
+  chat: {
+    dialogs: `${V1}/chat/dialogs`,
+    messages: (dialogId: string) => `${V1}/chat/dialogs/${id(dialogId)}/messages`,
+    read: (dialogId: string) => `${V1}/chat/dialogs/${id(dialogId)}/read`,
+    unread: `${V1}/chat/unread`,
+    // Живой поток. Токен уходит параметром: у браузерного WebSocket нет заголовков,
+    // приложить `Authorization` к рукопожатию нечем.
+    socket: (token: string) => `${V1}/chat/ws?token=${encodeURIComponent(token)}`,
+  },
   moderation: {
     queue: `${V1}/moderation/queue`,
     counts: `${V1}/moderation/counts`,

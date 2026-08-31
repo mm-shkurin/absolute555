@@ -40,6 +40,7 @@ describe('чаты', () => {
         body: 'вчерашнее',
         created_at: new Date(2026, 7, 27, 14, 41).toISOString(),
         outgoing: false,
+        read_at: null,
       },
       {
         id: 'm2',
@@ -47,6 +48,7 @@ describe('чаты', () => {
         body: 'сегодняшнее',
         created_at: new Date(2026, 7, 28, 15, 4).toISOString(),
         outgoing: true,
+        read_at: null,
       },
     ]
     const view = toMessages(messages, now)
