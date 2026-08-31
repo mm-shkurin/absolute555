@@ -44,10 +44,13 @@ export function useDraftSync(enabled: boolean, existingId?: string): DraftSync {
       return
     }
     if (!enabled || idRef.current || creating.current) return
-    let cancelled = false
+    // Отмены здесь нет намеренно. Первый заход эффекта в режиме строгой проверки сразу
+    // отменяется и запускается заново, а обещание создания уже сохранено — отменённый
+    // заход разрешался бы в «черновика нет», и загрузка снимка ждала бы именно его,
+    // навсегда. Записать идентификатор в размонтированном мастере безвредно: это ссылка,
+    // а не состояние, и следующий заход её же и переиспользует.
     creating.current = startDraft()
       .then((car) => {
-        if (cancelled) return null
         idRef.current = car.sale_car_id
         setSaleCarId(car.sale_car_id)
         return car.sale_car_id
@@ -55,9 +58,6 @@ export function useDraftSync(enabled: boolean, existingId?: string): DraftSync {
       // Гость и оборванная сеть выглядят здесь одинаково: черновик остаётся только на
       // экране, и мастер об этом молчит до попытки отправки.
       .catch(() => null)
-    return () => {
-      cancelled = true
-    }
   }, [enabled, existingId])
 
   const save = useCallback(async (draft: Draft) => {

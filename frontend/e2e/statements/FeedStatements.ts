@@ -17,9 +17,25 @@ export class FeedStatements {
   constructor(private readonly driver: WebDriver) {}
 
   // Единственная разрешённая навигация по адресу — вход в приложение.
+  //
+  // Вторая попытка — не борьба с мигающим тестом: дев-сервер под прогоном может умереть
+  // между файлами сценариев и подняться заново (см. `e2e/serve.ts`), и первый заход в
+  // этот момент упирается в отказ соединения.
   async openApp(): Promise<void> {
-    await this.driver.get(BASE_URL)
+    await this.openWithRetries(6)
     await waitForVisible(this.driver, 'site-header')
+  }
+
+  // Ждём подъёма, а не фиксированную паузу: перезапуск занимает от секунды до десяти,
+  // и пауза наугад либо тратит время зря, либо всё равно не дожидается.
+  private async openWithRetries(left: number): Promise<void> {
+    try {
+      await this.driver.get(BASE_URL)
+    } catch (error) {
+      if (left <= 0) throw error
+      await new Promise((resolve) => setTimeout(resolve, 2000))
+      await this.openWithRetries(left - 1)
+    }
   }
 
   async openFeedFromHeader(): Promise<void> {

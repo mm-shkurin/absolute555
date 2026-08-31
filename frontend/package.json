@@ -18,7 +18,9 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "dev:mock": "vite --mode mock",
-    "test:e2e": "vitest run --config e2e/vitest.config.ts"
+    "test:e2e": "vitest run --config e2e/vitest.config.ts",
+    "build:mock": "vite build --mode mock",
+    "preview:mock": "vite preview --mode mock"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.101.4",

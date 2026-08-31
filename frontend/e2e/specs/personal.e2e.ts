@@ -29,8 +29,8 @@ describe('Личные разделы', () => {
     await personal.startSellingFromHeader()
     await personal.assertWizardStep('step-document')
     await personal.attachDocument()
-    await personal.assertWizardStep('step-document-recognizing')
-    await personal.finishRecognition()
+    // Проверяется исход, а не мелькнувшая по дороге обработка: она длится ровно столько,
+    // сколько сервер читает документ, и на быстром ответе её можно не застать вовсе.
     await personal.assertWizardStep('step-specs')
     await personal.assertStepMarkedCurrent(2)
   })
@@ -39,7 +39,7 @@ describe('Личные разделы', () => {
     await feed.openApp()
     await personal.startSellingFromHeader()
     await personal.attachDocument()
-    await personal.finishRecognition()
+    await personal.assertWizardStep('step-specs')
     await personal.goToNextStep('specs-next')
     await personal.goToNextStep('pricing-next')
     await personal.goToNextStep('photos-next')

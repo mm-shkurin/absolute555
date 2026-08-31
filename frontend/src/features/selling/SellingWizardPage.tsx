@@ -86,7 +86,7 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
       // каждого поля, а без него подставленные значения неотличимы от введённых.
       void sync.reload().then((loaded) => {
         if (loaded) wizard.applyDraft(loaded)
-        wizard.goStage('manual')
+        wizard.goStage(stageFor('done'))
         wizard.goStep('specs')
       })
       return

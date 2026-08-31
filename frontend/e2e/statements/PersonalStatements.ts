@@ -1,25 +1,7 @@
 // Утверждения личных разделов: мастер продажи, офферы, чаты, свои объявления.
 import { expect } from 'vitest'
-import { mkdtempSync, writeFileSync } from 'node:fs'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 import { By, type WebDriver } from 'selenium-webdriver'
 import { clickElement, count, isVisible, testId, waitForVisible } from '../driver'
-
-// Мельчайший валидный PNG. Настоящий снимок СТС здесь не нужен — распознаёт сервер,
-// которого в прогоне нет; проверяется, что выбранный файл уводит шаг в обработку.
-function onePixelPng(): string {
-  const dir = mkdtempSync(join(tmpdir(), 'sts-'))
-  const file = join(dir, 'sts.png')
-  writeFileSync(
-    file,
-    Buffer.from(
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
-      'base64',
-    ),
-  )
-  return file
-}
 
 export class PersonalStatements {
   constructor(private readonly driver: WebDriver) {}
@@ -33,26 +15,25 @@ export class PersonalStatements {
     await waitForVisible(this.driver, testIdName)
   }
 
-  // Файл отдаётся полю напрямую: диалог выбора файла живёт вне страницы, и щёлкнуть по
-  // нему из браузера нельзя. Поле на время показывается: спрятанному драйвер кладёт файл
-  // молча и без эффекта — `files` остаётся пустым, а change не наступает.
+  // Снимок кладётся в поле изнутри браузера, а не драйвером.
+  //
+  // `sendKeys` на поле файла работает не везде одинаково: в собранном приложении Chrome
+  // принимал путь молча и оставлял `files` пустым, а шаг — на месте. Здесь же собирается
+  // настоящий `File` и рассылается то же событие `change`, которое пришло бы от выбора
+  // руками; проверяется ровно то, ради чего сценарий и написан: что делает мастер, когда
+  // снимок выбран.
   async attachDocument(): Promise<void> {
-    const input = await this.driver.findElement(testId('document-file'))
-    await this.driver.executeScript(
-      'arguments[0].style.cssText = "position:fixed;left:0;top:0;width:200px;height:40px;opacity:1;clip-path:none"',
-      input,
-    )
-    // Возвращать стиль незачем: выбор файла уводит шаг в обработку, и поле вместе со
-    // всем шагом размонтируется — попытка тронуть его после этого падает на stale element.
-    await input.sendKeys(onePixelPng())
-  }
-
-  async finishRecognition(): Promise<void> {
-    const card = await waitForVisible(this.driver, 'step-document-recognizing')
-    await clickElement(
-      this.driver,
-      await card.findElement(By.xpath('.//button[normalize-space()="Готово"]')),
-    )
+    await waitForVisible(this.driver, 'document-continue')
+    await this.driver.executeScript(`
+      const input = document.querySelector('[data-testid="document-file"]')
+      const png = Uint8Array.from(atob(
+        'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=='
+      ), (c) => c.charCodeAt(0))
+      const data = new DataTransfer()
+      data.items.add(new File([png], 'sts.png', { type: 'image/png' }))
+      input.files = data.files
+      input.dispatchEvent(new Event('change', { bubbles: true }))
+    `)
   }
 
   async goToNextStep(button: string): Promise<void> {
