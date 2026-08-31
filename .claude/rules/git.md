@@ -22,7 +22,7 @@ Flow: `features/<name>` -> `dev` -> `main`.
 
 ## Current working branch
 
-**One shared working branch at a time — currently `features/chat-and-unread`.** Do not
+**One shared working branch at a time — currently `features/seller-rating`.** Do not
 open a second branch beside it: both sessions work the same tree, and two branches over
 one tree put them on different heads.
 
@@ -39,7 +39,7 @@ Previous working branches: `features/marketplace-scope-cut` (stories 1-3, merged
 `features/listing-lifecycle` (story 4, merged), `features/listing-photos` (story 5, merged),
 `features/sts-autofill-catalog` (story 6, merged), `features/feed-and-listing-card`
 (stories 7 and 8, merged), `features/moderation-queue` (story 9, merged), `features/offer-lifecycle` (story 10,
-merged).
+merged), `features/chat-and-unread` (story 11, merged).
 
 The rules that still apply: one commit per story, conventional commit subjects, and no
 direct commits to `main`.
