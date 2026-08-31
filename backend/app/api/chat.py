@@ -21,6 +21,7 @@ from app.schemas.chat import (
     UnreadCount,
 )
 from app.services.chat_errors import ChatError
+from app.services.chat_reader import ChatReader
 from app.services.chat_service import ChatService
 from app.sse.chat_socket import chat_hub, listener_of
 from app.utils.security import get_current_user
@@ -36,14 +37,15 @@ async def list_dialogs(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    service = ChatService(db)
-    dialogs = await service.mine(str(current_user.id))
-    last = await service.last_messages(dialogs)
+    reader = ChatReader(db)
+    dialogs = await reader.mine(str(current_user.id))
+    last = await reader.last_messages(dialogs)
+    unread = await reader.unread_by_dialog(dialogs, str(current_user.id))
     return [
         dialog_view(
             dialog,
             current_user.id,
-            await service.unread_in(dialog, str(current_user.id)),
+            unread.get(dialog.dialog_id, 0),
             last.get(dialog.dialog_id),
         )
         for dialog in dialogs
@@ -56,7 +58,7 @@ async def unread_badge(
     current_user=Depends(get_current_user),
 ):
     """One number, because the badge is drawn on every screen."""
-    return {"unread": await ChatService(db).unread_total(str(current_user.id))}
+    return {"unread": await ChatReader(db).unread_total(str(current_user.id))}
 
 
 @chat_router.get("/dialogs/{dialog_id}/messages", response_model=MessagePage)
@@ -73,7 +75,7 @@ async def read_messages(
     except ChatError as error:
         raise to_http(error)
 
-    messages, total = await service.messages(dialog, page, size)
+    messages, total = await ChatReader(db).messages(dialog, page, size)
     return {
         "items": [message_view(message) for message in messages],
         "total": total,
@@ -123,7 +125,10 @@ async def mark_read(
         raise to_http(error)
 
     marked = await service.mark_read(dialog, str(current_user.id), body.message_ids)
-    return {"marked": marked, "unread": await service.unread_in(dialog, str(current_user.id))}
+    return {
+        "marked": marked,
+        "unread": await ChatReader(db).unread_in(dialog, str(current_user.id)),
+    }
 
 
 @chat_router.websocket("/ws")
