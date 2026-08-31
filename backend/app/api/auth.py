@@ -1,8 +1,13 @@
 """Sign-in.
 
-The two OAuth providers live in auth_vk.py and auth_yandex.py; what stays here is what
-belongs to no provider -- refreshing a token and the guest account a device gets before
-it has signed in with anything.
+Yandex OAuth lives in auth_yandex.py; what stays here is what belongs to no provider --
+refreshing a token and the guest account a device gets before it has signed in with
+anything.
+
+VK is out of the repository, not merely disabled: the flow needs a VK business account
+this project does not have, so the code could never be run or tested here and an
+unreachable provider wired into the router is a route that answers 500. The files are
+listed in .gitignore so a local copy does not drift back in.
 """
 
 from fastapi import APIRouter, Body, Depends
@@ -16,7 +21,6 @@ from app.schemas.token import Token
 from app.services.user_service import UserService
 from app.utils.security import create_access_token, create_refresh_token, refresh_access_token
 
-from .auth_vk import vk_router
 from .auth_yandex import yandex_router
 
 auth_router = APIRouter()
@@ -62,5 +66,4 @@ async def guest_login(
         raise ExternalServiceError("Guest login failed", code="GUEST_LOGIN_FAILED")
 
 
-auth_router.include_router(vk_router)
 auth_router.include_router(yandex_router)

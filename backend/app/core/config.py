@@ -81,21 +81,9 @@ class YandexSettings(BaseSettings):
     yandex_redirect_uri_web: HttpUrl = Field(..., alias="YANDEX_REDIRECT_URI_WEB")
     model_config = BaseConfig.model_config
 
-class VKSettings(BaseSettings):
-    vk_oauth_url: HttpUrl = Field(
-        default="https://id.vk.com/oauth2/auth", alias="VK_OAUTH_URL"
-    )
-    vk_api_url: HttpUrl = Field(
-        default="https://api.vk.com/method/users.get", alias="VK_API_URL"
-    )
-    vk_auth_url: HttpUrl = Field(
-        default="https://id.vk.com/auth", alias="VK_AUTH_URL"
-    )
-    vk_client_id: str = Field(..., min_length=1, alias="VK_CLIENT_ID")
-    vk_client_secret: str = Field(..., min_length=1, alias="VK_CLIENT_SECRET")
-    vk_redirect_uri: HttpUrl = Field(..., alias="VK_REDIRECT_URI")
-
-    model_config = BaseConfig.model_config
+# VKSettings lived here. VK OAuth left the repository with its router: the flow needs a
+# VK business account this project does not have, so the settings only demanded secrets
+# for a provider nothing could call.
 class FrontendSettings(BaseSettings):
     frontend_url: HttpUrl = Field(..., alias="FRONTEND_URL")
     
