@@ -4,6 +4,9 @@ Monorepo: `backend/` (FastAPI) + `frontend/` (React 19 / CRA / Capacitor).
 
 ## Rules
 
+- **How work runs here — read first: the `delivery-loop` skill.** Two parallel sessions on
+  one tree, a story from branch to merge, the spec as the meeting point of the lanes, the
+  gates and the commit rules. Lane detail: `backend-delivery`, `frontend-delivery`.
 - Git workflow and commit convention: `.claude/rules/git.md` — read before any branch or commit.
 - Coding rules (layers, dependency direction, 200-line cap): `.claude/rules/coding-rules.md`
 - Story/spec workflow: `.claude/rules/workflow.md`
