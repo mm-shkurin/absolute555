@@ -5,7 +5,7 @@ from datetime import datetime
 
 # One vocabulary for the wire and the row. Re-declaring the six values here is how the
 # two drift apart the first time one is extended.
-from app.models.sale_car import SaleCarStatus
+from app.models.sale_car import AutofillState, FieldSource, SaleCarStatus
 
 
 class SaleCarCreate(BaseModel):
@@ -37,6 +37,24 @@ class SaleCarUpdate(BaseModel):
     year: Optional[int] = None
     transmission: Optional[str] = None
     engine_power: Optional[int] = None
+
+
+class Autofill(BaseModel):
+    """What the reading of the registration scan came to.
+
+    unreadable and undecoded stay apart on the wire because the seller's next move
+    differs: a new photograph against typing the fields in.
+    """
+
+    state: AutofillState
+    brand_source: Optional[FieldSource] = None
+    model_source: Optional[FieldSource] = None
+    updated_at: Optional[datetime] = None
+
+
+class StsAccepted(BaseModel):
+    sale_car_id: UUID
+    autofill: Autofill
 
 
 class Photo(BaseModel):
@@ -112,6 +130,7 @@ class SaleCarResponse(BaseModel):
     car_data: Optional[dict] = None
     preview_photo_url: Optional[str] = None
     photos: List[Photo] = []
+    autofill: Optional[Autofill] = None
 
     class Config:
         from_attributes = True

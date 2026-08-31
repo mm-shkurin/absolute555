@@ -7,12 +7,10 @@
     "backend/app/api/role.py:8: routers go through services, not the ORM",
     "backend/app/api/sale_car.py:14: routers go through services, not the ORM",
     "backend/app/api/sale_car.py:15: routers go through services, not the ORM",
-    "backend/app/api/sale_car_document.py:7: routers go through services, not the ORM",
+    "backend/app/api/sale_car_document.py:12: routers go through services, not the ORM",
     "backend/app/api/sale_car_lifecycle.py:11: routers go through services, not the ORM",
     "backend/app/api/sale_car_photos.py:14: routers go through services, not the ORM",
     "backend/app/api/sale_car_view.py:9: routers go through services, not the ORM",
-    "backend/app/api/upload.py:7: routers go through services, not the ORM",
-    "backend/app/api/upload.py:8: routers go through services, not the ORM",
     "backend/app/api/user.py:15: routers go through services, not the ORM"
   ]
 }

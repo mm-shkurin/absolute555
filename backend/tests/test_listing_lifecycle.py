@@ -96,7 +96,9 @@ def test_should_name_every_missing_field_when_a_draft_is_incomplete(client, sell
 
     assert response.status_code == 422, response.text
     missing = set(response.json()["details"]["missing_fields"])
-    assert missing == {"phone_number", "brand_id", "model_id", "year", "photos"}
+    # Make and model are not in here: story 6 took them out of the gate so that a make
+    # the catalogue does not know cannot block a sale.
+    assert missing == {"phone_number", "year", "photos"}
     assert _status(client, seller, listing_id) == "draft"
 
 

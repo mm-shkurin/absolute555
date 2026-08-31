@@ -9,6 +9,17 @@ from app.services.s3_service import s3_service
 from app.tasks.status_updater import TaskStatus, update_task_status
 
 
+# A failure to read the picture and a failure to make sense of what was read are
+# different outcomes to the seller: the first is fixed by retaking the photograph, the
+# second only by typing the fields in. Everything that is not the reading step -- a model
+# that answered with something unparseable, or did not answer at all -- failed at decoding.
+UNREADABLE = ("ocr_failed", "file_bytes is required")
+
+
+def failed_at(error: str | None) -> str:
+    return TaskStatus.OcrFailed if error in UNREADABLE else TaskStatus.DecodeFailed
+
+
 def _apply_decoded(sale_car: SaleCars, result: dict) -> None:
     """Copy the decoded СТС fields onto the listing.
 
@@ -57,16 +68,14 @@ async def decode_vin_from_sts(ctx: dict, sale_car_id: str, sts_key: str):
             result = await decode_vin(file_bytes=file_bytes, car_id=sale_car_id)
 
             if result.get("error"):
-                error_type = result.get("error")
-                if error_type in ["gigachat_connection_error", "gigachat_error"]:
-                    logger.error(f"GigaChat error in decode_vin for sale_car_id={sale_car_id}: {result.get('message', 'Unknown error')}")
-                    await update_task_status(sale_car_id, TaskStatus.DecodeFailed, entity_type="sale_car")
-                    await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
-                    return {"sale_car_id": sale_car_id, "result": result, "error": True}
-                else:
-                    await update_task_status(sale_car_id, TaskStatus.OcrFailed, entity_type="sale_car")
-                    await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
-                    return {"sale_car_id": sale_car_id, "result": result, "error": True}
+                stopped_at = failed_at(result.get("error"))
+                logger.error(
+                    f"decode_vin failed for sale_car_id={sale_car_id} at {stopped_at}: "
+                    f"{result.get('error')} {result.get('message', '')}"
+                )
+                await update_task_status(sale_car_id, stopped_at, entity_type="sale_car")
+                await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
+                return {"sale_car_id": sale_car_id, "result": result, "error": True}
 
             await update_task_status(sale_car_id, TaskStatus.OcrSuccess, entity_type="sale_car")
         except Exception as e:

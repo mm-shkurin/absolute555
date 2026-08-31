@@ -3,6 +3,7 @@ from sqlalchemy import select
 from loguru import logger
 from app.db.database import get_db_session
 from app.models.sale_car import SaleCars
+from app.services.listing_autofill import ListingAutofillService
 from app.sse.manager import sse_manager
 
 
@@ -27,6 +28,10 @@ async def update_task_status(entity_id: str, status: str, entity_type: str = "sa
                 return
 
             entity.task_status = status
+            # The seller-facing outcome is written in the same transaction as the queue's
+            # own status. Two writes would let a reload find a listing whose pipeline had
+            # failed and whose outcome still said it was running.
+            await ListingAutofillService(db).note_task_status(entity, status)
             await db.commit()
             logger.info(f"Updated task status for sale_car_id={entity_id}: {status}")
 

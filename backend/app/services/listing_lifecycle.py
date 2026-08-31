@@ -31,6 +31,7 @@ from app.services.listing_errors import (
     TooManyDrafts,
     TransitionNotAllowed,
 )
+from app.services.listing_autofill import ListingAutofillService
 from app.services.listing_document import ListingDocumentService
 from app.services.webhook_service import WebhookService
 
@@ -81,6 +82,10 @@ class ListingLifecycleService:
 
         for name, value in fields.items():
             setattr(listing, name, value)
+
+        # A make or model in the payload is the seller's own answer: it outranks the
+        # reading from here on, and it settles the spelling a moderator was queued.
+        await ListingAutofillService(self.db).claim(listing, fields)
         await self.db.commit()
         await self._reload(listing)
         return listing

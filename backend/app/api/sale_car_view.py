@@ -35,6 +35,16 @@ _FIELDS = (
 )
 
 
+def autofill_view(listing: SaleCars) -> dict:
+    """The outcome of the reading, and who filled the two catalogue fields."""
+    return {
+        "state": listing.autofill_state,
+        "brand_source": listing.brand_source,
+        "model_source": listing.model_source,
+        "updated_at": listing.autofill_updated_at,
+    }
+
+
 def _photo_view(photo: dict) -> dict:
     # An old photograph carried over by the migration has no preview of its own; the
     # original stands in for it until someone re-uploads.
@@ -50,6 +60,8 @@ async def to_view(listing: SaleCars) -> dict:
     view = {name: getattr(listing, name) for name in _FIELDS}
     view["brand"] = listing.brand.name_ru if listing.brand else None
     view["model"] = listing.model.name if listing.model else None
+
+    view["autofill"] = autofill_view(listing)
 
     photos = [_photo_view(photo) for photo in (listing.photos or [])]
     view["photos"] = photos

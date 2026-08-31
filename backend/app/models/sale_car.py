@@ -6,6 +6,27 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from datetime import datetime
 from enum import Enum as PyEnum
 
+class AutofillState(str, PyEnum):
+    """What the reading of the СТС scan came to, as the seller sees it.
+
+    UNREADABLE and UNDECODED are separate because the remedy differs: the first is fixed
+    by a better photograph, the second only by typing the fields in.
+    """
+
+    NONE = "none"
+    PENDING = "pending"
+    UNREADABLE = "unreadable"
+    UNDECODED = "undecoded"
+    DONE = "done"
+
+
+class FieldSource(str, PyEnum):
+    """Who put the value there. SELLER outranks OCR and is never overwritten by it."""
+
+    OCR = "ocr"
+    SELLER = "seller"
+
+
 class SaleCarStatus(str, PyEnum):
     DRAFT = "draft"
     MODERATION = "moderation"
@@ -31,12 +52,14 @@ ALLOWED_TRANSITIONS: dict[str, frozenset[str]] = {
 # What a listing must carry before it can be sent for review. Completeness is checked on
 # the draft -> moderation boundary rather than by the columns, because a draft is
 # incomplete by definition: the wizard saves it on every one of its six steps.
+# Make and model are deliberately absent. A make the catalogue does not know would
+# otherwise block the sale outright, which is the opposite of what autofill is for: the
+# listing goes up carrying the spelling from the document and simply does not appear
+# under that filter until a moderator resolves it.
 REQUIRED_TO_SUBMIT: tuple[str, ...] = (
     "price",
     "milleage",
     "phone_number",
-    "brand_id",
-    "model_id",
     "year",
 )
 
@@ -91,6 +114,14 @@ class SaleCars(Base):
     # base64 in this table, which put a document in every dump and in any SELECT * a
     # developer ran. Cleared once a moderator has decided (story 5).
     sts_key = Column(String, nullable=True)
+
+    # The outcome of the reading, and who filled the two catalogue fields. task_status is
+    # the queue's own vocabulary and changes with the pipeline; this is what the seller
+    # is shown, and it survives the connection that first reported it.
+    autofill_state = Column(String, default=AutofillState.NONE.value, nullable=False)
+    brand_source = Column(String, nullable=True)
+    model_source = Column(String, nullable=True)
+    autofill_updated_at = Column(DateTime, nullable=True)
 
     brand = relationship("Brand")
     model = relationship("CarModel")

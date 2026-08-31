@@ -14,7 +14,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models.catalog import CatalogSuggestion, SuggestionKind, SuggestionStatus
-from app.models.sale_car import SaleCars
+from app.models.sale_car import FieldSource, SaleCars
 from app.services.catalog_normalize import normalize
 from app.services.catalog_service import CatalogService
 
@@ -41,34 +41,57 @@ class CatalogResolver:
         A listing is never rejected for an unknown make or model. It keeps the raw text,
         publishes, and simply does not appear under that filter until a moderator
         resolves the spelling.
+
+        A field the seller filled in themselves is left alone, and no spelling is queued
+        for it: they have seen the car, and this has seen a photograph of a document.
         """
         sale_car.mark_raw = mark_raw
         sale_car.model_raw = model_raw
 
+        brand_owned = sale_car.brand_source == FieldSource.SELLER.value
+        model_owned = sale_car.model_source == FieldSource.SELLER.value
+        if brand_owned and model_owned:
+            return ResolveOutcome(sale_car.brand_id, sale_car.model_id, None)
+
         brand_match = await self.catalog.match_brand(mark_raw)
-        if brand_match.value is None:
+        if brand_match.value is None and not brand_owned:
             sale_car.brand_id = None
-            sale_car.model_id = None
+            sale_car.brand_source = None
+            if not model_owned:
+                sale_car.model_id = None
+                sale_car.model_source = None
             if normalize(mark_raw):
                 await self._suggest(SuggestionKind.BRAND, None, mark_raw)
-                return ResolveOutcome(None, None, "brand")
-            return ResolveOutcome(None, None, None)
+                return ResolveOutcome(None, sale_car.model_id, "brand")
+            return ResolveOutcome(None, sale_car.model_id, None)
 
-        brand = brand_match.value
-        sale_car.brand_id = brand.brand_id
-        logger.info(f"catalog: brand {mark_raw!r} -> {brand.slug} via {brand_match.step}")
+        if brand_owned:
+            # The model is looked up under the make the seller stands behind, not under
+            # the one the document was read as: a model only means anything inside a make.
+            brand_id = sale_car.brand_id
+        else:
+            brand = brand_match.value
+            brand_id = brand.brand_id
+            sale_car.brand_id = brand_id
+            sale_car.brand_source = FieldSource.OCR.value
+            logger.info(f"catalog: brand {mark_raw!r} -> {brand.slug} via {brand_match.step}")
 
-        model_match = await self.catalog.match_model(brand.brand_id, model_raw)
+        if model_owned:
+            return ResolveOutcome(brand_id, sale_car.model_id, None)
+
+        model_match = await self.catalog.match_model(brand_id, model_raw)
         if model_match.value is None:
             sale_car.model_id = None
+            sale_car.model_source = None
             if normalize(model_raw):
-                await self._suggest(SuggestionKind.MODEL, brand.brand_id, model_raw)
-                return ResolveOutcome(brand.brand_id, None, "model")
-            return ResolveOutcome(brand.brand_id, None, None)
+                await self._suggest(SuggestionKind.MODEL, brand_id, model_raw)
+                return ResolveOutcome(brand_id, None, "model")
+            return ResolveOutcome(brand_id, None, None)
 
         sale_car.model_id = model_match.value.model_id
+        sale_car.model_source = FieldSource.OCR.value
         logger.info(f"catalog: model {model_raw!r} -> {model_match.value.slug} via {model_match.step}")
-        return ResolveOutcome(brand.brand_id, model_match.value.model_id, None)
+        return ResolveOutcome(brand_id, model_match.value.model_id, None)
 
     async def _suggest(self, kind: SuggestionKind, brand_id: Optional[UUID], raw: str) -> None:
         """Queue one spelling, once.

@@ -15,7 +15,7 @@ MOUNTED_ROUTES = [
     ("GET", "/api/v1/auth/yandex/login"),
     ("POST", "/api/v1/auth/guest/login"),
     ("GET", "/api/v1/user/profile"),
-    ("POST", "/api/v1/photos/sale-car/sts"),
+    ("POST", "/api/v1/sale_car/{sale_car_id}/sts"),
     ("GET", "/api/v1/role/users"),
     ("GET", "/api/v1/task/sse/{sale_car_id}"),
     ("GET", "/api/v1/sale_car/list"),
