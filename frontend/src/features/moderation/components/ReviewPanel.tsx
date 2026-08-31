@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import { Button, buttonClass } from '../../../shared/ui/Button'
 import { Placeholder } from '../../../shared/ui/Placeholder'
 import { ROUTES } from '../../../shared/navigation/routes'
+import { ReasonPicker } from '../../../shared/ui/ReasonPicker'
 import { REJECTION_REASONS } from '../../../shared/domain/moderationReasons'
 import type { RejectionLabel } from '../../../shared/api/backend/moderationContract'
 import type { ReviewCardView } from '../logic/queueView'
@@ -63,19 +64,12 @@ export function ReviewPanel({
       {rejecting && !readOnly ? (
         <div className={styles.rejection} data-testid="rejection-form">
           <div className={styles.label}>Причина отклонения — обязательна</div>
-          <div className={styles.chips}>
-            {REJECTION_REASONS.map((reason) => (
-              <button
-                key={reason.value}
-                type="button"
-                className={styles.chip}
-                aria-pressed={label === reason.value}
-                onClick={() => setLabel(reason.value)}
-              >
-                {reason.text}
-              </button>
-            ))}
-          </div>
+          <ReasonPicker
+            options={REJECTION_REASONS}
+            current={label}
+            disabled={busy}
+            onPick={setLabel}
+          />
           <textarea
             className={styles.reason}
             value={comment}

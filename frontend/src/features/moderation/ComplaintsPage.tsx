@@ -12,6 +12,7 @@ import { Placeholder } from '../../shared/ui/Placeholder'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
 import { dismissComplaint, fetchComplaints, unpublishListing } from './api/moderationApi'
+import { ReasonPicker } from '../../shared/ui/ReasonPicker'
 import { REJECTION_REASONS } from '../../shared/domain/moderationReasons'
 import type { RejectionLabel } from '../../shared/api/backend/moderationContract'
 import { toComplaintCase } from './logic/complaintView'
@@ -128,18 +129,12 @@ export function ComplaintsPage() {
                 {unpublishing === item.listingId ? (
                   <div className={styles.reasons} data-testid="unpublish-reasons">
                     <div className={styles.reasonsLabel}>За что снимаем — увидит продавец</div>
-                    {REJECTION_REASONS.map((reason) => (
-                      <Button
-                        key={reason.value}
-                        tone="ghost"
-                        disabled={busy}
-                        onClick={() =>
-                          unpublish.mutate({ id: item.listingId, label: reason.value })
-                        }
-                      >
-                        {reason.text}
-                      </Button>
-                    ))}
+                    <ReasonPicker
+                      options={REJECTION_REASONS}
+                      current={null}
+                      disabled={busy}
+                      onPick={(label) => unpublish.mutate({ id: item.listingId, label })}
+                    />
                   </div>
                 ) : null}
               </Panel>

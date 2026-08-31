@@ -4,6 +4,7 @@
 import { useState } from 'react'
 import { Sheet } from '../../../shared/ui/Sheet'
 import { Button } from '../../../shared/ui/Button'
+import { ReasonPicker } from '../../../shared/ui/ReasonPicker'
 import { COMPLAINT_REASONS } from '../../../shared/domain/moderationReasons'
 import type { ComplaintReason } from '../../../shared/api/backend/moderationContract'
 import styles from './ComplainSheet.module.css'
@@ -32,18 +33,12 @@ export function ComplainSheet({
         </p>
       ) : (
         <>
-          <div className={styles.reasons}>
-            {COMPLAINT_REASONS.map((option) => (
-              <Button
-                key={option.value}
-                tone={reason === option.value ? 'solid' : 'ghost'}
-                size="small"
-                onClick={() => setReason(option.value)}
-              >
-                {option.text}
-              </Button>
-            ))}
-          </div>
+          <ReasonPicker
+            options={COMPLAINT_REASONS}
+            current={reason}
+            disabled={busy}
+            onPick={setReason}
+          />
           <textarea
             className={styles.text}
             value={text}
