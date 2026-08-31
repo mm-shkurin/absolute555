@@ -2,9 +2,6 @@
 // три разные выдачи: модератор работает в одном из них подряд, а не переключается.
 import { API } from '../../../shared/api/endpoints'
 import { send } from '../../../shared/api/send'
-import { fetchPublished } from '../../../shared/api/backend/saleCarApi'
-import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
-import { maskVin } from '../../../shared/domain/listing/vin'
 
 export type QueueTab = 'pending' | 'flagged' | 'done'
 
@@ -65,46 +62,85 @@ export interface RoleApplicationWire {
   about: string | null
 }
 
-function toQueueItem(car: SaleCarWire): QueueItemWire {
+import {
+  fetchQueue as fetchQueuePage,
+  fetchCounts,
+  fetchComplaints as fetchComplaintPage,
+} from '../../../shared/api/backend/moderationApi'
+import type {
+  ComplaintGroupWire,
+  QueueItemWire as WireQueueItem,
+} from '../../../shared/api/backend/moderationContract'
+
+// Очередь на сервере одна: объявления, ждущие проверки. Вкладка «жалобы» — своя выдача,
+// а «сделано» сервер не хранит вовсе, поэтому она пуста, а не выдумана.
+function toQueueItem(item: WireQueueItem): QueueItemWire {
   return {
-    id: car.sale_car_id,
-    listing_id: car.sale_car_id,
-    title: `${car.brand ?? car.mark_raw ?? ''} ${car.model ?? car.model_raw ?? ''}`.trim(),
-    year: car.year ?? 0,
-    price: car.price ?? 0,
-    // Продавца сервер в этой выдаче не раскрывает: ни имени, ни рейтинга, ни возраста
-    // учётной записи. Модератор видит объявление, а не человека за ним.
-    seller_name: '',
+    id: item.sale_car_id,
+    listing_id: item.sale_car_id,
+    title: `${item.brand ?? ''} ${item.model ?? ''}`.trim(),
+    year: item.year ?? 0,
+    price: item.price ?? 0,
+    seller_name: item.seller?.name ?? '',
+    // Рейтинга и возраста учётной записи в этой выдаче нет: отзывы — история 12.
     seller_rating: null,
     seller_is_new: false,
-    submitted_at: car.updated_at ?? car.created_at ?? '',
-    photos_count: car.photos.length,
+    submitted_at: item.submitted_at ?? '',
+    photos_count: item.preview_photo_url ? 1 : 0,
     measured_panels: 0,
     total_panels: 11,
-    complaints_count: 0,
+    complaints_count: item.open_complaints,
     complaint_reason: null,
     is_import: false,
-    vin_masked: maskVin(car.vin),
+    vin_masked: null,
     photos_plate_hidden: false,
     phone_hidden: false,
   }
 }
 
-// Очередь — это объявления в статусе «на модерации». Отдельной выдачи для модератора на
-// сервере нет, как нет ни жалоб, ни «сделано за сегодня»: вкладки, кроме первой, пусты.
 export async function fetchQueue(
   tab: QueueTab,
   signal?: AbortSignal,
 ): Promise<{ items: QueueItemWire[]; pending: number; flagged: number; done_today: number }> {
-  const cars = tab === 'pending' ? await fetchPublished('moderation', signal) : []
-  const items = cars.map(toQueueItem)
-  return { items, pending: items.length, flagged: 0, done_today: 0 }
+  const [page, counts] = await Promise.all([
+    tab === 'pending' ? fetchQueuePage({}, signal) : Promise.resolve(null),
+    fetchCounts(signal),
+  ])
+  return {
+    items: (page?.items ?? []).map(toQueueItem),
+    pending: counts.waiting,
+    flagged: counts.complained,
+    done_today: counts.handled_today,
+  }
+}
+
+function toComplaintCase(group: ComplaintGroupWire): ComplaintCaseWire {
+  const listing = group.listing
+  return {
+    listing_id: group.sale_car_id,
+    title: `${listing?.brand ?? ''} ${listing?.model ?? ''}`.trim(),
+    year: listing?.year ?? 0,
+    price: listing?.price ?? 0,
+    seller_name: '',
+    seller_rating: null,
+    published_at: listing?.published_at ?? '',
+    complaints: group.complaints.map((complaint) => ({
+      id: complaint.complaint_id,
+      author_name: complaint.author?.name ?? '',
+      created_at: complaint.created_at,
+      reason: complaint.reason,
+      body: complaint.text ?? '',
+    })),
+  }
 }
 
 export async function fetchComplaints(
   signal?: AbortSignal,
 ): Promise<{ items: ComplaintCaseWire[]; open: number; resolved: number }> {
-  return send(API.moderation.complaints, { signal })
+  const page = await fetchComplaintPage({}, signal)
+  // Разобранные жалобы сервер в этой выдаче не возвращает: счётчик разобранного живёт
+  // в `/moderation/counts` и считает сегодняшний день, а не всё время.
+  return { items: page.items.map(toComplaintCase), open: page.total, resolved: 0 }
 }
 
 export async function fetchRoleApplications(

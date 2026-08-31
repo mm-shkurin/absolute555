@@ -1,7 +1,7 @@
 // Предложения по цене. Отправляет покупатель, отвечает владелец объявления.
 import { send } from '../send'
 import { BACKEND } from './paths'
-import type { OfferCreate, OfferStatus, OfferWire } from './offerContract'
+import type { OfferCreate, OfferDecision, OfferWire } from './offerContract'
 
 export function createOffer(offer: OfferCreate) {
   return send<OfferWire>(BACKEND.offer.collection, { method: 'POST', body: offer })
@@ -23,6 +23,11 @@ export function fetchOffer(offerId: string, signal?: AbortSignal) {
 
 /** Принять или отклонить. Что происходит с остальными предложениями машины после
  *  принятия — правило сервера, и клиент его не повторяет. */
-export function answerOffer(offerId: string, status: OfferStatus) {
+export function answerOffer(offerId: string, status: OfferDecision) {
   return send<OfferWire>(BACKEND.offer.status(offerId), { method: 'PATCH', body: { status } })
+}
+
+/** Отозвать своё предложение. Отзывает только автор и только пока на него не ответили. */
+export function withdrawOffer(offerId: string) {
+  return send<OfferWire>(BACKEND.offer.withdraw(offerId), { method: 'POST' })
 }

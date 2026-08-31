@@ -57,6 +57,16 @@ export const BACKEND = {
     ofCar: (saleCarId: string) => `${V1}/offer/car/${id(saleCarId)}`,
     one: (offerId: string) => `${V1}/offer/${id(offerId)}`,
     status: (offerId: string) => `${V1}/offer/${id(offerId)}/status`,
+    withdraw: (offerId: string) => `${V1}/offer/${id(offerId)}/withdraw`,
+  },
+  moderation: {
+    queue: `${V1}/moderation/queue`,
+    counts: `${V1}/moderation/counts`,
+    complaints: `${V1}/moderation/complaints`,
+    dismissComplaint: (complaintId: string) =>
+      `${V1}/moderation/complaints/${id(complaintId)}/dismiss`,
+    unpublish: (saleCarId: string) => `${V1}/moderation/listings/${id(saleCarId)}/unpublish`,
+    complain: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/complaints`,
   },
   role: {
     users: `${V1}/role/users`,

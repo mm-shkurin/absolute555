@@ -29,7 +29,7 @@ const TONE: Record<OfferStatus, StatusTone> = {
   rejected: 'bad',
   withdrawn: 'past',
   expired: 'past',
-  sold: 'bad',
+  car_sold: 'bad',
 }
 
 const LABEL: Record<OfferStatus, string> = {
@@ -38,7 +38,7 @@ const LABEL: Record<OfferStatus, string> = {
   rejected: 'отклонено',
   withdrawn: 'отозван вами',
   expired: 'истёк',
-  sold: 'машину продали',
+  car_sold: 'машину продали',
 }
 
 // Живой оффер требует решения, закончившийся — только памяти о себе. Приглушение строки

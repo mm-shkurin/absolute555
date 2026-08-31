@@ -44,7 +44,7 @@ describe('строка оффера', () => {
     expect(
       toOfferRow({ ...wire, status: 'accepted' }, 'outgoing', now).actions.map((a) => a.id),
     ).toEqual(['chat', 'review'])
-    expect(toOfferRow({ ...wire, status: 'sold' }, 'outgoing', now).actions).toEqual([])
+    expect(toOfferRow({ ...wire, status: 'car_sold' }, 'outgoing', now).actions).toEqual([])
   })
 
   it('предложение выше цены не показывает разрыв', () => {

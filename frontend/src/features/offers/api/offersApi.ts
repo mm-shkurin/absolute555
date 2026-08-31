@@ -1,13 +1,18 @@
 // Офферы обеих сторон одним запросом с параметром направления: экран переключает вкладку
 // мгновенно, а два разных пути к одному списку разошлись бы в форме ответа.
 import { fetchMyOffers, fetchOffersForCar } from '../../../shared/api/backend/offerApi'
-import type { OfferWire as BackendOffer } from '../../../shared/api/backend/offerContract'
+import type {
+  OfferStatus,
+  OfferWire as BackendOffer,
+} from '../../../shared/api/backend/offerContract'
 import { fetchMyListings } from '../../../shared/api/backend/saleCarApi'
 import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
 
 export type OfferDirection = 'incoming' | 'outgoing'
 
-export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'withdrawn' | 'expired' | 'sold'
+// Имена состояний берутся с провода: свой синоним `sold` вместо `car_sold` означал бы
+// перевод в обе стороны на каждой границе.
+export type { OfferStatus }
 
 export interface OfferListItemWire {
   id: string
@@ -30,15 +35,6 @@ export interface OffersWire {
   outgoing_total: number
 }
 
-// Сервер знает три состояния предложения из шести, которые различает экран: отзыва,
-// истечения срока и «машину продали» у него нет. Пока их нет, ни одно предложение не может
-// оказаться в этих состояниях, и придумывать их переводом нельзя.
-const STATUS: Record<BackendOffer['status'], OfferStatus> = {
-  pending: 'pending',
-  accept: 'accepted',
-  reject: 'rejected',
-}
-
 function toItem(offer: BackendOffer, car: SaleCarWire | undefined): OfferListItemWire {
   return {
     id: offer.offer_id,
@@ -50,10 +46,10 @@ function toItem(offer: BackendOffer, car: SaleCarWire | undefined): OfferListIte
     listing_price: car?.price ?? 0,
     photo_url: car?.preview_photo_url ?? null,
     amount: offer.price,
-    status: STATUS[offer.status],
+    // Состояния совпадают один в один: экран и сервер называют их одинаково с истории 10.
+    status: offer.status,
     created_at: offer.created_at,
-    // Срок жизни предложения сервер не хранит: поле осталось бы выдуманным.
-    expires_at: null,
+    expires_at: offer.expires_at,
     // Ни имени, ни рейтинга второй стороны: профиль чужого пользователя закрыт.
     counterparty_name: '',
     counterparty_rating: null,

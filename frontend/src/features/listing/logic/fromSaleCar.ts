@@ -40,10 +40,8 @@ export function toListingDetailWire(
     sold_at: sold ? car.updated_at : null,
     thickness_map_complete: false,
     has_thickness_map: false,
-    // По контракту истории 7 телефон — отдельный запрос `POST /{id}/reveal-phone`, а не
-    // поле карточки: полем телефоны площадки выкачиваются одним проходом. Поэтому для
-    // чужого объявления кнопка доступна всем вошедшим, а решает сервер; владельцу же
-    // показывать нечего, кроме того, что он сам вписал.
+    // Телефон — отдельный запрос `POST /{id}/reveal-phone`, а не поле карточки: полем
+    // телефоны площадки выкачиваются одним проходом. Владельцу сервер отдаёт его сразу.
     phone_available: owned ? Boolean(car.phone_number) : true,
     chat_allowed: false,
     owned_by_me: owned,
@@ -53,9 +51,14 @@ export function toListingDetailWire(
     offers_count: context.offers?.length ?? 0,
     measured_panels: 0,
     total_panels: TOTAL_PANELS,
-    // Имя и рейтинг продавца сервер не отдаёт: профиль чужого пользователя закрыт, а
-    // отзывов нет вовсе. Пустое имя честнее выдуманного.
-    seller: { id: car.user_id, name: '', rating: null, deals_count: 0 },
+    // Имя и аватар приходят от провайдера входа. Рейтинга и числа сделок в выдаче нет:
+    // отзывы — история 12, и ноль сделок читался бы как «сделок не было», а не «не знаем».
+    seller: {
+      id: car.seller?.user_id ?? car.user_id,
+      name: car.seller?.name ?? '',
+      rating: null,
+      deals_count: 0,
+    },
     offers: context.offers ? context.offers.map(toOffer) : null,
   }
 }

@@ -121,7 +121,7 @@ export function offers(direction: string): OffersWire {
       : [
           offer('o4', 2200000, 'pending', 'Михаил', 26 * HOURS, 1 * DAYS),
           offer('o5', 1800000, 'accepted', 'Ольга', 6 * DAYS, null),
-          offer('o6', 2100000, 'sold', 'Игорь', 8 * DAYS, null),
+          offer('o6', 2100000, 'car_sold', 'Игорь', 8 * DAYS, null),
           offer('o7', 850000, 'withdrawn', 'Анна', 10 * DAYS, null),
         ],
   }

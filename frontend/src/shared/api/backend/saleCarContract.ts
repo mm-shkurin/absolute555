@@ -20,6 +20,14 @@ export interface AutofillWire {
   updated_at: string | null
 }
 
+/** Продавец в карточке: имя и аватар от провайдера входа. Рейтинг и число сделок
+ *  приедут с отзывами — история 12. */
+export interface SellerWire {
+  user_id: string
+  name: string | null
+  avatar_url: string | null
+}
+
 export interface PhotoWire {
   photo_id: string
   url: string
@@ -48,6 +56,9 @@ export interface SaleCarWire {
   description: string | null
   status: SaleCarStatus
   reject_reason: string | null
+  /** Причина отказа из фиксированного списка: текст говорит одному продавцу, что
+   *  исправить, а метка отвечает, что отклоняют чаще всего. */
+  reject_label: string | null
   published_at: string | null
   created_at: string | null
   updated_at: string | null
@@ -55,6 +66,7 @@ export interface SaleCarWire {
   preview_photo_url: string | null
   photos: PhotoWire[]
   autofill: AutofillWire | null
+  seller: SellerWire | null
 }
 
 /** Любое подмножество полей. Сервер отвергает неизвестные ключи, а не игнорирует их,

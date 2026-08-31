@@ -5,6 +5,7 @@
 import { send } from '../send'
 import { BACKEND } from './paths'
 import type { FeedFilters, FeedPageWire, RevealedPhone } from './feedContract'
+import type { RejectionLabel } from './moderationContract'
 import type {
   DocumentLinkWire,
   GalleryWire,
@@ -111,10 +112,11 @@ export function approveListing(saleCarId: string) {
   return send<StatusChangedWire>(BACKEND.saleCar.approve(saleCarId), { method: 'POST' })
 }
 
-/** Причина обязательна: продавец видит её текстом. */
-export function rejectListing(saleCarId: string, reason: string) {
+/** Метка обязательна, комментарий — нет. Метка нужна не продавцу, а нам: только по ней
+ *  видно, что отклоняют чаще всего, и что стоит не пускать в мастере. */
+export function rejectListing(saleCarId: string, label: RejectionLabel, comment?: string) {
   return send<StatusChangedWire>(BACKEND.saleCar.reject(saleCarId), {
     method: 'POST',
-    body: { reason },
+    body: comment?.trim() ? { label, comment: comment.trim() } : { label },
   })
 }

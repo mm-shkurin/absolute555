@@ -1,8 +1,13 @@
-// Предложения по цене — зеркало `backend/app/schemas/offer.py`.
+// Предложения по цене — контракт истории 10, `ProductSpecification/api-specs/offers.yaml`.
 //
-// Значения статуса на сервере именно такие: `accept` и `reject`, а не `accepted`
-// и `rejected`.
-export type OfferStatus = 'pending' | 'accept' | 'reject'
+// Шесть состояний, а не три: «вы отозвали», «никто не ответил» и «машину купил другой» —
+// три разных предложения покупателю, и сводить их в одно «не состоялось» значит не
+// сказать ни одного из них.
+export type OfferStatus = 'pending' | 'accepted' | 'rejected' | 'withdrawn' | 'expired' | 'car_sold'
+
+/** Что может ответить продавец. Остальные три состояния — ничьё решение: их ставит
+ *  срок, продажа машины или сам покупатель. */
+export type OfferDecision = 'accepted' | 'rejected'
 
 export interface OfferWire {
   offer_id: string
@@ -10,6 +15,8 @@ export interface OfferWire {
   user_id: string
   price: number
   status: OfferStatus
+  /** Когда предложение сгорит само. `null` — у тех, что уже закрыты. */
+  expires_at: string | null
   created_at: string
   updated_at: string | null
 }

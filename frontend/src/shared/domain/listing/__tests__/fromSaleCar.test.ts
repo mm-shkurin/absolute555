@@ -21,6 +21,7 @@ const wire = (over: Partial<SaleCarWire> = {}): SaleCarWire => ({
   description: null,
   status: 'published',
   reject_reason: null,
+  reject_label: null,
   published_at: null,
   created_at: null,
   updated_at: null,
@@ -28,6 +29,7 @@ const wire = (over: Partial<SaleCarWire> = {}): SaleCarWire => ({
   preview_photo_url: 'https://s3/preview.jpg',
   photos: [],
   autofill: null,
+  seller: null,
   ...over,
 })
 
