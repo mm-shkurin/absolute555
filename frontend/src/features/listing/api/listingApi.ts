@@ -1,8 +1,10 @@
 // Клиент карточки. Одна выдача на весь экран: характеристики, фотографии, продавец,
 // предложения и сводка по замерам приходят вместе — четыре запроса на один экран означали
 // бы четыре разных момента, когда карточка «наполовину загрузилась».
-import { API } from '../../../shared/api/endpoints'
-import { send } from '../../../shared/api/send'
+import { fetchOffersForCar } from '../../../shared/api/backend/offerApi'
+import { fetchListing as fetchSaleCar } from '../../../shared/api/backend/saleCarApi'
+import { currentSession } from '../../../shared/session/authSession'
+import { toListingDetailWire } from '../logic/fromSaleCar'
 
 export interface SellerWire {
   id: string
@@ -50,6 +52,12 @@ export interface ListingDetailWire {
   offers: OfferWire[] | null
 }
 
+/** Предложения по машине сервер отдаёт только её владельцу, поэтому гость и покупатель
+ *  за ними не ходят: отказ в правах — не то, чем должна кончаться загрузка карточки. */
 export async function fetchListing(id: string, signal?: AbortSignal): Promise<ListingDetailWire> {
-  return send<ListingDetailWire>(API.listings.one(id), { signal })
+  const car = await fetchSaleCar(id, signal)
+  const viewerId = currentSession()?.userId ?? null
+  const owned = viewerId !== null && viewerId === car.user_id
+  const offers = owned ? await fetchOffersForCar(id, signal) : null
+  return toListingDetailWire(car, { viewerId, offers })
 }

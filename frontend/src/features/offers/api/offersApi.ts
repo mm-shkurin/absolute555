@@ -1,7 +1,9 @@
 // Офферы обеих сторон одним запросом с параметром направления: экран переключает вкладку
 // мгновенно, а два разных пути к одному списку разошлись бы в форме ответа.
-import { API } from '../../../shared/api/endpoints'
-import { send } from '../../../shared/api/send'
+import { fetchMyOffers, fetchOffersForCar } from '../../../shared/api/backend/offerApi'
+import type { OfferWire as BackendOffer } from '../../../shared/api/backend/offerContract'
+import { fetchMyListings } from '../../../shared/api/backend/saleCarApi'
+import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
 
 export type OfferDirection = 'incoming' | 'outgoing'
 
@@ -28,9 +30,68 @@ export interface OffersWire {
   outgoing_total: number
 }
 
+// Сервер знает три состояния предложения из шести, которые различает экран: отзыва,
+// истечения срока и «машину продали» у него нет. Пока их нет, ни одно предложение не может
+// оказаться в этих состояниях, и придумывать их переводом нельзя.
+const STATUS: Record<BackendOffer['status'], OfferStatus> = {
+  pending: 'pending',
+  accept: 'accepted',
+  reject: 'rejected',
+}
+
+function toItem(offer: BackendOffer, car: SaleCarWire | undefined): OfferListItemWire {
+  return {
+    id: offer.offer_id,
+    listing_id: offer.sale_car_id,
+    listing_title: car
+      ? `${car.brand ?? car.mark_raw ?? ''} ${car.model ?? car.model_raw ?? ''}`.trim()
+      : '',
+    listing_year: car?.year ?? 0,
+    listing_price: car?.price ?? 0,
+    photo_url: car?.preview_photo_url ?? null,
+    amount: offer.price,
+    status: STATUS[offer.status],
+    created_at: offer.created_at,
+    // Срок жизни предложения сервер не хранит: поле осталось бы выдуманным.
+    expires_at: null,
+    // Ни имени, ни рейтинга второй стороны: профиль чужого пользователя закрыт.
+    counterparty_name: '',
+    counterparty_rating: null,
+  }
+}
+
+/** Входящие собираются обходом своих объявлений: выдачи «все предложения по моим машинам»
+ *  на сервере нет, а предложения по чужой машине он не отдаёт. */
+async function incoming(signal?: AbortSignal): Promise<OfferListItemWire[]> {
+  const cars = await fetchMyListings(undefined, signal)
+  const perCar = await Promise.all(
+    cars.map(async (car) => {
+      const offers = await fetchOffersForCar(car.sale_car_id, signal)
+      return offers.map((offer) => toItem(offer, car))
+    }),
+  )
+  return perCar.flat()
+}
+
+async function outgoing(signal?: AbortSignal): Promise<OfferListItemWire[]> {
+  const [offers, cars] = await Promise.all([
+    fetchMyOffers(signal),
+    // Своих объявлений среди чужих машин нет, но заголовок и фотографию взять больше
+    // неоткуда: карточку чужого объявления пришлось бы запрашивать по одной на предложение.
+    fetchMyListings(undefined, signal),
+  ])
+  const byId = new Map(cars.map((car) => [car.sale_car_id, car]))
+  return offers.map((offer) => toItem(offer, byId.get(offer.sale_car_id)))
+}
+
 export async function fetchOffers(
   direction: OfferDirection,
   signal?: AbortSignal,
 ): Promise<OffersWire> {
-  return send<OffersWire>(`${API.offers.collection}?direction=${direction}`, { signal })
+  const items = direction === 'incoming' ? await incoming(signal) : await outgoing(signal)
+  return {
+    items,
+    incoming_total: direction === 'incoming' ? items.length : 0,
+    outgoing_total: direction === 'outgoing' ? items.length : 0,
+  }
 }

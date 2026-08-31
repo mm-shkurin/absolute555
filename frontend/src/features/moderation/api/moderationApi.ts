@@ -2,6 +2,9 @@
 // три разные выдачи: модератор работает в одном из них подряд, а не переключается.
 import { API } from '../../../shared/api/endpoints'
 import { send } from '../../../shared/api/send'
+import { fetchPublished } from '../../../shared/api/backend/saleCarApi'
+import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
+import { maskVin } from '../../../shared/domain/listing/vin'
 
 export type QueueTab = 'pending' | 'flagged' | 'done'
 
@@ -62,11 +65,40 @@ export interface RoleApplicationWire {
   about: string | null
 }
 
+function toQueueItem(car: SaleCarWire): QueueItemWire {
+  return {
+    id: car.sale_car_id,
+    listing_id: car.sale_car_id,
+    title: `${car.brand ?? car.mark_raw ?? ''} ${car.model ?? car.model_raw ?? ''}`.trim(),
+    year: car.year ?? 0,
+    price: car.price ?? 0,
+    // Продавца сервер в этой выдаче не раскрывает: ни имени, ни рейтинга, ни возраста
+    // учётной записи. Модератор видит объявление, а не человека за ним.
+    seller_name: '',
+    seller_rating: null,
+    seller_is_new: false,
+    submitted_at: car.updated_at ?? car.created_at ?? '',
+    photos_count: car.photos.length,
+    measured_panels: 0,
+    total_panels: 11,
+    complaints_count: 0,
+    complaint_reason: null,
+    is_import: false,
+    vin_masked: maskVin(car.vin),
+    photos_plate_hidden: false,
+    phone_hidden: false,
+  }
+}
+
+// Очередь — это объявления в статусе «на модерации». Отдельной выдачи для модератора на
+// сервере нет, как нет ни жалоб, ни «сделано за сегодня»: вкладки, кроме первой, пусты.
 export async function fetchQueue(
   tab: QueueTab,
   signal?: AbortSignal,
 ): Promise<{ items: QueueItemWire[]; pending: number; flagged: number; done_today: number }> {
-  return send(`${API.moderation.queue}?tab=${tab}`, { signal })
+  const cars = tab === 'pending' ? await fetchPublished('moderation', signal) : []
+  const items = cars.map(toQueueItem)
+  return { items, pending: items.length, flagged: 0, done_today: 0 }
 }
 
 export async function fetchComplaints(
