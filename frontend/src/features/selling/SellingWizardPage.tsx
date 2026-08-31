@@ -15,12 +15,30 @@ import { StepThickness } from './components/StepThickness'
 import { StepReview } from './components/StepReview'
 import { StepSent } from './components/StepSent'
 import { useDraftState } from './useDraftState'
+import { useDraftSync } from './useDraftSync'
+import { submitDraft } from './api/draftApi'
 import styles from './selling.module.css'
 
 export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
   const navigate = useNavigate()
   const wizard = useDraftState()
   const { draft, state } = wizard
+  // Черновик заводится на сервере при входе в мастер и досылается при каждом переходе
+  // между шагами: шаг — это законченная порция ввода, и сохранять чаще значит слать
+  // запрос на каждое нажатие клавиши.
+  const sync = useDraftSync(true)
+  const goNext = () => {
+    void sync.save(draft)
+    wizard.goNext()
+  }
+
+  // Отправка на модерацию: сначала досылается последняя правка, иначе на проверку уедет
+  // объявление без того, что человек дописал на шаге сводки.
+  const submit = async () => {
+    await sync.save(draft)
+    if (sync.saleCarId) await submitDraft(sync.saleCarId).catch(() => undefined)
+    wizard.submit()
+  }
 
   const documentHandlers = {
     onPick: () => wizard.goStage('recognizing'),
@@ -76,7 +94,7 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
                   manual={state.stage === 'manual'}
                   onField={wizard.setField}
                   onBack={wizard.goBack}
-                  onNext={wizard.goNext}
+                  onNext={goNext}
                 />
               ) : null}
               {state.step === 'pricing' ? (
@@ -85,7 +103,7 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
                   onField={wizard.setField}
                   onShowPhone={wizard.setShowPhone}
                   onBack={wizard.goBack}
-                  onNext={wizard.goNext}
+                  onNext={goNext}
                 />
               ) : null}
               {state.step === 'photos' ? (
@@ -93,22 +111,18 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
                   count={draft.photosCount}
                   onAdd={wizard.addPhoto}
                   onBack={wizard.goBack}
-                  onNext={wizard.goNext}
+                  onNext={goNext}
                 />
               ) : null}
               {state.step === 'thickness' ? (
-                <StepThickness
-                  onBack={wizard.goBack}
-                  onSkip={wizard.goNext}
-                  onFill={wizard.goNext}
-                />
+                <StepThickness onBack={wizard.goBack} onSkip={goNext} onFill={goNext} />
               ) : null}
               {state.step === 'review' ? (
                 <StepReview
                   draft={draft}
                   onBack={wizard.goBack}
                   onSaveDraft={() => navigate(ROUTES.myListings)}
-                  onSubmit={wizard.submit}
+                  onSubmit={() => void submit()}
                   onFillThickness={() => wizard.goStep('thickness')}
                 />
               ) : null}
