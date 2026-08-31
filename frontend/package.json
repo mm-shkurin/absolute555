@@ -10,7 +10,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b --noEmit",
-    "lint": "oxlint --max-warnings=0 && node scripts/check-boundaries.selftest.mjs && node scripts/check-boundaries.mjs",
+    "lint": "oxlint --max-warnings=0 && node scripts/check-boundaries.selftest.mjs && node scripts/check-boundaries.mjs && node scripts/check-mock-parity.mjs",
     "format": "prettier --write \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.mjs\"",
     "format:check": "prettier --check \"src/**/*.{ts,tsx,css}\" \"scripts/**/*.mjs\"",
     "preview": "vite preview",

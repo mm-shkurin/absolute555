@@ -27,6 +27,12 @@ Deferred detail, read when the work touches it:
   hierarchy, coverage commands, test-review patterns
 - `ProductSpecification/ui/ui-conventions.md` — brand, tokens, and component conventions
 
+## Фронтовый конвейер
+
+Экран проходит путь **мокап → контракт → вёрстка → тесты (чистые и браузерные) →
+рефактор → учёт**; шаги, гейты и то, что каждый из них ловит, — в
+`.claude/skills/frontend-delivery/SKILL.md`.
+
 ## Specs
 
 `ProductSpecification/` holds product context. `/interview` gathers story context, `/api-spec` generates OpenAPI 3.0.3 into `ProductSpecification/api-specs/`.

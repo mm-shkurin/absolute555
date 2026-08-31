@@ -17,6 +17,7 @@ import {
   supplierProfile,
 } from './fixtures/importing'
 import { COMPLAINTS, QUEUE, ROLE_APPLICATIONS } from './fixtures/moderation'
+import * as wire from './fixtures/wire'
 import { currentSession, endSession, startSession } from '../shared/session/authSession'
 
 const LATENCY_MS = 250
@@ -46,6 +47,27 @@ function route(url: URL, method: string): unknown {
   // Любая мутация отвечает успехом: экраны их пока не отправляют, но кнопки, дошедшие до
   // сети, не должны падать посреди клика.
   if (method !== 'GET') return { ok: true }
+
+  // Настоящие адреса сервера. Экраны, переведённые на них, обслуживаются отсюда;
+  // выдуманные пути ниже держатся ради тех экранов, у которых ручек ещё нет.
+  if (path === '/sale_car/list') return wire.feedPage(query)
+  if (path === '/sale_car/user') return wire.myCars()
+  if (path === '/user/profile') return wire.user()
+  if (path === '/moderation/queue') return wire.queuePage()
+  if (path === '/moderation/counts') return wire.queueCounts()
+  if (path === '/moderation/complaints') return wire.complaintPage()
+  if (path === '/chat/dialogs') return wire.dialogs()
+  if (path === '/chat/unread') return { unread: 3 }
+  if (path === '/offer/my') return wire.myOffers()
+
+  const dialogId = match(path, /^\/chat\/dialogs\/([^/]+)\/messages$/)
+  if (dialogId) return { items: wire.messages(dialogId), total: 3, page: 1, size: 50 }
+
+  const offersOf = match(path, /^\/offer\/car\/([^/]+)$/)
+  if (offersOf) return wire.carOffers(offersOf)
+
+  const saleCarId = match(path, /^\/sale_car\/([^/]+)$/)
+  if (saleCarId) return wire.saleCar(saleCarId)
 
   if (path === '/listings') return listingsCollection(query)
   if (path === '/listings/l-thickness') return null
