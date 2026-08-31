@@ -47,3 +47,8 @@ class OfferAlreadySettled(OfferError):
     def __init__(self, current: str):
         super().__init__("Only a pending offer can be updated")
         self.current = current
+
+
+class NotOfferAuthor(OfferError):
+    def __init__(self):
+        super().__init__("Only the buyer who made an offer can withdraw it")

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List, Optional
 from loguru import logger
@@ -25,8 +25,10 @@ offer_router = APIRouter()
 async def create_offer(
     offer_in: OfferCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user)
+    current_user: Users = Depends(forbid_guest)
 ):
+    """A guest does not bargain: they cannot read the offers on their own listing either,
+    so leaving this route open to them was an inconsistency rather than a decision."""
     service = OfferService(db)
     try:
         offer = await service.create_offer(
@@ -40,12 +42,29 @@ async def create_offer(
 
 @offer_router.get("/my", response_model=List[OfferResponse])
 async def get_my_offers(
+    side: str = Query(default="sent", pattern="^(sent|received)$"),
     db: AsyncSession = Depends(get_db),
     current_user: Users = Depends(get_current_user)
 ):
+    """Two tabs, two queries: an offer carries the buyer and not the seller, so one
+    combined list could not be split by the client that received it."""
     service = OfferService(db)
-    offers = await service.get_offers_by_user(str(current_user.id))
-    return offers
+    if side == "received":
+        return await service.get_offers_received(str(current_user.id))
+    return await service.get_offers_by_user(str(current_user.id))
+
+
+@offer_router.post("/{offer_id}/withdraw", response_model=OfferResponse)
+async def withdraw_offer(
+    offer_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user: Users = Depends(get_current_user)
+):
+    """The buyer takes an unanswered offer back. They may send another afterwards."""
+    try:
+        return await OfferService(db).withdraw(offer_id, str(current_user.id))
+    except OfferError as error:
+        raise to_http(error)
 
 @offer_router.get("/car/{sale_car_id}", response_model=List[OfferResponse])
 async def get_offers_for_car(
@@ -106,7 +125,7 @@ async def update_offer_status(
     try:
         updated_offer = await service.update_offer_status(
             offer_id=offer_id,
-            new_status=status_update.status,
+            new_status=status_update.status.value,
             owner_id=str(current_user.id) 
         )
         return updated_offer

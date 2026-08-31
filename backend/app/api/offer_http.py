@@ -8,6 +8,7 @@ from app.core.exceptions import (
 )
 from app.services.offer_errors import (
     DuplicatePendingOffer,
+    NotOfferAuthor,
     MalformedIdentifier,
     NotCarOwner,
     OfferAlreadySettled,
@@ -32,6 +33,9 @@ def to_http(error: Exception):
 
     if isinstance(error, DuplicatePendingOffer):
         return BusinessRuleError(str(error), code="DUPLICATE_PENDING_OFFER")
+
+    if isinstance(error, NotOfferAuthor):
+        return AuthorizationError(str(error), code="NOT_OFFER_AUTHOR")
 
     if isinstance(error, NotCarOwner):
         return AuthorizationError(str(error), code="NOT_CAR_OWNER")

@@ -104,6 +104,18 @@ class OAuthSettings(BaseSettings):
 # VKSettings lived here. VK OAuth left the repository with its router: the flow needs a
 # VK business account this project does not have, so the settings only demanded secrets
 # for a provider nothing could call.
+class OfferSettings(BaseSettings):
+    """How long a price offer stands.
+
+    Three days is a hypothesis about how fast people answer, not a fact about selling
+    cars, so it is a setting: it will be moved by watching what sellers actually do.
+    """
+
+    offer_life_hours: int = Field(default=72, alias="OFFER_LIFE_HOURS")
+
+    model_config = BaseConfig.model_config
+
+
 class FrontendSettings(BaseSettings):
     frontend_url: HttpUrl = Field(..., alias="FRONTEND_URL")
     

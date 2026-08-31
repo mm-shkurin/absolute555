@@ -6,11 +6,13 @@ thread through run_in_executor inside the job itself, and this worker keeps max_
 rather than pretending the work is cheap.
 """
 
+from arq import cron
 from loguru import logger
 
 from app.db.database import get_engine
 from app.queue import queue_settings
 from app.tasks.decode_vin import decode_vin_from_sts
+from app.tasks.expire_offers import expire_stale_offers
 
 
 async def startup(ctx: dict) -> None:
@@ -25,7 +27,12 @@ async def shutdown(ctx: dict) -> None:
 
 class WorkerSettings:
     redis_settings = queue_settings()
-    functions = [decode_vin_from_sts]
+    functions = [decode_vin_from_sts, expire_stale_offers]
+
+    # Every quarter of an hour. An offer stands for days, so the granularity only decides
+    # how long a lapsed offer can still be accepted, and fifteen minutes is well inside
+    # the time it takes a person to open the screen and answer.
+    cron_jobs = [cron(expire_stale_offers, minute={0, 15, 30, 45}, run_at_startup=False)]
     on_startup = startup
     on_shutdown = shutdown
 
