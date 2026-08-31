@@ -1,0 +1,74 @@
+// URL-пространство сервера, каким оно есть сегодня.
+//
+// Отдельно от `../endpoints.ts` намеренно: там карта, нарисованная по спецификации и
+// мокапам (`/listings`, `/offers`, `/users/me`), здесь — то, что смонтировано в
+// `backend/app/api/__init__.py` и отвечает на запросы. Пока эти две карты не сошлись,
+// смешивать их в одном файле значит потерять, какая из них проверяема.
+//
+// Расхождения и то, чего на сервере ещё нет, перечислены в
+// `ProductSpecification/api-specs/backend-contract-map.md`.
+import { API_VERSION } from '../endpoints'
+
+const V1 = `/api/${API_VERSION}`
+
+const id = (value: string) => encodeURIComponent(value)
+
+export const BACKEND = {
+  auth: {
+    // Вход по OAuth начинается редиректом на сервер, а не запросом из приложения:
+    // ответ провайдера приходит на серверный callback.
+    yandexLogin: `${V1}/auth/yandex/login`,
+    yandexLoginWeb: `${V1}/auth/yandex/login/web`,
+    vkLogin: `${V1}/auth/vk/login`,
+    refresh: `${V1}/auth/refresh`,
+    guestLogin: `${V1}/auth/guest/login`,
+  },
+  user: {
+    profile: `${V1}/user/profile`,
+  },
+  catalog: {
+    brands: `${V1}/catalog/brands`,
+    models: (brandId: string) => `${V1}/catalog/brands/${id(brandId)}/models`,
+  },
+  saleCar: {
+    // POST без тела — сервер сам заводит черновик текущему пользователю.
+    draft: `${V1}/sale_car`,
+    published: `${V1}/sale_car/list`,
+    mine: `${V1}/sale_car/user`,
+    one: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}`,
+    photos: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/photos`,
+    photo: (saleCarId: string, photoId: string) =>
+      `${V1}/sale_car/${id(saleCarId)}/photos/${id(photoId)}`,
+    photoOrder: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/photos/order`,
+    sts: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/sts`,
+    submit: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/submit`,
+    withdraw: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/withdraw`,
+    sold: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/sold`,
+    republish: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/republish`,
+    revise: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/revise`,
+    approve: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/approve`,
+    reject: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/reject`,
+  },
+  offer: {
+    collection: `${V1}/offer/`,
+    mine: `${V1}/offer/my`,
+    ofCar: (saleCarId: string) => `${V1}/offer/car/${id(saleCarId)}`,
+    one: (offerId: string) => `${V1}/offer/${id(offerId)}`,
+    status: (offerId: string) => `${V1}/offer/${id(offerId)}/status`,
+  },
+  role: {
+    users: `${V1}/role/users`,
+    userRole: (userId: string) => `${V1}/role/users/${id(userId)}/role`,
+    roleInfo: (userId: string) => `${V1}/role/users/${id(userId)}/role-info`,
+    stats: `${V1}/role/stats`,
+    request: `${V1}/role/role-request`,
+    myRequests: `${V1}/role/my-role-requests`,
+    requests: `${V1}/role/role-requests`,
+    answerRequest: (requestId: string) => `${V1}/role/role-requests/${id(requestId)}`,
+  },
+  // Поток событий распознавания. Не запрос: это `text/event-stream`, и открывает его
+  // EventSource, а не `send`.
+  stream: {
+    listing: (saleCarId: string) => `${V1}/task/sse/${id(saleCarId)}`,
+  },
+} as const

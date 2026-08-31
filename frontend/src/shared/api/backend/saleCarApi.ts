@@ -1,0 +1,95 @@
+// Объявления: чтение, правка, фотографии, скан СТС и переходы жизненного цикла.
+//
+// Клиент знает только форму провода. Ни одного правила о том, что показать человеку,
+// здесь нет — это решает фича.
+import { send } from '../send'
+import { BACKEND } from './paths'
+import type {
+  DocumentLinkWire,
+  GalleryWire,
+  SaleCarPatch,
+  SaleCarStatus,
+  SaleCarWire,
+  StatusChangedWire,
+  StsAcceptedWire,
+} from './saleCarContract'
+
+const withStatus = (path: string, status?: SaleCarStatus) =>
+  status ? `${path}?status=${encodeURIComponent(status)}` : path
+
+/** Опубликованные объявления. Без параметра сервер отдаёт только `published`. */
+export function fetchPublished(status?: SaleCarStatus, signal?: AbortSignal) {
+  return send<SaleCarWire[]>(withStatus(BACKEND.saleCar.published, status), { signal })
+}
+
+/** Свои объявления во всех статусах, включая черновики. */
+export function fetchMyListings(status?: SaleCarStatus, signal?: AbortSignal) {
+  return send<SaleCarWire[]>(withStatus(BACKEND.saleCar.mine, status), { signal })
+}
+
+/** Чужое неопубликованное объявление сервер отдаёт как ненайденное — это одно и то же
+ *  и снаружи неразличимо намеренно. */
+export function fetchListing(saleCarId: string, signal?: AbortSignal) {
+  return send<SaleCarWire>(BACKEND.saleCar.one(saleCarId), { signal })
+}
+
+/** Черновик заводится пустым: полей в запросе нет, они дописываются правкой. */
+export function createDraft() {
+  return send<SaleCarWire>(BACKEND.saleCar.draft, { method: 'POST' })
+}
+
+export function patchListing(saleCarId: string, patch: SaleCarPatch) {
+  return send<SaleCarWire>(BACKEND.saleCar.one(saleCarId), { method: 'PATCH', body: patch })
+}
+
+export function deleteListing(saleCarId: string) {
+  return send<void>(BACKEND.saleCar.one(saleCarId), { method: 'DELETE' })
+}
+
+export function uploadPhotos(saleCarId: string, files: File[]) {
+  const form = new FormData()
+  for (const file of files) form.append('files', file)
+  return send<GalleryWire>(BACKEND.saleCar.photos(saleCarId), { method: 'POST', body: form })
+}
+
+export function deletePhoto(saleCarId: string, photoId: string) {
+  return send<GalleryWire>(BACKEND.saleCar.photo(saleCarId, photoId), { method: 'DELETE' })
+}
+
+export function reorderPhotos(saleCarId: string, photoIds: string[]) {
+  return send<GalleryWire>(BACKEND.saleCar.photoOrder(saleCarId), {
+    method: 'PUT',
+    body: { photo_ids: photoIds },
+  })
+}
+
+/** Скан принят, но не прочитан: чтение идёт в очереди, результат приходит потоком. */
+export function attachSts(saleCarId: string, file: File) {
+  const form = new FormData()
+  form.append('file', file)
+  return send<StsAcceptedWire>(BACKEND.saleCar.sts(saleCarId), { method: 'POST', body: form })
+}
+
+export function fetchStsLink(saleCarId: string, signal?: AbortSignal) {
+  return send<DocumentLinkWire>(BACKEND.saleCar.sts(saleCarId), { signal })
+}
+
+type OwnerAction = 'submit' | 'withdraw' | 'sold' | 'republish' | 'revise'
+
+/** Переходы, доступные владельцу. Какие из них разрешены в текущем статусе, решает
+ *  сервер: таблица переходов живёт там, и дублировать её здесь значит разойтись с ней. */
+export function changeStatus(saleCarId: string, action: OwnerAction) {
+  return send<StatusChangedWire>(BACKEND.saleCar[action](saleCarId), { method: 'POST' })
+}
+
+export function approveListing(saleCarId: string) {
+  return send<StatusChangedWire>(BACKEND.saleCar.approve(saleCarId), { method: 'POST' })
+}
+
+/** Причина обязательна: продавец видит её текстом. */
+export function rejectListing(saleCarId: string, reason: string) {
+  return send<StatusChangedWire>(BACKEND.saleCar.reject(saleCarId), {
+    method: 'POST',
+    body: { reason },
+  })
+}
