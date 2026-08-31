@@ -4,7 +4,7 @@
 // человек фотографирует машину во дворе, и потеря связи не должна стирать введённое.
 // Отсюда правило — сохранение может провалиться молча, а мастер продолжает работать.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { isEmptyPatch, saveDraft, startDraft } from './api/draftApi'
+import { isEmptyPatch, loadDraft, saveDraft, sendSts, startDraft, toDraft } from './api/draftApi'
 import { toPatch } from './logic/draftWire'
 import type { Draft } from './logic/draft'
 
@@ -13,15 +13,27 @@ export interface DraftSync {
   /** Последняя правка сохранена на сервере. Пока черновик не заведён — false. */
   saved: boolean
   save: (draft: Draft) => Promise<void>
+  /** Приложить снимок СТС. Возвращает false, если черновика на сервере ещё нет или
+   *  загрузка не удалась: мастер тогда остаётся на шаге с документом. */
+  attachDocument: (file: File) => Promise<boolean>
+  /** Перечитать объявление после распознавания. `null`, если читать нечего. */
+  reload: () => Promise<Draft | null>
 }
 
-export function useDraftSync(enabled: boolean): DraftSync {
+/** `existingId` — черновик, начатый раньше: мастер открыт по ссылке из «Моих объявлений»,
+ *  и заводить второй черновик на ту же машину нельзя. */
+export function useDraftSync(enabled: boolean, existingId?: string): DraftSync {
   const [saleCarId, setSaleCarId] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   // Идентификатор нужен обработчикам сразу после создания, до следующего рендера.
-  const idRef = useRef<string | null>(null)
+  const idRef = useRef<string | null>(existingId ?? null)
 
   useEffect(() => {
+    if (existingId) {
+      idRef.current = existingId
+      setSaleCarId(existingId)
+      return
+    }
     if (!enabled || idRef.current) return
     let cancelled = false
     startDraft()
@@ -36,7 +48,7 @@ export function useDraftSync(enabled: boolean): DraftSync {
     return () => {
       cancelled = true
     }
-  }, [enabled])
+  }, [enabled, existingId])
 
   const save = useCallback(async (draft: Draft) => {
     const id = idRef.current
@@ -52,5 +64,26 @@ export function useDraftSync(enabled: boolean): DraftSync {
     }
   }, [])
 
-  return { saleCarId, saved, save }
+  const attachDocument = useCallback(async (file: File) => {
+    const id = idRef.current
+    if (!id) return false
+    try {
+      await sendSts(id, file)
+      return true
+    } catch {
+      return false
+    }
+  }, [])
+
+  const reload = useCallback(async () => {
+    const id = idRef.current
+    if (!id) return null
+    try {
+      return toDraft(await loadDraft(id))
+    } catch {
+      return null
+    }
+  }, [])
+
+  return { saleCarId, saved, save, attachDocument, reload }
 }

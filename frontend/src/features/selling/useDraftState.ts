@@ -29,6 +29,9 @@ export function useDraftState() {
     draft,
     state,
     setField,
+    // Подстановка целиком: после распознавания приходит не одно поле, а вся шапка сразу,
+    // и склеивать её по полю значило бы шесть рендеров вместо одного.
+    applyDraft: (next: Draft) => setDraft(next),
     setShowPhone: (showPhone: boolean) => setDraft((current) => ({ ...current, showPhone })),
     addPhoto: () => setDraft((current) => ({ ...current, photosCount: current.photosCount + 1 })),
     goStep: (step: StepId) => setState((current) => ({ ...current, step })),

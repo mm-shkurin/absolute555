@@ -62,6 +62,7 @@ export function App() {
         <Route path={ROUTES.importRequest()} element={<ImportRequestPage signedIn={signedIn} />} />
 
         <Route path={ROUTES.selling} element={<SellingWizardPage />} />
+        <Route path={ROUTES.sellingDraft()} element={<SellingWizardPage />} />
         <Route path={ROUTES.myListings} element={<MyListingsPage />} />
         <Route path={ROUTES.offers} element={<OffersPage />} />
         <Route path={ROUTES.chats} element={<ChatsPage />} />

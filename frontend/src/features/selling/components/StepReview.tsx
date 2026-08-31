@@ -8,13 +8,23 @@ import styles from './StepReview.module.css'
 
 interface Props {
   draft: Draft
+  /** Отказ сервера при отправке. Ошибку показывает сводка, а не отдельный экран: правки
+   *  делаются здесь же. */
+  error?: string | null
   onBack: () => void
   onSaveDraft: () => void
   onSubmit: () => void
   onFillThickness: () => void
 }
 
-export function StepReview({ draft, onBack, onSaveDraft, onSubmit, onFillThickness }: Props) {
+export function StepReview({
+  draft,
+  error,
+  onBack,
+  onSaveDraft,
+  onSubmit,
+  onFillThickness,
+}: Props) {
   const gaps = missingForSubmit(draft)
   const unmeasured = draft.totalPanels - draft.measuredPanels
 
@@ -49,6 +59,11 @@ export function StepReview({ draft, onBack, onSaveDraft, onSubmit, onFillThickne
           ))}
         </div>
       </div>
+      {error ? (
+        <Alert tone="bad" title="Объявление не отправлено" spaced>
+          {error}
+        </Alert>
+      ) : null}
       {gaps.length > 0 ? (
         <Alert tone="bad" title="Без этого объявление не отправить" spaced>
           Не заполнено: {gaps.join(', ')}.

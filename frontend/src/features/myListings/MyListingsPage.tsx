@@ -34,7 +34,9 @@ export function MyListingsPage({ onSignIn }: { onSignIn?: () => void }) {
 
   const onAction = (action: MyListingAction['id'], row: { id: string }) => {
     if (action === 'offers') navigate(ROUTES.offers)
-    else if (action === 'continue' || action === 'fix') navigate(ROUTES.selling)
+    // Продолжение и исправление открывают ИМЕННО этот черновик, а не новый: мастер без
+    // идентификатора завёл бы второе объявление на ту же машину.
+    else if (action === 'continue' || action === 'fix') navigate(ROUTES.sellingDraft(row.id))
     else navigate(ROUTES.listing(row.id))
   }
 

@@ -1,5 +1,6 @@
 // Первый шаг: снимок СТС и всё, чем он может закончиться. Пять состояний одного шага —
 // ожидание файла, фоновая обработка, два вида отказа и ручной ввод.
+import { useRef } from 'react'
 import { Button } from '../../../shared/ui/Button'
 import { Placeholder } from '../../../shared/ui/Placeholder'
 import type { DocumentStage } from '../logic/wizardSteps'
@@ -10,7 +11,8 @@ import { VinPrompt } from './VinPrompt'
 import styles from './StepDocument.module.css'
 
 export interface DocumentHandlers {
-  onPick: () => void
+  /** Файл, а не сигнал: снимок уходит на сервер, и выбирать его должен сам шаг. */
+  onPick: (file: File) => void
   onManual: () => void
   onRetake: () => void
   onCancel: () => void
@@ -28,6 +30,16 @@ export function StepDocument({
   onVin: (value: string) => void
   handlers: DocumentHandlers
 }) {
+  const picker = useRef<HTMLInputElement>(null)
+  // `capture` не ставим: на телефоне это заперло бы выбор на камере, а снимок документа
+  // часто уже лежит в галерее.
+  const choose = () => picker.current?.click()
+  const take = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+    // Значение сбрасывается, чтобы повторный выбор того же файла снова дал событие.
+    event.target.value = ''
+    if (file) handlers.onPick(file)
+  }
   if (stage === 'recognizing') return <RecognitionProgress handlers={handlers} />
 
   if (stage === 'unreadable') {
@@ -70,13 +82,21 @@ export function StepDocument({
             Заполнить вручную
           </Button>
           <NavSpacer />
-          <Button onClick={handlers.onPick} data-testid="document-continue">
+          <Button onClick={choose} data-testid="document-continue">
             Продолжить
           </Button>
         </>
       }
     >
-      <button type="button" className={styles.drop} onClick={handlers.onPick}>
+      <input
+        ref={picker}
+        type="file"
+        accept="image/jpeg,image/png"
+        hidden
+        onChange={take}
+        data-testid="document-file"
+      />
+      <button type="button" className={styles.drop} onClick={choose}>
         <span className={styles.dropIcon}>СТС</span>
         Сфотографировать или перетащить файл
         <span className={styles.dropHint}>
