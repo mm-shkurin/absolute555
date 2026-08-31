@@ -27,6 +27,15 @@ export function useDraftSync(enabled: boolean, existingId?: string): DraftSync {
   const [saved, setSaved] = useState(false)
   // Идентификатор нужен обработчикам сразу после создания, до следующего рендера.
   const idRef = useRef<string | null>(existingId ?? null)
+  // Обещание создания черновика. Человек успевает выбрать фотографию СТС раньше, чем
+  // вернётся ответ на создание, и без ожидания снимок уходил бы в никуда, а мастер
+  // откатывался на выбор файла — с виду беспричинно.
+  const creating = useRef<Promise<string | null> | null>(null)
+
+  const draftId = useCallback(async () => {
+    if (idRef.current) return idRef.current
+    return (await creating.current) ?? null
+  }, [])
 
   useEffect(() => {
     if (existingId) {
@@ -34,17 +43,18 @@ export function useDraftSync(enabled: boolean, existingId?: string): DraftSync {
       setSaleCarId(existingId)
       return
     }
-    if (!enabled || idRef.current) return
+    if (!enabled || idRef.current || creating.current) return
     let cancelled = false
-    startDraft()
+    creating.current = startDraft()
       .then((car) => {
-        if (cancelled) return
+        if (cancelled) return null
         idRef.current = car.sale_car_id
         setSaleCarId(car.sale_car_id)
+        return car.sale_car_id
       })
       // Гость и оборванная сеть выглядят здесь одинаково: черновик остаётся только на
       // экране, и мастер об этом молчит до попытки отправки.
-      .catch(() => undefined)
+      .catch(() => null)
     return () => {
       cancelled = true
     }
@@ -64,16 +74,19 @@ export function useDraftSync(enabled: boolean, existingId?: string): DraftSync {
     }
   }, [])
 
-  const attachDocument = useCallback(async (file: File) => {
-    const id = idRef.current
-    if (!id) return false
-    try {
-      await sendSts(id, file)
-      return true
-    } catch {
-      return false
-    }
-  }, [])
+  const attachDocument = useCallback(
+    async (file: File) => {
+      const id = await draftId()
+      if (!id) return false
+      try {
+        await sendSts(id, file)
+        return true
+      } catch {
+        return false
+      }
+    },
+    [draftId],
+  )
 
   const reload = useCallback(async () => {
     const id = idRef.current

@@ -98,3 +98,17 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Поле выбора файла спрятано с глаз, но остаётся в раскладке: атрибут `hidden` убирает
+   его из дерева взаимодействия целиком, и тогда файл в него не положить ни скринридером,
+   ни браузерным сценарием. */
+.picker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

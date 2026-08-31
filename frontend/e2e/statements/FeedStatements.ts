@@ -67,7 +67,9 @@ export class FeedStatements {
   }
 
   async assertEveryCardHasThicknessBadge(): Promise<void> {
-    const badges = await this.driver.findElements(By.css('[data-testid="listing-card"] [data-badge="thickness"]'))
+    const badges = await this.driver.findElements(
+      By.css('[data-testid="listing-card"] [data-badge="thickness"]'),
+    )
     expect(badges.length).toBe(await this.cardCount())
   }
 

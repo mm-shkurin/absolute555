@@ -65,3 +65,15 @@
   cursor: pointer;
   border: 0;
 }
+
+/* См. StepDocument.module.css: `hidden` убрал бы поле из дерева взаимодействия. */
+.picker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}

@@ -92,7 +92,7 @@ export function StepDocument({
         ref={picker}
         type="file"
         accept="image/jpeg,image/png"
-        hidden
+        className={styles.picker}
         onChange={take}
         data-testid="document-file"
       />

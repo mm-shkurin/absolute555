@@ -44,9 +44,7 @@ function route(url: URL, method: string): unknown {
   const path = url.pathname.replace('/api/v1', '')
   const query = url.searchParams
 
-  // Любая мутация отвечает успехом: экраны их пока не отправляют, но кнопки, дошедшие до
-  // сети, не должны падать посреди клика.
-  if (method !== 'GET') return { ok: true }
+  if (method !== 'GET') return mutation(path)
 
   // Настоящие адреса сервера. Экраны, переведённые на них, обслуживаются отсюда;
   // выдуманные пути ниже держатся ради тех экранов, у которых ручек ещё нет.
@@ -101,6 +99,26 @@ function route(url: URL, method: string): unknown {
   if (path === '/moderation/supplier-applications') return { items: ROLE_APPLICATIONS }
 
   return null
+}
+
+// Мутации мастера отвечают по-настоящему: черновик без идентификатора и снимок без ответа
+// уводят мастер в откат, и сценарий останавливается на первом же шаге.
+function mutation(path: string): unknown {
+  if (path === '/sale_car') return wire.saleCar('l1')
+
+  const stsFor = match(path, /^\/sale_car\/([^/]+)\/sts$/)
+  if (stsFor) {
+    return {
+      sale_car_id: stsFor,
+      autofill: { state: 'pending', brand_source: null, model_source: null, updated_at: null },
+    }
+  }
+
+  const patched = match(path, /^\/sale_car\/([^/]+)$/)
+  if (patched) return wire.saleCar(patched)
+
+  // Остальные кнопки, дошедшие до сети, не должны падать посреди клика.
+  return { ok: true }
 }
 
 function listingsCollection(query: URLSearchParams): unknown {

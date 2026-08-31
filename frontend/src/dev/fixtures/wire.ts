@@ -73,7 +73,9 @@ export function saleCar(saleCarId: string): SaleCarWire | null {
   if (!card) return null
   return {
     ...card,
-    user_id: saleCarId === 'l1' ? VIEWER_ID : 'u9',
+    // Своим считается третье объявление, а не первое: первое открывает лента в браузерных
+    // сценариях, и владельцу вместо колонки с торгом показалась бы панель управления.
+    user_id: saleCarId === 'l3' ? VIEWER_ID : 'u9',
     vin: 'XW8ZZZ61ZJG012345',
     mark_raw: null,
     model_raw: null,

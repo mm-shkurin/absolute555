@@ -31,7 +31,10 @@ export async function resize(
   driver: WebDriver,
   size: { width: number; height: number },
 ): Promise<void> {
-  await driver.manage().window().setRect({ ...size, x: 0, y: 0 })
+  await driver
+    .manage()
+    .window()
+    .setRect({ ...size, x: 0, y: 0 })
 }
 
 // Локатор всегда по data-testid: классы генерируются CSS-модулями и меняются от каждой

@@ -60,7 +60,7 @@ export function StepPhotos({
         type="file"
         accept="image/jpeg,image/png"
         multiple
-        hidden
+        className={styles.picker}
         onChange={take}
         data-testid="photos-file"
       />
