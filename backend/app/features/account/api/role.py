@@ -11,14 +11,9 @@ from app.features.account.schemas.role import (
     UserRoleInfo,
     UserListResponse,
     RoleStats,
-    RoleRequestCreate,
-    RoleRequestResponse,
-    RoleRequestListResponse,
-    RoleRequestUpdate
 )
 from app.core.exceptions import BusinessRuleError, ResourceNotFoundError
 from app.features.account.services.role_service import RoleService
-from app.features.account.services.role_request_service import RoleRequestService
 from app.utils.security import get_current_user
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
@@ -119,69 +114,3 @@ async def get_role_stats(
         verified_users=stats["verified_users"],
         unverified_users=stats["unverified_users"]
     )
-
-@role_router.post("/role-request", response_model=RoleRequestResponse, status_code=status.HTTP_201_CREATED)
-async def create_role_request(
-    request_data: RoleRequestCreate,
-    current_user: Users = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    try:
-        service = RoleRequestService(db)
-        role_request = await service.create_role_request(current_user.id, request_data)
-        
-        return RoleRequestResponse.from_orm(role_request)
-    except ValueError as e:
-        raise BusinessRuleError(str(e), code="ROLE_REQUEST_REFUSED")
-
-@role_router.get("/my-role-requests", response_model=List[RoleRequestResponse])
-async def get_my_role_requests(
-    current_user: Users = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
-):
-    service = RoleRequestService(db)
-    role_requests = await service.get_user_role_requests(current_user.id)
-    
-    return [RoleRequestResponse.from_orm(req) for req in role_requests]
-
-@role_router.get("/role-requests", response_model=List[RoleRequestListResponse])
-async def get_all_role_requests(
-    status: Optional[str] = Query(None, description="Фильтр по статусу: pending, approved, rejected"),
-    current_user: Users = Depends(require_permission(Permission.VIEW_ROLE_REQUESTS)),
-    db: AsyncSession = Depends(get_db)
-):
-    service = RoleRequestService(db)
-    role_requests = await service.get_all_role_requests(status)
-    
-    result = []
-    for req in role_requests:
-        user_name = "Неизвестный пользователь"
-        if req.user:
-            user_name = service._get_user_name(req.user)
-        
-        result.append(RoleRequestListResponse(
-            id=req.id,
-            user_id=req.user_id,
-            user_name=user_name,
-            requested_role=UserRole(req.requested_role),
-            reason=req.reason,
-            status=req.status,
-            created_at=req.created_at
-        ))
-    
-    return result
-
-@role_router.put("/role-requests/{request_id}", response_model=RoleRequestResponse)
-async def update_role_request(
-    request_id: str,
-    update_data: RoleRequestUpdate,
-    current_user: Users = Depends(require_permission(Permission.MANAGE_ROLE_REQUESTS)),
-    db: AsyncSession = Depends(get_db)
-):
-    service = RoleRequestService(db)
-    role_request = await service.update_role_request(request_id, current_user.id, update_data)
-    
-    if not role_request:
-        raise ResourceNotFoundError("Заявка не найдена", code="ROLE_REQUEST_NOT_FOUND")
-    
-    return RoleRequestResponse.from_orm(role_request)

@@ -12,12 +12,13 @@ import pytest
 
 from tests.conftest import run_sql
 
-# Reading the user list and the application queue is an administrator's, not a
-# moderator's: ROLE_PERMISSIONS gives MANAGER analytics and listing moderation and stops
-# there. The split is the point of these tests, so the two sets stay apart.
-ADMIN_ROUTES = ["/api/v1/role/users", "/api/v1/role/role-requests"]
+# Reading the user list stays an administrator's. The application queue moved to the
+# moderator in story 13: the person who works the listing queue works the role queue too,
+# and it was the administrator only because nobody had decided otherwise.
+ADMIN_ROUTES = ["/api/v1/role/users"]
+MODERATOR_QUEUE = "/api/v1/role/role-requests"
 MODERATOR_ROUTES = ["/api/v1/role/stats"]
-PRIVILEGED_ROUTES = ADMIN_ROUTES + MODERATOR_ROUTES
+PRIVILEGED_ROUTES = ADMIN_ROUTES + MODERATOR_ROUTES + [MODERATOR_QUEUE]
 
 
 def _id_of(headers):
@@ -28,6 +29,16 @@ def _id_of(headers):
 
 def _as(headers, role):
     run_sql("UPDATE users SET role = :role WHERE id = :id", {"role": role, "id": uuid.UUID(_id_of(headers))})
+    return headers
+
+
+def _leave_the_guest_bench(headers):
+    """Гостевой вход даёт настоящую строку пользователя с флагом гостя.
+
+    С истории 13 заявку на роль подаёт только не-гость, а тесты входят гостевым
+    маршрутом — единственным, у которого нет провайдера.
+    """
+    run_sql("UPDATE users SET is_guest = false WHERE id = :id", {"id": uuid.UUID(_id_of(headers))})
     return headers
 
 
@@ -49,12 +60,14 @@ def test_should_refuse_an_unauthenticated_caller_the_moderator_routes(client, pa
     assert client.get(path).status_code == 401
 
 
-def test_should_let_a_moderator_read_the_counts_but_not_the_users(client, moderator):
+def test_should_let_a_moderator_read_the_counts_and_the_queue_but_not_the_users(client, moderator):
     stats = client.get("/api/v1/role/stats", headers=moderator)
 
     assert stats.status_code == 200, stats.text
     assert stats.json()["total_users"] >= 1
     assert isinstance(stats.json()["users_by_role"], dict)
+
+    assert client.get(MODERATOR_QUEUE, headers=moderator).status_code == 200
 
     for path in ADMIN_ROUTES:
         refused = client.get(path, headers=moderator)
@@ -104,6 +117,7 @@ def test_should_report_a_role_change_for_a_user_who_is_not_there(client, admin):
 
 
 def test_should_take_one_application_per_role_and_show_it_back(client, seller):
+    _leave_the_guest_bench(seller)
     first = client.post(
         "/api/v1/role/role-request",
         headers=seller,
@@ -119,7 +133,7 @@ def test_should_take_one_application_per_role_and_show_it_back(client, seller):
         json={"requested_role": "manager", "reason": "asking twice"},
     )
     assert again.status_code == 409, again.text
-    assert again.json()["code"] == "ROLE_REQUEST_REFUSED"
+    assert again.json()["code"] == "DUPLICATE_ROLE_REQUEST"
 
     mine = client.get("/api/v1/role/my-role-requests", headers=seller)
     assert [request["id"] for request in mine.json()] == [first.json()["id"]]
@@ -128,7 +142,7 @@ def test_should_take_one_application_per_role_and_show_it_back(client, seller):
 def test_should_show_an_application_only_to_its_author_until_the_queue_is_read(
     client, signed_in, admin
 ):
-    applicant = signed_in()
+    applicant = _leave_the_guest_bench(signed_in())
     created = client.post(
         "/api/v1/role/role-request",
         headers=applicant,

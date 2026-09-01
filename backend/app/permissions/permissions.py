@@ -25,3 +25,7 @@ class Permission(str, Enum):
 
     VIEW_PRICE_OFFERS = "view_price_offers"
     PUBLISH_CAR_FOR_SALE = "publish_car_for_sale"
+
+    # Профиль поставщика строит история 16; право заведено здесь, чтобы одобрение
+    # заявки меняло что-то для того, кто её подал.
+    MANAGE_SUPPLIER_PROFILE = "manage_supplier_profile"

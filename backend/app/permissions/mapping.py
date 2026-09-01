@@ -18,8 +18,22 @@ ROLE_PERMISSIONS: Dict[UserRole, Set[Permission]] = {
         Permission.VIEW_PRICE_OFFERS,
     },
 
+    # Права обычного пользователя плюс одно своё: роль, не дающая ничего, превращает
+    # одобрение заявки в запись в журнале.
+    UserRole.IMPORTER: {
+        Permission.UPLOAD_FILES,
+        Permission.EDIT_OWN_PROFILE,
+        Permission.PUBLISH_CAR_FOR_SALE,
+        Permission.VIEW_PRICE_OFFERS,
+        Permission.MANAGE_SUPPLIER_PROFILE,
+    },
+
     UserRole.MANAGER: {
         Permission.VIEW_ANALYTICS,
+        # Заявки разбирает тот же человек, что и очередь объявлений. Какие роли он
+        # вправе выдать — правило истории 13, и оно живёт в сервисе, а не здесь.
+        Permission.VIEW_ROLE_REQUESTS,
+        Permission.MANAGE_ROLE_REQUESTS,
         Permission.UPLOAD_FILES,
         Permission.EDIT_OWN_PROFILE,
         Permission.PUBLISH_CAR_FOR_SALE,

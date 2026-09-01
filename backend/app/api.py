@@ -7,7 +7,7 @@ with another without either of them saying so.
 
 from fastapi import APIRouter
 
-from app.features.account.api import role, user
+from app.features.account.api import role, role_request, user
 from app.features.auth.api import auth
 from app.features.catalog.api import catalog
 from app.features.chat.api import chat
@@ -22,6 +22,7 @@ api_router = APIRouter()
 api_router.include_router(auth.auth_router, prefix="/auth", tags=["auth"])
 api_router.include_router(user.user_router, prefix="/user", tags=["user"])
 api_router.include_router(role.role_router, prefix="/role", tags=["role"])
+api_router.include_router(role_request.role_request_router, prefix="/role", tags=["role"])
 api_router.include_router(task.task_router, prefix="/task", tags=["task"])
 api_router.include_router(sale_car.sale_car_router, prefix="/sale_car", tags=["sale_car"])
 api_router.include_router(offer.offer_router, prefix="/offer", tags=["offer"])

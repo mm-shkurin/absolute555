@@ -1,4 +1,6 @@
-from sqlalchemy import Column, String, Text, DateTime, ForeignKey, Enum, func
+from enum import Enum as PyEnum
+
+from sqlalchemy import Column, String, Text, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.database import Base
@@ -6,7 +8,10 @@ import uuid
 from datetime import datetime
 from app.permissions.roles import UserRole
 
-class RoleRequestStatus(str, Enum):
+class RoleRequestStatus(str, PyEnum):
+    """Три исхода заявки. Наследовал sqlalchemy.Enum — значения оказывались строками,
+    и то, что сравнения работали, было случайностью."""
+
     PENDING = "pending"
     APPROVED = "approved"
     REJECTED = "rejected"
