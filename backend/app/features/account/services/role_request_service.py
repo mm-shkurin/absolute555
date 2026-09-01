@@ -31,6 +31,13 @@ from app.features.account.services.role_errors import (
 MANAGER_MAY_GRANT = frozenset({UserRole.USER.value, UserRole.IMPORTER.value})
 
 
+def _may_grant(reviewer: Users, role: str) -> bool:
+    """Администратор выдаёт любую роль, модератор — только ниже своей."""
+    if reviewer.role == UserRole.ADMIN.value:
+        return True
+    return role in MANAGER_MAY_GRANT
+
+
 class RoleRequestService:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -120,9 +127,8 @@ class RoleRequestService:
         if not approving and not (update_data.review_comment or "").strip():
             raise RejectionWithoutReason()
 
-        if approving and reviewer.role != UserRole.ADMIN.value:
-            if role_request.requested_role not in MANAGER_MAY_GRANT:
-                raise CannotGrantRole(role_request.requested_role)
+        if approving and not _may_grant(reviewer, role_request.requested_role):
+            raise CannotGrantRole(role_request.requested_role)
 
         role_request.status = update_data.status
         role_request.reviewed_by = reviewer.id
@@ -142,16 +148,4 @@ class RoleRequestService:
         return role_request
 
     def name_of(self, user: Users) -> str:
-        """Имя из того провайдера, которым человек вошёл."""
-        if user is None:
-            return "Неизвестный пользователь"
-        if user.vk_json and isinstance(user.vk_json, dict):
-            first_name = user.vk_json.get('first_name', '')
-            last_name = user.vk_json.get('last_name', '')
-            return f"{first_name} {last_name}".strip()
-        elif user.yandex_json and isinstance(user.yandex_json, dict):
-            first_name = user.yandex_json.get('first_name', '')
-            last_name = user.yandex_json.get('last_name', '')
-            return f"{first_name} {last_name}".strip()
-        
-        return "Неизвестный пользователь"
+        return user.display_name if user is not None else "Неизвестный пользователь"

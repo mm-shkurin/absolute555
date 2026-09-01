@@ -35,4 +35,20 @@ class Users(BaseModel):
     offers = relationship("Offer", back_populates="user", cascade="all, delete-orphan")
     
     created_at = Column(DateTime, server_default=func.now()) 
-    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())  
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    @property
+    def display_name(self) -> str:
+        """Имя из того провайдера, которым человек вошёл.
+
+        Жило двумя одинаковыми копиями в двух сервисах ролей. Принадлежит строке: имя
+        собирается из её же колонок и ни от чего больше не зависит.
+        """
+        for profile in (self.vk_json, self.yandex_json):
+            if isinstance(profile, dict):
+                name = " ".join(
+                    part for part in (profile.get("first_name"), profile.get("last_name")) if part
+                ).strip()
+                if name:
+                    return name
+        return "Неизвестный пользователь"

@@ -39,15 +39,29 @@ def _ids(page):
     return [row["sale_car_id"] for row in page["items"]]
 
 
+def _all_ids(client, moderator, **params):
+    """Вся очередь, страницами.
+
+    Очередь — старые первыми, и база живёт дольше одного прогона: свежесозданное
+    объявление лежит в её конце, а не на первой странице. Тест, читавший одну страницу,
+    зеленел только на пустой базе.
+    """
+    size = 60
+    first = _queue(client, moderator, size=size, page=1, **params)
+    ids = _ids(first)
+    pages = -(-first["total"] // size)
+    for page in range(2, pages + 1):
+        ids += _ids(_queue(client, moderator, size=size, page=page, **params))
+    return ids
+
+
 def test_should_hold_what_is_waiting_oldest_first(client, moderator, waiting):
     first, second, third = waiting(), waiting(), waiting()
 
-    page = _queue(client, moderator, size=60)
+    ids = _all_ids(client, moderator)
 
-    ids = _ids(page)
     assert {first, second, third} <= set(ids)
     assert ids.index(first) < ids.index(second) < ids.index(third)
-    assert page["total"] >= 3
 
 
 def test_should_hold_nothing_that_is_not_waiting(client, seller, moderator, waiting):
@@ -55,7 +69,7 @@ def test_should_hold_nothing_that_is_not_waiting(client, seller, moderator, wait
     published = waiting()
     assert client.post(f"/api/v1/sale_car/{published}/approve", headers=moderator).status_code == 200
 
-    ids = _ids(_queue(client, moderator, size=60))
+    ids = _all_ids(client, moderator)
 
     assert draft not in ids
     assert published not in ids
@@ -111,7 +125,7 @@ def test_should_take_a_corrected_listing_back_into_the_queue(client, seller, mod
     again = client.post(f"/api/v1/sale_car/{listing_id}/submit", headers=seller)
 
     assert again.status_code == 200, again.text
-    assert listing_id in _ids(_queue(client, moderator, size=60))
+    assert listing_id in _all_ids(client, moderator)
     listing = client.get(f"/api/v1/sale_car/{listing_id}", headers=seller).json()
     assert listing["reject_reason"] is None
 
@@ -136,6 +150,4 @@ def test_should_hold_a_decision_in_the_tab_of_the_moderator_who_made_it(
     listing_id = waiting()
     client.post(f"/api/v1/sale_car/{listing_id}/reject", headers=moderator, json=PLATE)
 
-    mine = _queue(client, moderator, tab="handled_today", size=60)
-
-    assert listing_id in _ids(mine)
+    assert listing_id in _all_ids(client, moderator, tab="handled_today")

@@ -109,13 +109,4 @@ class RoleService:
         return current_user.id == target_user.id
 
     def _get_user_name(self, user: Users) -> str:
-        if user.vk_json and isinstance(user.vk_json, dict):
-            first_name = user.vk_json.get('first_name', '')
-            last_name = user.vk_json.get('last_name', '')
-            return f"{first_name} {last_name}".strip()
-        elif user.yandex_json and isinstance(user.yandex_json, dict):
-            first_name = user.yandex_json.get('first_name', '')
-            last_name = user.yandex_json.get('last_name', '')
-            return f"{first_name} {last_name}".strip()
-        
-        return "Неизвестный пользователь"
+        return user.display_name
