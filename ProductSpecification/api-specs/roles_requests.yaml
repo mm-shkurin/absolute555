@@ -1,0 +1,231 @@
+openapi: 3.0.3
+info:
+  title: Roles and role requests
+  version: 1.0.0
+  description: |
+    Пять ролей и заявка на ту, которой у человека нет.
+
+    Роль importer добавлена историей 13. Она даёт права обычного пользователя плюс право
+    на профиль поставщика — экран профиля строит история 16; право заведено раньше, чтобы
+    одобрение заявки что-то меняло для того, кто её подал.
+
+    Решение по заявке принимает manager или admin, но manager не выдаёт роли своего
+    уровня и выше: запросить admin может любой, и ручка «рассмотреть заявку» иначе
+    становится дорогой наверх.
+
+paths:
+  /api/v1/role/role-request:
+    post:
+      summary: Подать заявку на роль
+      operationId: createRoleRequest
+      tags: [role]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RoleRequestCreate' }
+      responses:
+        '201':
+          description: Заявка принята
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoleRequest' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: Гость заявок не подаёт — у него нет того, что роль открывает.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: |
+            Живая заявка на эту роль уже есть, или роль у человека уже есть.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/role/my-role-requests:
+    get:
+      summary: Свои заявки, новые первыми
+      operationId: listMyRoleRequests
+      tags: [role]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Заявки этого человека
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RoleRequest' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/role/role-requests:
+    get:
+      summary: Очередь заявок для модератора
+      operationId: listRoleRequests
+      tags: [role]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [pending, approved, rejected]
+      responses:
+        '200':
+          description: Заявки с именем того, кто подал
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/RoleRequestListItem' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/role/role-requests/{request_id}:
+    put:
+      summary: Решить заявку
+      operationId: decideRoleRequest
+      tags: [role]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Одобрение выдаёт роль в той же транзакции, что меняет статус заявки: иначе
+        бывает одобренная заявка без выданной роли, и по журналу заявок уже нельзя
+        судить о том, у кого какая роль.
+      parameters:
+        - name: request_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RoleRequestDecision' }
+      responses:
+        '200':
+          description: Решение записано; при одобрении роль выдана
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoleRequest' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: |
+            Нет права рассматривать заявки, либо manager пытается выдать manager или
+            admin.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '404':
+          description: Заявки нет.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: Заявка уже решена — решение принимается один раз.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422':
+          description: Отказ без комментария — человеку нечего исправлять.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/role/users/{user_id}/role:
+    put:
+      summary: Сменить роль напрямую
+      operationId: setUserRole
+      tags: [role]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Снятие роли тоже здесь. Объявления снятого остаются опубликованными: роль — право
+        на будущее, а не приговор уже опубликованному.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserRoleUpdate' }
+      responses:
+        '200':
+          description: Роль изменена
+          content:
+            application/json:
+              schema: { type: object }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  schemas:
+    UserRole:
+      type: string
+      description: |
+        guest — не вошедший по-настоящему; user — обычный продавец и покупатель;
+        importer — поставщик под привоз, права user плюс профиль поставщика;
+        manager — модерация; admin — всё.
+      enum: [guest, user, importer, manager, admin]
+
+    RoleRequestStatus:
+      type: string
+      enum: [pending, approved, rejected]
+
+    RoleRequestCreate:
+      type: object
+      required: [requested_role, reason]
+      properties:
+        requested_role: { $ref: '#/components/schemas/UserRole' }
+        reason: { type: string, minLength: 1 }
+        additional_info: { type: string, nullable: true }
+
+    RoleRequestDecision:
+      type: object
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [approved, rejected]
+        review_comment:
+          type: string
+          nullable: true
+          description: Обязателен при отказе.
+
+    RoleRequest:
+      type: object
+      required: [id, user_id, requested_role, reason, status, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        requested_role: { $ref: '#/components/schemas/UserRole' }
+        reason: { type: string }
+        additional_info: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/RoleRequestStatus' }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time, nullable: true }
+        reviewed_by: { type: string, format: uuid, nullable: true }
+        reviewed_at: { type: string, format: date-time, nullable: true }
+        review_comment: { type: string, nullable: true }
+
+    RoleRequestListItem:
+      allOf:
+        - $ref: '#/components/schemas/RoleRequest'
+        - type: object
+          properties:
+            user_name: { type: string, nullable: true }
+
+    UserRoleUpdate:
+      type: object
+      required: [new_role, reason]
+      properties:
+        new_role: { $ref: '#/components/schemas/UserRole' }
+        reason: { type: string, minLength: 1 }
