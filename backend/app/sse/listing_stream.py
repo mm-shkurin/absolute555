@@ -17,7 +17,7 @@ from sqlalchemy import select
 
 from app.core.config import RedisSettings
 from app.db.database import get_db_session
-from app.models.sale_car import SaleCars
+from app.features.listing.models.sale_car import SaleCars
 from app.sse.manager import sse_manager
 from app.tasks.status_updater import TaskStatus
 

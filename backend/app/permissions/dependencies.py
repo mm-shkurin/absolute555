@@ -10,7 +10,7 @@ from fastapi import Depends
 
 from app.core.exceptions import AuthorizationError
 
-from app.models.users import Users
+from app.features.account.models.users import Users
 from app.utils.security import get_current_user
 
 from .mapping import ROLE_PERMISSIONS

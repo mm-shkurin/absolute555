@@ -7,7 +7,7 @@ alias or fuzzy work downstream recovers it.
 
 import pytest
 
-from app.services.catalog_normalize import normalize, slugify
+from app.features.catalog.services.catalog_normalize import normalize, slugify
 
 
 @pytest.mark.parametrize(

@@ -14,7 +14,7 @@ from loguru import logger
 from sqlalchemy import update
 
 from app.db.database import get_db_session
-from app.models.offer import Offer, OfferStatus
+from app.features.offer.models.offer import Offer, OfferStatus
 
 
 async def expire_stale_offers(ctx: dict) -> dict:

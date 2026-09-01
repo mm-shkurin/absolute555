@@ -311,7 +311,7 @@ def test_should_hand_a_written_message_to_the_live_channel(client, seller, talki
     async def _capture(user_ids, payload):
         handed.append((user_ids, payload))
 
-    monkeypatch.setattr("app.api.chat.chat_hub.deliver", _capture)
+    monkeypatch.setattr("app.features.chat.api.chat.chat_hub.deliver", _capture)
 
     assert _say(client, buyer, dialog_id, "Через канал").status_code == 201
 

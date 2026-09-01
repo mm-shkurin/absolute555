@@ -14,7 +14,7 @@ from typing import Dict, List, Optional, Set
 from loguru import logger
 
 from app.core.config import JWTSettings
-from app.services.cache_service import cache_service
+from app.shared.storage.cache_service import cache_service
 from app.utils.security import verify_token
 
 jwt_settings = JWTSettings()

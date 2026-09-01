@@ -10,15 +10,15 @@ from urllib.parse import parse_qs, urlparse
 
 import pytest
 
-from app.services.oauth_provider import FakeOAuthProvider, YandexOAuthProvider, provider_for
-from app.services.oauth_store import OAuthStore
+from app.features.auth.services.oauth_provider import FakeOAuthProvider, YandexOAuthProvider, provider_for
+from app.features.auth.services.oauth_store import OAuthStore
 
 pytestmark = pytest.mark.asyncio
 
 
 @pytest.fixture(autouse=True)
 def fake_provider(monkeypatch):
-    monkeypatch.setattr("app.api.auth_yandex.provider_for", lambda *_: FakeOAuthProvider())
+    monkeypatch.setattr("app.features.auth.api.auth_yandex.provider_for", lambda *_: FakeOAuthProvider())
 
 
 def _start(client):

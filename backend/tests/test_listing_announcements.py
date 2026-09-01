@@ -6,8 +6,8 @@ reached is a lost notification and never an undone sale.
 
 import pytest
 
-from app.services.s3_service import S3Service
-from app.services.webhook_service import WebhookService
+from app.shared.storage.s3_service import S3Service
+from app.features.recognition.services.webhook_service import WebhookService
 from tests.test_listing_lifecycle import _create, _fill, _publish, _status
 
 

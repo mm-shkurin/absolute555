@@ -12,7 +12,7 @@ from sqlalchemy import text
 
 from app.core.config import MinioSettings, PhotoSettings
 from tests.conftest import test_session
-from app.services.s3_service import s3_service
+from app.shared.storage.s3_service import s3_service
 from tests.conftest import make_image
 from tests.test_listing_lifecycle import _create, _fill
 

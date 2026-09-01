@@ -21,8 +21,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db_session
-from app.models.catalog import Brand, BrandAlias, CarModel, ModelAlias
-from app.services.catalog_normalize import normalize, slugify
+from app.features.catalog.models.catalog import Brand, BrandAlias, CarModel, ModelAlias
+from app.features.catalog.services.catalog_normalize import normalize, slugify
 
 CATALOG_PATH = Path(__file__).with_name("car_catalog.json")
 

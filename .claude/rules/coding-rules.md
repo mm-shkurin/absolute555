@@ -15,26 +15,44 @@ against: `.claude/guidelines/hazard-catalogue/`.
 
 ## Layers
 
-This backend is a flat FastAPI app, not the layered clean-architecture tree the upstream
-framework assumes. The layer map here is the real one:
+This backend is feature-major: the four layers live inside each domain area rather than
+above all of them. The map here is the real one:
 
-- `app/api/` — routers. HTTP in, HTTP out: parse the request, call a service, shape the
-  response. No SQL, no business rules.
-- `app/services/` — business logic. Owns the rules and the transaction. Talks to models,
-  S3, Redis, external APIs.
-- `app/models/` — SQLAlchemy models. Columns, relationships, and behaviour that belongs
-  to the row itself. No service or API imports.
-- `app/schemas/` — Pydantic request and response types. The wire contract.
+- `app/features/<area>/` — one domain area: `account`, `auth`, `catalog`, `listing`,
+  `offer`, `chat`, `moderation`, `review`, `recognition`. Each holds the same four layers:
+  - `api/` — routers, plus the view and error-mapping modules they use. HTTP in, HTTP out:
+    parse the request, call a service, shape the response. No SQL, no business rules.
+  - `services/` — business logic. Owns the rules and the transaction. Talks to models, S3,
+    Redis, external APIs.
+  - `models/` — SQLAlchemy models. Columns, relationships, and behaviour that belongs to
+    the row itself. No service or API imports.
+  - `schemas/` — Pydantic request and response types. The wire contract.
+- `app/api.py` — the mount table: which feature router answers on which prefix. The only
+  place that knows the URL space as a whole.
+- `app/db/registry.py` — every mapped class in one import. The tables are one graph across
+  features, and SQLAlchemy resolves a relationship by class name only once every class is
+  registered; `app/features/__init__.py` imports this, so importing any feature registers
+  the whole graph.
+- `app/shared/` — infrastructure every area uses: S3, the cache. Not a feature.
 - `app/tasks/` and `app/ml/` — ARQ jobs and the OCR/VIN pipeline they call.
 - `app/permissions/` — roles, permissions, and the FastAPI dependencies that enforce them.
 
-Dependency direction, enforced by `.claude/skills/sprint-check/probes/config.json`:
+**A cross-feature import is allowed and is a signal.** `moderation/api` reads
+`listing/api/sale_car_view`, and `review/services` reads the offer and listing models:
+the domain is one graph, and pretending otherwise would mean duplicating the card view.
+What the boundary buys is that such an import is visible in the import line. When one area
+starts reaching into another's `models` regularly — as opposed to the shared kernel of
+`users` and `sale_car` — that is the sign the boundary is drawn in the wrong place.
 
-- Routers must not import `app.models` or build queries with `sqlalchemy.select/update/delete`.
-  They go through a service.
-- Models must not import `app.services`, `app.api` or `app.tasks`, and must not import
-  `fastapi`.
-- Services must not import `app.api` and must not raise `HTTPException` or set
+Dependency direction, enforced by `.claude/skills/sprint-check/probes/config.json`, whose
+globs match the layer inside every area (`backend/app/features/*/api` and so on), so a new
+area is covered the day it is created:
+
+- Routers must not import a `models` module or build queries with
+  `sqlalchemy.select/update/delete`. They go through a service.
+- Models must not import `services`, `api`, `app.tasks` or `app.shared`, and must not
+  import `fastapi`.
+- Services must not import an `api` module and must not raise `HTTPException` or set
   `status_code`. A service raises a domain error; the router translates it to a status.
 
 The last rule is currently violated across `offer_service.py` and others. Do not add new

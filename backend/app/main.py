@@ -8,7 +8,7 @@ from app.core.config import CORSSettings
 from loguru import logger
 from app.api import api_router
 from app.core.exceptions import register_exception_handlers
-from app.api.docs import docs_router
+from app.docs import docs_router
 
 sys.path.append('/app')
 

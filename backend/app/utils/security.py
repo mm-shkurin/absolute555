@@ -11,8 +11,8 @@ from app.core.exceptions import AuthenticationError
 from app.core.config import JWTSettings
 from app.core.config import CookieSettings
 from app.db.database import get_db
-from app.models.users import Users
-from app.schemas.token import Token  
+from app.features.account.models.users import Users
+from app.features.auth.schemas.token import Token  
 
 auth_scheme = APIKeyHeader(name="Authorization", scheme_name="Bearer", auto_error=False)
 

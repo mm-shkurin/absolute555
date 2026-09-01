@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 import pkce 
 from app.db.database import get_db
 from app.utils.security import create_access_token, create_refresh_token
-from app.services.user_service import UserService
+from app.features.account.services.user_service import UserService
 
 
 async def guest_auth(db: AsyncSession , device_id: Optional[str] = None) -> dict[str,str]:

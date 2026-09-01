@@ -11,12 +11,12 @@ import pytest
 import pytest_asyncio
 from sqlalchemy import select
 
-from app.models.catalog import Brand, CatalogSuggestion, SuggestionKind, SuggestionStatus
-from app.models.sale_car import AutofillState, FieldSource, SaleCars, SaleCarStatus
-from app.models.users import Users
-from app.services.catalog_normalize import normalize
-from app.services.catalog_resolver import CatalogResolver
-from app.services.listing_autofill import ListingAutofillService
+from app.features.catalog.models.catalog import Brand, CatalogSuggestion, SuggestionKind, SuggestionStatus
+from app.features.listing.models.sale_car import AutofillState, FieldSource, SaleCars, SaleCarStatus
+from app.features.account.models.users import Users
+from app.features.catalog.services.catalog_normalize import normalize
+from app.features.catalog.services.catalog_resolver import CatalogResolver
+from app.features.listing.services.listing_autofill import ListingAutofillService
 from tests.conftest import test_session
 
 pytestmark = pytest.mark.asyncio

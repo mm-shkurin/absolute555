@@ -10,8 +10,8 @@ import pytest_asyncio
 from sqlalchemy import select
 
 from tests.conftest import test_session
-from app.models.catalog import Brand
-from app.services.catalog_service import CatalogService
+from app.features.catalog.models.catalog import Brand
+from app.features.catalog.services.catalog_service import CatalogService
 
 pytestmark = pytest.mark.asyncio
 

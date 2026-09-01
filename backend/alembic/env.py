@@ -5,12 +5,10 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
-from app.db.database import Base
-from app.models.users import Users
-from app.models.catalog import Brand, BrandAlias, CarModel, CatalogSuggestion, ModelAlias
-from app.models.sale_car import SaleCars
-from app.models.offer import Offer
-from app.models.role_request import RoleRequest
+# The registry rather than a hand-kept list: it names every mapped class in one place, and
+# a list here went out of date the moment a feature added a table -- chat, complaints and
+# reviews were all missing from it.
+from app.db.registry import Base
 
 from app.core.config import DatabaseSettings
 

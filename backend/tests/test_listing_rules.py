@@ -7,7 +7,7 @@ round trip, a submit sent twice, and two actions racing on one listing.
 
 from concurrent.futures import ThreadPoolExecutor
 
-from app.models.sale_car import MAX_DRAFTS_PER_USER
+from app.features.listing.models.sale_car import MAX_DRAFTS_PER_USER
 from tests.test_listing_lifecycle import _create, _fill, _publish, _status
 
 

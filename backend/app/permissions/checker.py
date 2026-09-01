@@ -1,6 +1,6 @@
 from typing import Set, List
 from app.core.exceptions import AuthorizationError
-from app.models.users import Users
+from app.features.account.models.users import Users
 from .roles import UserRole
 from .permissions import Permission
 from .mapping import ROLE_PERMISSIONS

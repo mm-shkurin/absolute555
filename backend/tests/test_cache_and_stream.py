@@ -9,7 +9,7 @@ import uuid
 
 import pytest
 
-from app.services.cache_service import CacheService
+from app.shared.storage.cache_service import CacheService
 
 pytestmark = pytest.mark.asyncio
 

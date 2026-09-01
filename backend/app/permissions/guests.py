@@ -11,9 +11,9 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.models.sale_car import SaleCars
-from app.models.users import Users
-from app.services.user_service import UserService
+from app.features.listing.models.sale_car import SaleCars
+from app.features.account.models.users import Users
+from app.features.account.services.user_service import UserService
 from app.utils.security import get_current_user
 
 

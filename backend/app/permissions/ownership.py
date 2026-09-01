@@ -11,9 +11,9 @@ silently shadowing the first; they are one each here.
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.models.offer import Offer
-from app.models.sale_car import SaleCars
-from app.models.users import Users
+from app.features.offer.models.offer import Offer
+from app.features.listing.models.sale_car import SaleCars
+from app.features.account.models.users import Users
 
 from .dependencies import has_permission
 from .permissions import Permission

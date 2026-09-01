@@ -3,9 +3,9 @@ from sqlalchemy import select
 
 from app.db.database import get_db_session
 from app.ml.decode_vin import decode_vin
-from app.models.sale_car import SaleCars
-from app.services.catalog_resolver import CatalogResolver
-from app.services.s3_service import s3_service
+from app.features.listing.models.sale_car import SaleCars
+from app.features.catalog.services.catalog_resolver import CatalogResolver
+from app.shared.storage.s3_service import s3_service
 from app.tasks.status_updater import TaskStatus, update_task_status
 
 

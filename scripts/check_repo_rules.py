@@ -60,10 +60,22 @@ def requested_scope(argv: list[str]) -> str | None:
     return None
 
 
+def bases(root: str) -> list[Path]:
+    """Каталоги, которые описывает строка списка.
+
+    Со звёздочкой — все совпавшие: слои живут внутри каждой предметной области
+    (`app/features/*/api`), и перечислять области поимённо значило бы забыть новую в тот
+    день, когда её заведут.
+    """
+    if "*" in root:
+        return sorted(path for path in ROOT.glob(root) if path.is_dir())
+    return [ROOT / root]
+
+
 def source_files(patterns: list[str], roots: list[str]) -> list[Path]:
     found: list[Path] = []
     for root in roots:
-        base = ROOT / root
+      for base in bases(root):
         if not base.exists():
             continue
         for pattern in patterns:
