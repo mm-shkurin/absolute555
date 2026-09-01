@@ -148,5 +148,7 @@ function offer(
     expires_at: expiresInMs === null ? null : new Date(Date.now() + expiresInMs).toISOString(),
     counterparty_name: who,
     counterparty_rating: 4.6,
+    can_review: status === 'accepted',
+    review_id: null,
   }
 }

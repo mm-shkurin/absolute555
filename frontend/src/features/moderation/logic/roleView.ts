@@ -1,54 +1,45 @@
-// Заявки на роль поставщика глазами владельца площадки. Решение принимается по двум
-// вещам: что человек обещает и сколько он здесь. Оба факта стоят в одной строке.
-import { pluralize } from '../../../shared/format/money'
-import { ratingValue } from '../../../shared/format/rating'
-import type { RoleApplicationWire } from '../api/moderationApi'
+// Заявка на роль глазами модератора. Заявка отвечает на один вопрос — «пустите меня» —
+// и ровно это в ней и есть: какая роль, зачем и что человек добавил от себя. Условия
+// поставки (страны, марки, сроки, предоплата) — профиль поставщика, история 16: их
+// заполняют после одобрения, и в заявке их нет ни на сервере, ни на экране.
+import type { RoleRequestListItemWire } from '../../../shared/api/backend/accountContract'
+import type { UserRole } from '../../../shared/api/backend/accountContract'
 
 export interface RoleApplicationView {
   id: string
   name: string
   meta: string
-  fresh: boolean
-  terms: { label: string; value: string; mono?: boolean }[]
+  role: string
+  reason: string
   about: string | null
+  answered: boolean
 }
 
 const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
 
-// Аккаунт, заведённый пару дней назад ради роли поставщика, — единственный сигнал, который
-// у площадки есть до первой поставки. Он назван словами, а не спрятан в дату регистрации.
-const FRESH_DAYS = 7
-
-export function toRoleApplication(wire: RoleApplicationWire): RoleApplicationView {
-  const fresh = wire.account_age_days <= FRESH_DAYS
-  return {
-    id: wire.id,
-    name: wire.company_name ? `${wire.company_name} · ${wire.applicant_name}` : wire.applicant_name,
-    meta: [
-      `заявка от ${DATE.format(new Date(wire.applied_at))}`,
-      fresh ? accountAge(wire.account_age_days) : `на площадке с ${wire.member_since}`,
-      `рейтинг покупателя ${ratingValue(wire.buyer_rating)}`,
-    ].join(' · '),
-    fresh,
-    terms: [
-      { label: 'Страны', value: wire.countries.join(', ') || 'не указаны' },
-      { label: 'Марки', value: wire.brands.join(', ') || 'любые' },
-      { label: 'Срок доставки', value: wire.delivery_days },
-      { label: 'Предоплата', value: `${wire.prepayment_percent}% при заказе` },
-      { label: 'Телефон', value: wire.phone_masked, mono: true },
-      {
-        label: 'Привёз за год',
-        value:
-          wire.claimed_deliveries === null
-            ? 'не сказал'
-            : `по его словам — ${wire.claimed_deliveries} ${pluralize(wire.claimed_deliveries, 'машина', 'машины', 'машин')}`,
-      },
-    ],
-    about: wire.about,
-  }
+const ROLE: Record<UserRole, string> = {
+  guest: 'гость',
+  user: 'пользователь',
+  importer: 'поставщик под привоз',
+  manager: 'модератор',
+  admin: 'администратор',
 }
 
-function accountAge(days: number): string {
-  if (days <= 1) return 'аккаунт создан вчера'
-  return `аккаунт создан ${days} ${pluralize(days, 'день', 'дня', 'дней')} назад`
+const STATUS: Record<string, string> = {
+  pending: 'на рассмотрении',
+  approved: 'одобрена',
+  rejected: 'отклонена',
+}
+
+export function toRoleApplication(wire: RoleRequestListItemWire): RoleApplicationView {
+  return {
+    id: wire.id,
+    // Имени может не быть: человек входил через провайдера, который его не отдал.
+    name: wire.user_name ?? 'Без имени',
+    meta: [`заявка от ${DATE.format(new Date(wire.created_at))}`, STATUS[wire.status]].join(' · '),
+    role: ROLE[wire.requested_role] ?? wire.requested_role,
+    reason: wire.reason,
+    about: wire.additional_info,
+    answered: wire.status !== 'pending',
+  }
 }

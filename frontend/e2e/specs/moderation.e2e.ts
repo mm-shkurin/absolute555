@@ -35,7 +35,7 @@ describe('Модерация', () => {
     await feed.openApp()
     await moderation.openQueue()
     await moderation.switchTab('Проверенные сегодня')
-    await moderation.assertEmptyExplains('решение по которым принято сегодня')
+    await moderation.assertEmptyExplains('не всей команды, а ваши')
   })
 
   it('снятие с публикации спрашивает, за что', async () => {

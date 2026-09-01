@@ -1,51 +1,39 @@
 import { describe, expect, it } from 'vitest'
 import { toRoleApplication } from '../roleView'
-import type { RoleApplicationWire } from '../../api/moderationApi'
+import type { RoleRequestListItemWire } from '../../../../shared/api/backend/accountContract'
 
-const wire: RoleApplicationWire = {
-  id: 'a1',
-  applicant_name: 'Дмитрий Ким',
-  company_name: 'Восток-Авто',
-  applied_at: new Date(2026, 7, 24).toISOString(),
-  member_since: 'июня',
-  buyer_rating: 4.9,
-  account_age_days: 80,
-  countries: ['Япония', 'Корея'],
-  brands: ['Toyota', 'Lexus', 'Honda'],
-  delivery_days: '45–70 дней',
-  prepayment_percent: 30,
-  phone_masked: '+7 913 ***-**-21',
-  claimed_deliveries: 40,
-  about: 'Вожу с аукционов Японии пятый год.',
+const request: RoleRequestListItemWire = {
+  id: 'rq1',
+  user_id: 'u4',
+  user_name: 'Игорь',
+  requested_role: 'importer',
+  reason: 'Вожу машины из Кореи, хочу выставлять позиции сам.',
+  additional_info: 'Работаю с 2019 года, есть свой перевозчик.',
+  status: 'pending',
+  created_at: new Date(2026, 7, 22).toISOString(),
+  updated_at: null,
+  reviewed_by: null,
+  reviewed_at: null,
+  review_comment: null,
 }
 
-describe('заявки на роль поставщика', () => {
-  it('называет компанию и человека вместе', () => {
-    expect(toRoleApplication(wire).name).toBe('Восток-Авто · Дмитрий Ким')
-    expect(toRoleApplication({ ...wire, company_name: null }).name).toBe('Дмитрий Ким')
+describe('заявка на роль', () => {
+  it('называет роль словами, а не значением с провода', () => {
+    expect(toRoleApplication(request).role).toBe('поставщик под привоз')
   })
 
-  it('старый аккаунт описан сроком на площадке', () => {
-    const view = toRoleApplication(wire)
-    expect(view.fresh).toBe(false)
-    expect(view.meta).toBe('заявка от 24 августа · на площадке с июня · рейтинг покупателя 4,9')
+  it('строка под именем говорит дату и состояние заявки', () => {
+    expect(toRoleApplication(request).meta).toBe('заявка от 22 августа · на рассмотрении')
   })
 
-  it('свежий аккаунт назван словами, а не спрятан в дату', () => {
-    const view = toRoleApplication({ ...wire, account_age_days: 2 })
-    expect(view.fresh).toBe(true)
-    expect(view.meta).toContain('аккаунт создан 2 дня назад')
+  // Имя приходит не всегда: провайдер входа может его не отдать.
+  it('без имени заявитель не остаётся безымянной строкой', () => {
+    expect(toRoleApplication({ ...request, user_name: null }).name).toBe('Без имени')
   })
 
-  it('обещанные поставки помечены как слова заявителя', () => {
-    const terms = toRoleApplication(wire).terms
-    expect(terms.find((term) => term.label === 'Привёз за год')?.value).toBe(
-      'по его словам — 40 машин',
-    )
-    expect(
-      toRoleApplication({ ...wire, claimed_deliveries: null }).terms.find(
-        (term) => term.label === 'Привёз за год',
-      )?.value,
-    ).toBe('не сказал')
+  // Разобранная заявка решается один раз: второе решение сервер отвергает.
+  it('решённая заявка помечена как решённая', () => {
+    expect(toRoleApplication({ ...request, status: 'approved' }).answered).toBe(true)
+    expect(toRoleApplication(request).answered).toBe(false)
   })
 })

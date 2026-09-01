@@ -7,9 +7,11 @@ export function createOffer(offer: OfferCreate) {
   return send<OfferWire>(BACKEND.offer.collection, { method: 'POST', body: offer })
 }
 
-/** Предложения, отправленные мной. */
-export function fetchMyOffers(signal?: AbortSignal) {
-  return send<OfferWire[]>(BACKEND.offer.mine, { signal })
+/** Мои предложения обеих сторон: `sent` — отправленные мной, `received` — присланные по
+ *  моим объявлениям. Одной выдачей их не отдать: оффер несёт покупателя и не несёт
+ *  продавца, и клиент не отличил бы стороны сам. */
+export function fetchMyOffers(side: 'sent' | 'received', signal?: AbortSignal) {
+  return send<OfferWire[]>(`${BACKEND.offer.mine}?side=${side}`, { signal })
 }
 
 /** Предложения по конкретной машине — их видит владелец объявления. */

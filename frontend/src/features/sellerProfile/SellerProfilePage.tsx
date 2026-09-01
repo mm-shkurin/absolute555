@@ -7,15 +7,13 @@ import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { PageSection } from '../../shared/ui/PageHeading'
 import { Panel, PanelNote } from '../../shared/ui/Panel'
 import { PersonHead } from '../../shared/ui/Avatar'
-import { Button } from '../../shared/ui/Button'
 import { FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ListingGrid } from '../../shared/domain/listing/ListingCard'
 import { toListingView } from '../../shared/domain/listing/listingView'
 import { ROUTES } from '../../shared/navigation/routes'
 import { fetchSeller, fetchSellerListings, fetchSellerReviews } from './api/sellerApi'
-import { reviewsTitle, sellerLine, toInvitation, toReviewView } from './logic/sellerView'
+import { reviewsTitle, sellerLine, toReviewView } from './logic/sellerView'
 import { ReviewList } from './components/ReviewList'
-import { ReviewForm } from './components/ReviewForm'
 import styles from './seller.module.css'
 
 export function SellerProfilePage({ signedIn = false }: { signedIn?: boolean }) {
@@ -56,10 +54,10 @@ export function SellerProfilePage({ signedIn = false }: { signedIn?: boolean }) 
                 <div>
                   <Panel first>
                     <PersonHead
-                      name={seller.data.name}
+                      name={seller.data.name ?? 'Продавец'}
                       rating={seller.data.rating}
                       line={sellerLine(seller.data)}
-                      action={<Button tone="ghost">Написать</Button>}
+                      action={null}
                     />
                   </Panel>
 
@@ -71,7 +69,7 @@ export function SellerProfilePage({ signedIn = false }: { signedIn?: boolean }) 
                     </PanelNote>
                   </Panel>
 
-                  <Panel title={`Активные объявления · ${items.length}`}>
+                  <Panel title={`Активные объявления · ${listings.data?.total ?? items.length}`}>
                     {items.length === 0 ? (
                       <p>Сейчас у продавца нет опубликованных объявлений.</p>
                     ) : (
@@ -83,12 +81,15 @@ export function SellerProfilePage({ signedIn = false }: { signedIn?: boolean }) 
                 </div>
 
                 <aside className={styles.side}>
-                  {reviews.data ? (
-                    <ReviewForm
-                      invitation={toInvitation(reviews.data.right)}
-                      onSubmit={() => undefined}
-                    />
-                  ) : null}
+                  {/* Отзыв пишется со своей сделки, а не с чужого профиля: право на него
+                      живёт на оффере, и кнопка здесь обещала бы то, чего сервер не примет. */}
+                  <Panel first>
+                    <PanelNote>
+                      Отзыв оставляют в разделе «Предложения» — по той сделке, которая
+                      состоялась. Здесь его написать нельзя, и поэтому написанному можно
+                      верить.
+                    </PanelNote>
+                  </Panel>
                 </aside>
               </div>
             ) : null}

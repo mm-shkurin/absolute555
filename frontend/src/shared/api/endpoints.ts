@@ -79,6 +79,5 @@ export const API = {
     publish: (id: string) => `${V1}/moderation/listings/${encodeURIComponent(id)}/publish`,
     reject: (id: string) => `${V1}/moderation/listings/${encodeURIComponent(id)}/reject`,
     complaints: `${V1}/moderation/complaints`,
-    roleApplications: `${V1}/moderation/supplier-applications`,
   },
 } as const

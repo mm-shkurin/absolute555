@@ -6,7 +6,7 @@
 // `api-specs/`: расхождение с сервером теперь видно и в заглушке.
 import type { FeedCardWire, FeedPageWire } from '../../shared/api/backend/feedContract'
 import type { OfferWire } from '../../shared/api/backend/offerContract'
-import type { SaleCarWire } from '../../shared/api/backend/saleCarContract'
+import type { SaleCarWire, SellerWire } from '../../shared/api/backend/saleCarContract'
 import type { UserWire } from '../../shared/api/backend/accountContract'
 import { FEED } from './cars'
 import { PROFILE, offers as offerFixtures } from './people'
@@ -14,6 +14,25 @@ import { PROFILE, offers as offerFixtures } from './people'
 const HOURS = 3_600_000
 
 export const VIEWER_ID = 'u1'
+
+/** Продавец приезжает с агрегатом: рейтинг, отзывы и сделки живут в блоке `seller`, а
+ *  не отдельным вызовом. `null` у продавца без отзывов — заглушка держит и этот случай. */
+export function seller(
+  userId: string,
+  name: string | null,
+  rating: number | null,
+  reviewsCount: number,
+  dealsCount: number,
+): SellerWire {
+  return {
+    user_id: userId,
+    name,
+    avatar_url: null,
+    rating,
+    reviews_count: reviewsCount,
+    deals_count: dealsCount,
+  }
+}
 
 export function toCard(car: (typeof FEED)[number]): FeedCardWire {
   return {
@@ -82,7 +101,7 @@ export function saleCar(saleCarId: string): SaleCarWire | null {
     updated_at: new Date(Date.now() - 30 * HOURS).toISOString(),
     photos: [],
     autofill: { state: 'done', brand_source: 'ocr', model_source: 'ocr', updated_at: null },
-    seller: { user_id: 'u9', name: 'Дмитрий', avatar_url: null },
+    seller: seller('u9', 'Дмитрий', 4.8, 12, 15),
   }
 }
 
@@ -109,8 +128,10 @@ export function myCars(): SaleCarWire[] {
     })
 }
 
+/** Отправленные: право на отзыв живёт здесь. Один принятый оффер уже с отзывом, чтобы
+ *  экран показывал обе кнопки — «оставить» и «изменить». */
 export function myOffers(): OfferWire[] {
-  return offerFixtures('outgoing').items.map((offer) => ({
+  return offerFixtures('outgoing').items.map((offer, index) => ({
     offer_id: offer.id,
     sale_car_id: offer.listing_id,
     user_id: VIEWER_ID,
@@ -119,9 +140,12 @@ export function myOffers(): OfferWire[] {
     expires_at: offer.expires_at,
     created_at: offer.created_at,
     updated_at: null,
+    can_review: offer.status === 'accepted',
+    review_id: offer.status === 'accepted' && index % 2 === 1 ? `rv-${offer.id}` : null,
   }))
 }
 
+/** Полученные: оценка односторонняя, поэтому оба поля пусты всегда. */
 export function carOffers(saleCarId: string): OfferWire[] {
   return offerFixtures('incoming').items.map((offer) => ({
     offer_id: offer.id,
@@ -132,6 +156,8 @@ export function carOffers(saleCarId: string): OfferWire[] {
     expires_at: offer.expires_at,
     created_at: offer.created_at,
     updated_at: null,
+    can_review: false,
+    review_id: null,
   }))
 }
 

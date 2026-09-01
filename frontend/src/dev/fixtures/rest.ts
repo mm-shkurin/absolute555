@@ -1,9 +1,8 @@
 import type { ChatWire, MessageWire } from '../../features/chats/api/chatsApi'
 import type {
-  ReviewRightWire,
   ReviewWire,
-  SellerWire,
-} from '../../features/sellerProfile/api/sellerApi'
+  SellerProfileWire,
+} from '../../shared/api/backend/reviewContract'
 
 const HOURS = 3600_000
 const DAYS = 24 * HOURS
@@ -76,37 +75,40 @@ export const MESSAGES: MessageWire[] = [
   },
 ]
 
-export const SELLER: SellerWire = {
-  id: 'u2',
+export const SELLER: SellerProfileWire = {
+  user_id: 'u2',
   name: 'Михаил',
+  avatar_url: null,
   rating: 4.8,
-  deals_count: 12,
   reviews_count: 9,
-  member_since: 'марта 2026',
+  deals_count: 12,
+  listings_count: 2,
+  member_since: new Date(2026, 2, 14).toISOString(),
 }
 
 export const SELLER_REVIEWS: ReviewWire[] = [
   {
-    id: 'rv1',
-    author_name: 'Ольга',
+    review_id: 'rv1',
+    offer_id: 'o1',
+    sale_car_id: 'l1',
+    seller_id: 'u2',
+    author: { user_id: 'u7', name: 'Ольга', avatar_url: null },
     rating: 5,
+    text: 'Машина полностью совпала с описанием, карта замеров оказалась честной — перекрас крыла был именно там, где показано.',
     created_at: new Date(Date.now() - 6 * DAYS).toISOString(),
-    listing_title: 'Mazda CX-5',
-    body: 'Машина полностью совпала с описанием, карта замеров оказалась честной — перекрас крыла был именно там, где показано.',
+    updated_at: null,
+    editable_until: null,
   },
   {
-    id: 'rv2',
-    author_name: 'Артём',
+    review_id: 'rv2',
+    offer_id: 'o2',
+    sale_car_id: 'l2',
+    seller_id: 'u2',
+    author: { user_id: 'u8', name: 'Артём', avatar_url: null },
     rating: 4,
+    text: 'Долго не отвечал в чате, но по сделке претензий нет. Документы в порядке.',
     created_at: new Date(Date.now() - 16 * DAYS).toISOString(),
-    listing_title: 'Toyota Camry',
-    body: 'Долго не отвечал в чате, но по сделке претензий нет. Документы в порядке.',
+    updated_at: null,
+    editable_until: null,
   },
 ]
-
-export const REVIEW_RIGHT: ReviewRightWire = {
-  can_review: true,
-  deal_listing_title: 'Mazda CX-5',
-  deal_closed_at: new Date(Date.now() - 6 * DAYS).toISOString(),
-  existing_review_id: null,
-}

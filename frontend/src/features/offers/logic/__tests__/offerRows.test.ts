@@ -17,6 +17,8 @@ const wire: OfferListItemWire = {
   expires_at: new Date(2026, 7, 30, 12, 0).toISOString(),
   counterparty_name: 'Дмитрий',
   counterparty_rating: 4.6,
+  can_review: false,
+  review_id: null,
 }
 
 describe('строка оффера', () => {
@@ -40,11 +42,29 @@ describe('строка оффера', () => {
     expect(expired.badge).toBe('истёк')
   })
 
-  it('отзыв предлагает только после принятого предложения', () => {
+  // Право на отзыв называет сервер, а не статус: принятый оффер без права даёт один чат,
+  // с правом — кнопку «оставить», с написанным отзывом — «изменить».
+  it('отзыв предлагает по праву с сервера, а не по статусу', () => {
+    const accepted = { ...wire, status: 'accepted' as const }
+    expect(toOfferRow(accepted, 'outgoing', now).actions.map((a) => a.id)).toEqual(['chat'])
     expect(
-      toOfferRow({ ...wire, status: 'accepted' }, 'outgoing', now).actions.map((a) => a.id),
-    ).toEqual(['chat', 'review'])
+      toOfferRow({ ...accepted, can_review: true }, 'outgoing', now).actions.map((a) => a.label),
+    ).toEqual(['Открыть чат', 'Оставить отзыв'])
+    expect(
+      toOfferRow({ ...accepted, review_id: 'rv1' }, 'outgoing', now).actions.map((a) => a.label),
+    ).toEqual(['Открыть чат', 'Изменить отзыв'])
     expect(toOfferRow({ ...wire, status: 'car_sold' }, 'outgoing', now).actions).toEqual([])
+  })
+
+  // Полученные офферы отзыва не дают никогда: оценка односторонняя.
+  it('на полученном предложении кнопки отзыва нет', () => {
+    expect(
+      toOfferRow(
+        { ...wire, status: 'accepted', can_review: true, review_id: 'rv1' },
+        'incoming',
+        now,
+      ).actions,
+    ).toEqual([])
   })
 
   it('предложение выше цены не показывает разрыв', () => {

@@ -1,8 +1,8 @@
 import type {
   ComplaintCaseWire,
   QueueItemWire,
-  RoleApplicationWire,
 } from '../../features/moderation/api/moderationApi'
+import type { RoleRequestListItemWire } from '../../shared/api/backend/accountContract'
 
 const HOURS = 3600_000
 const DAYS = 24 * HOURS
@@ -99,38 +99,49 @@ export const COMPLAINTS: ComplaintCaseWire[] = [
   },
 ]
 
-export const ROLE_APPLICATIONS: RoleApplicationWire[] = [
+export const ROLE_APPLICATIONS: RoleRequestListItemWire[] = [
   {
     id: 'ra1',
-    applicant_name: 'Дмитрий Ким',
-    company_name: 'Восток-Авто',
-    applied_at: new Date(Date.now() - 4 * DAYS).toISOString(),
-    member_since: 'июня',
-    buyer_rating: 4.9,
-    account_age_days: 80,
-    countries: ['Япония', 'Корея'],
-    brands: ['Toyota', 'Lexus', 'Honda'],
-    delivery_days: '45–70 дней',
-    prepayment_percent: 30,
-    phone_masked: '+7 913 ***-**-21',
-    claimed_deliveries: 40,
-    about:
-      'Вожу с аукционов Японии пятый год, работаю через партнёра во Владивостоке. Могу привезти под заказ конкретный лот с аукционного листа, растаможку беру на себя. Готов показать документы по прошлым поставкам.',
+    user_id: 'u41',
+    user_name: 'Дмитрий Ким',
+    requested_role: 'importer',
+    reason: 'Вожу с аукционов Японии пятый год, хочу выставлять позиции сам.',
+    additional_info:
+      'Работаю через партнёра во Владивостоке, растаможку беру на себя. Готов показать документы по прошлым поставкам.',
+    status: 'pending',
+    created_at: new Date(Date.now() - 4 * DAYS).toISOString(),
+    updated_at: null,
+    reviewed_by: null,
+    reviewed_at: null,
+    review_comment: null,
   },
   {
     id: 'ra2',
-    applicant_name: 'Сергей П.',
-    company_name: null,
-    applied_at: new Date(Date.now() - 2 * DAYS).toISOString(),
-    member_since: 'августа',
-    buyer_rating: null,
-    account_age_days: 2,
-    countries: ['ОАЭ'],
-    brands: [],
-    delivery_days: '30–40 дней',
-    prepayment_percent: 50,
-    phone_masked: '+7 950 ***-**-08',
-    claimed_deliveries: null,
-    about: 'Вожу машины.',
+    user_id: 'u42',
+    // Имени нет: провайдер входа его не отдал.
+    user_name: null,
+    requested_role: 'importer',
+    reason: 'Вожу машины.',
+    additional_info: null,
+    status: 'pending',
+    created_at: new Date(Date.now() - 2 * DAYS).toISOString(),
+    updated_at: null,
+    reviewed_by: null,
+    reviewed_at: null,
+    review_comment: null,
+  },
+  {
+    id: 'ra3',
+    user_id: 'u43',
+    user_name: 'Ольга Т.',
+    requested_role: 'importer',
+    reason: 'Возила под заказ на другой площадке.',
+    additional_info: null,
+    status: 'approved',
+    created_at: new Date(Date.now() - 9 * DAYS).toISOString(),
+    updated_at: new Date(Date.now() - 8 * DAYS).toISOString(),
+    reviewed_by: 'u1',
+    reviewed_at: new Date(Date.now() - 8 * DAYS).toISOString(),
+    review_comment: null,
   },
 ]

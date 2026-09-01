@@ -21,6 +21,9 @@ export interface OfferRowView {
   tone: StatusTone
   actions: OfferAction[]
   faded: boolean
+  /** Написанный отзыв: по нему кнопка ведёт в правку, а не в повторное написание,
+   *  которое сервер отвергает. */
+  reviewId: string | null
 }
 
 const TONE: Record<OfferStatus, StatusTone> = {
@@ -63,7 +66,8 @@ export function toOfferRow(
     gap: gapLine(wire),
     badge: status === 'pending' && left !== null ? `${LABEL[status]} · ${left}` : LABEL[status],
     tone: TONE[status],
-    actions: actionsFor(status, direction),
+    actions: actionsFor(wire, direction),
+    reviewId: wire.review_id,
     faded: !isLive(status),
   }
 }
@@ -92,7 +96,8 @@ function daysLeft(expiresAt: string | null, now: Date): string | null {
   return `${days} ${pluralize(days, 'день', 'дня', 'дней')}`
 }
 
-function actionsFor(status: OfferStatus, direction: OfferDirection): OfferAction[] {
+function actionsFor(wire: OfferListItemWire, direction: OfferDirection): OfferAction[] {
+  const status = wire.status
   if (direction === 'incoming') {
     if (status !== 'pending') return []
     return [
@@ -106,12 +111,14 @@ function actionsFor(status: OfferStatus, direction: OfferDirection): OfferAction
       { id: 'withdraw', label: 'Отозвать' },
       { id: 'message', label: 'Написать' },
     ]
-  // Отзыв оставляют только после принятого предложения — это единственный момент, когда
-  // сделка точно была.
-  if (status === 'accepted')
-    return [
-      { id: 'chat', label: 'Открыть чат', primary: true },
-      { id: 'review', label: 'Оставить отзыв' },
-    ]
+  // Право на отзыв называет сервер: `can_review` включает кнопку, `review_id` заменяет
+  // её на правку. Выводить право из статуса значило бы обещать отзыв там, где сервер его
+  // не примет — например по чужой сделке.
+  if (status === 'accepted') {
+    const actions: OfferAction[] = [{ id: 'chat', label: 'Открыть чат', primary: true }]
+    if (wire.review_id) actions.push({ id: 'review', label: 'Изменить отзыв' })
+    else if (wire.can_review) actions.push({ id: 'review', label: 'Оставить отзыв' })
+    return actions
+  }
   return []
 }

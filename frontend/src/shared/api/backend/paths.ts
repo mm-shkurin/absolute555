@@ -77,6 +77,15 @@ export const BACKEND = {
     unpublish: (saleCarId: string) => `${V1}/moderation/listings/${id(saleCarId)}/unpublish`,
     complain: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/complaints`,
   },
+  review: {
+    ofOffer: (offerId: string) => `${V1}/offer/${id(offerId)}/review`,
+    one: (reviewId: string) => `${V1}/review/${id(reviewId)}`,
+  },
+  seller: {
+    one: (userId: string) => `${V1}/seller/${id(userId)}`,
+    reviews: (userId: string) => `${V1}/seller/${id(userId)}/reviews`,
+    listings: (userId: string) => `${V1}/seller/${id(userId)}/listings`,
+  },
   role: {
     users: `${V1}/role/users`,
     userRole: (userId: string) => `${V1}/role/users/${id(userId)}/role`,

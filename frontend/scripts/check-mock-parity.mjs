@@ -54,6 +54,10 @@ const UNMOCKED = [
   'saleCar.approve',
   'saleCar.reject',
   'saleCar.revealPhone',
+  // Мутации отвечают из `dev/fixtures/mutations.ts`, куда гейт не смотрит: он сверяет
+  // только выдачи, объявленные в `mockServer.ts`.
+  'review.ofOffer',
+  'review.one',
   'offer.collection',
   'offer.one',
   'offer.status',

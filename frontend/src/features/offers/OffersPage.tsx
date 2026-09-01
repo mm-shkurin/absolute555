@@ -9,6 +9,8 @@ import { PillTabs } from '../../shared/ui/PillTabs'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
 import { OfferRow } from './components/OfferRow'
+import { ReviewSheet } from './components/ReviewSheet'
+import { useReview } from './useReview'
 import type { OfferDirection } from './api/offersApi'
 import type { OfferAction, OfferRowView } from './logic/offerRows'
 import { useOffers } from './useOffers'
@@ -18,10 +20,12 @@ export function OffersPage({ onSignIn }: { onSignIn?: () => void }) {
   const navigate = useNavigate()
   const [direction, setDirection] = useState<OfferDirection>('incoming')
   const offers = useOffers(direction, new Date())
+  const review = useReview()
 
-  // Отзыв о сделке — история 12; остальные действия уже обслуживаются сервером.
   const onAction = (action: OfferAction['id'], offer: OfferRowView) => {
     if (action === 'chat' || action === 'message') return navigate(ROUTES.chats)
+    if (action === 'review')
+      return review.open({ offerId: offer.id, reviewId: offer.reviewId })
     if (action === 'accept') return offers.decide('accept', offer.id)
     if (action === 'reject') return offers.decide('reject', offer.id)
     if (action === 'withdraw') return offers.decide('withdraw', offer.id)
@@ -70,6 +74,17 @@ export function OffersPage({ onSignIn }: { onSignIn?: () => void }) {
           </PageSection>
         </Container>
       </main>
+      {review.target ? (
+        <ReviewSheet
+          title={review.target.reviewId ? 'Изменить отзыв' : 'Отзыв о сделке'}
+          initial={{ rating: null, text: '' }}
+          busy={review.busy}
+          failure={review.failure}
+          editable={review.editable}
+          onClose={review.close}
+          onSend={review.send}
+        />
+      ) : null}
     </>
   )
 }

@@ -10,6 +10,9 @@ export interface HttpError extends Error {
   status: number
   // Машиночитаемый код бэкенда: по нему ветвится обработка, по тексту — только показ.
   errorCode?: string
+  /** Поля конкретного отказа. По ним экран переходит к следующему шагу — например к
+   *  правке отзыва, чей идентификатор приезжает в отказе на повторный. */
+  details?: Record<string, unknown>
   payload?: unknown
 }
 
@@ -17,18 +20,24 @@ export function isHttpError(error: unknown): error is HttpError {
   return error instanceof Error && typeof (error as HttpError).status === 'number'
 }
 
+// Форма отказа сервера: `{error, message, code, details}` (`errors.yaml`). `detail` и
+// `error_code` остаются запасными ключами: их отдаёт FastAPI на отказах, которые не
+// проходят через обработчик приложения.
 interface ErrorBody {
+  code?: string
   error_code?: string
   detail?: string
   message?: string
+  details?: Record<string, unknown>
 }
 
 export async function toHttpError(res: Response): Promise<HttpError> {
   const body = await readErrorBody(res)
-  const error = new Error(body?.detail ?? body?.message ?? `HTTP ${res.status}`) as HttpError
+  const error = new Error(body?.message ?? body?.detail ?? `HTTP ${res.status}`) as HttpError
   error.name = 'HttpError'
   error.status = res.status
-  error.errorCode = body?.error_code
+  error.errorCode = body?.code ?? body?.error_code
+  error.details = body?.details
   error.payload = body
   return error
 }

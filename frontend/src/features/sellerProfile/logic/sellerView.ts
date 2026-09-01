@@ -1,6 +1,6 @@
-// Продавец, его отзывы и право оставить свой.
+// Продавец и отзывы о нём.
 import { ratingLine, reviewsLabel } from '../../../shared/format/rating'
-import type { ReviewRightWire, ReviewWire, SellerWire } from '../api/sellerApi'
+import type { ReviewWire, SellerProfileWire } from '../api/sellerApi'
 
 export interface ReviewView {
   id: string
@@ -10,16 +10,16 @@ export interface ReviewView {
   body: string
 }
 
-export interface ReviewInvitation {
-  allowed: boolean
-  editing: boolean
-  explanation: string
-}
-
 const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
+const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' })
 
-export function sellerLine(wire: SellerWire): string {
-  return ratingLine(wire.rating, wire.deals_count, wire.member_since)
+export function sellerLine(wire: SellerProfileWire): string {
+  // Сделки, а не отзывы: сделка бывает без отзыва, и подменять одно другим значит
+  // приписывать продавцу молчание покупателей как отсутствие опыта.
+  // Дата с провода — ISO; в строку она идёт месяцем и годом: день регистрации ничего не
+  // говорит о продавце, а «на площадке с 2024-03-14T09:12:00Z» не читается вовсе.
+  const since = wire.member_since ? MONTH.format(new Date(wire.member_since)) : null
+  return ratingLine(wire.rating, wire.deals_count, since)
 }
 
 export function reviewsTitle(count: number): string {
@@ -28,32 +28,13 @@ export function reviewsTitle(count: number): string {
 
 export function toReviewView(wire: ReviewWire): ReviewView {
   return {
-    id: wire.id,
-    author: wire.author_name,
+    id: wire.review_id,
+    author: wire.author?.name ?? 'Покупатель',
     rating: wire.rating,
-    // Отзыв всегда назван машиной, по которой он написан: без неё оценка «4» ни к чему не
-    // относится, а с ней читается как история одной сделки.
-    meta: `· ${DATE.format(new Date(wire.created_at))} · ${wire.listing_title}`,
-    body: wire.body,
-  }
-}
-
-// Имя продавца в текст не подставляется: «купили у Михаил» — единственный вариант, который
-// код может выдать без склонения, а склонять русское имя по правилам он не умеет.
-export function toInvitation(right: ReviewRightWire): ReviewInvitation {
-  if (!right.can_review)
-    return {
-      allowed: false,
-      editing: false,
-      explanation:
-        'Отзыв можно оставить только по принятому предложению. Поэтому их мало — и поэтому им можно верить.',
-    }
-  const when = right.deal_closed_at ? DATE.format(new Date(right.deal_closed_at)) : null
-  const what = right.deal_listing_title ?? 'машину'
-  return {
-    allowed: true,
-    editing: right.existing_review_id !== null,
-    explanation: `Вы купили у этого продавца ${what}${when ? ` ${when}` : ''}. Оценка появится в его профиле и в карточке каждого его объявления.`,
+    // Машины, по которой написан отзыв, в выдаче нет — только её идентификатор. Дата
+    // одна честнее выдуманного заголовка.
+    meta: `· ${DATE.format(new Date(wire.created_at))}`,
+    body: wire.text ?? '',
   }
 }
 

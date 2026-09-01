@@ -9,7 +9,7 @@ import type {
 import { FEED } from './cars'
 import { CHATS, MESSAGES } from './rest'
 import { COMPLAINTS, QUEUE } from './moderation'
-import { toCard, VIEWER_ID } from './wire'
+import { seller, toCard, VIEWER_ID } from './wire'
 
 /** Вкладка меняет выдачу, а не только число на кнопке: одинаковый список на трёх
  *  вкладках скрыл бы, что параметр `tab` до сервера не доезжает. */
@@ -18,7 +18,7 @@ export function queuePage(tab: string): QueuePageWire {
     ...toCard(FEED[index % FEED.length]),
     sale_car_id: item.listing_id,
     status: 'moderation' as const,
-    seller: { user_id: `u${index}`, name: item.seller_name, avatar_url: null },
+    seller: seller(`u${index}`, item.seller_name, index === 0 ? null : 4.6, index === 0 ? 0 : 9, index === 0 ? 0 : 11),
     open_complaints: item.complaints_count,
     submitted_at: item.submitted_at,
   }))
@@ -42,7 +42,7 @@ export function complaintPage(): ComplaintPageWire {
     complaints: group.complaints.map((complaint) => ({
       complaint_id: complaint.id,
       sale_car_id: group.listing_id,
-      author: { user_id: 'u7', name: complaint.author_name, avatar_url: null },
+      author: seller('u7', complaint.author_name, null, 0, 0),
       reason: 'other' as const,
       text: complaint.body,
       status: 'open' as const,
@@ -58,7 +58,7 @@ export function dialogs(): DialogWire[] {
     dialog_id: chat.id,
     sale_car_id: chat.listing_id,
     listing: { ...toCard(FEED[index % FEED.length]), sale_car_id: chat.listing_id },
-    counterpart: { user_id: `u${index + 2}`, name: chat.counterparty_name, avatar_url: null },
+    counterpart: seller(`u${index + 2}`, chat.counterparty_name, 4.9, 21, 24),
     last_message: {
       message_id: `last-${chat.id}`,
       dialog_id: chat.id,

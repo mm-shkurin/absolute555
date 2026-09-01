@@ -1,7 +1,5 @@
 // Очередь модерации, жалобы и заявки на роль поставщика. Три раздела одного кабинета, но
 // три разные выдачи: модератор работает в одном из них подряд, а не переключается.
-import { API } from '../../../shared/api/endpoints'
-import { send } from '../../../shared/api/send'
 
 export type QueueTab = 'pending' | 'flagged' | 'done'
 
@@ -45,22 +43,6 @@ export interface ComplaintCaseWire {
   complaints: ComplaintWire[]
 }
 
-export interface RoleApplicationWire {
-  id: string
-  applicant_name: string
-  company_name: string | null
-  applied_at: string
-  member_since: string
-  buyer_rating: number | null
-  account_age_days: number
-  countries: string[]
-  brands: string[]
-  delivery_days: string
-  prepayment_percent: number
-  phone_masked: string
-  claimed_deliveries: number | null
-  about: string | null
-}
 
 import {
   fetchQueue as fetchQueuePage,
@@ -70,6 +52,11 @@ import {
   unpublishListing as unpublishListingCall,
   type QueueTabWire,
 } from '../../../shared/api/backend/moderationApi'
+import {
+  answerRoleRequest,
+  fetchRoleRequests,
+} from '../../../shared/api/backend/accountApi'
+import type { RoleRequestDecision } from '../../../shared/api/backend/accountContract'
 import {
   approveListing as approveListingCall,
   rejectListing as rejectListingCall,
@@ -97,9 +84,10 @@ function toQueueItem(item: WireQueueItem): QueueItemWire {
     year: item.year ?? 0,
     price: item.price ?? 0,
     seller_name: item.seller?.name ?? '',
-    // Рейтинга и возраста учётной записи в этой выдаче нет: отзывы — история 12.
-    seller_rating: null,
-    seller_is_new: false,
+    seller_rating: item.seller?.rating ?? null,
+    // Новичок — тот, у кого нет ни одной закрытой сделки. Отсутствие оценки этого не
+    // говорит: сделка без отзыва оставляет продавца без рейтинга, но не без опыта.
+    seller_is_new: (item.seller?.deals_count ?? 0) === 0,
     submitted_at: item.submitted_at ?? '',
     photos_count: item.preview_photo_url ? 1 : 0,
     measured_panels: 0,
@@ -136,6 +124,8 @@ function toComplaintCase(group: ComplaintGroupWire): ComplaintCaseWire {
     title: `${listing?.brand ?? ''} ${listing?.model ?? ''}`.trim(),
     year: listing?.year ?? 0,
     price: listing?.price ?? 0,
+    // Продавца в группе жалоб нет: она несёт карточку ленты, а та блока `seller` не
+    // содержит. Пустое имя честнее подставленного из соседней выдачи.
     seller_name: '',
     seller_rating: null,
     published_at: listing?.published_at ?? '',
@@ -158,10 +148,14 @@ export async function fetchComplaints(
   return { items: page.items.map(toComplaintCase), open: page.total, resolved: 0 }
 }
 
-export async function fetchRoleApplications(
-  signal?: AbortSignal,
-): Promise<{ items: RoleApplicationWire[] }> {
-  return send(API.moderation.roleApplications, { signal })
+/** Заявки на роль. Разобранные приезжают той же выдачей — модератор смотрит, что решил
+ *  вчера, не переключая экран. */
+export function fetchRoleApplications(signal?: AbortSignal) {
+  return fetchRoleRequests(signal)
+}
+
+export function answerRoleApplication(requestId: string, decision: RoleRequestDecision) {
+  return answerRoleRequest(requestId, decision)
 }
 
 export function approveListing(saleCarId: string) {

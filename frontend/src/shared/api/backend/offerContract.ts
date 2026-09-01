@@ -19,6 +19,12 @@ export interface OfferWire {
   expires_at: string | null
   created_at: string
   updated_at: string | null
+
+  /** Право на отзыв и уже написанный отзыв — два поля, а не одно: по первому экран
+   *  включает кнопку, по второму заменяет её на «изменить». На полученных офферах оба
+   *  пусты всегда — оценка односторонняя, продавец покупателя не оценивает. */
+  can_review: boolean
+  review_id: string | null
 }
 
 export interface OfferCreate {

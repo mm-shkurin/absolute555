@@ -1,11 +1,6 @@
 // Офферы обеих сторон одним запросом с параметром направления: экран переключает вкладку
 // мгновенно, а два разных пути к одному списку разошлись бы в форме ответа.
-import {
-  answerOffer,
-  fetchMyOffers,
-  fetchOffersForCar,
-  withdrawOffer,
-} from '../../../shared/api/backend/offerApi'
+import { answerOffer, fetchMyOffers, withdrawOffer } from '../../../shared/api/backend/offerApi'
 import type {
   OfferStatus,
   OfferWire as BackendOffer,
@@ -28,6 +23,8 @@ export interface OfferListItemWire {
   photo_url: string | null
   amount: number
   status: OfferStatus
+  can_review: boolean
+  review_id: string | null
   created_at: string
   expires_at: string | null
   counterparty_name: string
@@ -53,6 +50,10 @@ function toItem(offer: BackendOffer, car: SaleCarWire | undefined): OfferListIte
     amount: offer.price,
     // Состояния совпадают один в один: экран и сервер называют их одинаково с истории 10.
     status: offer.status,
+    // Право на отзыв приезжает ответом, а не выводится из статуса: принятый оффер чужой
+    // стороны отзыва не даёт, и угаданное право показало бы кнопку, которой нет.
+    can_review: offer.can_review,
+    review_id: offer.review_id,
     created_at: offer.created_at,
     expires_at: offer.expires_at,
     // Ни имени, ни рейтинга второй стороны: профиль чужого пользователя закрыт.
@@ -61,24 +62,14 @@ function toItem(offer: BackendOffer, car: SaleCarWire | undefined): OfferListIte
   }
 }
 
-/** Входящие собираются обходом своих объявлений: выдачи «все предложения по моим машинам»
- *  на сервере нет, а предложения по чужой машине он не отдаёт. */
-async function incoming(signal?: AbortSignal): Promise<OfferListItemWire[]> {
-  const cars = await fetchMyListings(undefined, signal)
-  const perCar = await Promise.all(
-    cars.map(async (car) => {
-      const offers = await fetchOffersForCar(car.sale_car_id, signal)
-      return offers.map((offer) => toItem(offer, car))
-    }),
-  )
-  return perCar.flat()
-}
+const SIDE = { incoming: 'received', outgoing: 'sent' } as const
 
-async function outgoing(signal?: AbortSignal): Promise<OfferListItemWire[]> {
+/** Заголовок и фотография берутся из своих объявлений: у входящих машина всегда своя, а
+ *  у отправленных карточку чужого объявления пришлось бы запрашивать по одной на
+ *  предложение. Чего в этом списке нет — то и не рисуется. */
+async function side(direction: OfferDirection, signal?: AbortSignal) {
   const [offers, cars] = await Promise.all([
-    fetchMyOffers(signal),
-    // Своих объявлений среди чужих машин нет, но заголовок и фотографию взять больше
-    // неоткуда: карточку чужого объявления пришлось бы запрашивать по одной на предложение.
+    fetchMyOffers(SIDE[direction], signal),
     fetchMyListings(undefined, signal),
   ])
   const byId = new Map(cars.map((car) => [car.sale_car_id, car]))
@@ -89,7 +80,7 @@ export async function fetchOffers(
   direction: OfferDirection,
   signal?: AbortSignal,
 ): Promise<OffersWire> {
-  const items = direction === 'incoming' ? await incoming(signal) : await outgoing(signal)
+  const items = await side(direction, signal)
   return {
     items,
     incoming_total: direction === 'incoming' ? items.length : 0,

@@ -8,7 +8,7 @@
 import { FEED, IMPORT_CARS, LEXUS } from './fixtures/cars'
 import { listingDetail, thicknessMap } from './fixtures/detail'
 import { MY_LISTINGS, PROFILE, offers } from './fixtures/people'
-import { CHATS, MESSAGES, REVIEW_RIGHT, SELLER, SELLER_REVIEWS } from './fixtures/rest'
+import { CHATS, MESSAGES, SELLER, SELLER_REVIEWS } from './fixtures/rest'
 import {
   BIDS,
   REQUEST_CARDS,
@@ -58,7 +58,21 @@ function route(url: URL, method: string): unknown {
   if (path === '/moderation/complaints') return chatWire.complaintPage()
   if (path === '/chat/dialogs') return chatWire.dialogs()
   if (path === '/chat/unread') return { unread: 3 }
-  if (path === '/offer/my') return wire.myOffers()
+
+  const reviewsOf = match(path, /^\/seller\/([^/]+)\/reviews$/)
+  if (reviewsOf)
+    return { items: SELLER_REVIEWS, total: SELLER_REVIEWS.length, page: 1, size: 20 }
+
+  const listingsOf = match(path, /^\/seller\/([^/]+)\/listings$/)
+  if (listingsOf) {
+    const items = wire.feedPage(new URLSearchParams()).items.slice(0, 2)
+    return { items, total: items.length, page: 1, size: 20 }
+  }
+
+  const sellerId = match(path, /^\/seller\/([^/]+)$/)
+  if (sellerId) return { ...SELLER, user_id: sellerId }
+  if (path === '/offer/my')
+    return query.get('side') === 'received' ? wire.carOffers('l1') : wire.myOffers()
 
   const dialogId = match(path, /^\/chat\/dialogs\/([^/]+)\/messages$/)
   if (dialogId) return { items: chatWire.messages(dialogId), total: 3, page: 1, size: 50 }
@@ -84,7 +98,6 @@ function route(url: URL, method: string): unknown {
 
   if (path === '/users/me') return PROFILE
   if (/^\/users\/[^/]+\/listings$/.test(path)) return { items: [LEXUS, FEED[1]] }
-  if (/^\/users\/[^/]+\/reviews$/.test(path)) return { items: SELLER_REVIEWS, right: REVIEW_RIGHT }
   if (/^\/users\/[^/]+$/.test(path)) return SELLER
 
   const supplierId = match(path, /^\/suppliers\/([^/]+)$/)
@@ -98,7 +111,7 @@ function route(url: URL, method: string): unknown {
   if (path === '/moderation/listings') return queue(query.get('tab') ?? 'pending')
   if (path === '/moderation/complaints')
     return { items: COMPLAINTS, open: COMPLAINTS.length, resolved: 31 }
-  if (path === '/moderation/supplier-applications') return { items: ROLE_APPLICATIONS }
+  if (path === '/role/role-requests') return ROLE_APPLICATIONS
 
   return null
 }

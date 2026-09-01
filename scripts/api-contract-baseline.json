@@ -19,7 +19,6 @@
     "/api/v1/moderation/listings",
     "/api/v1/moderation/listings/{}/publish",
     "/api/v1/moderation/listings/{}/reject",
-    "/api/v1/moderation/supplier-applications",
     "/api/v1/offers",
     "/api/v1/offers/{}",
     "/api/v1/offers/{}/accept",

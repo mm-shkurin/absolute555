@@ -26,6 +26,11 @@ export interface SellerWire {
   user_id: string
   name: string | null
   avatar_url: string | null
+  /** `null` у продавца без отзывов: ноль читался бы как «оценили на ноль». */
+  rating: number | null
+  reviews_count: number
+  /** Принятые офферы, а не отзывы: сделка бывает без отзыва, и числа расходятся. */
+  deals_count: number
 }
 
 export interface PhotoWire {
