@@ -33,11 +33,17 @@ shell:
 psql:
 	docker compose exec postgres psql -U $${POSTGRES_USER} -d $${POSTGRES_DB}
 
-# The backend test suite. tests/ is not in the runtime image on purpose — the image
-# installs requirements.txt only — so the suite is mounted in and its dependencies
-# installed for the life of the container.
+# The backend test suite, against the working tree.
+#
+# app/ and tests/ are mounted by the backend-test service in docker-compose.yml: the
+# runtime image carries app/ as it was at its last build, and a run without the mount
+# comes back green about code that is not the code on disk. Every run through stories 4
+# and 5 added the mount by hand on the command line, which is the same as not having it.
+#
+# tests/ is not in the runtime image on purpose — it installs requirements.txt only — so
+# the test dependencies are installed for the life of the container.
 test:
-	docker compose run --rm --no-deps 	  -v "$(CURDIR)/../backend/tests:/app/tests" 	  -v "$(CURDIR)/../backend/pytest.ini:/app/pytest.ini" 	  backend sh -c "pip install --no-cache-dir -q pytest==8.3.4 pytest-asyncio==0.25.0 'httpx==0.27.2' && python -m pytest"
+	docker compose run --rm backend-test sh -c "pip install --no-cache-dir -q pytest==8.3.4 pytest-asyncio==0.25.0 'httpx==0.27.2' && python -m pytest"
 
 # The stack is up and the API answers.
 smoke:

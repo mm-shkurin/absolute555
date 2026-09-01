@@ -94,6 +94,32 @@ services:
       redis:
         condition: service_healthy
 
+  # The suite, run against the working tree rather than against the image.
+  #
+  # The mounts are the whole point: the runtime image carries app/ as it was at its last
+  # build, so a run without them tests code that may be weeks old and still comes back
+  # green. Declared here rather than assembled on the command line because a relative
+  # path in a compose file is resolved by compose, while a shell-built absolute path is
+  # mangled by MSYS on Windows and silently mounts an empty directory.
+  #
+  # The profile keeps it out of `docker compose up`; `docker compose run` enables it.
+  backend-test:
+    profiles: ["test"]
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../backend/app:/app/app
+      - ../backend/tests:/app/tests
+      - ../backend/pytest.ini:/app/pytest.ini
+
   # Same image as backend, different command. Migrations are not re-run here —
   # the backend service owns them.
   worker:
