@@ -131,6 +131,20 @@ components:
         name: { type: string, nullable: true }
         avatar_url: { type: string, nullable: true }
 
+        # Агрегат едет вместе с блоком продавца везде, где тот появляется — карточка,
+        # строка очереди модерации, — а не отдельным вызовом ради трёх чисел (история 12).
+        rating:
+          type: number
+          format: float
+          nullable: true
+          description: Средняя оценка до одного знака. null у продавца без отзывов — ноль читался бы как оценка.
+        reviews_count: { type: integer, minimum: 0, default: 0 }
+        deals_count:
+          type: integer
+          minimum: 0
+          default: 0
+          description: Число принятых офферов по объявлениям продавца, не число отзывов.
+
     FeedCard:
       type: object
       description: |

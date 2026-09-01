@@ -247,12 +247,12 @@ components:
 
     SellerListingPage:
       type: object
-      description: Та же форма страницы, что и у ленты объявлений.
+      description: Та же карточка, что и в ленте — профиль не заводит своей формы объявления.
       required: [items, total, page, size]
       properties:
         items:
           type: array
-          items: { type: object }
+          items: { $ref: 'sale_car_feed.yaml#/components/schemas/FeedCard' }
         total: { type: integer }
         page: { type: integer }
         size: { type: integer }

@@ -187,3 +187,19 @@ components:
           description: Когда предложение истечёт, если никто не ответит.
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time, nullable: true }
+
+        # Два поля вместо одного: по can_review экран включает кнопку «оставить отзыв»,
+        # по review_id заменяет её на «изменить». Без второго он не знал бы, писали ли
+        # отзыв, а без первого угадывал бы право по статусу (история 12).
+        can_review:
+          type: boolean
+          default: false
+          description: |
+            Можно ли оставить отзыв по этой сделке. Только у своих отправленных офферов в
+            статусе accepted, по которым отзыва ещё нет. В выдаче `side=received`
+            всегда false: рейтинг односторонний, продавец покупателя не оценивает.
+        review_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Уже написанный отзыв по этой сделке, если он есть.
