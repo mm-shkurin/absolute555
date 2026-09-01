@@ -1,7 +1,7 @@
 // Утверждения личных разделов: мастер продажи, офферы, чаты, свои объявления.
 import { expect } from 'vitest'
 import { By, type WebDriver } from 'selenium-webdriver'
-import { clickElement, count, isVisible, testId, waitForVisible } from '../driver'
+import { clickElement, count, exists, isVisible, testId, waitForVisible } from '../driver'
 
 export class PersonalStatements {
   constructor(private readonly driver: WebDriver) {}
@@ -103,5 +103,35 @@ export class PersonalStatements {
       this.driver,
       await conversation.findElement(By.css('[aria-label="К диалогам"]')),
     )
+  }
+
+  // Ответ на предложение уходит на сервер: строка перечитывается, и экран не показывает
+  // отказ. Проверяется исход, а не то, что кнопка нажалась.
+  async answerFirstOffer(label: string): Promise<void> {
+    const row = await waitForVisible(this.driver, 'offer-row')
+    await clickElement(this.driver, await row.findElement(By.xpath(`.//button[contains(., "${label}")]`)))
+    expect(await exists(this.driver, 'list-failure')).toBe(false)
+  }
+
+  // Отзыв пишется по своей сделке: оценка обязательна, без неё кнопка выключена.
+  async assertReviewNeedsRating(): Promise<void> {
+    // Список приезжает после переключения вкладки: искать кнопку сразу значит искать её
+    // в предыдущей выдаче.
+    await waitForVisible(this.driver, 'offer-row')
+    const reviewable = await this.driver.wait(async () => {
+      const rows = await this.driver.findElements(testId('offer-row'))
+      const perRow = await Promise.all(
+        rows.map((row) => row.findElements(By.xpath('.//button[contains(., "отзыв")]'))),
+      )
+      return perRow.flat()[0] ?? null
+    }, 10_000)
+    {
+      await clickElement(this.driver, reviewable)
+      const sheet = await waitForVisible(this.driver, 'review-sheet')
+      const send = await sheet.findElement(By.xpath('.//button[contains(., "отзыв")]'))
+      expect(await send.getAttribute('disabled')).toBeTruthy()
+      await clickElement(this.driver, await sheet.findElement(By.css('[aria-pressed]')))
+      expect(await send.getAttribute('disabled')).toBeFalsy()
+    }
   }
 }

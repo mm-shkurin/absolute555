@@ -11,6 +11,8 @@ import { MobileActionBar, SidePanel, type SideHandlers } from './components/Side
 import { OwnerPanel } from './components/OwnerPanel'
 import { ListingFailure, ListingSkeleton } from './components/ListingStates'
 import { ComplainSheet } from './components/ComplainSheet'
+import { OfferSheet } from './components/OfferSheet'
+import { useListingActions } from './useListingActions'
 import { complain } from '../../shared/api/backend/moderationApi'
 import type { ComplaintReason } from '../../shared/api/backend/moderationContract'
 import { useListing } from './useListing'
@@ -21,6 +23,7 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
   const { listingId = '' } = useParams()
   const listing = useListing(listingId, signedIn, new Date())
   const [complaining, setComplaining] = useState(false)
+  const actions = useListingActions(listingId)
 
   // Повторная жалоба и жалоба на своё объявление — ответ сервера, а не поломка экрана:
   // текст отказа показывается в шторке, и она остаётся открытой.
@@ -30,9 +33,11 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
   })
 
   const handlers: SideHandlers = {
-    onOffer: () => undefined,
-    onMessage: () => undefined,
-    onShowPhone: () => undefined,
+    onOffer: actions.openOffer,
+    // Переписка начинается предложением цены: диалог заводит сервер, отдельной ручки
+    // «написать продавцу» нет, и кнопка ведёт туда, где переписка появится.
+    onMessage: () => navigate(ROUTES.chats),
+    onShowPhone: actions.showPhone,
     onSignIn: () => onSignIn?.(),
     onComplain: () => {
       complaint.reset()
@@ -61,8 +66,9 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
                   view={listing.view}
                   sold={listing.sold}
                   onEdit={() => navigate(ROUTES.selling)}
-                  onUnpublish={() => undefined}
-                  onMarkSold={() => undefined}
+                  busy={actions.busy}
+                  onUnpublish={() => actions.owner('withdraw')}
+                  onMarkSold={() => actions.owner('sold')}
                   onSetting={() => undefined}
                 />
               ) : (
@@ -70,6 +76,7 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
                   view={listing.view}
                   mode={listing.mode}
                   offers={listing.offers}
+                  phone={actions.phone}
                   handlers={handlers}
                 />
               )}
@@ -79,6 +86,16 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
       </main>
       {listing.view && listing.mode !== 'owner' ? (
         <MobileActionBar mode={listing.mode} handlers={handlers} />
+      ) : null}
+      {actions.offering && listing.view ? (
+        <OfferSheet
+          askingPrice={listing.view.price}
+          busy={actions.busy}
+          failure={actions.failure}
+          sent={actions.offerSent}
+          onClose={actions.closeOffer}
+          onSend={actions.sendOffer}
+        />
       ) : null}
       {complaining ? (
         <ComplainSheet

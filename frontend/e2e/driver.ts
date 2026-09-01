@@ -75,6 +75,20 @@ export async function textOf(driver: WebDriver, id: string): Promise<string> {
   return (await waitForVisible(driver, id)).getText()
 }
 
+/** Кнопка по её подписи внутри области. Ждать приходится потому, что список приезжает с
+ *  сервера заглушки с задержкой: поиск сразу после открытия шторки застаёт скелетон. */
+export async function waitForButton(
+  driver: WebDriver,
+  within: WebElement,
+  text: string,
+): Promise<WebElement> {
+  const locator = By.xpath(`.//button[contains(., "${text}")]`)
+  return driver.wait(async () => {
+    const found = await within.findElements(locator)
+    return found.length > 0 ? found[0] : null
+  }, WAIT_MS) as Promise<WebElement>
+}
+
 // Клик с прокруткой к центру экрана. Две причины, обе неочевидные: обычный `click()`
 // подводит элемент к верхней кромке, где его перекрывает липкая шапка; а у страницы
 // `scroll-behavior: smooth`, поэтому прокрутка длится кадры, и клик без ожидания приходит

@@ -7,11 +7,16 @@ import { saleCar } from './wire'
 
 const REVIEW_OF_OFFER = /^\/offer\/([^/]+)\/review$/
 const REVIEW = /^\/review\/([^/]+)$/
+const REVEAL_PHONE = /^\/sale_car\/([^/]+)\/reveal-phone$/
 const STS = /^\/sale_car\/([^/]+)\/sts$/
 const ONE = /^\/sale_car\/([^/]+)$/
 
 export function mutation(path: string): unknown {
   if (path === '/sale_car') return saleCar('l1')
+
+  // Телефон отвечает номером, а не общим успехом: экран рисует то, что пришло, и на
+  // `{ok:true}` показал бы пустое место вместо номера.
+  if (REVEAL_PHONE.test(path)) return { phone_number: '+7 913 776-04-21' }
 
   const stsFor = STS.exec(path)?.[1]
   if (stsFor) {

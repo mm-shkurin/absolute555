@@ -5,18 +5,9 @@
 // Это НЕ контракт. Формы ответов списаны с типов в `features/*/api/*.ts`; когда появится
 // настоящий бэкенд, расхождение вылезет здесь же — и папку `src/dev/` можно будет удалить
 // целиком, ничего больше не трогая.
-import { FEED, IMPORT_CARS, LEXUS } from './fixtures/cars'
-import { listingDetail, thicknessMap } from './fixtures/detail'
-import { MY_LISTINGS, PROFILE, offers } from './fixtures/people'
-import { CHATS, MESSAGES, SELLER, SELLER_REVIEWS } from './fixtures/rest'
-import {
-  BIDS,
-  REQUEST_CARDS,
-  SUPPLIERS,
-  importRequest,
-  supplierProfile,
-} from './fixtures/importing'
-import { COMPLAINTS, QUEUE, ROLE_APPLICATIONS } from './fixtures/moderation'
+import { BRANDS, MODELS } from './fixtures/catalog'
+import { SELLER, SELLER_REVIEWS } from './fixtures/rest'
+import { legacyRoute } from './legacyRoutes'
 import * as wire from './fixtures/wire'
 import * as chatWire from './fixtures/wireChat'
 import { mutation } from './fixtures/mutations'
@@ -53,6 +44,9 @@ function route(url: URL, method: string): unknown {
   if (path === '/sale_car/list') return wire.feedPage(query)
   if (path === '/sale_car/user') return wire.myCars()
   if (path === '/user/profile') return wire.user()
+  if (path === '/catalog/brands') return BRANDS
+  const modelsOf = match(path, /^\/catalog\/brands\/([^/]+)\/models$/)
+  if (modelsOf) return MODELS(modelsOf)
   if (path === '/moderation/queue') return chatWire.queuePage(query.get('tab') ?? 'waiting')
   if (path === '/moderation/counts') return chatWire.queueCounts()
   if (path === '/moderation/complaints') return chatWire.complaintPage()
@@ -83,84 +77,10 @@ function route(url: URL, method: string): unknown {
   const saleCarId = match(path, /^\/sale_car\/([^/]+)$/)
   if (saleCarId) return wire.saleCar(saleCarId)
 
-  if (path === '/listings') return listingsCollection(query)
-  if (path === '/listings/l-thickness') return null
-
-  const listingId = match(path, /^\/listings\/([^/]+)$/)
-  if (listingId) return listingDetail(listingId, listingId === 'l2')
-
-  const thicknessId = match(path, /^\/listings\/([^/]+)\/thickness$/)
-  if (thicknessId) return thicknessMap(thicknessId)
-
-  if (path === '/offers') return offers(query.get('direction') ?? 'incoming')
-  if (path === '/chats') return { items: CHATS }
-  if (/^\/chats\/[^/]+\/messages$/.test(path)) return { items: MESSAGES }
-
-  if (path === '/users/me') return PROFILE
-  if (/^\/users\/[^/]+\/listings$/.test(path)) return { items: [LEXUS, FEED[1]] }
-  if (/^\/users\/[^/]+$/.test(path)) return SELLER
-
-  const supplierId = match(path, /^\/suppliers\/([^/]+)$/)
-  if (supplierId) return supplierProfile(supplierId)
-  if (path === '/suppliers') return { items: SUPPLIERS }
-
-  const requestId = match(path, /^\/import-requests\/([^/]+)$/)
-  if (requestId) return importRequest(requestId)
-  if (/^\/import-requests\/[^/]+\/responses$/.test(path)) return { items: BIDS }
-
-  if (path === '/moderation/listings') return queue(query.get('tab') ?? 'pending')
-  if (path === '/moderation/complaints')
-    return { items: COMPLAINTS, open: COMPLAINTS.length, resolved: 31 }
-  if (path === '/role/role-requests') return ROLE_APPLICATIONS
-
-  return null
-}
-
-// Мутации мастера отвечают по-настоящему: черновик без идентификатора и снимок без ответа
-// уводят мастер в откат, и сценарий останавливается на первом же шаге.
-function listingsCollection(query: URLSearchParams): unknown {
-  if (query.get('owner') === 'me') return { items: MY_LISTINGS }
-  if (query.get('channel') === 'import') {
-    return {
-      cars: IMPORT_CARS,
-      suppliers: SUPPLIERS,
-      requests: REQUEST_CARDS,
-      cars_total: IMPORT_CARS.length,
-      suppliers_total: SUPPLIERS.length,
-      requests_total: REQUEST_CARDS.length,
-    }
-  }
-  const items = filtered(query)
-  return { items, total: items.length }
-}
-
-// Фильтры работают по-настоящему: иначе пустое состояние ленты — единственное, которое
-// нельзя увидеть, а именно оно чаще всего и ломается.
-function filtered(query: URLSearchParams): typeof FEED {
-  // Имена параметров — те же, что шлёт `feedQuery.toSearchParams`. Разойдутся — заглушка
-  // молча вернёт всё, и фильтр будет выглядеть сломанным ровно так же, как сломанный.
-  const priceMax = Number(query.get('price_to') ?? '')
-  const withMap = query.get('thickness_map') === 'true'
-  return FEED.filter((car) => {
-    if (Number.isFinite(priceMax) && priceMax > 0 && car.price > priceMax) return false
-    if (withMap && !car.has_thickness_map) return false
-    return true
-  })
-}
-
-function queue(tab: string): unknown {
-  const items =
-    tab === 'flagged'
-      ? QUEUE.filter((item) => item.complaints_count > 0)
-      : tab === 'done'
-        ? []
-        : QUEUE
-  return {
-    items,
-    pending: QUEUE.length,
-    flagged: QUEUE.filter((item) => item.complaints_count > 0).length,
-    done_today: 14,
-  }
+  // Экраны, ещё не переведённые на настоящие адреса, обслуживаются отдельно: смешивать
+  // выдуманные пути с реальными в одном списке значит потерять, каких из них ждать от
+  // сервера, а каких — нет.
+  return legacyRoute(path, query)
 }
 
 function match(path: string, pattern: RegExp): string | null {

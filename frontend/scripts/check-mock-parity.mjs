@@ -40,8 +40,6 @@ const UNMOCKED = [
   'auth.oauthExchange',
   'auth.refresh',
   'auth.guestLogin',
-  'catalog.brands',
-  'catalog.models',
   'saleCar.draft',
   'saleCar.photos',
   'saleCar.photo',

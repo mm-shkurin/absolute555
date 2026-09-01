@@ -60,6 +60,17 @@ describe('Личные разделы', () => {
     await resize(driver, DESKTOP)
   })
 
+  it('присланное предложение принимается, а своё предлагает отзыв', async () => {
+    await resize(driver, PHONE)
+    await feed.openApp()
+    await feed.assertFeedShown()
+    await personal.openOffersFromTabBar()
+    await personal.answerFirstOffer('Принять')
+    await personal.switchOffersTab('Я отправил')
+    await personal.assertReviewNeedsRating()
+    await resize(driver, DESKTOP)
+  })
+
   it('на телефоне переписка открывается вместо списка и возвращается назад', async () => {
     await resize(driver, PHONE)
     await feed.openApp()

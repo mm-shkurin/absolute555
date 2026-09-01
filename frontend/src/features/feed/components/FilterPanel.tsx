@@ -39,7 +39,7 @@ export function FilterPanel({
         <div className={styles.group}>
           <h4>Марка и модель</h4>
           <Button tone="ghost" block onClick={onPickBrand} data-testid="filter-brand">
-            {query.brand ?? 'Выберите марку'}
+            {brandLabel(query)}
           </Button>
         </div>
         <RangePair
@@ -101,4 +101,10 @@ export function FilterPanel({
       </div>
     </aside>
   )
+}
+
+// Кнопка показывает выбранное имя, а не идентификатор: `b-12` человеку не говорит ничего.
+function brandLabel(query: FeedQuery): string {
+  if (!query.brandName) return 'Выберите марку'
+  return query.modelName ? `${query.brandName} ${query.modelName}` : query.brandName
 }

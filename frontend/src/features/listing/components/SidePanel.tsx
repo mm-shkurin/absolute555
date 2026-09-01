@@ -20,10 +20,12 @@ interface Props {
   view: ListingDetailView
   mode: ViewerMode
   offers: { id: string; when: string; amount: string }[] | null
+  /** Раскрытый телефон продавца. До нажатия его нет ни на экране, ни в ответе карточки. */
+  phone: string | null
   handlers: SideHandlers
 }
 
-export function SidePanel({ view, mode, offers, handlers }: Props) {
+export function SidePanel({ view, mode, offers, phone, handlers }: Props) {
   return (
     <aside className={listing.side} data-testid="listing-side" data-mode={mode}>
       <div className={`${listing.block} ${listing.blockFirst}`}>
@@ -45,6 +47,11 @@ export function SidePanel({ view, mode, offers, handlers }: Props) {
           {view.price}
         </div>
         <PriceActions view={view} mode={mode} handlers={handlers} />
+        {phone ? (
+          <div className={styles.phone} data-testid="revealed-phone">
+            {phone}
+          </div>
+        ) : null}
       </div>
 
       <div className={listing.block}>

@@ -9,6 +9,7 @@ import {
   isVisible,
   testId,
   textOf,
+  waitForButton,
   waitForVisible,
   waitGone,
 } from '../driver'
@@ -125,5 +126,14 @@ export class FeedStatements {
     await input.clear()
     await input.sendKeys(value)
     await this.driver.sleep(500)
+  }
+
+  // Фильтр по марке: список приходит с сервера, выбор попадает на кнопку и в запрос.
+  async pickBrandFromFilter(brand: string): Promise<void> {
+    await clickElement(this.driver, await waitForVisible(this.driver, 'filter-brand'))
+    const sheet = await waitForVisible(this.driver, 'brand-sheet')
+    await clickElement(this.driver, await waitForButton(this.driver, sheet, brand))
+    await clickElement(this.driver, await waitForButton(this.driver, sheet, 'Все модели'))
+    expect(await textOf(this.driver, 'filter-brand')).toContain(brand)
   }
 }

@@ -1,0 +1,25 @@
+/* Шторка предложения цены: свой файл — правая колонка карточки и без неё у лимита. */
+.priceInput {
+  width: 100%;
+  margin: 12px 0;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.failure {
+  margin: 0 0 10px;
+  color: var(--status-bad-ink);
+  font-size: 13.5px;
+}
+
+.phone {
+  margin-top: 10px;
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}

@@ -38,6 +38,13 @@ describe('Карточка объявления', () => {
   // предложения («видно, куда идёт торг»), а сервер отдаёт их только владельцу машины —
   // `GET /offer/car/{id}` отвечает NOT_CAR_OWNER. Либо появится обезличенная история цены
   // отдельной ручкой, либо обещание из мокапа снимается.
+  it('покупатель предлагает цену и открывает телефон', async () => {
+    await openListing()
+    await listing.assertListingShown()
+    await listing.revealPhone()
+    await listing.offerPrice('3500000')
+  })
+
   it.skip('вошедший покупатель видит чужие предложения по цене', async () => {
     await openListing()
     await listing.assertOffersVisible()

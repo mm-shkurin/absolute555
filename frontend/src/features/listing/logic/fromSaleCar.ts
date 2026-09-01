@@ -56,8 +56,9 @@ export function toListingDetailWire(
     seller: {
       id: car.seller?.user_id ?? car.user_id,
       name: car.seller?.name ?? '',
-      rating: null,
-      deals_count: 0,
+      // Агрегат едет в блоке продавца — отдельного вызова ради трёх чисел нет.
+      rating: car.seller?.rating ?? null,
+      deals_count: car.seller?.deals_count ?? 0,
     },
     offers: context.offers ? context.offers.map(toOffer) : null,
   }

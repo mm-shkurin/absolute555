@@ -109,3 +109,31 @@
     display: flex;
   }
 }
+
+.brandList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.brandOption {
+  padding: 8px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-pill);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-size: 13.5px;
+  font-weight: 600;
+}
+
+.brandOption[aria-pressed='true'] {
+  border-color: var(--accent);
+  background: var(--bg-selected);
+  color: var(--text-accent);
+}
+
+.brandActions {
+  display: grid;
+  gap: 8px;
+}

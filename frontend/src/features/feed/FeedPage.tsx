@@ -5,6 +5,7 @@ import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { FeedHead } from './components/FeedHead'
 import { FilterPanel } from './components/FilterPanel'
+import { BrandSheet } from './components/BrandSheet'
 import { Sheet } from '../../shared/ui/Sheet'
 import { MobileFilterBar } from './components/MobileFilterBar'
 import { ListingGrid } from '../../shared/domain/listing/ListingCard'
@@ -26,6 +27,7 @@ export function FeedPage({
   const [query, setQuery] = useState<FeedQuery>(initialQuery)
   const feed = useFeed(query)
   const [sheetOpen, setSheetOpen] = useState(false)
+  const [brandOpen, setBrandOpen] = useState(false)
   const reset = () => setQuery({ ...EMPTY_QUERY, tab: query.tab, sort: query.sort })
 
   return (
@@ -49,7 +51,7 @@ export function FeedPage({
               total={feed.total}
               onChange={setQuery}
               onReset={reset}
-              onPickBrand={() => undefined}
+              onPickBrand={() => setBrandOpen(true)}
             />
             <div>
               {feed.isLoading ? <FeedSkeleton /> : null}
@@ -66,6 +68,16 @@ export function FeedPage({
           </div>
         </Container>
       </main>
+      {brandOpen ? (
+        <BrandSheet
+          current={query}
+          onClose={() => setBrandOpen(false)}
+          onPick={(choice) => {
+            setQuery({ ...query, ...choice })
+            setBrandOpen(false)
+          }}
+        />
+      ) : null}
       {sheetOpen ? (
         <Sheet title="Фильтры" onClose={() => setSheetOpen(false)} testId="filter-sheet">
           <FilterPanel
@@ -73,7 +85,7 @@ export function FeedPage({
             total={feed.total}
             onChange={setQuery}
             onReset={reset}
-            onPickBrand={() => undefined}
+            onPickBrand={() => setBrandOpen(true)}
             inSheet
             onApply={() => setSheetOpen(false)}
           />

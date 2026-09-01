@@ -96,4 +96,25 @@ export class ListingStatements {
   async elementExists(id: string): Promise<boolean> {
     return (await this.driver.findElements(testId(id))).length > 0
   }
+
+  // Предложение цены доходит до сервера, и экран говорит об этом словами: молчание после
+  // отправки читается как несработавшая кнопка.
+  async offerPrice(price: string): Promise<void> {
+    await clickElement(this.driver, await waitForVisible(this.driver, 'offer-price'))
+    const sheet = await waitForVisible(this.driver, 'offer-sheet')
+    const send = await sheet.findElement(testId('offer-send'))
+    expect(await send.getAttribute('disabled')).toBeTruthy()
+    await (await sheet.findElement(testId('offer-input'))).sendKeys(price)
+    await clickElement(this.driver, send)
+    expect(await textOf(this.driver, 'offer-sent')).toContain('Предложение отправлено')
+  }
+
+  async revealPhone(): Promise<void> {
+    const side = await waitForVisible(this.driver, 'listing-side')
+    await clickElement(
+      this.driver,
+      await side.findElement(By.xpath('.//button[contains(., "Показать телефон")]')),
+    )
+    expect(await textOf(this.driver, 'revealed-phone')).toContain('+7')
+  }
 }

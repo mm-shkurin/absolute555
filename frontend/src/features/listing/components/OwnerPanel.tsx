@@ -12,6 +12,7 @@ import listing from '../listing.module.css'
 export function OwnerPanel({
   view,
   sold,
+  busy,
   onEdit,
   onUnpublish,
   onMarkSold,
@@ -19,6 +20,7 @@ export function OwnerPanel({
 }: {
   view: ListingDetailView
   sold: boolean
+  busy?: boolean
   onEdit: () => void
   onUnpublish: () => void
   onMarkSold: () => void
@@ -52,14 +54,14 @@ export function OwnerPanel({
         {sold ? null : (
           <>
             <div className={styles.actions}>
-              <Button block onClick={onEdit}>
+              <Button block disabled={busy} onClick={onEdit}>
                 Редактировать
               </Button>
               <div className={styles.pair}>
-                <Button tone="ghost" onClick={onUnpublish}>
+                <Button tone="ghost" disabled={busy} onClick={onUnpublish}>
                   Снять с публикации
                 </Button>
-                <Button tone="ghost" onClick={onMarkSold}>
+                <Button tone="ghost" disabled={busy} onClick={onMarkSold}>
                   Отметить проданным
                 </Button>
               </div>

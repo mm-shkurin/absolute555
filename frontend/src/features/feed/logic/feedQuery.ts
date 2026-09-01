@@ -9,7 +9,12 @@ export type FeedSort = 'newest' | 'price-asc' | 'price-desc'
 export interface FeedQuery {
   tab: FeedTab
   sort: FeedSort
+  /** Марка и модель хранятся идентификатором и подписью сразу: сервер фильтрует по
+   *  идентификатору, а кнопка на экране показывает имя. */
   brand?: string
+  brandName?: string
+  model?: string
+  modelName?: string
   yearFrom?: string
   yearTo?: string
   priceFrom?: string
@@ -46,6 +51,7 @@ const numeric = (value?: string): number | undefined => {
 export function toFeedFilters(query: FeedQuery, page = 1): FeedFilters {
   return {
     brand_id: query.brand?.trim() || undefined,
+    model_id: query.model?.trim() || undefined,
     year_from: numeric(query.yearFrom),
     year_to: numeric(query.yearTo),
     price_from: numeric(query.priceFrom),
