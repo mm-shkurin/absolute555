@@ -14,12 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.features.listing.models.sale_car import SaleCars
 from app.features.listing.models.thickness import ThicknessMeasurement
 from app.features.listing.panels import BodyPanel, MAX_VALUE_UM, MIN_VALUE_UM
-from app.features.listing.services.photo_errors import NotAnImage, PhotoTooLarge
-from app.features.listing.services.photo_image import is_image
+from app.features.listing.services.photo_image import require_image
 from app.features.listing.services.thickness_errors import MeasurementNotFound, ValueOutOfRange
 from app.shared.storage.s3_service import s3_service
-
-MAX_PHOTO_BYTES = 10 * 1024 * 1024
 
 
 class ThicknessMapService:
@@ -95,12 +92,7 @@ class ThicknessMapService:
     @staticmethod
     async def _store(listing: SaleCars, photo: tuple) -> str:
         filename, content_type, body = photo
-        if len(body) > MAX_PHOTO_BYTES:
-            raise PhotoTooLarge(limit=MAX_PHOTO_BYTES, size=len(body))
-        if not is_image(body):
-            # Решает содержимое: расширение и заявленный тип присылает клиент, так что
-            # ни то, ни другое ничего не доказывает.
-            raise NotAnImage(filename)
+        require_image(filename, body)
         return await s3_service.upload_file_get_key_from_bytes(
             str(listing.sale_car_id), body, content_type=content_type, folder="thickness"
         )

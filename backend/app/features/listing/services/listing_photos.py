@@ -22,12 +22,10 @@ from app.features.listing.services.listing_errors import ListingFrozen
 from app.features.listing.services.photo_errors import (
     GalleryLimitReached,
     NoFilesGiven,
-    NotAnImage,
     OrderMismatch,
     PhotoNotFound,
-    PhotoTooLarge,
 )
-from app.features.listing.services.photo_image import build_preview, is_image
+from app.features.listing.services.photo_image import build_preview, require_image
 from app.shared.storage.s3_service import s3_service
 
 photo_settings = PhotoSettings()
@@ -116,12 +114,7 @@ class ListingGalleryService:
     async def _store(self, listing: SaleCars, file: tuple, stored: List[str]) -> dict:
         filename, content_type, body = file
 
-        if len(body) > photo_settings.max_photo_bytes:
-            raise PhotoTooLarge(limit=photo_settings.max_photo_bytes, size=len(body))
-        if not is_image(body):
-            # The content decides, not the extension and not the declared type: a client
-            # supplies both, so neither is evidence of anything.
-            raise NotAnImage(filename)
+        require_image(filename, body)
 
         listing_id = str(listing.sale_car_id)
         key = await s3_service.upload_file_get_key_from_bytes(listing_id, body, content_type=content_type)

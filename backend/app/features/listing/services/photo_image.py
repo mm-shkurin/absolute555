@@ -10,6 +10,7 @@ from io import BytesIO
 from PIL import Image, UnidentifiedImageError
 
 from app.core.config import PhotoSettings
+from app.features.listing.services.photo_errors import NotAnImage, PhotoTooLarge
 
 photo_settings = PhotoSettings()
 
@@ -22,6 +23,19 @@ def is_image(body: bytes) -> bool:
         return True
     except (UnidentifiedImageError, OSError, ValueError):
         return False
+
+
+def require_image(filename: str, body: bytes) -> None:
+    """Refuse an upload that is too heavy or is not an image at all.
+
+    Both the gallery and the thickness map take a photograph from a request, and both
+    judge it the same way: the content decides, not the extension and not the declared
+    type — a client supplies both, so neither is evidence of anything.
+    """
+    if len(body) > photo_settings.max_photo_bytes:
+        raise PhotoTooLarge(limit=photo_settings.max_photo_bytes, size=len(body))
+    if not is_image(body):
+        raise NotAnImage(filename)
 
 
 def build_preview(body: bytes) -> bytes:
