@@ -23,10 +23,18 @@ export type BodyPanel =
  *  мобилке разошлась бы, и покупатель увидел бы два разных цвета на одном замере. */
 export type PanelStatus = 'factory' | 'repaint' | 'filler'
 
+/** Кто записал число: распознавание с фотографии или сам продавец. */
+export type ValueSource = 'ocr' | 'seller'
+
 export interface ThicknessMeasurementWire {
   panel: BodyPanel
   value_um: number
   status: PanelStatus
+  /** Чем записано текущее число (история 15). */
+  source: ValueSource
+  /** Что прочиталось с фотографии, даже когда продавец вписал своё. Бейдж «уточнено
+   *  продавцом» — это source === 'seller' при непустом ocr_value_um. */
+  ocr_value_um?: number | null
   /** Фотография экрана прибора. Доказательство замера, а не украшение. */
   photo_url: string
   updated_at?: string

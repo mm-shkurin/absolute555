@@ -31,6 +31,12 @@ class ThicknessMeasurement(Base):
     panel = Column(String, nullable=False)
     value_um = Column(Integer, nullable=False)
 
+    # Чем записано число и что прочиталось с фотографии. Оба поля нужны рядом: без
+    # первого не сказать, поправлял ли продавец, без второго — от чего он отступил, и
+    # покупателю нечем отличить исправленную опечатку прибора от подрисованного замера.
+    value_source = Column(String, nullable=False, default="seller")
+    ocr_value_um = Column(Integer, nullable=True)
+
     # Фотография экрана прибора — доказательство замера, поэтому обязательна. В строке
     # только ключ: байты лежат в S3, как и галерея.
     photo_key = Column(String, nullable=False)

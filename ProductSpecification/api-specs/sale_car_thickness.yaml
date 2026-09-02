@@ -10,8 +10,10 @@ info:
     Статус панели (заводская краска, перекрас, шпаклёвка) считает сервер по единым
     порогам — иначе порог копируется в веб и в мобилку и там расходится.
 
-    Распознавание числа с фотографии прибора — история 15; здесь число присылает клиент,
-    а форма замера уже та, которую OCR унаследует.
+    История 15 сделала `value_um` необязательным: не прислали — число читается с
+    фотографии прибора синхронно в этом же запросе. Прочитанное сохраняется рядом с
+    исправленным, иначе поправленную опечатку прибора нечем отличить от подрисованного
+    замера.
 
 paths:
   /api/v1/sale_car/{sale_car_id}/thickness:
@@ -51,13 +53,15 @@ paths:
           multipart/form-data:
             schema:
               type: object
-              required: [value_um, photo]
+              required: [photo]
               properties:
                 value_um:
                   type: integer
                   minimum: 1
                   maximum: 3000
-                  description: Толщина покрытия в микронах, как её показал прибор.
+                  description: |
+                    Толщина покрытия в микронах. Необязательно: без него число читается
+                    с фотографии прибора. Нечитаемая фотография — 422 OCR_UNREADABLE.
                 photo:
                   type: string
                   format: binary
@@ -155,11 +159,21 @@ components:
 
     ThicknessMeasurement:
       type: object
-      required: [panel, value_um, status, photo_url]
+      required: [panel, value_um, status, source, photo_url]
       properties:
         panel: { $ref: '#/components/schemas/BodyPanel' }
         value_um: { type: integer, minimum: 1, maximum: 3000 }
         status: { $ref: '#/components/schemas/PanelStatus' }
+        source:
+          type: string
+          enum: [ocr, seller]
+          description: Чем записано текущее число.
+        ocr_value_um:
+          type: integer
+          nullable: true
+          description: |
+            Что прочиталось с фотографии, даже когда продавец вписал своё. Бейдж
+            «уточнено продавцом» — это source == seller при непустом ocr_value_um.
         photo_url:
           type: string
           description: Фотография экрана прибора.

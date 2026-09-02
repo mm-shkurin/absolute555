@@ -53,3 +53,8 @@ def status_of(value_um: int) -> PanelStatus:
     if value_um >= REPAINT_FROM_UM:
         return PanelStatus.REPAINT
     return PanelStatus.FACTORY
+
+
+class ValueSource(str, Enum):
+    OCR = "ocr"
+    SELLER = "seller"

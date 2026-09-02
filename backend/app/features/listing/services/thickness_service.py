@@ -13,10 +13,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.listing.models.sale_car import SaleCars
 from app.features.listing.models.thickness import ThicknessMeasurement
-from app.features.listing.panels import BodyPanel, MAX_VALUE_UM, MIN_VALUE_UM
+from app.features.listing.panels import BodyPanel, MAX_VALUE_UM, MIN_VALUE_UM, ValueSource
 from app.features.listing.services.photo_image import require_image
-from app.features.listing.services.thickness_errors import MeasurementNotFound, ValueOutOfRange
+from app.features.listing.services.thickness_errors import (
+    GaugeUnreadable,
+    MeasurementNotFound,
+    ValueOutOfRange,
+)
+from app.ml.gauge_ocr import read_gauge
 from app.shared.storage.s3_service import s3_service
+
+
+def _within(value) -> bool:
+    return value is not None and MIN_VALUE_UM <= value <= MAX_VALUE_UM
 
 
 class ThicknessMapService:
@@ -24,11 +33,27 @@ class ThicknessMapService:
         self.db = db
 
     async def record(
-        self, listing: SaleCars, panel: BodyPanel, value_um: int, photo: tuple
+        self, listing: SaleCars, panel: BodyPanel, value_um, photo: tuple
     ) -> List[ThicknessMeasurement]:
-        """photo: (filename, content_type, bytes) as read from the request."""
-        if not MIN_VALUE_UM <= value_um <= MAX_VALUE_UM:
-            raise ValueOutOfRange(value_um)
+        """photo: (filename, content_type, bytes) as read from the request.
+
+        value_um не прислали — число читается с фотографии прибора. Прислали — оно от
+        продавца, а прочитанное всё равно сохраняется рядом: иначе исправленную опечатку
+        прибора нечем отличить от подрисованного замера.
+        """
+        require_image(photo[0], photo[2])
+        read = read_gauge(photo[2])
+        if not _within(read):
+            read = None
+
+        if value_um is None:
+            if read is None:
+                raise GaugeUnreadable(panel.value)
+            value_um, source = read, ValueSource.OCR
+        else:
+            if not _within(value_um):
+                raise ValueOutOfRange(value_um)
+            source = ValueSource.SELLER
 
         key = await self._store(listing, photo)
         held = await self._panel_of(listing, panel)
@@ -40,11 +65,15 @@ class ThicknessMapService:
                     sale_car_id=listing.sale_car_id,
                     panel=panel.value,
                     value_um=value_um,
+                    value_source=source.value,
+                    ocr_value_um=read,
                     photo_key=key,
                 )
             )
         else:
             held.value_um = value_um
+            held.value_source = source.value
+            held.ocr_value_um = read
             held.photo_key = key
 
         try:
@@ -92,7 +121,6 @@ class ThicknessMapService:
     @staticmethod
     async def _store(listing: SaleCars, photo: tuple) -> str:
         filename, content_type, body = photo
-        require_image(filename, body)
         return await s3_service.upload_file_get_key_from_bytes(
             str(listing.sale_car_id), body, content_type=content_type, folder="thickness"
         )

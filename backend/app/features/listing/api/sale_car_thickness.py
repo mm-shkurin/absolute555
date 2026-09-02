@@ -4,6 +4,8 @@
 идемпотентен — повторный вызов перезаписывает замер, а не заводит второй.
 """
 
+from typing import Optional
+
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -49,7 +51,7 @@ async def read_map(
 async def record_measurement(
     sale_car_id: str,
     panel: BodyPanel,
-    value_um: int = Form(...),
+    value_um: Optional[int] = Form(default=None),
     photo: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),

@@ -5,13 +5,15 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.features.listing.panels import BodyPanel, PanelStatus
+from app.features.listing.panels import BodyPanel, PanelStatus, ValueSource
 
 
 class Measurement(BaseModel):
     panel: BodyPanel
     value_um: int
     status: PanelStatus
+    source: ValueSource
+    ocr_value_um: Optional[int] = None
     photo_url: str
     updated_at: Optional[datetime] = None
 

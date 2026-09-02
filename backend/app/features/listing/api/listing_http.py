@@ -23,6 +23,7 @@ from app.features.listing.services.listing_errors import (
     TransitionNotAllowed,
 )
 from app.features.listing.services.thickness_errors import (
+    GaugeUnreadable,
     MeasurementNotFound,
     ValueOutOfRange,
 )
@@ -104,6 +105,11 @@ def to_http(error: Exception):
     if isinstance(error, ValueOutOfRange):
         return ValidationError(
             str(error), code="VALUE_OUT_OF_RANGE", details={"value_um": error.value_um}
+        )
+
+    if isinstance(error, GaugeUnreadable):
+        return ValidationError(
+            str(error), code="OCR_UNREADABLE", details={"panel": error.panel}
         )
 
     if isinstance(error, MeasurementNotFound):
