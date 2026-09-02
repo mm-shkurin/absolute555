@@ -7,6 +7,7 @@ import type {
   RoleRequestWire,
   UserWire,
 } from '../../../shared/api/backend/accountContract'
+import type { BuyerRequestWire } from '../../../shared/api/backend/requestContract'
 import type { ProfileWire, SupplierApplicationStatus } from '../api/profileApi'
 
 const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' })
@@ -25,6 +26,7 @@ export function toProfileWire(
   user: UserWire,
   listings: { total: number; rejected: number },
   roleRequests: RoleRequestWire[] = [],
+  importRequests: BuyerRequestWire[] = [],
 ): ProfileWire {
   const forImporter = roleRequests.filter((one) => one.requested_role === 'importer')
   // Живая заявка перевешивает решённые: человек ждёт ответа именно по ней. Роль уже
@@ -49,6 +51,13 @@ export function toProfileWire(
     supplier_status:
       user.role === 'importer' ? 'approved' : ((live?.status ?? 'none') as SupplierApplicationStatus),
     supplier_applied_at: live?.created_at ?? null,
-    import_requests: [],
+    import_requests: importRequests.map((request) => ({
+      id: request.request_id,
+      title: `${request.brand ?? ''} ${request.model ?? ''}`.trim() || 'Заявка на привоз',
+      budget_max: request.budget_max,
+      created_at: request.created_at,
+      responses_count: request.responses_count,
+      active: request.status === 'open',
+    })),
   }
 }

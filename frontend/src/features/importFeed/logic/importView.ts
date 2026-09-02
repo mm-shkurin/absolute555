@@ -1,7 +1,8 @@
 // Три вида карточек одной ленты и подпись над ней.
 import { formatPrice, pluralize } from '../../../shared/format/money'
 import { ratingValue } from '../../../shared/format/rating'
-import type { ImportFeedWire, ImportRequestCardWire, SupplierWire } from '../api/importApi'
+import type { BuyerRequestWire } from '../../../shared/api/backend/requestContract'
+import type { ImportFeedWire, SupplierWire } from '../api/importApi'
 
 export interface SupplierCardView {
   id: string
@@ -51,11 +52,11 @@ export function toSupplierCard(wire: SupplierWire): SupplierCardView {
   }
 }
 
-export function toRequestCard(wire: ImportRequestCardWire, now: Date): RequestCardView {
+export function toRequestCard(wire: BuyerRequestWire, now: Date): RequestCardView {
   return {
-    id: wire.id,
-    title: wire.title,
-    spec: [wire.years, wire.extra].filter(Boolean).join(' · '),
+    id: wire.request_id,
+    title: `${wire.brand ?? ''} ${wire.model ?? ''}`.trim() || 'Заявка на привоз',
+    spec: wire.year_from === null ? 'год любой' : `от ${wire.year_from} года`,
     budget: wire.budget_max === null ? 'бюджет не назван' : `до ${formatPrice(wire.budget_max)}`,
     meta: `${wire.responses_count} ${pluralize(wire.responses_count, 'отклик', 'отклика', 'откликов')} · создана ${createdWord(new Date(wire.created_at), now)}`,
   }

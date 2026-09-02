@@ -37,17 +37,21 @@ describe('лента под заказ', () => {
   it('заявка называет бюджет, отклики и когда создана', () => {
     const card = toRequestCard(
       {
-        id: 'r1',
-        title: 'Toyota Land Cruiser 300',
-        years: '2022–2023',
-        extra: 'до 60 000 км',
+        request_id: 'r1',
+        user_id: 'u1',
+        brand: 'Toyota',
+        model: 'Land Cruiser 300',
+        year_from: 2022,
         budget_max: 12000000,
+        comment: null,
+        status: 'open',
         responses_count: 4,
         created_at: new Date(2026, 7, 27).toISOString(),
       },
       now,
     )
-    expect(card.spec).toBe('2022–2023 · до 60 000 км')
+    expect(card.title).toBe('Toyota Land Cruiser 300')
+    expect(card.spec).toBe('от 2022 года')
     expect(card.budget).toBe('до 12\u202F000\u202F000 ₽')
     expect(card.meta).toBe('4 отклика · создана вчера')
   })
@@ -55,16 +59,20 @@ describe('лента под заказ', () => {
   it('заявка без бюджета говорит об этом, а не показывает пустоту', () => {
     const card = toRequestCard(
       {
-        id: 'r2',
-        title: 'Honda Vezel',
-        years: '2019–2021',
-        extra: null,
+        request_id: 'r2',
+        user_id: 'u1',
+        brand: 'Honda',
+        model: 'Vezel',
+        year_from: null,
         budget_max: null,
+        comment: null,
+        status: 'open',
         responses_count: 1,
         created_at: now.toISOString(),
       },
       now,
     )
+    expect(card.spec).toBe('год любой')
     expect(card.budget).toBe('бюджет не назван')
     expect(card.meta).toBe('1 отклик · создана сегодня')
   })

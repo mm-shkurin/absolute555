@@ -1,12 +1,14 @@
 // Отклики поставщиков. Самый дешёвый помечен, но не поднят наверх: порядок откликов —
 // хронология, а перестановка по цене выдавала бы дешёвое за лучшее.
-import { Avatar, Rating } from '../../../shared/ui/Avatar'
-import { Button } from '../../../shared/ui/Button'
+import { Link } from 'react-router-dom'
+import { Avatar } from '../../../shared/ui/Avatar'
+import { ROUTES } from '../../../shared/navigation/routes'
+import { ButtonLink } from '../../../shared/ui/Button'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import type { BidView } from '../logic/requestView'
 import styles from '../request.module.css'
 
-export function BidList({ bids, onWrite }: { bids: BidView[]; onWrite: (bid: BidView) => void }) {
+export function BidList({ bids }: { bids: BidView[] }) {
   if (bids.length === 0) {
     return (
       <p>
@@ -21,9 +23,12 @@ export function BidList({ bids, onWrite }: { bids: BidView[]; onWrite: (bid: Bid
         <div key={bid.id} className={styles.bid} data-testid="bid">
           <Avatar size={40} />
           <div>
-            <div className={styles.bidName}>{bid.name}</div>
-            <Rating rating={bid.rating}>{bid.ratingLine}</Rating>
-            <div className={styles.bidComment}>{bid.comment}</div>
+            {/* Имени поставщика в отклике сервер не отдаёт — только идентификатор.
+                Ссылка ведёт на его витрину, где имя, рейтинг и условия и живут. */}
+            <Link className={styles.bidName} to={ROUTES.supplier(bid.supplierId)}>
+              Поставщик
+            </Link>
+            {bid.comment ? <div className={styles.bidComment}>{bid.comment}</div> : null}
           </div>
           <div className={styles.bidRight}>
             <div className={styles.bidPrice}>{bid.price}</div>
@@ -33,9 +38,11 @@ export function BidList({ bids, onWrite }: { bids: BidView[]; onWrite: (bid: Bid
                 <StatusBadge tone="info">дешевле остальных</StatusBadge>
               </div>
             ) : null}
-            <Button size="small" className={styles.bidAction} onClick={() => onWrite(bid)}>
+            {/* Переписка с поставщиком идёт в общем чате — отдельного канала под
+                отклики контракт не заводит. */}
+            <ButtonLink size="small" className={styles.bidAction} to={ROUTES.chats}>
               Написать
-            </Button>
+            </ButtonLink>
           </div>
         </div>
       ))}

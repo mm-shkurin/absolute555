@@ -11,6 +11,14 @@ import { MY_ROLE_REQUESTS, ROLE_APPLICATIONS } from './fixtures/moderation'
 import { legacyRoute } from './legacyRoutes'
 import { eraseMeasurement, thicknessMap, writeMeasurement } from './fixtures/thickness'
 import {
+  addRequest,
+  closeRequest,
+  myRequests,
+  openRequests,
+  putRequestResponse,
+  requestResponses,
+} from './fixtures/requests'
+import {
   editMyProfile,
   myProfile,
   publicProfile,
@@ -70,6 +78,11 @@ function route(url: URL, method: string, payload?: BodyInit | null): unknown {
   }
   if (path === '/role/my-role-requests') return MY_ROLE_REQUESTS
   if (path === '/supplier/me') return myProfile()
+  if (path === '/request') return openRequests()
+  if (path === '/request/my') return myRequests()
+
+  const responsesOf = match(path, /^\/request\/([^/]+)\/responses$/)
+  if (responsesOf) return requestResponses(responsesOf)
   if (path === '/moderation/suppliers') return supplierQueue()
 
   const supplierOf = match(path, /^\/supplier\/([^/]+)$/)
@@ -115,6 +128,11 @@ function mutate(path: string, method: string, payload?: BodyInit | null): unknow
   // прочитает следующим запросом, иначе статус разошёлся бы с кнопками.
   if (path === '/supplier/me') return editMyProfile(jsonOf(payload))
   if (path === '/supplier/me/submit') return submitMyProfile()
+  if (path === '/request') return addRequest(jsonOf(payload))
+  const closed = /^\/request\/([^/]+)\/close$/.exec(path)
+  if (closed) return closeRequest(closed[1])
+  const responded = /^\/request\/([^/]+)\/response$/.exec(path)
+  if (responded) return putRequestResponse(responded[1], jsonOf(payload))
   const approved = /^\/moderation\/suppliers\/([^/]+)\/approve$/.exec(path)
   if (approved) return { ...publicProfile(approved[1]), status: 'published' }
   const rejected = /^\/moderation\/suppliers\/([^/]+)\/reject$/.exec(path)

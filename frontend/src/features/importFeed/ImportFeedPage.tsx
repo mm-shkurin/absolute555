@@ -79,7 +79,10 @@ export function ImportFeedPage({ signedIn = false }: { signedIn?: boolean }) {
                       <SupplierCard key={supplier.id} supplier={toSupplierCard(supplier)} />
                     ))
                   : data.requests.map((request) => (
-                      <RequestCard key={request.id} request={toRequestCard(request, now)} />
+                      <RequestCard
+                        key={request.request_id}
+                        request={toRequestCard(request, now)}
+                      />
                     ))}
               </div>
             ) : null}

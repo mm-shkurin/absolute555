@@ -1,7 +1,7 @@
 // Заявка на привоз глазами её автора и глазами поставщика. Разница — в блоке действий:
-// автор правит и закрывает заявку, поставщик откликается.
-import { Link, useNavigate, useParams } from 'react-router-dom'
-import { useQuery } from '@tanstack/react-query'
+// автор закрывает заявку, поставщик откликается.
+import { Link, useParams } from 'react-router-dom'
+import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { PageSection } from '../../shared/ui/PageHeading'
@@ -10,26 +10,36 @@ import { Button } from '../../shared/ui/Button'
 import { StatusBadge } from '../../shared/ui/StatusBadge'
 import { FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
-import { fetchBids, fetchRequest } from './api/requestApi'
+import { currentRole, currentSession } from '../../shared/session/authSession'
+import { closeRequest, putResponse } from './api/requestApi'
 import { bidsTitle, toBidViews, toRequestView } from './logic/requestView'
+import { requestFailureText } from './logic/requestFailure'
 import { BidList } from './components/BidList'
+import { RespondForm } from './components/RespondForm'
+import { useRequest } from './useRequest'
 import styles from './request.module.css'
 import page from '../../shared/ui/PageHeading.module.css'
 
 export function ImportRequestPage({ signedIn = false }: { signedIn?: boolean }) {
   const { requestId = '' } = useParams()
-  const navigate = useNavigate()
-  const request = useQuery({
-    queryKey: ['import-request', requestId],
-    queryFn: ({ signal }) => fetchRequest(requestId, signal),
+  const client = useQueryClient()
+  const { request, responses } = useRequest(requestId)
+  const refresh = () => {
+    void client.invalidateQueries({ queryKey: ['import-request', requestId] })
+    void client.invalidateQueries({ queryKey: ['import-request-responses', requestId] })
+  }
+
+  const respond = useMutation({
+    mutationFn: (body: { price: number; delivery_days: number; comment?: string }) =>
+      putResponse(requestId, body),
+    onSuccess: refresh,
   })
-  const bids = useQuery({
-    queryKey: ['import-request-bids', requestId],
-    queryFn: ({ signal }) => fetchBids(requestId, signal),
-  })
+  const close = useMutation({ mutationFn: () => closeRequest(requestId), onSuccess: refresh })
 
   const view = request.data ? toRequestView(request.data) : null
-  const bidViews = toBidViews(bids.data?.items ?? [])
+  const bids = toBidViews(responses.data ?? [])
+  const mine = request.data?.user_id === currentSession()?.userId
+  const myResponse = responses.data?.find((one) => one.supplier_id === currentSession()?.userId)
 
   return (
     <>
@@ -68,19 +78,40 @@ export function ImportRequestPage({ signedIn = false }: { signedIn?: boolean }) 
                   </div>
                   {view.comment ? <p className={styles.comment}>{view.comment}</p> : null}
                   <div className={styles.ownerActions}>
-                    {view.ownedByMe ? (
-                      <>
-                        <Button tone="ghost">Редактировать</Button>
-                        <Button tone="ghost">Закрыть заявку</Button>
-                      </>
-                    ) : (
-                      <Button disabled={!view.active}>Откликнуться на заявку</Button>
-                    )}
+                    {mine ? (
+                      <Button
+                        tone="ghost"
+                        disabled={!view.active || close.isPending}
+                        onClick={() => close.mutate()}
+                        data-testid="close-request"
+                      >
+                        Закрыть заявку
+                      </Button>
+                    ) : null}
                   </div>
                 </Panel>
 
-                <Panel title={bidsTitle(bidViews.length)} testId="request-bids">
-                  <BidList bids={bidViews} onWrite={() => navigate(ROUTES.chats)} />
+                {/* Откликается только поставщик, и только на открытую заявку: закрытая
+                    откликов не принимает, и сервер отвечает на неё 409. */}
+                {!mine && currentRole() === 'importer' && view.active ? (
+                  <Panel title="Ваш отклик" testId="request-respond">
+                    <RespondForm
+                      existing={myResponse ?? null}
+                      busy={respond.isPending}
+                      error={respond.error ? requestFailureText(respond.error) : null}
+                      onSend={(price, days, comment) =>
+                        respond.mutate({
+                          price,
+                          delivery_days: days,
+                          comment: comment || undefined,
+                        })
+                      }
+                    />
+                  </Panel>
+                ) : null}
+
+                <Panel title={bidsTitle(bids.length)} testId="request-bids">
+                  <BidList bids={bids} />
                   <PanelNote>
                     Отклик — это предложение наоборот: не вы торгуетесь за машину, а поставщики за
                     вас. Площадка в расчётах не участвует.

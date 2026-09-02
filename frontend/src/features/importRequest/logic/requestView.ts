@@ -1,7 +1,9 @@
 // Заявка и отклики в читаемом виде.
-import { formatAmount, formatPrice, pluralize } from '../../../shared/format/money'
-import { ratingValue } from '../../../shared/format/rating'
-import type { BidWire, RequestWire } from '../api/requestApi'
+import { formatPrice, pluralize } from '../../../shared/format/money'
+import type {
+  BuyerRequestWire,
+  SupplierResponseWire,
+} from '../../../shared/api/backend/requestContract'
 
 export interface SpecRow {
   label: string
@@ -13,82 +15,66 @@ export interface RequestView {
   title: string
   subtitle: string
   active: boolean
-  ownedByMe: boolean
   specs: SpecRow[]
   comment: string | null
+  responsesLine: string
 }
 
 export interface BidView {
   id: string
   supplierId: string
-  name: string
-  rating: number | null
-  ratingLine: string
-  comment: string
+  comment: string | null
   price: string
   terms: string
-  // Дешевле всех — не то же самое, что лучше всех: срок и репутация тоже в строке. Но
-  // пометка нужна, иначе три числа рядом сравниваются в уме на каждом отклике.
+  // Дешевле всех — не то же самое, что лучше всех: срок тоже в строке. Но пометка нужна,
+  // иначе числа сравниваются в уме на каждом отклике.
   cheapest: boolean
 }
 
 const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
 const DASH = '—'
 
-export function toRequestView(wire: RequestWire): RequestView {
+export function requestTitle(wire: BuyerRequestWire): string {
+  return `${wire.brand ?? ''} ${wire.model ?? ''}`.trim() || 'Заявка на привоз'
+}
+
+export function toRequestView(wire: BuyerRequestWire): RequestView {
   return {
-    id: wire.id,
-    title: wire.title,
+    id: wire.request_id,
+    title: requestTitle(wire),
     subtitle: `Заявка на привоз · создана ${DATE.format(new Date(wire.created_at))}`,
-    active: wire.active,
-    ownedByMe: wire.owned_by_me,
+    active: wire.status === 'open',
     specs: [
-      { label: 'Марка и модель', value: wire.title },
-      { label: 'Год', value: wire.years },
+      { label: 'Марка и модель', value: requestTitle(wire) },
+      { label: 'Год', value: wire.year_from === null ? DASH : `от ${wire.year_from}` },
       {
+        // Бюджет — под ключ: заявка описывает то, что покупатель отдаст, а не цену лота
+        // на аукционе, о которой он ничего не знает.
         label: 'Бюджет под ключ',
         value: wire.budget_max === null ? 'не назван' : `до ${formatPrice(wire.budget_max)}`,
       },
-      {
-        label: 'Пробег',
-        value: wire.mileage_max_km === null ? DASH : `до ${formatAmount(wire.mileage_max_km)} км`,
-      },
-      {
-        label: 'Откуда',
-        value: wire.countries.length > 0 ? wire.countries.join(', ') : 'откуда угодно',
-      },
-      {
-        label: 'Готов ждать',
-        value:
-          wire.wait_days_max === null
-            ? 'без ограничения'
-            : `до ${wire.wait_days_max} ${pluralize(wire.wait_days_max, 'дня', 'дней', 'дней')}`,
-      },
     ],
     comment: wire.comment,
+    responsesLine: responsesLine(wire.responses_count),
   }
 }
 
-export function toBidViews(bids: BidWire[]): BidView[] {
-  const best = bids.length === 0 ? null : Math.min(...bids.map((bid) => bid.price))
-  return bids.map((bid) => ({
-    id: bid.id,
-    supplierId: bid.supplier_id,
-    name: bid.supplier_name,
-    rating: bid.rating,
-    ratingLine: `${ratingValue(bid.rating)} · ${bid.deliveries_count} ${pluralize(
-      bid.deliveries_count,
-      'поставка',
-      'поставки',
-      'поставок',
-    )}`,
-    comment: bid.comment,
-    price: formatPrice(bid.price),
-    terms: `под ключ · ${bid.delivery_days} ${pluralize(bid.delivery_days, 'день', 'дня', 'дней')}`,
-    cheapest: bid.price === best,
-  }))
+export function responsesLine(count: number): string {
+  return `${count} ${pluralize(count, 'отклик', 'отклика', 'откликов')}`
 }
 
 export function bidsTitle(count: number): string {
-  return `Отклики поставщиков · ${count}`
+  return `Отклики · ${count}`
+}
+
+export function toBidViews(responses: SupplierResponseWire[]): BidView[] {
+  const best = responses.length === 0 ? null : Math.min(...responses.map((one) => one.price))
+  return responses.map((one) => ({
+    id: one.response_id,
+    supplierId: one.supplier_id,
+    comment: one.comment,
+    price: formatPrice(one.price),
+    terms: `под ключ · ${one.delivery_days} ${pluralize(one.delivery_days, 'день', 'дня', 'дней')}`,
+    cheapest: one.price === best,
+  }))
 }

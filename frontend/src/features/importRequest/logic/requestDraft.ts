@@ -1,38 +1,46 @@
-// Черновик заявки на привоз. Обязательного минимума ровно столько, сколько нужно
-// поставщику, чтобы ответить ценой: что за машина и сколько покупатель готов отдать.
+// Черновик заявки на привоз. Полей ровно столько, сколько принимает контракт истории 18:
+// марка и модель из справочника, год от, бюджет и слово от себя.
+//
+// Страны, пробег и «готов ждать» из мокапа сюда не входят: сервер их не принимает, и
+// собранное в этих полях никто бы не сохранил.
+import type { BuyerRequestCreate } from '../../../shared/api/backend/requestContract'
+
 export interface RequestDraft {
-  brand: string
-  model: string
+  brandId: string
+  brandName: string
+  modelId: string
+  modelName: string
   yearFrom: string
-  yearTo: string
   budget: string
-  mileage: string
-  country: string
-  wait: string
   comment: string
 }
 
-export const COUNTRIES = ['Любая страна', 'Япония', 'Корея', 'ОАЭ', 'Китай']
-export const WAIT_OPTIONS = ['до 60 дней', 'до 90 дней', 'до 120 дней', 'сколько потребуется']
-
 export const emptyRequestDraft: RequestDraft = {
-  brand: '',
-  model: '',
+  brandId: '',
+  brandName: '',
+  modelId: '',
+  modelName: '',
   yearFrom: '',
-  yearTo: '',
   budget: '',
-  mileage: '',
-  country: '',
-  wait: '',
   comment: '',
 }
 
 export function missingForRequest(draft: RequestDraft): string[] {
   const gaps: string[] = []
-  if (!draft.brand) gaps.push('марка')
-  if (!draft.model) gaps.push('модель')
+  if (!draft.brandId) gaps.push('марка')
+  if (!draft.modelId) gaps.push('модель')
   // Бюджет обязателен: заявка без него собирает отклики с любой ценой, и покупатель
   // разбирает их вручную вместо поставщиков.
-  if (!draft.budget) gaps.push('бюджет')
+  if (!draft.budget.trim()) gaps.push('бюджет')
   return gaps
+}
+
+export function toRequestBody(draft: RequestDraft): BuyerRequestCreate {
+  const body: BuyerRequestCreate = { brand_id: draft.brandId, model_id: draft.modelId }
+  const year = Number(draft.yearFrom.trim())
+  const budget = Number(draft.budget.trim())
+  if (draft.yearFrom.trim() && Number.isFinite(year)) body.year_from = year
+  if (draft.budget.trim() && Number.isFinite(budget)) body.budget_max = budget
+  if (draft.comment.trim()) body.comment = draft.comment.trim()
+  return body
 }

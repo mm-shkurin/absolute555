@@ -101,6 +101,13 @@ export const BACKEND = {
     submit: `${V1}/supplier/me/submit`,
     one: (userId: string) => `${V1}/supplier/${id(userId)}`,
   },
+  request: {
+    collection: `${V1}/request`,
+    mine: `${V1}/request/my`,
+    close: (requestId: string) => `${V1}/request/${id(requestId)}/close`,
+    response: (requestId: string) => `${V1}/request/${id(requestId)}/response`,
+    responses: (requestId: string) => `${V1}/request/${id(requestId)}/responses`,
+  },
   role: {
     users: `${V1}/role/users`,
     userRole: (userId: string) => `${V1}/role/users/${id(userId)}/role`,

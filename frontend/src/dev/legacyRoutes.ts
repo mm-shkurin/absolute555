@@ -1,14 +1,9 @@
 // Пути, которых на сервере нет: под ними живут экраны, чьи истории ещё не доехали
 // (канал «под заказ», заявки поставщикам). Держатся отдельно от настоящих
 // адресов, чтобы одно не выглядело как другое.
-import {
-  BIDS,
-  REQUEST_CARDS,
-  SUPPLIERS,
-  importRequest,
-} from './fixtures/importing'
+import { SUPPLIERS } from './fixtures/importing'
 import { listingDetail } from './fixtures/detail'
-import { FEED, IMPORT_CARS, LEXUS } from './fixtures/cars'
+import { FEED, LEXUS } from './fixtures/cars'
 import { MY_LISTINGS, PROFILE, offers } from './fixtures/people'
 import { CHATS, MESSAGES, SELLER } from './fixtures/rest'
 import { COMPLAINTS, QUEUE } from './fixtures/moderation'
@@ -33,10 +28,6 @@ export function legacyRoute(path: string, query: URLSearchParams): unknown {
 
   if (path === '/suppliers') return { items: SUPPLIERS }
 
-  const requestId = match(path, /^\/import-requests\/([^/]+)$/)
-  if (requestId) return importRequest(requestId)
-  if (/^\/import-requests\/[^/]+\/responses$/.test(path)) return { items: BIDS }
-
   if (path === '/moderation/listings') return queue(query.get('tab') ?? 'pending')
   if (path === '/moderation/complaints')
     return { items: COMPLAINTS, open: COMPLAINTS.length, resolved: 31 }
@@ -50,13 +41,15 @@ export function legacyRoute(path: string, query: URLSearchParams): unknown {
 function listingsCollection(query: URLSearchParams): unknown {
   if (query.get('owner') === 'me') return { items: MY_LISTINGS }
   if (query.get('channel') === 'import') {
+    // Машины и заявки приходят настоящими ручками (истории 17 и 18) — здесь остались
+    // только поставщики: ленты поставщиков в контракте нет вовсе.
     return {
-      cars: IMPORT_CARS,
+      cars: [],
       suppliers: SUPPLIERS,
-      requests: REQUEST_CARDS,
-      cars_total: IMPORT_CARS.length,
+      requests: [],
+      cars_total: 0,
       suppliers_total: SUPPLIERS.length,
-      requests_total: REQUEST_CARDS.length,
+      requests_total: 0,
     }
   }
   const items = filtered(query)

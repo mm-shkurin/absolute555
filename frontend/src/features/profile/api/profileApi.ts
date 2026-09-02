@@ -6,6 +6,7 @@ import {
   fetchProfile as fetchUser,
 } from '../../../shared/api/backend/accountApi'
 import { fetchMyListings } from '../../../shared/api/backend/saleCarApi'
+import { fetchMyRequests } from '../../../shared/api/backend/requestApi'
 import { toProfileWire } from '../logic/fromUser'
 
 export type SupplierApplicationStatus = 'none' | 'pending' | 'approved' | 'rejected'
@@ -36,14 +37,15 @@ export interface ProfileWire {
   import_requests: ImportRequestWire[]
 }
 
-/** Три запроса, а не один: сводки кабинета на сервере нет. Число объявлений считается по
+/** Четыре запроса, а не один: сводки кабинета на сервере нет. Число объявлений считается по
  *  собственной выдаче, а состояние заявки на роль — по своим заявкам. */
 export async function fetchProfile(signal?: AbortSignal): Promise<ProfileWire> {
-  const [user, cars, requests] = await Promise.all([
+  const [user, cars, requests, imports] = await Promise.all([
     fetchUser(signal),
     fetchMyListings(undefined, signal),
     fetchMyRoleRequests(signal),
+    fetchMyRequests(signal),
   ])
   const rejected = cars.filter((car) => car.status === 'rejected').length
-  return toProfileWire(user, { total: cars.length, rejected }, requests)
+  return toProfileWire(user, { total: cars.length, rejected }, requests, imports)
 }
