@@ -3,7 +3,6 @@ import enum
 class UserRole(str, enum.Enum):
     USER = "user"
     GUEST = "guest"
-    OWNER = "owner"
     ADMIN = "admin"
+    IMPORTER = "importer"
     MANAGER = "manager"
-    SERVICE_OWNER = "service_owner"

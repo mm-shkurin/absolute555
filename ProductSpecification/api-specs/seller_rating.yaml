@@ -1,0 +1,296 @@
+openapi: 3.0.3
+info:
+  title: Seller rating and public profile
+  version: 1.0.0
+  description: |
+    Рейтинг продавца по состоявшимся сделкам и публичная страница продавца.
+
+    Отзыв заводится по принятому офферу, а не по продавцу: оффер — единственное, что
+    отличает сделку от разговора, и он же даёт единственность — один оффер, один отзыв.
+    Ручки «оценить продавца X» нет намеренно.
+
+paths:
+  /api/v1/offer/{offer_id}/review:
+    post:
+      summary: Оставить отзыв по состоявшейся сделке
+      operationId: createReview
+      tags: [review]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Автор принятого оффера оценивает владельца объявления. Рейтинг односторонний:
+        продавец покупателя не оценивает.
+      parameters:
+        - name: offer_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewCreate' }
+      responses:
+        '201':
+          description: Отзыв записан, агрегат продавца пересчитан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: Гость не оставляет отзывов — у гостя нет сделок.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '404':
+          description: |
+            Оффер не найден или принадлежит другому. Ответ 403 подтвердил бы, что оффер
+            существует.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: |
+            Оффер не в статусе accepted, или отзыв по нему уже написан. Во втором случае
+            тело несёт review_id, чтобы экран перешёл к правке.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/review/{review_id}:
+    patch:
+      summary: Править свой отзыв
+      operationId: updateReview
+      tags: [review]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Окно правки — 24 часа с момента создания. Дальше отзыв застывает. Удаления нет:
+        удаляемый отзыв становится предметом торга с продавцом.
+      parameters:
+        - name: review_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewPatch' }
+      responses:
+        '200':
+          description: Отзыв изменён, агрегат пересчитан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: Отзыв не найден или написан другим.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: Окно правки в 24 часа закрыто.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/seller/{user_id}:
+    get:
+      summary: Публичный профиль продавца
+      operationId: getSellerProfile
+      tags: [seller]
+      description: |
+        Открыт гостю: рейтинг — часть решения о покупке, и пришедший из ленты упирался бы
+        в стену на самом нужном экране. Телефон здесь не отдаётся — он остаётся за
+        раскрытием в карточке.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Профиль продавца
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SellerProfile' }
+        '404':
+          description: Такого пользователя нет.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/seller/{user_id}/reviews:
+    get:
+      summary: Лента отзывов о продавце
+      operationId: listSellerReviews
+      tags: [seller]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200':
+          description: Страница отзывов, новые первыми
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ReviewPage' }
+        '404':
+          description: Такого пользователя нет.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/seller/{user_id}/listings:
+    get:
+      summary: Опубликованные объявления продавца
+      operationId: listSellerListings
+      tags: [seller]
+      description: |
+        Только опубликованные: черновики и отклонённые — дело владельца, а не читателя
+        профиля.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 50, default: 20 }
+      responses:
+        '200':
+          description: Страница объявлений
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SellerListingPage' }
+        '404':
+          description: Такого пользователя нет.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  schemas:
+    ReviewCreate:
+      type: object
+      required: [rating]
+      properties:
+        rating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        text:
+          type: string
+          maxLength: 2000
+          nullable: true
+
+    ReviewPatch:
+      type: object
+      description: Поле, которого нет в теле, остаётся прежним.
+      properties:
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        text: { type: string, maxLength: 2000, nullable: true }
+
+    ReviewAuthor:
+      type: object
+      required: [user_id]
+      properties:
+        user_id: { type: string, format: uuid }
+        name: { type: string, nullable: true }
+        avatar_url: { type: string, nullable: true }
+
+    Review:
+      type: object
+      required: [review_id, offer_id, seller_id, rating, created_at]
+      properties:
+        review_id: { type: string, format: uuid }
+        offer_id: { type: string, format: uuid }
+        sale_car_id: { type: string, format: uuid, nullable: true }
+        seller_id: { type: string, format: uuid }
+        author: { $ref: '#/components/schemas/ReviewAuthor' }
+        rating: { type: integer, minimum: 1, maximum: 5 }
+        text: { type: string, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time, nullable: true }
+        editable_until:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            До какого момента автор может править. Отдаётся, чтобы экран гасил кнопку
+            сам, а не узнавал о закрытом окне из ответа 409.
+
+    ReviewPage:
+      type: object
+      required: [items, total, page, size]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Review' }
+        total: { type: integer }
+        page: { type: integer }
+        size: { type: integer }
+
+    SellerListingPage:
+      type: object
+      description: Та же карточка, что и в ленте — профиль не заводит своей формы объявления.
+      required: [items, total, page, size]
+      properties:
+        items:
+          type: array
+          items: { $ref: 'sale_car_feed.yaml#/components/schemas/FeedCard' }
+        total: { type: integer }
+        page: { type: integer }
+        size: { type: integer }
+
+    SellerRating:
+      type: object
+      description: |
+        Агрегат продавца. Приезжает в блоке seller карточки объявления и строки очереди
+        модерации — новых вызовов ради трёх чисел не заводится.
+      required: [reviews_count, deals_count]
+      properties:
+        rating:
+          type: number
+          format: float
+          nullable: true
+          minimum: 1
+          maximum: 5
+          description: |
+            Средняя оценка, округлённая до одного знака. null у продавца без отзывов:
+            ноль читался бы как «оценили на ноль».
+        reviews_count: { type: integer, minimum: 0 }
+        deals_count:
+          type: integer
+          minimum: 0
+          description: Число принятых офферов по объявлениям продавца, не число отзывов.
+
+    SellerProfile:
+      type: object
+      required: [user_id, rating, reviews_count, deals_count]
+      properties:
+        user_id: { type: string, format: uuid }
+        name: { type: string, nullable: true }
+        avatar_url: { type: string, nullable: true }
+        rating: { type: number, format: float, nullable: true }
+        reviews_count: { type: integer, minimum: 0 }
+        deals_count: { type: integer, minimum: 0 }
+        listings_count:
+          type: integer
+          minimum: 0
+          description: Сколько объявлений продавца опубликовано сейчас.
+        member_since: { type: string, format: date-time, nullable: true }

@@ -1,0 +1,222 @@
+openapi: 3.0.3
+info:
+  title: Sale car draft
+  version: 1.0.0
+
+paths:
+  /api/v1/sale_car:
+    post:
+      summary: Создать пустой черновик объявления
+      operationId: createSaleCarDraft
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '201':
+          description: Черновик создан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SaleCar' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '409':
+          description: Достигнут лимит черновиков
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DraftLimitError' }
+
+  /api/v1/sale_car/{sale_car_id}:
+    parameters:
+      - name: sale_car_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    patch:
+      summary: Сохранить любое подмножество полей объявления
+      operationId: patchSaleCar
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SaleCarPatch' }
+      responses:
+        '200':
+          description: Сохранено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SaleCar' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409':
+          description: Объявление заморожено — правка допустима в draft и rejected
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/TransitionError' }
+    get:
+      summary: Одно объявление
+      operationId: getSaleCar
+      tags: [sale_car]
+      responses:
+        '200':
+          description: Объявление
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SaleCar' }
+        '404':
+          description: |
+            Не найдено. Тот же ответ отдаётся на чужое объявление в статусе draft,
+            moderation или rejected — 403 подтвердил бы, что оно существует.
+
+  /api/v1/sale_car/user:
+    get:
+      summary: Свои объявления
+      operationId: listMySaleCars
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          required: false
+          schema: { $ref: '#/components/schemas/SaleCarStatus' }
+      responses:
+        '200':
+          description: Список
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SaleCar' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  responses:
+    Unauthorized:
+      description: Требуется аутентификация
+    NotFound:
+      description: Объявление не найдено
+
+  schemas:
+    SaleCarStatus:
+      type: string
+      enum: [draft, moderation, published, rejected, withdrawn, sold]
+
+    SaleCarPatch:
+      type: object
+      description: Все поля необязательны. Поле status здесь не принимается.
+      properties:
+        vin: { type: string, nullable: true }
+        phone_number: { type: string, nullable: true }
+        price: { type: number, nullable: true }
+        milleage: { type: number, nullable: true }
+        # Сырые написания с документа: продавец правит их так же, как остальное.
+        mark_raw: { type: string, nullable: true }
+        model_raw: { type: string, nullable: true }
+        year: { type: integer, nullable: true }
+        transmission: { type: string, nullable: true }
+        engine_power: { type: integer, nullable: true }
+        description: { type: string, nullable: true }
+        brand_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: |
+            Выбор из справочника. Проставленный здесь ключ объявляется выбором
+            продавца: распознавание его больше не перетирает, а предложение
+            модератору по этому написанию закрывается (история 6).
+        model_id: { type: string, format: uuid, nullable: true }
+
+    SaleCar:
+      type: object
+      required: [sale_car_id, user_id, status, created_at, updated_at]
+      properties:
+        sale_car_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        status: { $ref: '#/components/schemas/SaleCarStatus' }
+        vin: { type: string, nullable: true }
+        brand: { type: string, nullable: true }
+        model: { type: string, nullable: true }
+        mark_raw: { type: string, nullable: true }
+        model_raw: { type: string, nullable: true }
+        year: { type: integer, nullable: true }
+        transmission: { type: string, nullable: true }
+        engine_power: { type: integer, nullable: true }
+        price: { type: number, nullable: true }
+        milleage: { type: number, nullable: true }
+        phone_number:
+          type: string
+          nullable: true
+          description: |
+            Только владельцу и модератору. Всем остальным null, пока они не спросят
+            телефон явно — POST /sale_car/{id}/reveal-phone (история 8).
+        seller:
+          allOf: [{ $ref: 'sale_car_feed.yaml#/components/schemas/Seller' }]
+          nullable: true
+          description: |
+            Кто продаёт: имя и аватар. Рейтинг и число сделок приезжают с историей 12.
+        description: { type: string, nullable: true }
+        task_id:
+          type: string
+          nullable: true
+          description: Задача чтения СТС, поставленная в очередь при загрузке снимка.
+        task_status:
+          type: string
+          nullable: true
+          description: |
+            Словарь очереди, а не то, что показывают продавцу: для экрана есть
+            autofill.state (история 6).
+        preview_photo_url:
+          type: string
+          nullable: true
+          description: Обложка — превью первой фотографии галереи.
+        photos:
+          type: array
+          description: |
+            В порядке показа, первый — обложка. Заменяет прежний photo_urls, который
+            порядка не выражал (история 5).
+          items: { $ref: 'sale_car_photos.yaml#/components/schemas/Photo' }
+        reject_reason:
+          type: string
+          nullable: true
+          description: Текст модератора. Заполнен только в статусе rejected
+        reject_label:
+          allOf: [{ $ref: 'moderation.yaml#/components/schemas/RejectionLabel' }]
+          nullable: true
+          description: |
+            За что вернули, из пяти ярлыков. Обязателен при отклонении, в отличие от
+            текста (история 9).
+        autofill:
+          allOf: [{ $ref: 'sale_car_sts.yaml#/components/schemas/Autofill' }]
+          description: |
+            Исход распознавания СТС и источник марки и модели. Повторяет то, что
+            приезжает по SSE, чтобы перезагрузка страницы не теряла исход.
+        published_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time }
+
+    DraftLimitError:
+      allOf:
+        - $ref: 'errors.yaml#/components/schemas/Error'
+        - type: object
+          properties:
+            code: { type: string, enum: [DRAFT_LIMIT_REACHED] }
+            details:
+              type: object
+              properties:
+                limit: { type: integer, example: 5 }
+
+    TransitionError:
+      allOf:
+        - $ref: 'errors.yaml#/components/schemas/Error'
+        - type: object
+          properties:
+            code: { type: string, enum: [TRANSITION_NOT_ALLOWED, LISTING_FROZEN] }
+            details:
+              type: object
+              properties:
+                current_status: { $ref: '#/components/schemas/SaleCarStatus' }
+                allowed:
+                  type: array
+                  items: { $ref: '#/components/schemas/SaleCarStatus' }

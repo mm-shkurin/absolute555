@@ -1,0 +1,49 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 11px 0;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: none;
+  text-align: left;
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.row:hover b {
+  color: var(--text-accent);
+}
+
+.row.selected {
+  background: var(--bg-selected);
+  border-radius: var(--radius-control);
+  padding-left: 8px;
+  padding-right: 8px;
+}
+
+.swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  flex: none;
+}
+
+.row b {
+  flex: 1;
+  font-weight: 700;
+  font-size: 14.5px;
+}
+
+.value {
+  font-family: var(--font-mono);
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.unmeasured {
+  color: var(--text-muted);
+}

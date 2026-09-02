@@ -79,3 +79,8 @@ desktop.ini
 probe-err.txt
 backend-build.log
 _project_audit/
+
+# VK OAuth. The flow needs a VK business account this project does not have, so it
+# cannot be run or tested here; kept out of the repository rather than half-wired.
+backend/app/api/auth_vk.py
+backend/app/utils/vk_auth.py

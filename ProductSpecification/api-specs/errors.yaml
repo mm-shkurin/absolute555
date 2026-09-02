@@ -1,0 +1,68 @@
+openapi: 3.0.3
+info:
+  title: Error envelope
+  version: 1.0.0
+  description: |
+    Каждый отказ этого API приходит в одной оболочке. Клиент ветвится по `code`;
+    `message` — для человека, `details` несёт поля, которые знает конкретный отказ.
+
+    Раньше форма зависела от источника: FastAPI отдавал `{"detail": ...}`, где-то
+    `detail` был строкой, где-то словарём. Клиенту приходилось разбирать прозу.
+
+components:
+  schemas:
+    Error:
+      type: object
+      required: [error, message, code, details]
+      properties:
+        error:
+          type: boolean
+          enum: [true]
+        message:
+          type: string
+          description: Человекочитаемое описание. Не для ветвления.
+        code:
+          type: string
+          description: Машинный код отказа. Единственное, на чём строится логика клиента.
+        details:
+          type: object
+          description: Поля конкретного отказа. Пустой объект, если их нет.
+
+    ValidationErrorDetails:
+      type: object
+      properties:
+        errors:
+          type: array
+          items:
+            type: object
+            required: [field, message, type]
+            properties:
+              field: { type: string }
+              message: { type: string }
+              type: { type: string }
+
+  responses:
+    Error:
+      description: Отказ
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/Error' }
+
+# Коды, которые возвращает API. Список закрытый: новый код добавляется сюда вместе с
+# кодом, который его порождает.
+#
+# 401 UNAUTHENTICATED, CREDENTIALS_INVALID, TOKEN_EXPIRED, TOKEN_INVALID,
+#     TOKEN_WRONG_TYPE, OAUTH_STATE_INVALID, OAUTH_USERINFO_INVALID, DOCS_KEY_INVALID,
+#     YANDEX_AUTH_FAILED
+# 403 PERMISSION_DENIED, ROLE_UNKNOWN, NOT_LISTING_OWNER, NOT_CAR_OWNER,
+#     NOT_OFFER_AUTHOR, NOT_OFFER_PARTY, GUEST_FORBIDDEN, GUEST_LIMIT_REACHED
+# 404 NOT_FOUND, LISTING_NOT_FOUND, OFFER_NOT_FOUND, USER_NOT_FOUND,
+#     ROLE_REQUEST_NOT_FOUND, BRAND_NOT_FOUND
+# 409 CONFLICT, TRANSITION_NOT_ALLOWED, LISTING_FROZEN, DRAFT_LIMIT_REACHED,
+#     BUSINESS_RULE_VIOLATED, OFFER_ON_OWN_CAR, DUPLICATE_PENDING_OFFER,
+#     OFFER_ALREADY_SETTLED, ROLE_REQUEST_REFUSED, OFFER_REFUSED
+# 422 VALIDATION_ERROR, LISTING_INCOMPLETE, REJECTION_NEEDS_REASON, PHOTO_NOT_READABLE,
+#     EMPTY_PATCH, MALFORMED_IDENTIFIER, DEVICE_ID_REQUIRED, OAUTH_CALLBACK_INCOMPLETE
+# 502 EXTERNAL_SERVICE_ERROR, VK_API_ERROR, VK_TOKEN_INVALID, VK_USERINFO_FAILED,
+#     VK_LOGIN_FAILED, GUEST_CREATE_FAILED, GUEST_LOGIN_FAILED
+# 500 INTERNAL_ERROR

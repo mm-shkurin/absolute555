@@ -1,0 +1,39 @@
+# Правила репозитория и контракт API. Быстрый прогон без зависимостей: только чтение
+# исходников, минута целиком.
+name: rules
+
+# Только dev и main: на ветку в работе прогон не нужен — там код меняется каждые
+# несколько минут, и красный он ровно столько же. Проверка стоит на входе в общие ветки.
+on:
+  push:
+    branches: [dev, main]
+  workflow_dispatch:
+
+concurrency:
+  group: rules-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  gates:
+    name: правила и контракт
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - run: pip install pyyaml
+
+      # Лимит длины файла и направление зависимостей. Правила читаются из того же
+      # config.json, что и человеком, а известные нарушения — из baseline: гейт ловит
+      # новые, а не заставляет чинить накопленное одним заходом.
+      - name: Правила репозитория
+        run: python scripts/check_repo_rules.py
+
+      # Что зовёт фронтенд против того, что описано в ProductSpecification/api-specs.
+      # Главный риск проекта прямо сейчас: две стороны расходятся молча.
+      - name: Контракт API
+        run: python scripts/check_api_contract.py

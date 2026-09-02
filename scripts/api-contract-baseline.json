@@ -1,0 +1,10 @@
+{
+  "not_in_contract": [
+    "/api/v1/import-requests/{}",
+    "/api/v1/import-requests/{}/responses",
+    "/api/v1/listings",
+    "/api/v1/listings/{}/thickness",
+    "/api/v1/suppliers/{}",
+    "/api/v1/users/{}/reviews"
+  ]
+}

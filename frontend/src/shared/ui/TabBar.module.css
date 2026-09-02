@@ -1,0 +1,82 @@
+/* Нижняя панель — только телефон. На планшете её нет: там помещается обычная шапка, а
+   панель внизу съела бы строку контента ради навигации, до которой рукой и так достать. */
+.bar {
+  display: none;
+  position: sticky;
+  bottom: 0;
+  z-index: 30;
+  grid-template-columns: repeat(5, 1fr);
+  align-items: end;
+  /* Нижний отступ больше верхнего: под панелью живёт домашняя черта iPhone и жест «назад»
+     Android, и кнопка вплотную к краю нажимается через раз. */
+  padding: 8px 6px calc(22px + env(safe-area-inset-bottom, 0px));
+  background: color-mix(in srgb, var(--bg-header) 92%, transparent);
+  backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.tab {
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+  padding: 4px 0;
+  position: relative;
+  color: var(--text-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.tab[aria-current='page'] {
+  color: var(--text-accent);
+}
+
+.tab svg {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* «Продать» выделено заливкой: это единственное действие панели, остальное — переходы. */
+.sell {
+  margin: 0 4px;
+  padding: 9px 0 7px;
+  border-radius: 16px;
+  background: var(--accent);
+  color: var(--text-inverse);
+}
+
+.sell[aria-current='page'] {
+  color: var(--text-inverse);
+}
+
+.sell svg {
+  stroke-width: 2.2;
+}
+
+.dot {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(6px, -2px);
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-pill);
+  background: var(--status-bad);
+  color: var(--neutral-000);
+  font-size: 10px;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+@media (max-width: 767px) {
+  .bar {
+    display: grid;
+  }
+}

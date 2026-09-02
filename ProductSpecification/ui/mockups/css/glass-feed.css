@@ -1,0 +1,47 @@
+/* Секция «сейчас в продаже»: восемь карточек 4×2 — та же сетка, что в герое, поэтому
+   лента читается как продолжение разобранного объявления, а не как новый блок. */
+.feedHead{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap;margin-bottom:26px}
+.feedHead .grow{flex:1}
+.feedHead h2{margin-bottom:6px}
+.feedHead .sub{margin:0}
+
+.feed{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.card{border-radius:18px;overflow:hidden;display:flex;flex-direction:column;cursor:pointer}
+.card:hover{box-shadow:0 30px 60px -26px rgba(13,20,31,.45),0 0 0 1px var(--brand)}
+.card .shot{aspect-ratio:4/3;position:relative;display:grid;place-items:center;
+  color:var(--mut);font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.06em;
+  background:
+    repeating-linear-gradient(45deg,rgba(120,132,154,.10) 0 8px,transparent 8px 16px),
+    linear-gradient(160deg,var(--soft),transparent)}
+.card .tag{position:absolute;left:10px;top:10px;padding:4px 9px;border-radius:7px;
+  background:var(--ok);color:#fff;font-family:'Golos Text',sans-serif;font-size:11px;
+  font-weight:600;letter-spacing:0}
+.card .tag.imp{background:var(--brand)}
+.card .body{padding:14px 16px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.card .name{font-size:15.5px;font-weight:600;letter-spacing:-.015em}
+.card .price{font-size:19px;font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.card .meta{font-family:'JetBrains Mono',monospace;font-size:10.5px;color:var(--mut);
+  letter-spacing:.04em;text-transform:uppercase}
+/* Полоска замеров — та же шкала, что в карточке объявления и в героe. */
+.card .bar{display:flex;gap:2px;margin-top:auto;padding-top:10px}
+.card .bar i{flex:1;height:5px;border-radius:2px;background:var(--none);display:block}
+.card .bar i.ok{background:var(--ok)}
+.card .bar i.warn{background:var(--warn)}
+.card .bar i.bad{background:var(--bad)}
+.card .bar.none i{background:var(--none);opacity:.6}
+
+@container (max-width:1000px){.feed{grid-template-columns:repeat(2,1fr)}}
+@container (max-width:560px){
+  .feed{grid-template-columns:repeat(2,1fr);gap:10px}
+  .feedHead{margin-bottom:18px}
+  .feedHead .btn{width:100%;order:3}
+  .card{border-radius:15px}
+  .card .body{padding:10px 12px 12px;gap:4px}
+  .card .name{font-size:13.5px}
+  .card .price{font-size:16px}
+  .card .meta{font-size:9.5px}
+  .card .tag{font-size:10px;padding:3px 7px;left:8px;top:8px}
+  /* Подъём при наведении на телефоне не нужен — там нет курсора, а :hover липнет
+     после тапа и карточка остаётся увеличенной. */
+  .lift:hover{transform:none}
+}

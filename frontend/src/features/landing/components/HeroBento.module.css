@@ -1,0 +1,192 @@
+.bento {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: 184px;
+  gap: 14px;
+}
+
+.tile {
+  composes: glass from '../glass.module.css';
+  composes: lift from '../glass.module.css';
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+}
+
+.title {
+  margin-top: auto;
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.note {
+  margin-top: 6px;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--text-secondary);
+}
+
+.main {
+  grid-column: span 2;
+  grid-row: span 2;
+  padding: 0;
+  position: relative;
+}
+
+.shot {
+  flex: 1;
+  border: 0;
+  border-radius: 0;
+}
+
+.meta {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 18px 20px;
+}
+
+.meta .title {
+  margin: 0;
+  font-size: 20px;
+}
+
+.price {
+  margin-left: auto;
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+}
+
+.badge {
+  position: absolute;
+  left: 16px;
+  top: 16px;
+  z-index: 1;
+  padding: 6px 12px;
+  border-radius: var(--radius-chip);
+  background: var(--measure-ok);
+  color: var(--text-inverse);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.value {
+  margin-top: auto;
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--measure-ok);
+}
+
+/* Полоска панелей — та же шкала, что на карте замеров и в ленте. */
+.bar {
+  display: flex;
+  gap: 3px;
+  margin-top: 12px;
+}
+
+.bar i {
+  flex: 1;
+  height: 7px;
+  display: block;
+  border-radius: 2px;
+}
+
+.ok {
+  background: var(--measure-ok);
+}
+.warn {
+  background: var(--measure-warn);
+}
+.bad {
+  background: var(--measure-bad);
+}
+.none {
+  background: var(--measure-none);
+}
+
+.vin {
+  margin-top: auto;
+  font-family: var(--font-mono);
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: var(--text-accent);
+  word-break: break-all;
+}
+
+.masked {
+  color: var(--text-muted);
+  letter-spacing: 0.14em;
+}
+
+.stars {
+  margin-top: auto;
+  font-size: 22px;
+  letter-spacing: 2px;
+  color: var(--measure-warn);
+}
+
+@media (max-width: 1023px) {
+  .bento {
+    grid-template-columns: repeat(2, 1fr);
+    grid-auto-rows: 160px;
+  }
+  .main {
+    grid-column: span 2;
+  }
+}
+
+@media (max-width: 599px) {
+  .bento {
+    grid-auto-rows: 142px;
+    gap: 10px;
+  }
+  .tile {
+    padding: 14px;
+    border-radius: 15px;
+  }
+  .title {
+    font-size: 15px;
+  }
+  .note {
+    font-size: 12.5px;
+  }
+  .meta {
+    padding: 14px;
+  }
+  .meta .title {
+    font-size: 17px;
+  }
+  .price {
+    margin-left: 0;
+    width: 100%;
+    font-size: 22px;
+  }
+  .value {
+    font-size: 26px;
+  }
+  .vin {
+    font-size: 13px;
+  }
+  .stars {
+    font-size: 18px;
+  }
+}

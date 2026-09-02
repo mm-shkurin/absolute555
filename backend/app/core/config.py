@@ -81,21 +81,41 @@ class YandexSettings(BaseSettings):
     yandex_redirect_uri_web: HttpUrl = Field(..., alias="YANDEX_REDIRECT_URI_WEB")
     model_config = BaseConfig.model_config
 
-class VKSettings(BaseSettings):
-    vk_oauth_url: HttpUrl = Field(
-        default="https://id.vk.com/oauth2/auth", alias="VK_OAUTH_URL"
+class OAuthSettings(BaseSettings):
+    """The sign-in handshake, apart from the provider's own credentials.
+
+    `oauth_provider` is `fake` in tests: the flow's own rules -- a state good once, a
+    handoff code good once, an account created on first sign-in -- are the subject, and
+    they cannot be exercised against a provider that requires a browser and a human.
+    """
+
+    oauth_provider: str = Field(default="yandex", alias="OAUTH_PROVIDER")
+    oauth_frontend_callback_url: str = Field(
+        default="http://localhost:3000/auth/callback", alias="OAUTH_FRONTEND_CALLBACK_URL"
     )
-    vk_api_url: HttpUrl = Field(
-        default="https://api.vk.com/method/users.get", alias="VK_API_URL"
-    )
-    vk_auth_url: HttpUrl = Field(
-        default="https://id.vk.com/auth", alias="VK_AUTH_URL"
-    )
-    vk_client_id: str = Field(..., min_length=1, alias="VK_CLIENT_ID")
-    vk_client_secret: str = Field(..., min_length=1, alias="VK_CLIENT_SECRET")
-    vk_redirect_uri: HttpUrl = Field(..., alias="VK_REDIRECT_URI")
+    # Minutes, not hours: a state is alive only while a person is on the provider's
+    # consent screen, and a handoff code only while the browser is being redirected back.
+    oauth_state_ttl_seconds: int = Field(default=600, alias="OAUTH_STATE_TTL_SECONDS")
+    oauth_handoff_ttl_seconds: int = Field(default=120, alias="OAUTH_HANDOFF_TTL_SECONDS")
 
     model_config = BaseConfig.model_config
+
+
+# VKSettings lived here. VK OAuth left the repository with its router: the flow needs a
+# VK business account this project does not have, so the settings only demanded secrets
+# for a provider nothing could call.
+class OfferSettings(BaseSettings):
+    """How long a price offer stands.
+
+    Three days is a hypothesis about how fast people answer, not a fact about selling
+    cars, so it is a setting: it will be moved by watching what sellers actually do.
+    """
+
+    offer_life_hours: int = Field(default=72, alias="OFFER_LIFE_HOURS")
+
+    model_config = BaseConfig.model_config
+
+
 class FrontendSettings(BaseSettings):
     frontend_url: HttpUrl = Field(..., alias="FRONTEND_URL")
     
@@ -130,7 +150,24 @@ class MinioSettings(BaseSettings):
     minio_port: int = Field(..., ge=1, le=65535, alias="MINIO_PORT")
     minio_endpoint_url: str = Field(..., alias="MINIO_ENDPOINT_URL")
     minio_bucket_name: str = Field(..., min_length=1, alias="MINIO_BUCKET_NAME")
-    
+
+    # Two stores, not one bucket with a policy per prefix. A typo in a prefix exposes a
+    # registration document silently; the wrong bucket is visible at once.
+    minio_documents_bucket: str = Field("absolute-documents", alias="MINIO_DOCUMENTS_BUCKET")
+
+    # Where a browser reaches the gallery. Hardcoded in s3_service until story 5.
+    public_photo_base_url: str = Field(..., alias="PUBLIC_PHOTO_BASE_URL")
+
+    model_config = BaseConfig.model_config
+
+
+class PhotoSettings(BaseSettings):
+    max_photos_per_listing: int = Field(15, alias="MAX_PHOTOS_PER_LISTING")
+    max_photo_bytes: int = Field(10 * 1024 * 1024, alias="MAX_PHOTO_BYTES")
+    min_photos_to_submit: int = Field(3, alias="MIN_PHOTOS_TO_SUBMIT")
+    preview_max_edge: int = Field(800, alias="PREVIEW_MAX_EDGE")
+    document_link_ttl_seconds: int = Field(300, alias="DOCUMENT_LINK_TTL_SECONDS")
+
     model_config = BaseConfig.model_config
 
 class OllamaSettings(BaseSettings):
@@ -145,13 +182,6 @@ class GigaChatSettings(BaseSettings):
     giga_scope: str = Field(default="GIGACHAT_API_PERS", alias="GIGA_SCOPE")
     giga_oauth_url: HttpUrl = Field(..., alias="GIGA_OAUTH_URL")
     giga_api_url: HttpUrl = Field(..., alias="GIGA_API_URL")
-    
-    model_config = BaseConfig.model_config
-
-class ChromaSettings(BaseSettings):
-    chroma_network_name: str = Field(..., alias="CHROMA_NETWORK_NAME")
-    chroma_port: int = Field(..., ge=1, le=65535, alias="CHROMA_PORT")
-    chroma_collection_name: str = Field(..., alias="CHROMA_COLLECTION_NAME")
     
     model_config = BaseConfig.model_config
 

@@ -1,0 +1,45 @@
+# Аудит зависимостей — по расписанию, а не на каждый пуш.
+#
+# Расписание намеренно: уязвимость находят в чужой библиотеке в произвольный день, и
+# привязка проверки к пушу означает красную ветку у того, кто просто поправил кнопку.
+# Раз в неделю отдельным прогоном — это сигнал, а не помеха работе.
+name: audit
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+
+jobs:
+  python:
+    name: зависимости бэкенда
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: pip install pip-audit
+      # Читаем requirements, а не установленное окружение: список пинов и есть то, что
+      # поедет в образ.
+      - run: pip-audit --strict --requirement backend/requirements.txt
+
+  node:
+    name: зависимости фронтенда
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm ci
+      # `high` — порог, ниже которого шум перевешивает пользу: в дереве сборочных
+      # зависимостей всегда висит десяток «moderate», которые не исполняются в проде.
+      - run: npm audit --audit-level=high

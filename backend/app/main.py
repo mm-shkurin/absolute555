@@ -6,8 +6,9 @@ import uvicorn
 from app.core.config import AppSettings
 from app.core.config import CORSSettings
 from loguru import logger
-from app.api.auth import auth_router
-from app.api.docs import docs_router
+from app.api import api_router
+from app.core.exceptions import register_exception_handlers
+from app.docs import docs_router
 
 sys.path.append('/app')
 
@@ -61,13 +62,26 @@ def create_app():
     except Exception:
         pass
     
+    # Every failure leaves through one envelope -- error/message/code/details -- so a
+    # client branches on a code instead of parsing prose. Registered before the routers
+    # so nothing can answer in the old shape.
+    register_exception_handlers(app)
+
     @app.get("/")
     def read_root():
         return {"message": "Welcome to API Absolute"}
     @app.get("/health")
     async def health_check():
         return {"status": "ok"}
-    app.include_router(auth_router, prefix="/auth")
+    # Every domain router — auth, user, photos, role, task, sale_car, offer — hangs off
+    # api_router, which until story 2 was built and never mounted: the app served /health,
+    # / and the docs, and nothing else. auth used to be included separately at /auth as
+    # well, so mounting api_router as-is would have registered every auth route twice.
+    #
+    # /api/v1 is the prefix ProductSpecification/technology.md declares, and the one the
+    # frontend nginx already proxies. OAuth redirect URIs move with it — the addresses
+    # registered with Yandex and VK must match infra/.env.
+    app.include_router(api_router, prefix="/api/v1")
     app.include_router(docs_router)
     
     return app

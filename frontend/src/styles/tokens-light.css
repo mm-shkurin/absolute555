@@ -1,0 +1,111 @@
+/* СЕМАНТИЧЕСКИЕ токены, светлая тема — значения по умолчанию, на голом `:root`.
+ *
+ * Каждый токен продукта рождается ЗДЕСЬ и только переопределяется в `tokens-dark.css`.
+ * Токен, существующий лишь внутри `[data-theme='dark']`, — дыра: в светлой теме он
+ * разрешается в ничто, свойство падает в initial (чёрный текст, прозрачный фон), и это
+ * читается как баг рендера, а не как забытый токен.
+ *
+ * Значения перенесены из `ProductSpecification/ui/ui-conventions.md`, а тот собран из
+ * мокапов `ui/mockups/index.html`. Расхождение между этими тремя местами — ошибка;
+ * первоисточник тут.
+ */
+:root {
+  /* Поверхности. Светлый продукт — холодная страница с белыми панелями на ней. */
+  --bg-page: var(--neutral-050);
+  --bg-surface: var(--neutral-000);
+  --bg-header: var(--neutral-000);
+  --bg-card: var(--neutral-000);
+  /* Утопленная заливка внутри поверхности: колодец под фото, шапка таблицы, плейсхолдер. */
+  --bg-sunken: var(--neutral-050);
+  /* Выбранное состояние: активный чип фильтра, выбранная панель кузова, подсказка. */
+  --bg-selected: var(--blue-050);
+  /* Тёмная плашка призыва к действию. Остаётся тёмной в обеих темах, поэтому текст на ней —
+     `--text-inverse`, и эта пара не переворачивается. */
+  --bg-inverse: var(--neutral-950);
+
+  /* Границы. Теней в продукте нет: поверхности разделяются линией, фоном и пустотой. */
+  --border-subtle: var(--neutral-200);
+  --border-strong: var(--neutral-400);
+  --border-accent: var(--blue-500);
+
+  /* Текст. */
+  --text-primary: var(--neutral-950);
+  --text-secondary: var(--neutral-700);
+  --text-muted: var(--neutral-500);
+  --text-accent: var(--blue-500);
+  /* Намеренно НЕ переворачивается в тёмной: каждое применение — текст на том, что тёмное
+     или насыщенное в обеих темах (залитая кнопка, плашка CTA). «Инверсный» здесь значит
+     «против фона элемента», а не «против страницы». */
+  --text-inverse: var(--neutral-000);
+
+  /* Акцент. Один на весь продукт. */
+  --accent: var(--blue-500);
+  --accent-hover: var(--blue-700);
+  --accent-soft: var(--blue-050);
+
+  /* Шкала замеров толщиномера — единственное место, где появляется второй цвет.
+     Пороги в микронах записаны здесь же: число и цвет должны меняться вместе, а
+     константа в JS и цвет в CSS расходятся при первой же правке. */
+  --measure-ok: var(--green-500);
+  --measure-ok-soft: var(--green-050);
+  --measure-warn: var(--amber-500);
+  --measure-warn-soft: var(--amber-050);
+  --measure-bad: var(--red-500);
+  --measure-bad-soft: var(--red-050);
+  --measure-none: var(--slate-300);
+  --measure-ok-max: 150;
+  --measure-warn-max: 300;
+
+  /* Статусы объявления и оффера. Ссылаются на шкалу замеров, а не на палитру: зелёный
+     «опубликовано» и зелёный «заводская краска» — один и тот же зелёный по построению. */
+  --status-ok: var(--measure-ok);
+  --status-ok-soft: var(--measure-ok-soft);
+  --status-wait: var(--measure-warn);
+  --status-wait-soft: var(--measure-warn-soft);
+  --status-bad: var(--measure-bad);
+  --status-bad-soft: var(--measure-bad-soft);
+
+  /* Текст на мягкой подложке статуса. Сам --status-* слишком светел для букв: плашка
+     «на модерации» с жёлтым текстом на жёлтом фоне читается только вплотную. */
+  --status-ok-ink: #0b6e48;
+  --status-wait-ink: #7a4a08;
+  --status-bad-ink: #7a1e21;
+
+  /* Поле, заполненное распознаванием. Голубая подложка — единственный способ отличить
+     «это подставило приложение» от «это ввёл человек», а именно эти поля надо перечитать. */
+  --field-recognized-bg: #f7fbff;
+  --field-recognized-border: #bbd6ff;
+
+  /* Геометрия. Шаг сетки 4px. */
+  --radius-surface: 14px;
+  --radius-control: 10px;
+  --radius-chip: 7px;
+  --radius-thumb: 8px;
+  --radius-pill: 999px;
+
+  /* Типографика. Golos Text рисован под кириллицу, JetBrains Mono — служебный слой:
+     моноширинный означает «это данные или метка», а не украшение. */
+  --font-ui: 'Golos Text', -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Consolas, monospace;
+
+  /* Тач-цель. Ниже этого значения кнопка на телефоне промахивается мимо пальца. */
+  --tap-target: 44px;
+
+  /* Стеклянная поверхность лендинга. В продукте она не используется: граница между двумя
+     поверхностями и её обоснование записаны в `ProductSpecification/ui/ui-conventions.md`,
+     раздел «Две поверхности». */
+  --bg-glass-page: #e4efff;
+  --bg-glass: rgba(255, 255, 255, 0.55);
+  --border-glass: rgba(255, 255, 255, 0.75);
+  --border-glass-outer: rgba(13, 20, 31, 0.06);
+  --glass-blur: 24px;
+  --shadow-glass: 0 18px 48px -24px rgba(13, 20, 31, 0.35);
+  --shadow-glass-lifted: 0 30px 64px -28px rgba(13, 20, 31, 0.45);
+  /* Свечение под страницей и белая пелена, гасящая его к низу. */
+  --glow-brand: #1883ff;
+  --glow-opacity: 0.42;
+  --glass-veil: rgba(255, 255, 255, 0.62);
+  --glass-grid-line: rgba(0, 78, 224, 0.1);
+  --radius-glass: 20px;
+  --radius-glass-large: 28px;
+}

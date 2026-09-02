@@ -1,0 +1,89 @@
+openapi: 3.0.3
+info:
+  title: Sign-in through Yandex ID
+  version: 1.0.0
+  description: |
+    Authorization code with a server-side secret exchange. The browser never carries a
+    session token: the callback hands the frontend a one-time handoff code and the
+    frontend trades it for a token pair over POST.
+
+    A token delivered by redirect would sit in the browser's history and in the referer
+    of whatever the landing page loads next; a handoff code that is spent on first use
+    survives being read there.
+
+paths:
+  /api/v1/auth/oauth/yandex/start:
+    get:
+      summary: Начать вход через Yandex ID
+      operationId: startYandexSignIn
+      tags: [auth]
+      description: |
+        Редирект на страницу согласия Yandex. Сервер чеканит одноразовый state и требует
+        его обратно на колбэке — это то, что отличает возврат от провайдера от
+        подделанного колбэка, которым чужого человека вводят в чужой аккаунт.
+      responses:
+        '302':
+          description: Редирект на провайдера
+          headers:
+            Location:
+              schema: { type: string }
+
+  /api/v1/auth/oauth/yandex/callback:
+    get:
+      summary: Возврат от Yandex ID
+      operationId: finishYandexSignIn
+      tags: [auth]
+      description: |
+        Открывается браузером, поэтому отвечает редиректом и при отказе тоже: тело с
+        ошибкой здесь показалось бы человеку страницей.
+
+        На фронт приезжает либо `code` — одноразовый код входа, либо `error`:
+        `state_invalid` (подделан, повторно использован, чужого провайдера или истёк),
+        `code_missing`, `provider_failed`.
+      parameters:
+        - { name: code, in: query, schema: { type: string } }
+        - { name: state, in: query, schema: { type: string } }
+      responses:
+        '302':
+          description: Редирект на фронтовый /auth/callback
+          headers:
+            Location:
+              schema: { type: string }
+
+  /api/v1/auth/oauth/exchange:
+    post:
+      summary: Обменять одноразовый код входа на сессию
+      operationId: exchangeHandoffCode
+      tags: [auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code:
+                  type: string
+                  description: Код из колбэка. Действует один раз и живёт минуты.
+      responses:
+        '200':
+          description: Пара токенов
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Token' }
+        '401':
+          description: Код не выдавался, уже потрачен или истёк — три случая неразличимы.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+components:
+  schemas:
+    Token:
+      type: object
+      required: [access_token, refresh_token, token_type]
+      properties:
+        access_token: { type: string }
+        refresh_token: { type: string }
+        token_type: { type: string, enum: [bearer] }

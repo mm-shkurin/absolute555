@@ -1,5 +1,5 @@
 {
-  "_comment": "Project binding for /sprint-check in absolute555. The rule catalogue is generic; this file is the only place that knows THIS repo's layout. backend/ is a flat FastAPI app (app/api, app/services, app/models) - not the layered clean-architecture tree the skill was written against, so the layer-boundary forbidden_imports encode THIS project's actual rule instead: routers must not reach past the service layer into the ORM, and models must not import services.",
+  "_comment": "Project binding for /sprint-check in absolute555. The rule catalogue is generic; this file is the only place that knows THIS repo's layout. backend/ is feature-major: app/features/<area>/{api,services,models,schemas} plus shared infrastructure in app/shared, app/core, app/db. The layer-boundary forbidden_imports encode THIS project's actual rule instead: routers must not reach past the service layer into the ORM, and models must not import services. The globs match the layer inside every area, so a new area is covered the day it is created rather than the day somebody remembers to list it.",
   "layers": {
     "back": {
       "root": "backend",
@@ -30,23 +30,24 @@
         {
           "name": "routers go through services, not the ORM",
           "in": [
-            "backend/app/api"
+            "backend/app/features/*/api"
           ],
-          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.models\\b|sqlalchemy\\.(select|update|delete)"
+          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.(features\\.\\w+\\.)?models\\b|sqlalchemy\\.(select|update|delete)"
         },
         {
           "name": "models hold no service or API logic",
           "in": [
-            "backend/app/models"
+            "backend/app/features/*/models"
           ],
-          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.(services|api|tasks)\\b|\\bfastapi\\b"
+          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.((features\\.\\w+\\.)?(services|api)|tasks|shared)\\b|\\bfastapi\\b"
         },
         {
           "name": "services stay off transport detail",
           "in": [
-            "backend/app/services"
+            "backend/app/features/*/services",
+            "backend/app/shared"
           ],
-          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.api\\b|status_code=|HTTP_\\d"
+          "regex": "^\\s*(from|import)\\s+.*\\bapp\\.(features\\.\\w+\\.)?api\\b|status_code=|HTTP_\\d"
         }
       ],
       "release_ref": "origin/main",

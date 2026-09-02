@@ -1,0 +1,42 @@
+# The build context is the repo root (both images are built from infra/docker/*.Dockerfile
+# with context: ..), so without this file every build ships the whole tree to the daemon —
+# .git, the mockups, the other layer's source. That is slow, and on a synced folder it is
+# also unstable: OneDrive rewrites files under .git while the context is being transferred.
+
+.git
+.gitignore
+.claude
+.dockerignore
+
+ProductSpecification
+infra/.env
+infra/.env.*
+infra/swarm-report
+infra/agent-progress.log
+
+**/node_modules
+**/build
+**/dist
+**/.cache
+
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+**/.ruff_cache
+**/.coverage
+**/htmlcov
+
+**/.env
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+**/desktop.ini
+
+# Test suites are mounted in by `make test`, never baked into the runtime image.
+backend/tests
+backend/pytest.ini
+backend/requirements-dev.txt
+
+# Alembic ships a README that the image never reads.
+backend/alembic/README

@@ -1,0 +1,74 @@
+.row {
+  display: grid;
+  grid-template-columns: 76px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  padding: 12px;
+  margin-bottom: 10px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+}
+
+/* Закончившийся оффер приглушён: список читается сверху вниз, и решение требуется только
+   от ярких строк. */
+.faded {
+  opacity: 0.68;
+}
+
+.photo {
+  width: 76px;
+  height: 58px;
+  border-radius: 10px;
+  font-size: 10px;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 15.5px;
+}
+
+.meta {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 13.5px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.right {
+  text-align: right;
+}
+
+.amount {
+  font-weight: 800;
+  font-size: 18px;
+  font-variant-numeric: tabular-nums;
+}
+
+.badgeRow {
+  margin-top: 6px;
+}
+
+@media (max-width: 1023px) {
+  .row {
+    grid-template-columns: 60px 1fr;
+    gap: 10px;
+  }
+  .photo {
+    width: 60px;
+    height: 48px;
+  }
+  .right {
+    grid-column: 2;
+    text-align: left;
+  }
+  .actions {
+    grid-column: 1 / -1;
+  }
+}

@@ -1,17 +1,18 @@
 from datetime import datetime, timedelta
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, status
 from fastapi import Request
 from fastapi.security import APIKeyHeader
 import jwt
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from app.core.exceptions import AuthenticationError
 from app.core.config import JWTSettings
 from app.core.config import CookieSettings
 from app.db.database import get_db
-from app.models.users import Users
-from app.schemas.token import Token  
+from app.features.account.models.users import Users
+from app.features.auth.schemas.token import Token  
 
 auth_scheme = APIKeyHeader(name="Authorization", scheme_name="Bearer", auto_error=False)
 
@@ -46,9 +47,9 @@ async def verify_token(token:str, secret_key:str, algorithm:str):
         payload = jwt.decode(token, secret_key, algorithms=[algorithm])
         return payload
     except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token has expired")
+        raise AuthenticationError("Token has expired", code="TOKEN_EXPIRED")
     except jwt.InvalidTokenError:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Could not validate credentials")
+        raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
 async def refresh_access_token(refresh_token: str):
     try:
@@ -58,7 +59,7 @@ async def refresh_access_token(refresh_token: str):
             jwt_settings.algorithm
         )
         if refresh_token_payload.get("type") != "refresh":
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token type")
+            raise AuthenticationError("Invalid token type", code="TOKEN_WRONG_TYPE")
         access_token_payload = {
             "id": refresh_token_payload.get("id"),  
         }
@@ -66,16 +67,15 @@ async def refresh_access_token(refresh_token: str):
         new_access_token = await create_access_token(access_token_payload)
         return new_access_token
         
-    except HTTPException as e:
-        raise e
-    except Exception as e:
-        raise HTTPException(status_code=401, detail="Could not validate credentials")
+    except AuthenticationError:
+        raise
+    except Exception:
+        raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
 async def get_current_user(request: Request, token: str = Depends(auth_scheme), db: AsyncSession = Depends(get_db)):
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
+    credentials_exception = AuthenticationError(
+        "Could not validate credentials",
+        code="CREDENTIALS_INVALID",
     )
     
     if not token:
@@ -104,3 +104,18 @@ async def get_current_user(request: Request, token: str = Depends(auth_scheme), 
         raise credentials_exception
     
     return user
+
+
+async def get_current_user_or_none(
+    request: Request, token: str = Depends(auth_scheme), db: AsyncSession = Depends(get_db)
+):
+    """The caller, when there is one.
+
+    A public listing is readable by a guest, but the same path must recognise its owner:
+    an unpublished listing is visible to the person who wrote it and to nobody else. So
+    the token is read when present and its absence is not an error.
+    """
+    try:
+        return await get_current_user(request, token, db)
+    except AuthenticationError:
+        return None

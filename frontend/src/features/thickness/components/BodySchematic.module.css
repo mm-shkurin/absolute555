@@ -1,0 +1,91 @@
+.sheet {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-surface);
+  padding: 20px;
+}
+
+.sheet svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Панель — кнопка: по ней щёлкают, чтобы увидеть фото прибора. Обводка белым отделяет
+   соседние панели одного цвета, иначе крыло и дверь сливаются в одно пятно. */
+.zone {
+  cursor: pointer;
+  stroke: var(--bg-card);
+  stroke-width: 1.6;
+  opacity: 0.82;
+  transition:
+    stroke 0.12s,
+    stroke-width 0.12s;
+}
+
+.zone:hover {
+  stroke: var(--accent);
+  stroke-width: 3;
+}
+
+.zone.selected {
+  stroke: var(--accent);
+  stroke-width: 3.5;
+  opacity: 1;
+}
+
+.line {
+  fill: none;
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+  pointer-events: none;
+}
+
+.projectionLabel {
+  font-size: 11px;
+  font-weight: 700;
+  fill: var(--border-strong);
+  letter-spacing: 0.08em;
+  pointer-events: none;
+}
+
+.legend {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 13.5px;
+  color: var(--text-secondary);
+}
+
+.legend i {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+  margin-right: 6px;
+  vertical-align: -1px;
+}
+
+.legend s {
+  text-decoration: none;
+  color: var(--text-muted);
+  font-size: 12.5px;
+}
+
+/* Телефон: пять проекций в 390 точках превращаются в пятно. Схема остаётся своего размера
+   и прокручивается вбок — деталь важнее того, чтобы всё влезло в один экран. */
+@media (max-width: 767px) {
+  .sheet {
+    padding: 12px;
+    overflow-x: auto;
+  }
+  .sheet svg {
+    width: 720px;
+    max-width: none;
+  }
+}

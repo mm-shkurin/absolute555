@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0066ff" />
+    <meta
+      name="description"
+      content="Абсолют — авторынок Омска: объявление создаётся с фотографии СТС, а толщину краски на кузове видно на схеме."
+    />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <title>Абсолют — авторынок Омска</title>
+    <script>
+      // Тема ставится на <html> ДО первой отрисовки. В React-эффекте это было бы поздно:
+      // страница успела бы моргнуть светлым у того, кто выбрал тёмную, — и моргнула бы
+      // на каждой навигации с перезагрузкой.
+      //
+      // Свой выбор человека сильнее системного: атрибут ставится только когда выбор есть,
+      // иначе решает `prefers-color-scheme` в tokens-dark.css.
+      try {
+        var saved = localStorage.getItem('absolute.theme')
+        if (saved === 'dark' || saved === 'light') {
+          document.documentElement.setAttribute('data-theme', saved)
+        }
+      } catch (e) {
+        // Приватное окно или запрещённые данные сайта: остаёмся на системной теме.
+      }
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

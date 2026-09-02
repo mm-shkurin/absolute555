@@ -1,0 +1,177 @@
+/* Шапка липкая и полупрозрачная: в ленте под ней прокручиваются карточки, и сплошная
+   белая полоса отрезала бы их визуально от фильтров слева. */
+.header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  background: color-mix(in srgb, var(--bg-header) 90%, transparent);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.inner {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  height: 72px;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: none;
+  color: inherit;
+  text-decoration: none;
+}
+
+.logo img {
+  height: 26px;
+  display: block;
+}
+
+.logo b {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+/* 555 из названия ООО. Моноширинный, потому что это цифры-идентификатор, а не слово. */
+.numeral {
+  margin-left: 5px;
+  font-family: var(--font-mono);
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-accent);
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  margin-left: 12px;
+}
+
+.nav a {
+  padding: 9px 2px;
+  margin-right: 20px;
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-bottom: 2px solid transparent;
+}
+
+.nav a:hover {
+  color: var(--text-primary);
+}
+
+.nav a.current {
+  color: var(--text-primary);
+  font-weight: 600;
+  border-bottom-color: var(--accent);
+}
+
+.spacer {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.chats {
+  position: relative;
+  padding: 8px 10px;
+  border-radius: 10px;
+  color: var(--text-primary);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+/* Бейдж на шапке, а не только в нижней панели: панель — телефонная, и на широком экране
+   непрочитанные иначе не видны нигде. */
+.unread {
+  position: absolute;
+  top: 0;
+  right: 0;
+  min-width: 17px;
+  padding: 1px 4px;
+  border-radius: 9px;
+  background: var(--status-bad-ink);
+  color: var(--bg-card);
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--border-subtle);
+  flex: none;
+}
+
+@media (max-width: 1023px) {
+  .inner {
+    height: 58px;
+    gap: 12px;
+  }
+}
+
+/* Разделы уходят из шапки только на телефоне: там их дублирует нижняя панель, а место
+   в строке нужно кнопке «Разместить». На планшете ссылки помещаются и остаются. */
+@media (max-width: 767px) {
+  .nav {
+    display: none;
+  }
+}
+
+/* Плавающий вариант: сама шапка прозрачна, стеклом становится её содержимое. */
+.floating {
+  background: none;
+  backdrop-filter: none;
+  border-bottom: 0;
+  padding: 18px 0;
+}
+
+.floating .inner {
+  height: auto;
+  gap: 12px;
+  padding: 13px 13px 13px 24px;
+  border-radius: 16px;
+  background: var(--bg-glass);
+  border: 1px solid var(--border-glass);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  box-shadow:
+    var(--shadow-glass),
+    0 0 0 1px var(--border-glass-outer);
+}
+
+.floating .logo b {
+  font-size: 20px;
+}
+
+.floating .logo img {
+  height: 30px;
+}
+
+@media (max-width: 767px) {
+  .floating {
+    padding: 10px 0;
+  }
+  .floating .inner {
+    padding: 8px 8px 8px 14px;
+    gap: 10px;
+  }
+  .floating .logo b {
+    font-size: 16px;
+  }
+  .floating .logo img {
+    height: 22px;
+  }
+}

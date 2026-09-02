@@ -1,0 +1,205 @@
+openapi: 3.0.3
+info:
+  title: Price offers
+  version: 1.0.0
+  description: |
+    Торг по объявлению. Оффер живёт трое суток и истекает сам — иначе продавец видит
+    экран из предложений, на которые уже никто не рассчитывает.
+
+    Статусов шесть, потому что событий шесть. «Отозван вами», «истёк» и «машину
+    продали» — три разные вещи: первое сделал покупатель, второго не сделал никто,
+    третье сделал продавец с другим человеком.
+
+paths:
+  /api/v1/offer/:
+    post:
+      summary: Сделать предложение по цене
+      operationId: createOffer
+      tags: [offer]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Только по опубликованному объявлению и только от подтверждённого пользователя:
+        торг за то, чего нет в ленте, ни к чему не ведёт, а гость и чужие офферы уже не
+        видит.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/OfferCreate' }
+      responses:
+        '201':
+          description: Предложение отправлено
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Offer' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: Гость не торгуется.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '404':
+          description: Объявление не найдено или не опубликовано.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: |
+            Предложение по своему объявлению, или живое предложение по этому
+            объявлению уже есть.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/offer/my:
+    get:
+      summary: Свои предложения, стороной
+      operationId: listMyOffers
+      tags: [offer]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: side
+          in: query
+          description: |
+            `received` — предложения по моим объявлениям, `sent` — мои собственные.
+            Экран показывает два таба, и одна общая выдача заставила бы фронт делить её
+            по владельцу объявления, которого в ней нет.
+          schema:
+            type: string
+            enum: [received, sent]
+            default: sent
+      responses:
+        '200':
+          description: Предложения этой стороны, новые первыми
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Offer' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/offer/{offer_id}/status:
+    patch:
+      summary: Принять или отклонить предложение
+      operationId: settleOffer
+      tags: [offer]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Только владелец объявления. Принятие переводит объявление в `sold` и закрывает
+        остальные живые предложения по нему как `car_sold` — одной транзакцией: разорванная
+        надвое, она оставляет либо проданную машину с висящими предложениями, либо
+        закрытые предложения при непроданной машине.
+      parameters:
+        - { name: offer_id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [accepted, rejected] }
+      responses:
+        '200':
+          description: Решение принято
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Offer' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: Решает только владелец объявления.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+        '409':
+          description: |
+            Предложение уже решено, истекло или отозвано; либо объявление больше не
+            опубликовано.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/offer/{offer_id}/withdraw:
+    post:
+      summary: Отозвать своё предложение
+      operationId: withdrawOffer
+      tags: [offer]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Пока продавец не ответил. Отозвав, покупатель может прислать новое: иначе отзыв
+        означал бы запрет на торг по этому объявлению навсегда.
+      parameters:
+        - { name: offer_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Отозвано
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Offer' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: Отзывает только автор предложения.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+        '409':
+          description: Предложение уже решено или истекло — отзывать нечего.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  schemas:
+    OfferStatus:
+      type: string
+      description: |
+        pending — ждёт ответа; accepted — принято; rejected — продавец отказал;
+        withdrawn — покупатель отозвал; expired — никто не ответил в срок;
+        car_sold — машину купил другой.
+      enum: [pending, accepted, rejected, withdrawn, expired, car_sold]
+
+    OfferCreate:
+      type: object
+      required: [sale_car_id, price]
+      properties:
+        sale_car_id: { type: string, format: uuid }
+        price: { type: number, exclusiveMinimum: 0 }
+
+    Offer:
+      type: object
+      required: [offer_id, sale_car_id, user_id, price, status, created_at]
+      properties:
+        offer_id: { type: string, format: uuid }
+        sale_car_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        price: { type: number }
+        status: { $ref: '#/components/schemas/OfferStatus' }
+        expires_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Когда предложение истечёт, если никто не ответит.
+        created_at: { type: string, format: date-time }
+        updated_at: { type: string, format: date-time, nullable: true }
+
+        # Два поля вместо одного: по can_review экран включает кнопку «оставить отзыв»,
+        # по review_id заменяет её на «изменить». Без второго он не знал бы, писали ли
+        # отзыв, а без первого угадывал бы право по статусу (история 12).
+        can_review:
+          type: boolean
+          default: false
+          description: |
+            Можно ли оставить отзыв по этой сделке. Только у своих отправленных офферов в
+            статусе accepted, по которым отзыва ещё нет. В выдаче `side=received`
+            всегда false: рейтинг односторонний, продавец покупателя не оценивает.
+        review_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Уже написанный отзыв по этой сделке, если он есть.

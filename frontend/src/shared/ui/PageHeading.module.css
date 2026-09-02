@@ -1,0 +1,38 @@
+.page {
+  max-width: 1080px;
+  padding: 20px 0 90px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.title {
+  font-size: 29px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  margin: 0 0 4px;
+}
+
+.sub {
+  color: var(--text-secondary);
+  font-size: 15.5px;
+  margin: 0;
+}
+
+.spacer {
+  flex: 1;
+}
+
+@media (max-width: 1023px) {
+  .page {
+    padding: 10px 0 100px;
+  }
+  .title {
+    font-size: 24px;
+  }
+}

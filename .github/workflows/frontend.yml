@@ -1,0 +1,107 @@
+# Фронтенд: типы, правила, границы модулей, юниты, сборка и браузерные сценарии.
+#
+# Отдельно от бэкенда намеренно: у них разные среды, разное время прогона и разные причины
+# краснеть. Общий workflow заставлял бы правку кнопки ждать поднятия Postgres.
+name: frontend
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - 'frontend/**'
+      - 'infra/docker/frontend.Dockerfile'
+      - '.github/workflows/frontend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: frontend
+
+jobs:
+  checks:
+    name: типы, правила, юниты, сборка
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      # `npm ci`, а не `install`: ставит ровно то, что в lock-файле, и падает, если
+      # package.json и lock разошлись — расхождение должно ловиться здесь, а не у того,
+      # кто следующим склонирует репозиторий.
+      - run: npm ci
+
+      - name: Типы
+        run: npm run typecheck
+
+      # Внутри линта живёт и гейт границ модулей: фича не имеет права импортировать фичу.
+      - name: Правила и границы
+        run: npm run lint
+
+      - name: Юнит-тесты
+        run: npx vitest run
+
+      - name: Сборка
+        run: npm run build
+
+      # Артефакт сборки — не для деплоя, а для разбора: «у меня локально собирается»
+      # проверяется скачиванием того, что собралось здесь.
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-dist
+          path: frontend/dist
+          retention-days: 7
+
+  image:
+    name: сборка образа
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      # Образ собирается из репозитория целиком: Dockerfile берёт контекстом корень.
+      # Проверка нужна отдельно от `npm run build` — образ ломается своими способами,
+      # от версии node в базовом слое до пути, по которому лежит собранный бандл.
+      - name: Сборка frontend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/frontend.Dockerfile
+          push: false
+          cache-from: type=gha,scope=frontend
+          cache-to: type=gha,mode=max,scope=frontend
+
+  browser:
+    name: браузерные сценарии
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - run: npm ci
+
+      # Chrome предустановлен на ubuntu-latest, драйвер к нему Selenium Manager
+      # скачивает сам — отдельного chromedriver в зависимостях нет намеренно.
+      - name: Версия браузера
+        run: google-chrome --version
+
+      # Сценарии идут против дев-заглушки: сервер поднимает сам прогон, бэкенд не нужен.
+      - name: Сценарии
+        run: npm run test:e2e
+        env:
+          CI: 'true'

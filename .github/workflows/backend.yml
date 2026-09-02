@@ -1,0 +1,162 @@
+# Бэкенд: миграции применяются, приложение импортируется, тесты идут против настоящего
+# Postgres.
+#
+# Против настоящего, а не SQLite: схема ведётся Alembic'ом под Postgres, и прогон на другой
+# базе проверял бы не то приложение, которое поедет в прод.
+name: backend
+
+on:
+  push:
+    branches: [dev, main]
+    paths:
+      - 'backend/**'
+      - 'infra/.env.example'
+      - '.github/workflows/backend.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: backend-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  tests:
+    name: миграции и тесты
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: absolute
+          POSTGRES_PASSWORD: absolute
+          POSTGRES_DB: absolute
+        ports:
+          - 5432:5432
+        # Без проверки готовности первый же запрос приходит в ещё поднимающуюся базу, и
+        # прогон падает по connection refused — на ошибке, которой в коде нет.
+        options: >-
+          --health-cmd "pg_isready -U absolute"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      # Импорт app.main поднимает клиента Redis, а тесты галереи и документов пишут в
+      # объектное хранилище. Без обоих прогон падает на подключении, а не на коде.
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+      minio:
+        image: minio/minio:edge-cicd
+        env:
+          MINIO_ROOT_USER: minioadmin
+          MINIO_ROOT_PASSWORD: minioadmin
+        ports:
+          - 9000:9000
+        options: >-
+          --health-cmd "curl -f http://localhost:9000/minio/health/live"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: |
+            backend/requirements.txt
+            backend/requirements-dev.txt
+
+      - name: Зависимости
+        run: pip install -r requirements-dev.txt
+
+      # Конфиг собирается из того же `.env.example`, что читают разработчики: список
+      # переменных живёт в одном месте, и забытая новая переменная валит прогон здесь,
+      # а не у человека, который завтра поднимает проект впервые.
+      - name: Конфигурация
+        run: |
+          cp ../infra/.env.example .env
+          {
+            echo "POSTGRES_HOST=localhost"
+            echo "POSTGRES_PORT=5432"
+            echo "POSTGRES_USER=absolute"
+            echo "POSTGRES_PASSWORD=absolute"
+            echo "POSTGRES_DB=absolute"
+            echo "SECRET_KEY=ci-secret-key-not-used-anywhere-else-0000"
+            echo "REFRESH_TOKEN_SECRET_KEY=ci-refresh-secret-not-used-elsewhere-00"
+            echo "YANDEX_CLIENTID=ci-yandex-client-id-placeholder-000000000"
+            echo "YANDEX_CLIENT_SECRET=ci-yandex-client-secret-placeholder-0000"
+            echo "VK_CLIENT_ID=ci-vk-client-id"
+            echo "VK_CLIENT_SECRET=ci-vk-client-secret"
+            echo "GIGA_AUTH_KEY=ci-giga-auth-key"
+            echo "GIGA_CLIENT_ID=ci-giga-client-id"
+            # Пустые: redis в прогоне поднят без пароля, а заполненные учётные данные
+            # заставили бы клиент здороваться AUTH и получать отказ.
+            echo "REDIS_NETWORK_NAME=localhost"
+            echo "REDIS_PORT=6379"
+            echo "REDIS_PASSWORD="
+            echo "REDIS_USER="
+            echo "REDIS_USER_PASSWORD="
+            echo "MINIO_NETWORK_NAME=localhost"
+            echo "MINIO_ENDPOINT_URL=http://localhost:9000"
+            echo "MINIO_ROOT_USER=minioadmin"
+            echo "MINIO_ROOT_PASSWORD=minioadmin"
+            echo "MINIO_BUCKET_NAME=absolute"
+            echo "MINIO_DOCUMENTS_BUCKET=absolute-documents"
+            echo "PUBLIC_PHOTO_BASE_URL=http://localhost:9000/absolute"
+          } >> .env
+
+      # Миграции — часть проверки, а не подготовка к ней: сломанная ревизия ломает
+      # развёртывание так же надёжно, как упавший тест, и увидеть это надо здесь.
+      - name: Миграции
+        run: alembic upgrade head
+
+      # Шаг назад и снова вперёд. Ревизия без работающего downgrade выглядит здоровой
+      # ровно до того дня, когда релиз надо откатить, — а откатывать приходится под
+      # давлением и без времени на разбор.
+      - name: Откат последней ревизии и повтор
+        run: |
+          alembic downgrade -1
+          alembic upgrade head
+
+      # Каталог марок — данные, без которых не проходит проверка полноты объявления:
+      # тест, доводящий объявление до модерации, требует существующей марки и модели.
+      - name: Справочник
+        run: python -m app.data.seed_catalog
+
+      - name: Тесты
+        run: python -m pytest
+
+  image:
+    name: сборка образа
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      # Образ тяжёлый (opencv тянет системные библиотеки), поэтому кэш слоёв в GitHub
+      # Actions обязателен: без него сборка занимает больше, чем весь остальной прогон.
+      - name: Сборка backend
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: infra/docker/backend.Dockerfile
+          push: false
+          cache-from: type=gha,scope=backend
+          cache-to: type=gha,mode=max,scope=backend

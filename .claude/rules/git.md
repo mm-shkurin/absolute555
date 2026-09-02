@@ -20,6 +20,44 @@ Flow: `features/<name>` -> `dev` -> `main`.
 - Rebase feature branches on `dev` before opening a PR; keep history readable.
 - Delete feature branches after merge.
 
+## Current working branch
+
+**One shared working branch at a time — currently `features/seller-rating`.** Do not
+open a second branch beside it: both sessions work the same tree, and two branches over
+one tree put them on different heads.
+
+The branch is cut fresh from `dev` when the previous one merges, and it is named for the
+story in flight rather than for the whole rebuild. Cut it only with a clean tree: `git
+checkout -b` refuses over another session's uncommitted work, which is the protection
+working, not an obstacle to force past.
+
+Merging into `dev` from a session whose tree is dirty: push the branch to `dev` directly
+(`git push origin <branch>:dev`) and update the local ref with `git fetch origin
+dev:dev`. Checking `dev` out would overwrite whatever the other session has open.
+
+Previous working branches: `features/marketplace-scope-cut` (stories 1-3, merged),
+`features/listing-lifecycle` (story 4, merged), `features/listing-photos` (story 5, merged),
+`features/sts-autofill-catalog` (story 6, merged), `features/feed-and-listing-card`
+(stories 7 and 8, merged), `features/moderation-queue` (story 9, merged), `features/offer-lifecycle` (story 10,
+merged), `features/chat-and-unread` (story 11, merged).
+
+The rules that still apply: one commit per story, conventional commit subjects, and no
+direct commits to `main`.
+
+## Commands that overwrite the working tree
+
+**Commit before running anything that writes over working-tree files.** Two sessions
+share this tree at the same time, so uncommitted work in it is not necessarily yours.
+
+`git checkout-index -f -a`, `git checkout -- .`, `git restore .`, `git reset --hard`,
+`git clean -fd`, `git stash` without `-u`, and a rebase or a branch switch over a dirty
+tree all replace files that were never staged. There is no reflog for a working-tree
+file: once overwritten it is gone.
+
+Before any of them: `git status --short`, and either commit what is there or stop and
+ask. This rule exists because `git checkout-index -f -a` was run here to work around an
+unrelated Docker problem, and destroyed half a story's uncommitted work.
+
 ## Commit messages
 
 Conventional Commits: `<type>: <short description in imperative mood>`

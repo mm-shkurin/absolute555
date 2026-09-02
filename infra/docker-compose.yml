@@ -42,25 +42,6 @@ services:
       timeout: 3s
       retries: 10
 
-  # Vector store. The app talks to it with chromadb.HttpClient
-  # (app/services/chromadb_service.py), so CHROMA_NETWORK_NAME/CHROMA_PORT must
-  # name this service and its in-network port, not a host address.
-  chroma:
-    image: chromadb/chroma:latest
-    restart: unless-stopped
-    environment:
-      ANONYMIZED_TELEMETRY: "False"
-    volumes:
-      - chroma_data:/data
-    ports:
-      - "${CHROMA_HOST_PORT}:8000"
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 2 bash -c '</dev/tcp/127.0.0.1/8000' || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 10
-      start_period: 20s
-
   minio:
     image: minio/minio:latest
     restart: unless-stopped
@@ -112,19 +93,52 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      chroma:
-        condition: service_started
+
+  # The suite, run against the working tree rather than against the image.
+  #
+  # The mounts are the whole point: the runtime image carries app/ as it was at its last
+  # build, so a run without them tests code that may be weeks old and still comes back
+  # green. Declared here rather than assembled on the command line because a relative
+  # path in a compose file is resolved by compose, while a shell-built absolute path is
+  # mangled by MSYS on Windows and silently mounts an empty directory.
+  #
+  # The profile keeps it out of `docker compose up`; `docker compose run` enables it.
+  backend-test:
+    profiles: ["test"]
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+    env_file:
+      - .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - ../backend/app:/app/app
+      - ../backend/tests:/app/tests
+      - ../backend/pytest.ini:/app/pytest.ini
 
   # Same image as backend, different command. Migrations are not re-run here —
   # the backend service owns them.
-  celery:
+  worker:
     build:
       context: ..
       dockerfile: infra/docker/backend.Dockerfile
     restart: unless-stopped
     env_file:
       - .env
-    command: celery -A app.celery_worker.celery_app worker --loglevel=INFO
+    command: arq app.worker.WorkerSettings
+    # The image's HEALTHCHECK probes http://localhost:8000/health, which only the
+    # backend serves. Inherited here it marks a perfectly healthy worker unhealthy, so
+    # it is replaced with a check that the worker can still reach its own queue.
+    healthcheck:
+      test: ["CMD", "python", "-c", "import asyncio,arq;from app.queue import queue_settings;asyncio.run(arq.create_pool(queue_settings()))"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
     depends_on:
       backend:
         condition: service_started
@@ -136,8 +150,8 @@ services:
       context: ..
       dockerfile: infra/docker/frontend.Dockerfile
       args:
-        REACT_APP_API_URL: ${REACT_APP_API_URL}
-        REACT_APP_API_BASE_URL: ${REACT_APP_API_BASE_URL}
+        # Пусто — значит тот же источник: nginx внутри образа проксирует /api на backend.
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
     restart: unless-stopped
     ports:
       - "${FRONTEND_HOST_PORT}:80"
@@ -147,5 +161,4 @@ services:
 volumes:
   postgres_data:
   redis_data:
-  chroma_data:
   minio_data:

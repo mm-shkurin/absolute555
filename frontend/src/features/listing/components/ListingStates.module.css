@@ -1,0 +1,64 @@
+.skeleton {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 32px;
+  align-items: start;
+  padding: 24px 0 90px;
+}
+
+.bar {
+  background: linear-gradient(
+    90deg,
+    var(--bg-sunken) 25%,
+    var(--bg-surface) 50%,
+    var(--bg-sunken) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.3s infinite;
+  border-radius: var(--radius-surface);
+}
+
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+.photo {
+  aspect-ratio: 4 / 3;
+}
+
+.block {
+  height: 180px;
+  margin-top: 16px;
+}
+
+.sideBar {
+  height: 320px;
+}
+
+.failure {
+  text-align: center;
+  padding: 70px 20px;
+  margin: 24px 0 90px;
+  background: var(--bg-card);
+  border: 1px dashed var(--border-subtle);
+  border-radius: var(--radius-surface);
+}
+
+.failure h3 {
+  font-size: 21px;
+  margin: 0 0 8px;
+}
+
+.failure p {
+  color: var(--text-secondary);
+  margin: 0 0 22px;
+}
+
+@media (max-width: 1023px) {
+  .skeleton {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}

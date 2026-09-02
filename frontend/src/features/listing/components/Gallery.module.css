@@ -1,0 +1,113 @@
+.main {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-surface);
+  width: 100%;
+  padding: 0;
+  overflow: hidden;
+}
+
+.main img,
+.thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.thumbs {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.thumb {
+  aspect-ratio: 4 / 3;
+  border-radius: 10px;
+  font-size: 11px;
+  padding: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.thumb.current {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+/* Полноэкранный просмотр всегда тёмный, в обеих темах: фотография кузова читается на
+   тёмном фоне, а светлая подложка подмешивает собственный оттенок в цвет краски. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(8, 12, 22, 0.94);
+  color: var(--neutral-000);
+}
+
+.lightboxTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.round {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--neutral-000);
+  font-size: 19px;
+}
+
+.stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+}
+
+.stageShot {
+  width: min(900px, 92vw);
+  aspect-ratio: 4 / 3;
+  margin: 0 auto;
+  border-radius: var(--radius-surface);
+  background: var(--neutral-900);
+  border-color: transparent;
+  color: var(--text-muted);
+  overflow: hidden;
+  padding: 0;
+}
+
+.strip {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.stripShot {
+  width: 78px;
+  height: 58px;
+  border-radius: 8px;
+  background: var(--neutral-900);
+  border-color: transparent;
+  padding: 0;
+  overflow: hidden;
+}
+
+.stripShot.current {
+  outline: 2px solid var(--accent);
+}

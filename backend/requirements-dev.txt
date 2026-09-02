@@ -1,0 +1,14 @@
+# Test-only dependencies. Never installed into the runtime image — see
+# infra/docker/backend.Dockerfile, which copies requirements.txt alone.
+-r requirements.txt
+
+pytest==8.3.4
+pytest-asyncio==0.25.0
+
+# Замер покрытия. Гоняется отдельной целью (scripts/ci-local.sh --coverage), а не в
+# каждом прогоне: цифра нужна изредка, а платить за неё временем каждого круга — нет.
+pytest-cov==6.0.0
+
+# httpx is not pinned here any more: the runtime pin is 0.27.2 for the same reason the
+# tests needed it, and two files naming different versions is a conflict no resolver can
+# satisfy. When starlette moves past 0.28's removal, raise it in requirements.txt.

@@ -31,18 +31,11 @@ COPY backend/app app
 ENV PYTHONPATH=/app
 ENV PYTHONUNBUFFERED=1
 
-# Chroma runs as its own compose service and is reached over HTTP
-# (app/services/chromadb_service.py uses chromadb.HttpClient), so the embedded
-# server and its bundled ONNX model are never loaded in this image.
-ENV CHROMA_SERVER_NOFILE=1
-ENV CHROMA_DISABLE_TELEMETRY=1
-ENV ANONYMIZED_TELEMETRY=False
-
 EXPOSE 8000
 
 HEALTHCHECK --interval=30s --timeout=3s --retries=5 --start-period=20s \
   CMD python3 -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health', timeout=2)" || exit 1
 
-# Migrations run in the entrypoint, not here, so the celery worker can reuse
+# Migrations run in the entrypoint, not here, so the ARQ worker can reuse
 # this image without re-running `alembic upgrade head`.
 CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]

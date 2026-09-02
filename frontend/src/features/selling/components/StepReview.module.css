@@ -1,0 +1,89 @@
+.review {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.cover {
+  aspect-ratio: 4 / 3;
+  border-radius: var(--radius-surface);
+}
+
+.summary {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0 28px;
+}
+
+.summary div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--border-subtle);
+  font-size: 15px;
+}
+
+.summary span {
+  color: var(--text-muted);
+}
+
+.warn {
+  color: var(--status-wait);
+}
+
+.sent {
+  text-align: center;
+  padding: 56px 26px;
+}
+
+.check {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+  border: 2px solid var(--status-ok);
+  border-radius: 50%;
+  color: var(--status-ok);
+  display: grid;
+  place-items: center;
+  font-size: 26px;
+}
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  background: var(--status-wait-soft);
+  color: var(--status-wait-ink);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.sentActions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1023px) {
+  .review,
+  .summary {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Ссылка внутри плашки наследует её цвет: синяя ссылка на жёлтом фоне спорит с самим
+   сообщением за внимание. */
+.link {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+}

@@ -1,0 +1,282 @@
+openapi: 3.0.3
+info:
+  title: Moderation queue and complaints
+  version: 1.0.0
+  description: |
+    Очередь модерации и жалобы. Ни одно решение здесь не принимается автоматически:
+    жалобы копятся на объявление, а снимает его с публикации человек.
+
+    Причина отклонения — ярлык из перечисления плюс необязательный текст. Свободный
+    текст один не отвечает на вопрос «за что чаще всего отклоняют», а он и есть то,
+    ради чего эту очередь разбирают руками.
+
+paths:
+  /api/v1/moderation/queue:
+    get:
+      summary: Очередь модерации
+      operationId: listModerationQueue
+      tags: [moderation]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Самые давние первыми: иначе объявление, отправленное утром, ждёт дольше
+        вечернего, и очередь перестаёт быть очередью.
+      parameters:
+        - name: tab
+          in: query
+          schema:
+            type: string
+            enum: [waiting, complained, handled_today]
+            default: waiting
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 60, default: 20 }
+      responses:
+        '200':
+          description: Страница очереди
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QueuePage' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: Очередь видят только manager и admin.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/moderation/counts:
+    get:
+      summary: Числа на вкладках
+      operationId: moderationCounts
+      tags: [moderation]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Три числа
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/QueueCounts' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/sale_car/{sale_car_id}/complaints:
+    post:
+      summary: Пожаловаться на объявление
+      operationId: complainAboutListing
+      tags: [moderation]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Один человек — одна жалоба на объявление. Иначе «2 жалобы» на карточке значит
+        не «двое пожаловались», а «кто-то нажал дважды».
+
+        Только на опубликованное и не на своё: пожаловаться можно на то, что видно.
+      parameters:
+        - { name: sale_car_id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ComplaintCreate' }
+      responses:
+        '201':
+          description: Жалоба принята
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Complaint' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: Объявление не найдено или не опубликовано.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: Этот человек уже жаловался на это объявление, или это его объявление.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/moderation/complaints:
+    get:
+      summary: Жалобы, открытые и разобранные
+      operationId: listComplaints
+      tags: [moderation]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: status
+          in: query
+          schema: { type: string, enum: [open, handled], default: open }
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 60, default: 20 }
+      responses:
+        '200':
+          description: Жалобы, сгруппированные по объявлению
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ComplaintPage' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/moderation/complaints/{complaint_id}/dismiss:
+    post:
+      summary: Признать жалобу необоснованной
+      operationId: dismissComplaint
+      tags: [moderation]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: complaint_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Жалоба разобрана
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Complaint' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+        '409':
+          description: Жалоба уже разобрана — второй раз её не разбирают.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/moderation/listings/{sale_car_id}/unpublish:
+    post:
+      summary: Снять объявление с публикации по жалобам
+      operationId: unpublishListing
+      tags: [moderation]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Возвращает объявление в `rejected` с причиной и закрывает все открытые жалобы по
+        нему одним решением. Не `withdrawn`: тот выглядит как действие самого продавца, и
+        он никогда не узнает, что править.
+      parameters:
+        - { name: sale_car_id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RejectionReason' }
+      responses:
+        '200':
+          description: Снято с публикации
+          content:
+            application/json:
+              schema: { $ref: 'sale_car_lifecycle.yaml#/components/schemas/StatusChanged' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+        '409':
+          description: Объявление не опубликовано — снимать нечего.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  schemas:
+    RejectionLabel:
+      type: string
+      description: |
+        Пять ярлыков с экрана модератора. Перечисление, а не строка: ярлык отвечает на
+        вопрос «за что чаще всего отклоняют», которого из свободного текста не достать.
+      enum:
+        - plate_or_face_visible
+        - photos_of_another_car
+        - bait_price
+        - too_few_photos
+        - contacts_in_description
+
+    RejectionReason:
+      type: object
+      required: [label]
+      properties:
+        label: { $ref: '#/components/schemas/RejectionLabel' }
+        comment:
+          type: string
+          nullable: true
+          description: Что именно поправить. Текст видит продавец.
+
+    ComplaintReason:
+      type: string
+      enum:
+        - bait_price
+        - photos_of_another_car
+        - contacts_in_description
+        - sold_already
+        - other
+
+    ComplaintCreate:
+      type: object
+      required: [reason]
+      properties:
+        reason: { $ref: '#/components/schemas/ComplaintReason' }
+        text: { type: string, nullable: true }
+
+    Complaint:
+      type: object
+      required: [complaint_id, sale_car_id, reason, status, created_at]
+      properties:
+        complaint_id: { type: string, format: uuid }
+        sale_car_id: { type: string, format: uuid }
+        author: { $ref: 'sale_car_feed.yaml#/components/schemas/Seller' }
+        reason: { $ref: '#/components/schemas/ComplaintReason' }
+        text: { type: string, nullable: true }
+        status: { type: string, enum: [open, handled] }
+        created_at: { type: string, format: date-time }
+        handled_at: { type: string, format: date-time, nullable: true }
+
+    QueueItem:
+      allOf:
+        - $ref: 'sale_car_feed.yaml#/components/schemas/FeedCard'
+        - type: object
+          properties:
+            seller: { $ref: 'sale_car_feed.yaml#/components/schemas/Seller' }
+            open_complaints: { type: integer }
+            submitted_at: { type: string, format: date-time, nullable: true }
+
+    QueuePage:
+      type: object
+      required: [items, total, page, size]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/QueueItem' }
+        total: { type: integer }
+        page: { type: integer }
+        size: { type: integer }
+
+    ComplaintGroup:
+      type: object
+      description: Жалобы копятся на объявление, поэтому и приезжают сгруппированными.
+      required: [sale_car_id, complaints]
+      properties:
+        sale_car_id: { type: string, format: uuid }
+        listing: { $ref: 'sale_car_feed.yaml#/components/schemas/FeedCard' }
+        complaints:
+          type: array
+          items: { $ref: '#/components/schemas/Complaint' }
+
+    ComplaintPage:
+      type: object
+      required: [items, total, page, size]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/ComplaintGroup' }
+        total: { type: integer }
+        page: { type: integer }
+        size: { type: integer }
+
+    QueueCounts:
+      type: object
+      required: [waiting, complained, handled_today]
+      properties:
+        waiting: { type: integer }
+        complained: { type: integer }
+        handled_today:
+          type: integer
+          description: Решения этого модератора за сегодня, а не объявления.

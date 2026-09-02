@@ -1,0 +1,34 @@
+.alert {
+  display: flex;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.alert b {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 15.5px;
+}
+
+.icon {
+  font-size: 20px;
+  line-height: 1;
+  flex: none;
+}
+
+.warn {
+  background: var(--status-wait-soft);
+  color: var(--status-wait-ink);
+}
+
+.bad {
+  background: var(--status-bad-soft);
+  color: var(--status-bad-ink);
+}
+
+.spaced {
+  margin-top: 18px;
+}

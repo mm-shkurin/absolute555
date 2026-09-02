@@ -1,0 +1,119 @@
+/* Тёмная тема — ТОЛЬКО переопределения. Ни один токен здесь не рождается.
+ *
+ * Правило проверяемо диффом: каждое имя в этом файле обязано существовать в
+ * `tokens-light.css`. Токен без светлой пары в светлой теме разрешается в ничто.
+ *
+ * Атрибут, а не только `prefers-color-scheme`: у человека должен быть переключатель,
+ * а системная настройка — лишь значение по умолчанию. Медиазапрос ниже закрывает
+ * случай «выбора ещё не делали», и он выключается, как только выбор сделан.
+ */
+:root[data-theme='dark'] {
+  --bg-page: var(--neutral-950);
+  --bg-surface: var(--neutral-900);
+  --bg-header: var(--neutral-900);
+  --bg-card: var(--neutral-900);
+  --bg-sunken: #131b28;
+  --bg-selected: #14284d;
+  /* Плашка CTA не переворачивается: в тёмной теме она перестала бы отличаться от страницы,
+     а весь её смысл — быть другой поверхностью. Поэтому здесь она светлеет, а не темнеет. */
+  --bg-inverse: var(--neutral-100);
+
+  --border-subtle: #23304a;
+  --border-strong: #35476b;
+
+  --text-primary: var(--neutral-050);
+  --text-secondary: #aebbd0;
+  --text-muted: #7d8aa3;
+  /* Текст на светлой плашке CTA — тёмный, зеркально к светлой теме. */
+  --text-inverse: var(--neutral-950);
+
+  /* Чистый #0066FF на тёмном фоне вибрирует и проваливает контраст на мелком тексте.
+     Осветляем сам акцент, а не размываем фон под ним. */
+  --accent: #4d94ff;
+  --accent-hover: #7ab0ff;
+  --accent-soft: #14284d;
+  --text-accent: #7ab0ff;
+  --border-accent: #4d94ff;
+
+  /* Шкала замеров. Оттенки поднимаются по светлоте, порядок и смысл прежние —
+     иначе одна и та же панель кузова читалась бы в двух темах по-разному. */
+  --measure-ok: #35c98a;
+  --measure-ok-soft: #10301f;
+  --measure-warn: #f5b74f;
+  --measure-warn-soft: #33260c;
+  --measure-bad: #ff6b70;
+  --measure-bad-soft: #3a1416;
+  --measure-none: #46536b;
+
+  --status-ok-ink: #8ee5bb;
+  --status-wait-ink: #f7d59a;
+  --status-bad-ink: #ffb3b6;
+
+  --bg-glass-page: #0b0e14;
+  --bg-glass: rgba(255, 255, 255, 0.06);
+  --border-glass: rgba(255, 255, 255, 0.12);
+  --border-glass-outer: rgba(0, 0, 0, 0.4);
+  --shadow-glass: 0 18px 48px -24px rgba(0, 0, 0, 0.7);
+  --shadow-glass-lifted: 0 30px 64px -28px rgba(0, 0, 0, 0.8);
+  /* Пелена в тёмной теме гасила бы свечение в серое пятно: свечение само приглушается. */
+  --glow-opacity: 0.26;
+  --glass-veil: transparent;
+  --glass-grid-line: rgba(255, 255, 255, 0.06);
+
+  --field-recognized-bg: #10203a;
+  --field-recognized-border: #2c4a7d;
+}
+
+/* Системная настройка как значение по умолчанию — но только пока человек не выбрал сам.
+   `:not([data-theme='light'])` и есть это «пока»: явный светлый выбор выигрывает у системы. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg-page: var(--neutral-950);
+    --bg-surface: var(--neutral-900);
+    --bg-header: var(--neutral-900);
+    --bg-card: var(--neutral-900);
+    --bg-sunken: #131b28;
+    --bg-selected: #14284d;
+    --bg-inverse: var(--neutral-100);
+
+    --border-subtle: #23304a;
+    --border-strong: #35476b;
+
+    --text-primary: var(--neutral-050);
+    --text-secondary: #aebbd0;
+    --text-muted: #7d8aa3;
+    --text-inverse: var(--neutral-950);
+
+    --accent: #4d94ff;
+    --accent-hover: #7ab0ff;
+    --accent-soft: #14284d;
+    --text-accent: #7ab0ff;
+    --border-accent: #4d94ff;
+
+    --measure-ok: #35c98a;
+    --measure-ok-soft: #10301f;
+    --measure-warn: #f5b74f;
+    --measure-warn-soft: #33260c;
+    --measure-bad: #ff6b70;
+    --measure-bad-soft: #3a1416;
+    --measure-none: #46536b;
+
+    --status-ok-ink: #8ee5bb;
+    --status-wait-ink: #f7d59a;
+    --status-bad-ink: #ffb3b6;
+
+    --bg-glass-page: #0b0e14;
+    --bg-glass: rgba(255, 255, 255, 0.06);
+    --border-glass: rgba(255, 255, 255, 0.12);
+    --border-glass-outer: rgba(0, 0, 0, 0.4);
+    --shadow-glass: 0 18px 48px -24px rgba(0, 0, 0, 0.7);
+    --shadow-glass-lifted: 0 30px 64px -28px rgba(0, 0, 0, 0.8);
+    /* Пелена в тёмной теме гасила бы свечение в серое пятно: свечение само приглушается. */
+    --glow-opacity: 0.26;
+    --glass-veil: transparent;
+    --glass-grid-line: rgba(255, 255, 255, 0.06);
+
+    --field-recognized-bg: #10203a;
+    --field-recognized-border: #2c4a7d;
+  }
+}

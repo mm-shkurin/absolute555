@@ -1,0 +1,16 @@
+/* Единственная мера ширины контента. Всё, что шире, читается строками в две трети экрана. */
+.wrap {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.narrow {
+  max-width: 1080px;
+}
+
+@media (max-width: 1023px) {
+  .wrap {
+    padding: 0 14px;
+  }
+}

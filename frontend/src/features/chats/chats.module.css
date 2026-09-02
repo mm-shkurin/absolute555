@@ -1,0 +1,139 @@
+/* Экран чата занимает окно целиком: заголовок сверху, карточка растягивается на остаток.
+   Числом высоту задавать нельзя — 620px вылезали за край ноутбука и оставляли карточку
+   висеть посреди пустоты на большом мониторе. */
+.screen {
+  display: flex;
+  flex-direction: column;
+  /* Именно height, а не min-height: минимум не ограничивает сверху, и карточка растёт
+     по содержимому переписки, выталкивая поле ввода за край экрана. */
+  height: calc(100dvh - 72px);
+  min-height: 480px;
+  padding: 20px 0 24px;
+}
+
+.chat {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  flex: 1;
+  min-height: 420px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-surface);
+  overflow: hidden;
+}
+
+.dialogs {
+  border-right: 1px solid var(--border-subtle);
+  overflow-y: auto;
+  /* Без этого колонка внутри сетки не сжимается ниже своего содержимого, и список
+     диалогов выпихивает карточку за нижний край экрана вместо того, чтобы прокручиваться. */
+  min-height: 0;
+}
+
+.dialog {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 14px;
+  border: 0;
+  border-bottom: 1px solid var(--border-subtle);
+  background: none;
+  text-align: left;
+}
+
+.dialog:hover {
+  background: var(--bg-sunken);
+}
+
+.dialog.current {
+  background: var(--bg-selected);
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--border-subtle);
+}
+
+.dialogName {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  font-weight: 700;
+  font-size: 14.5px;
+}
+
+.dialogName span {
+  flex: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+/* Строки диалога — блоки: имя, машина и последняя реплика стоят одна под другой. Без
+   этого они складываются в одно предложение, и «Lexus LX 570» перетекает в текст
+   сообщения — ровно то, что видно на узком экране раньше всего. */
+.dialogBody {
+  display: block;
+  min-width: 0;
+}
+
+/* Объявление названо в каждом диалоге: у одного человека может идти торг по двум машинам,
+   и «Дмитрий» без машины — это два одинаковых диалога подряд. */
+.dialogListing {
+  display: block;
+  margin-top: 3px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-accent);
+}
+
+.preview {
+  display: block;
+  margin-top: 3px;
+  font-size: 13px;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.unread {
+  margin-left: 6px;
+  padding: 1px 7px;
+  border-radius: var(--radius-pill);
+  background: var(--accent);
+  color: var(--text-inverse);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+@media (max-width: 1023px) {
+  .chat {
+    grid-template-columns: 260px 1fr;
+    height: 560px;
+  }
+}
+
+/* Телефон: показывается ровно одна из двух панелей — какая, решает страница. */
+@media (max-width: 767px) {
+  .screen {
+    /* Телефон: сверху шапка 59px, снизу панель навигации 92px — экран чата живёт ровно
+       между ними, и страница не прокручивается. */
+    height: calc(100dvh - 151px);
+    min-height: 360px;
+    padding: 10px 0 6px;
+  }
+  .chat {
+    grid-template-columns: 1fr;
+    min-height: 320px;
+  }
+  .chat[data-view='list'] [data-pane='conversation'] {
+    display: none;
+  }
+  .chat[data-view='conversation'] [data-pane='list'] {
+    display: none;
+  }
+}

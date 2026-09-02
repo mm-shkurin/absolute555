@@ -1,0 +1,40 @@
+.panel {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-surface);
+  padding: 22px;
+  margin-top: 16px;
+}
+
+.first {
+  margin-top: 0;
+}
+
+.panel h3 {
+  font-size: 18px;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin: 0 0 14px;
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.head h3 {
+  margin: 0;
+}
+
+/* Замечание сбоку от полосы, а не в рамке: это ремарка автора продукта, а не статус
+   системы, и рамка сделала бы её похожей на предупреждение. */
+.note {
+  padding: 2px 0 2px 14px;
+  border-left: 2px solid var(--border-subtle);
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-secondary);
+}

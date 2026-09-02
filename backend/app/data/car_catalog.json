@@ -1,0 +1,699 @@
+{
+  "_comment": "Справочник марок и моделей под омский рынок. Набран вручную: открытые каталоги (NHTSA vPIC, Wikidata) праворульную Сибирь не покрывают — см. ProductSpecification/BackendPlan.md, история 3. Заливается идемпотентным сидером, не миграцией. is_popular поднимает марку в начало фильтра. aliases — написания, которые может вернуть OCR по СТС; лестница сопоставления бьёт по ним второй ступенью, до нечёткого поиска. Файл данных, не исходник: лимит в 200 строк из coding-rules.md на него не распространяется.",
+  "brands": [
+    {
+      "slug": "toyota",
+      "name_ru": "Toyota",
+      "name_en": "Toyota",
+      "is_popular": true,
+      "aliases": ["ТОЙОТА", "TOYOTA MOTOR", "TOYOTA MOTOR CORPORATION"],
+      "models": [
+        "Camry", "Corolla", "Corolla Fielder", "Corolla Axio", "Corolla Spacio", "Corolla Runx",
+        "Allion", "Premio", "Avensis", "Caldina", "Carina", "Carina E", "Corona", "Vista",
+        "Mark II", "Mark X", "Chaser", "Cresta", "Crown", "Crown Majesta", "Verossa", "Progres",
+        "Land Cruiser", "Land Cruiser Prado", "Land Cruiser 200", "Land Cruiser 100", "Land Cruiser 80",
+        "Highlander", "Harrier", "RAV4", "Vanguard", "Fortuner", "Hilux", "Hilux Surf", "4Runner",
+        "Vitz", "Yaris", "Passo", "Ractis", "Funcargo", "Porte", "Spade", "Sienta", "Raum",
+        "Ipsum", "Gaia", "Nadia", "Opa", "Wish", "Isis", "Noah", "Voxy", "Esquire", "Alphard",
+        "Vellfire", "Estima", "Previa", "Prius", "Prius Alpha", "Aqua", "C-HR", "Rush", "bB",
+        "Succeed", "Probox", "Town Ace", "Lite Ace", "Hiace", "Regius Ace", "Sprinter",
+        "Sprinter Carib", "Sprinter Marino", "Celica", "Supra", "MR2", "Soarer", "Cynos",
+        "Curren", "Duet", "Will VS", "Platz", "Belta", "Auris", "Venza", "Sequoia", "Tundra", "Tacoma"
+      ]
+    },
+    {
+      "slug": "nissan",
+      "name_ru": "Nissan",
+      "name_en": "Nissan",
+      "is_popular": true,
+      "aliases": ["НИССАН", "NISSAN MOTOR"],
+      "models": [
+        "Almera", "Almera Classic", "Almera Tino", "Sunny", "Bluebird", "Bluebird Sylphy",
+        "Sylphy", "Primera", "Pulsar", "Sentra", "Tiida", "Tiida Latio", "Latio", "Note",
+        "March", "Micra", "Cube", "Juke", "Qashqai", "Qashqai+2", "X-Trail", "Murano",
+        "Pathfinder", "Terrano", "Patrol", "Safari", "Navara", "NP300", "Datsun on-DO",
+        "Teana", "Maxima", "Cefiro", "Laurel", "Skyline", "Stagea", "Fuga", "Cima",
+        "Presage", "Bassara", "Elgrand", "Serena", "Lafesta", "Liberty", "Prairie",
+        "Wingroad", "AD", "Avenir", "Expert", "Vanette", "Caravan", "Kix", "Dualis",
+        "Silvia", "180SX", "200SX", "350Z", "370Z", "GT-R", "Leaf", "Rogue", "Kicks"
+      ]
+    },
+    {
+      "slug": "honda",
+      "name_ru": "Honda",
+      "name_en": "Honda",
+      "is_popular": true,
+      "aliases": ["ХОНДА", "HONDA MOTOR"],
+      "models": [
+        "Civic", "Civic Ferio", "Civic Type R", "Accord", "Accord Wagon", "Torneo", "Inspire",
+        "Legend", "Ascot", "Rafaga", "Domani", "Integra", "Prelude", "CR-X", "S2000", "NSX",
+        "Fit", "Fit Aria", "Fit Shuttle", "Jazz", "Airwave", "Partner", "Insight", "City",
+        "CR-V", "HR-V", "Vezel", "ZR-V", "Pilot", "Element", "Crossroad", "Odyssey",
+        "Stepwgn", "Stream", "Freed", "Mobilio", "Edix", "Capa", "Logo", "Life", "Zest",
+        "N-Box", "N-One", "N-WGN", "That's", "Avancier", "Shuttle", "Grace"
+      ]
+    },
+    {
+      "slug": "mazda",
+      "name_ru": "Mazda",
+      "name_en": "Mazda",
+      "is_popular": true,
+      "aliases": ["МАЗДА", "MAZDA MOTOR"],
+      "models": [
+        "Demio", "2", "3", "Axela", "6", "Atenza", "323", "626", "121", "Familia", "Capella",
+        "Cronos", "Premacy", "5", "8", "MPV", "Biante", "CX-3", "CX-30", "CX-5", "CX-7",
+        "CX-8", "CX-9", "Tribute", "Verisa", "Carol", "Flair", "AZ-Wagon", "Bongo",
+        "Bongo Friendee", "Titan", "BT-50", "RX-7", "RX-8", "MX-5", "Roadster", "Millenia",
+        "Xedos 6", "Xedos 9", "Sentia", "Lantis", "Eunos 500"
+      ]
+    },
+    {
+      "slug": "mitsubishi",
+      "name_ru": "Mitsubishi",
+      "name_en": "Mitsubishi",
+      "is_popular": true,
+      "aliases": ["МИЦУБИСИ", "МИЦУБИШИ", "MITSUBISHI MOTORS"],
+      "models": [
+        "Lancer", "Lancer Cedia", "Lancer Evolution", "Mirage", "Colt", "Carisma", "Galant",
+        "Legnum", "Diamante", "Sigma", "Eterna", "Emeraude", "Outlander", "ASX", "RVR",
+        "Pajero", "Pajero Sport", "Pajero iO", "Pajero Mini", "Pajero Junior", "Montero",
+        "Challenger", "Delica", "Delica D:5", "Space Wagon", "Chariot", "Chariot Grandis",
+        "Grandis", "Dion", "Airtrek", "Toppo", "eK Wagon", "Minica", "L200", "Canter",
+        "FTO", "GTO", "3000GT", "Eclipse", "Eclipse Cross", "i-MiEV"
+      ]
+    },
+    {
+      "slug": "subaru",
+      "name_ru": "Subaru",
+      "name_en": "Subaru",
+      "is_popular": true,
+      "aliases": ["СУБАРУ", "FUJI HEAVY"],
+      "models": [
+        "Impreza", "Impreza WRX", "WRX", "WRX STI", "Legacy", "Legacy B4", "Legacy Lancaster",
+        "Outback", "Forester", "XV", "Crosstrek", "Tribeca", "Exiga", "Levorg", "Traviq",
+        "Domingo", "Sambar", "Pleo", "R2", "Stella", "Dias Wagon", "Vivio", "Justy",
+        "BRZ", "SVX", "Ascent"
+      ]
+    },
+    {
+      "slug": "suzuki",
+      "name_ru": "Suzuki",
+      "name_en": "Suzuki",
+      "is_popular": true,
+      "aliases": ["СУЗУКИ"],
+      "models": [
+        "Swift", "Baleno", "Cultus", "Aerio", "Liana", "SX4", "Vitara", "Grand Vitara",
+        "Escudo", "Jimny", "Jimny Sierra", "Samurai", "Ignis", "Splash", "Kizashi",
+        "Wagon R", "Alto", "Lapin", "Spacia", "Hustler", "Every", "Carry", "Solio",
+        "Landy", "Palette", "MR Wagon", "Cervo", "Kei", "XL-7"
+      ]
+    },
+    {
+      "slug": "lexus",
+      "name_ru": "Lexus",
+      "name_en": "Lexus",
+      "is_popular": true,
+      "aliases": ["ЛЕКСУС"],
+      "models": [
+        "IS", "IS 200", "IS 250", "IS 300", "IS 350", "IS F", "ES", "GS", "GS 300", "GS 350",
+        "GS 450h", "LS", "LS 400", "LS 430", "LS 460", "LS 600h", "CT", "RC", "LC",
+        "RX", "RX 300", "RX 330", "RX 350", "RX 450h", "NX", "UX", "GX", "GX 460",
+        "LX", "LX 470", "LX 570", "LX 600", "LM", "SC", "HS"
+      ]
+    },
+    {
+      "slug": "volkswagen",
+      "name_ru": "Volkswagen",
+      "name_en": "Volkswagen",
+      "is_popular": true,
+      "aliases": ["ФОЛЬКСВАГЕН", "VW", "VOLKS WAGEN"],
+      "models": [
+        "Polo", "Golf", "Golf Plus", "Golf GTI", "Golf R", "Jetta", "Vento", "Bora",
+        "Passat", "Passat CC", "CC", "Arteon", "Phaeton", "Scirocco", "Beetle", "Up!",
+        "Fox", "Lupo", "Touran", "Sharan", "Caddy", "Multivan", "Transporter", "Caravelle",
+        "Crafter", "Amarok", "Tiguan", "Touareg", "Teramont", "T-Cross", "T-Roc", "ID.4"
+      ]
+    },
+    {
+      "slug": "bmw",
+      "name_ru": "BMW",
+      "name_en": "BMW",
+      "is_popular": true,
+      "aliases": ["БМВ", "БМВ MOTOR", "BAYERISCHE MOTOREN WERKE"],
+      "models": [
+        "1 series", "2 series", "3 series", "4 series", "5 series", "6 series", "7 series",
+        "8 series", "M2", "M3", "M4", "M5", "M6", "X1", "X2", "X3", "X4", "X5", "X6", "X7",
+        "XM", "Z3", "Z4", "i3", "i4", "iX", "iX3", "E30", "E34", "E36", "E39", "E46",
+        "E53", "E60", "E70", "E90", "F10", "F30", "G30"
+      ]
+    },
+    {
+      "slug": "mercedes-benz",
+      "name_ru": "Mercedes-Benz",
+      "name_en": "Mercedes-Benz",
+      "is_popular": true,
+      "aliases": ["МЕРСЕДЕС", "МЕРСЕДЕС-БЕНЦ", "MERCEDES", "MERCEDES BENZ", "MB", "MERSEDES"],
+      "models": [
+        "A-class", "B-class", "C-class", "CLA", "CLK", "CLS", "E-class", "S-class", "CL",
+        "SL", "SLK", "SLC", "AMG GT", "G-class", "GLA", "GLB", "GLC", "GLE", "GLS", "GL",
+        "ML", "GLK", "R-class", "V-class", "Viano", "Vito", "Sprinter", "Maybach S-class",
+        "190", "W124", "W140", "W202", "W203", "W210", "W211", "W220", "W221", "EQC", "EQS"
+      ]
+    },
+    {
+      "slug": "audi",
+      "name_ru": "Audi",
+      "name_en": "Audi",
+      "is_popular": true,
+      "aliases": ["АУДИ"],
+      "models": [
+        "A1", "A3", "A4", "A4 allroad", "A5", "A6", "A6 allroad", "A7", "A8", "S3", "S4",
+        "S5", "S6", "S8", "RS3", "RS4", "RS6", "RS7", "Q2", "Q3", "Q5", "Q7", "Q8",
+        "SQ5", "SQ7", "TT", "TTS", "R8", "e-tron", "80", "100", "200", "V8", "Coupe"
+      ]
+    },
+    {
+      "slug": "kia",
+      "name_ru": "Kia",
+      "name_en": "Kia",
+      "is_popular": true,
+      "aliases": ["КИА", "КИЯ", "KIA MOTORS"],
+      "models": [
+        "Rio", "Rio X", "Rio X-Line", "Ceed", "ProCeed", "Cerato", "Spectra",
+        "Sephia", "Shuma", "Magentis", "Optima", "K5", "K7", "Quoris", "Stinger",
+        "Picanto", "Soul", "Venga", "Carens", "Carnival", "Sedona", "Sorento", "Sorento Prime",
+        "Sportage", "Seltos", "Mohave", "Borrego", "Retona", "Bongo", "Besta", "Pride",
+        "Clarus", "Joice", "EV6", "Niro"
+      ]
+    },
+    {
+      "slug": "hyundai",
+      "name_ru": "Hyundai",
+      "name_en": "Hyundai",
+      "is_popular": true,
+      "aliases": ["ХЕНДАЙ", "ХУНДАЙ", "ХЁНДЭ", "HYUNDAI MOTOR"],
+      "models": [
+        "Solaris", "Accent", "Verna", "Getz", "i10", "i20", "i30", "i40", "Elantra",
+        "Avante", "Sonata", "Grandeur", "Azera", "Genesis", "Equus", "Creta", "Tucson",
+        "ix35", "ix55", "Santa Fe", "Santa Fe Classic", "Grand Santa Fe", "Palisade",
+        "Terracan", "Galloper", "Starex", "H-1", "Matrix", "Trajet", "Porter", "County",
+        "Lantra", "Coupe", "Tiburon", "Veloster", "Kona", "Staria", "Ioniq"
+      ]
+    },
+    {
+      "slug": "ford",
+      "name_ru": "Ford",
+      "name_en": "Ford",
+      "is_popular": true,
+      "aliases": ["ФОРД", "FORD MOTOR"],
+      "models": [
+        "Focus", "Fiesta", "Fusion", "Mondeo", "Escort", "Sierra", "Scorpio", "Ka",
+        "C-Max", "S-Max", "Galaxy", "Kuga", "EcoSport", "Escape", "Edge", "Explorer",
+        "Expedition", "Maverick", "Ranger", "F-150", "Transit", "Tourneo", "Mustang",
+        "Probe", "Puma", "Taurus", "Windstar", "Bronco"
+      ]
+    },
+    {
+      "slug": "chevrolet",
+      "name_ru": "Chevrolet",
+      "name_en": "Chevrolet",
+      "is_popular": true,
+      "aliases": ["ШЕВРОЛЕ", "ШЕВРОЛЕТ", "CHEVROLET GM", "SHEVROLE"],
+      "models": [
+        "Lanos", "Aveo", "Spark", "Cobalt", "Lacetti", "Cruze", "Epica", "Evanda",
+        "Malibu", "Rezzo", "Orlando", "Captiva", "Trailblazer", "Tahoe", "Suburban",
+        "Blazer", "Niva", "Camaro", "Corvette", "Impala", "Volt", "Bolt", "Silverado",
+        "Colorado", "Traverse", "Equinox"
+      ]
+    },
+    {
+      "slug": "renault",
+      "name_ru": "Renault",
+      "name_en": "Renault",
+      "is_popular": true,
+      "aliases": ["РЕНО", "РЕНОЛТ"],
+      "models": [
+        "Logan", "Sandero", "Sandero Stepway", "Symbol", "Clio", "Megane", "Fluence",
+        "Scenic", "Grand Scenic", "Laguna", "Latitude", "Vel Satis", "Espace", "Kangoo",
+        "Master", "Trafic", "Duster", "Arkana", "Kaptur", "Captur", "Koleos", "Twingo", "Talisman"
+      ]
+    },
+    {
+      "slug": "skoda",
+      "name_ru": "Skoda",
+      "name_en": "Skoda",
+      "is_popular": true,
+      "aliases": ["ШКОДА", "ŠKODA"],
+      "models": [
+        "Fabia", "Rapid", "Octavia", "Octavia Tour", "Octavia Scout", "Superb", "Yeti",
+        "Karoq", "Kodiaq", "Kamiq", "Kushaq", "Roomster", "Praktik", "Felicia", "Favorit", "Enyaq"
+      ]
+    },
+    {
+      "slug": "lada",
+      "name_ru": "Lada (ВАЗ)",
+      "name_en": "Lada",
+      "is_popular": true,
+      "aliases": ["ЛАДА", "ВАЗ", "VAZ", "AVTOVAZ", "АВТОВАЗ", "LADA VAZ"],
+      "models": [
+        "2101", "2102", "2103", "2104", "2105", "2106", "2107", "2108", "2109", "21099",
+        "2110", "2111", "2112", "2113", "2114", "2115", "2121 Нива", "21213 Нива",
+        "21214 Нива", "Niva Legend", "Niva Travel", "Kalina", "Granta", "Priora",
+        "Vesta", "Vesta SW", "Vesta Cross", "XRAY", "Largus", "Largus Cross", "Oka", "Iskra"
+      ]
+    },
+    {
+      "slug": "uaz",
+      "name_ru": "УАЗ",
+      "name_en": "UAZ",
+      "is_popular": true,
+      "aliases": ["UAZ", "УЛЬЯНОВСКИЙ", "УАЗ ПАТРИОТ"],
+      "models": [
+        "Patriot", "Pickup", "Hunter", "Profi", "3151", "31512", "31514", "31519",
+        "469", "452 Буханка", "2206", "3909", "3303", "Simbir"
+      ]
+    },
+    {
+      "slug": "gaz",
+      "name_ru": "ГАЗ",
+      "name_en": "GAZ",
+      "is_popular": false,
+      "aliases": ["GAZ", "ГОРЬКОВСКИЙ"],
+      "models": [
+        "Gazelle", "Gazelle Next", "Gazelle Business", "Sobol", "Valdai", "Volga 3110",
+        "Volga 31105", "Volga Siber", "3102", "24", "69", "66", "3307", "3309"
+      ]
+    },
+    {
+      "slug": "opel",
+      "name_ru": "Opel",
+      "name_en": "Opel",
+      "is_popular": false,
+      "aliases": ["ОПЕЛЬ"],
+      "models": [
+        "Astra", "Corsa", "Vectra", "Insignia", "Omega", "Kadett", "Ascona", "Zafira",
+        "Meriva", "Antara", "Mokka", "Frontera", "Vivaro", "Combo", "Signum", "Tigra", "Calibra"
+      ]
+    },
+    {
+      "slug": "peugeot",
+      "name_ru": "Peugeot",
+      "name_en": "Peugeot",
+      "is_popular": false,
+      "aliases": ["ПЕЖО"],
+      "models": [
+        "106", "107", "206", "207", "208", "301", "306", "307", "308", "406", "407",
+        "408", "508", "605", "607", "1007", "2008", "3008", "4007", "4008", "5008",
+        "Partner", "Expert", "Boxer", "Traveller", "RCZ"
+      ]
+    },
+    {
+      "slug": "citroen",
+      "name_ru": "Citroen",
+      "name_en": "Citroen",
+      "is_popular": false,
+      "aliases": ["СИТРОЕН", "CITROËN"],
+      "models": [
+        "C1", "C2", "C3", "C3 Picasso", "C4", "C4 Picasso", "C5", "C6", "C8", "C-Elysee",
+        "C-Crosser", "C4 Aircross", "Berlingo", "Jumpy", "Jumper", "Xsara", "Xsara Picasso",
+        "Xantia", "ZX", "Saxo", "DS3", "DS4", "DS5"
+      ]
+    },
+    {
+      "slug": "daewoo",
+      "name_ru": "Daewoo",
+      "name_en": "Daewoo",
+      "is_popular": false,
+      "aliases": ["ДЭУ", "ДЕУ"],
+      "models": ["Nexia", "Matiz", "Lanos", "Espero", "Nubira", "Leganza", "Gentra", "Winstorm", "Damas", "Tico"]
+    },
+    {
+      "slug": "ssangyong",
+      "name_ru": "SsangYong",
+      "name_en": "SsangYong",
+      "is_popular": false,
+      "aliases": ["САНГЙОНГ", "ССАНГЙОНГ", "SSANG YONG"],
+      "models": ["Actyon", "Actyon Sports", "Kyron", "Rexton", "Musso", "Korando", "Tivoli", "Istana", "Chairman", "Stavic"]
+    },
+    {
+      "slug": "infiniti",
+      "name_ru": "Infiniti",
+      "name_en": "Infiniti",
+      "is_popular": false,
+      "aliases": ["ИНФИНИТИ"],
+      "models": ["G25", "G35", "G37", "Q50", "Q60", "Q70", "M35", "M37", "M45", "EX35", "EX37", "QX50", "QX56", "QX60", "QX70", "QX80", "FX35", "FX37", "FX45", "FX50", "JX35"]
+    },
+    {
+      "slug": "acura",
+      "name_ru": "Acura",
+      "name_en": "Acura",
+      "is_popular": false,
+      "aliases": ["АКУРА"],
+      "models": ["MDX", "RDX", "ZDX", "TL", "TSX", "TLX", "RL", "RLX", "ILX", "Integra", "Legend", "NSX"]
+    },
+    {
+      "slug": "volvo",
+      "name_ru": "Volvo",
+      "name_en": "Volvo",
+      "is_popular": false,
+      "aliases": ["ВОЛЬВО"],
+      "models": ["S40", "S60", "S70", "S80", "S90", "V40", "V50", "V60", "V70", "V90", "XC40", "XC60", "XC70", "XC90", "C30", "C70", "240", "740", "850", "940", "960"]
+    },
+    {
+      "slug": "land-rover",
+      "name_ru": "Land Rover",
+      "name_en": "Land Rover",
+      "is_popular": false,
+      "aliases": ["ЛЕНД РОВЕР", "ЛЭНД РОВЕР", "LANDROVER", "RANGE ROVER"],
+      "models": ["Range Rover", "Range Rover Sport", "Range Rover Evoque", "Range Rover Velar", "Discovery", "Discovery Sport", "Freelander", "Defender"]
+    },
+    {
+      "slug": "jeep",
+      "name_ru": "Jeep",
+      "name_en": "Jeep",
+      "is_popular": false,
+      "aliases": ["ДЖИП"],
+      "models": ["Grand Cherokee", "Cherokee", "Liberty", "Compass", "Patriot", "Renegade", "Wrangler", "Commander", "Gladiator"]
+    },
+    {
+      "slug": "porsche",
+      "name_ru": "Porsche",
+      "name_en": "Porsche",
+      "is_popular": false,
+      "aliases": ["ПОРШЕ", "ПОРШ"],
+      "models": ["Cayenne", "Macan", "Panamera", "911", "Boxster", "Cayman", "Taycan", "928", "944", "968"]
+    },
+    {
+      "slug": "geely",
+      "name_ru": "Geely",
+      "name_en": "Geely",
+      "is_popular": true,
+      "aliases": ["ДЖИЛИ", "ЖИЛИ"],
+      "models": ["Atlas", "Atlas Pro", "Coolray", "Tugella", "Monjaro", "Emgrand", "Emgrand X7", "MK", "Otaka", "GC6", "Preface", "Okavango"]
+    },
+    {
+      "slug": "chery",
+      "name_ru": "Chery",
+      "name_en": "Chery",
+      "is_popular": true,
+      "aliases": ["ЧЕРИ", "ЧЕРРИ"],
+      "models": ["Tiggo", "Tiggo 2", "Tiggo 3", "Tiggo 4", "Tiggo 4 Pro", "Tiggo 7", "Tiggo 7 Pro", "Tiggo 8", "Tiggo 8 Pro", "Arrizo 8", "Amulet", "Fora", "Bonus", "Indis", "Kimo", "QQ", "Very"]
+    },
+    {
+      "slug": "haval",
+      "name_ru": "Haval",
+      "name_en": "Haval",
+      "is_popular": true,
+      "aliases": ["ХАВАЛ", "ХАВЕЙЛ", "GREAT WALL HAVAL"],
+      "models": ["Jolion", "F7", "F7x", "H3", "H5", "H6", "H9", "Dargo", "M6"]
+    },
+    {
+      "slug": "changan",
+      "name_ru": "Changan",
+      "name_en": "Changan",
+      "is_popular": true,
+      "aliases": ["ЧАНГАН", "ЧАНЬАНЬ"],
+      "models": ["CS35", "CS35 Plus", "CS55", "CS75", "CS75 Plus", "CS95", "UNI-K", "UNI-T", "UNI-V", "Alsvin", "Eado"]
+    },
+    {
+      "slug": "exeed",
+      "name_ru": "Exeed",
+      "name_en": "Exeed",
+      "is_popular": false,
+      "aliases": ["ЭКСИД"],
+      "models": ["TXL", "VX", "LX", "RX"]
+    },
+    {
+      "slug": "omoda",
+      "name_ru": "Omoda",
+      "name_en": "Omoda",
+      "is_popular": false,
+      "aliases": ["ОМОДА"],
+      "models": ["C5", "S5", "S5 GT"]
+    },
+    {
+      "slug": "great-wall",
+      "name_ru": "Great Wall",
+      "name_en": "Great Wall",
+      "is_popular": false,
+      "aliases": ["ГРЕЙТ ВОЛЛ", "GREATWALL"],
+      "models": ["Hover", "Hover H3", "Hover H5", "Safe", "Deer", "Wingle", "Poer", "Peri"]
+    },
+    {
+      "slug": "faw",
+      "name_ru": "FAW",
+      "name_en": "FAW",
+      "is_popular": false,
+      "aliases": ["ФАВ"],
+      "models": ["Besturn X40", "Besturn X80", "Bestune T77", "Oley", "V5", "Vita"]
+    },
+    {
+      "slug": "jac",
+      "name_ru": "JAC",
+      "name_en": "JAC",
+      "is_popular": false,
+      "aliases": ["ДЖАК"],
+      "models": ["S3", "S5", "S7", "T6", "T8", "J7", "JS3", "JS4", "JS6"]
+    },
+    {
+      "slug": "byd",
+      "name_ru": "BYD",
+      "name_en": "BYD",
+      "is_popular": false,
+      "aliases": ["БИД", "БАЙДИ"],
+      "models": ["F3", "Flyer", "Han", "Song Plus", "Seal", "Dolphin", "Atto 3", "Tang"]
+    },
+    {
+      "slug": "lifan",
+      "name_ru": "Lifan",
+      "name_en": "Lifan",
+      "is_popular": false,
+      "aliases": ["ЛИФАН"],
+      "models": ["Solano", "X50", "X60", "X70", "Breez", "Smily", "Cebrium", "Myway"]
+    },
+    {
+      "slug": "moskvich",
+      "name_ru": "Москвич",
+      "name_en": "Moskvich",
+      "is_popular": false,
+      "aliases": ["MOSKVICH", "АЗЛК", "AZLK"],
+      "models": ["3", "3e", "6", "2140", "2141", "412", "408", "Святогор", "Князь Владимир"]
+    },
+    {
+      "slug": "daihatsu",
+      "name_ru": "Daihatsu",
+      "name_en": "Daihatsu",
+      "is_popular": false,
+      "aliases": ["ДАЙХАЦУ"],
+      "models": ["Terios", "Terios Kid", "Move", "Mira", "Tanto", "Boon", "Sirion", "YRV", "Storia", "Bego", "Rocky", "Atrai", "Hijet", "Copen"]
+    },
+    {
+      "slug": "isuzu",
+      "name_ru": "Isuzu",
+      "name_en": "Isuzu",
+      "is_popular": false,
+      "aliases": ["ИСУЗУ"],
+      "models": ["Bighorn", "Trooper", "Wizard", "Rodeo", "MU", "D-Max", "Elf", "Forward", "Gemini", "Fargo"]
+    },
+    {
+      "slug": "chrysler",
+      "name_ru": "Chrysler",
+      "name_en": "Chrysler",
+      "is_popular": false,
+      "aliases": ["КРАЙСЛЕР"],
+      "models": ["300C", "300M", "Sebring", "Stratus", "PT Cruiser", "Voyager", "Grand Voyager", "Pacifica", "Neon", "Concorde"]
+    },
+    {
+      "slug": "dodge",
+      "name_ru": "Dodge",
+      "name_en": "Dodge",
+      "is_popular": false,
+      "aliases": ["ДОДЖ"],
+      "models": ["Caliber", "Avenger", "Charger", "Challenger", "Durango", "Journey", "Nitro", "Caravan", "Grand Caravan", "Ram", "Stratus", "Neon"]
+    },
+    {
+      "slug": "cadillac",
+      "name_ru": "Cadillac",
+      "name_en": "Cadillac",
+      "is_popular": false,
+      "aliases": ["КАДИЛЛАК"],
+      "models": ["Escalade", "SRX", "XT5", "CTS", "ATS", "STS", "BLS", "DTS", "Seville", "Eldorado"]
+    },
+    {
+      "slug": "seat",
+      "name_ru": "Seat",
+      "name_en": "Seat",
+      "is_popular": false,
+      "aliases": ["СЕАТ"],
+      "models": ["Ibiza", "Leon", "Toledo", "Cordoba", "Altea", "Alhambra", "Ateca", "Arona", "Tarraco"]
+    },
+    {
+      "slug": "fiat",
+      "name_ru": "Fiat",
+      "name_en": "Fiat",
+      "is_popular": false,
+      "aliases": ["ФИАТ"],
+      "models": ["Albea", "Punto", "Grande Punto", "Panda", "500", "Bravo", "Brava", "Marea", "Linea", "Doblo", "Ducato", "Sedici", "Freemont", "Tipo"]
+    },
+    {
+      "slug": "alfa-romeo",
+      "name_ru": "Alfa Romeo",
+      "name_en": "Alfa Romeo",
+      "is_popular": false,
+      "aliases": ["АЛЬФА РОМЕО", "ALFAROMEO"],
+      "models": ["147", "156", "159", "166", "Giulietta", "Giulia", "Stelvio", "Brera", "GT", "MiTo", "Spider"]
+    },
+    {
+      "slug": "mini",
+      "name_ru": "Mini",
+      "name_en": "Mini",
+      "is_popular": false,
+      "aliases": ["МИНИ", "MINI COOPER"],
+      "models": ["Cooper", "Cooper S", "Countryman", "Clubman", "Paceman", "Cabrio", "One"]
+    },
+    {
+      "slug": "smart",
+      "name_ru": "Smart",
+      "name_en": "Smart",
+      "is_popular": false,
+      "aliases": ["СМАРТ"],
+      "models": ["Fortwo", "Forfour", "Roadster", "Crossblade"]
+    },
+    {
+      "slug": "jaguar",
+      "name_ru": "Jaguar",
+      "name_en": "Jaguar",
+      "is_popular": false,
+      "aliases": ["ЯГУАР"],
+      "models": ["XE", "XF", "XJ", "XK", "S-Type", "X-Type", "F-Pace", "E-Pace", "I-Pace", "F-Type"]
+    },
+    {
+      "slug": "genesis",
+      "name_ru": "Genesis",
+      "name_en": "Genesis",
+      "is_popular": false,
+      "aliases": ["ДЖЕНЕЗИС", "ГЕНЕЗИС"],
+      "models": ["G70", "G80", "G90", "GV70", "GV80"]
+    },
+    {
+      "slug": "datsun",
+      "name_ru": "Datsun",
+      "name_en": "Datsun",
+      "is_popular": false,
+      "aliases": ["ДАТСУН"],
+      "models": ["on-DO", "mi-DO"]
+    },
+    {
+      "slug": "ravon",
+      "name_ru": "Ravon",
+      "name_en": "Ravon",
+      "is_popular": false,
+      "aliases": ["РАВОН"],
+      "models": ["Nexia R3", "R2", "R4", "Gentra"]
+    },
+    {
+      "slug": "zaz",
+      "name_ru": "ЗАЗ",
+      "name_en": "ZAZ",
+      "is_popular": false,
+      "aliases": ["ZAZ", "ЗАПОРОЖЕЦ"],
+      "models": ["Chance", "Sens", "Vida", "Slavuta", "Tavria", "968"]
+    },
+    {
+      "slug": "iz",
+      "name_ru": "ИЖ",
+      "name_en": "IZH",
+      "is_popular": false,
+      "aliases": ["IZH", "ИЖМАШ"],
+      "models": ["2126 Ода", "2717", "2715", "412", "Москвич 412"]
+    },
+    {
+      "slug": "tesla",
+      "name_ru": "Tesla",
+      "name_en": "Tesla",
+      "is_popular": false,
+      "aliases": ["ТЕСЛА"],
+      "models": ["Model 3", "Model S", "Model X", "Model Y", "Cybertruck"]
+    },
+    {
+      "slug": "zeekr",
+      "name_ru": "Zeekr",
+      "name_en": "Zeekr",
+      "is_popular": false,
+      "aliases": ["ЗИКР"],
+      "models": ["001", "007", "009", "X"]
+    },
+    {
+      "slug": "li-auto",
+      "name_ru": "Li Auto",
+      "name_en": "Li Auto",
+      "is_popular": false,
+      "aliases": ["ЛИ АУТО", "LIXIANG", "LI XIANG"],
+      "models": ["L6", "L7", "L8", "L9", "One", "Mega"]
+    },
+    {
+      "slug": "gac",
+      "name_ru": "GAC",
+      "name_en": "GAC",
+      "is_popular": false,
+      "aliases": ["ДЖАК ГАЦ", "GAC MOTOR"],
+      "models": ["GS3", "GS4", "GS5", "GS8", "GN8", "Trumpchi"]
+    },
+    {
+      "slug": "dongfeng",
+      "name_ru": "Dongfeng",
+      "name_en": "Dongfeng",
+      "is_popular": false,
+      "aliases": ["ДОНГФЕНГ", "ДУНФЭН"],
+      "models": ["AX7", "580", "S30", "H30", "Shine Max", "DF6"]
+    },
+    {
+      "slug": "hino",
+      "name_ru": "Hino",
+      "name_en": "Hino",
+      "is_popular": false,
+      "aliases": ["ХИНО"],
+      "models": ["Ranger", "Dutro", "Profia", "300", "500", "700"]
+    },
+    {
+      "slug": "scion",
+      "name_ru": "Scion",
+      "name_en": "Scion",
+      "is_popular": false,
+      "aliases": ["СЦИОН"],
+      "models": ["tC", "xA", "xB", "xD", "iQ", "FR-S"]
+    },
+    {
+      "slug": "pontiac",
+      "name_ru": "Pontiac",
+      "name_en": "Pontiac",
+      "is_popular": false,
+      "aliases": ["ПОНТИАК"],
+      "models": ["Vibe", "Grand Am", "Grand Prix", "Bonneville", "Firebird", "Solstice", "G6"]
+    },
+    {
+      "slug": "buick",
+      "name_ru": "Buick",
+      "name_en": "Buick",
+      "is_popular": false,
+      "aliases": ["БЬЮИК"],
+      "models": ["Regal", "LaCrosse", "Enclave", "Encore", "Century", "Park Avenue"]
+    },
+    {
+      "slug": "gmc",
+      "name_ru": "GMC",
+      "name_en": "GMC",
+      "is_popular": false,
+      "aliases": ["ДЖИЭМСИ"],
+      "models": ["Yukon", "Sierra", "Acadia", "Terrain", "Savana", "Envoy"]
+    },
+    {
+      "slug": "lincoln",
+      "name_ru": "Lincoln",
+      "name_en": "Lincoln",
+      "is_popular": false,
+      "aliases": ["ЛИНКОЛЬН"],
+      "models": ["Navigator", "MKX", "MKZ", "MKC", "Town Car", "Continental", "Aviator"]
+    }
+  ]
+}

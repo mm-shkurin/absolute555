@@ -1,6 +1,6 @@
 from typing import Set, List
-from fastapi import HTTPException, status
-from app.models.users import Users
+from app.core.exceptions import AuthorizationError
+from app.features.account.models.users import Users
 from .roles import UserRole
 from .permissions import Permission
 from .mapping import ROLE_PERMISSIONS
@@ -21,7 +21,8 @@ class PermissionChecker:
     
     async def assert_can(self, permission: Permission):
         if not await self.can(permission):
-            raise HTTPException(
-                status_code=status.HTTP_403_FORBIDDEN,
-                detail=f"Permission denied: {permission.value}"
+            raise AuthorizationError(
+                "Permission denied",
+                code="PERMISSION_DENIED",
+                details={"required": permission.value},
             )
