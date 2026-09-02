@@ -5,7 +5,7 @@ import type { StatusTone } from '../../../shared/ui/StatusBadge'
 import type { ListingStatus, MyListingWire } from '../api/myListingsApi'
 
 export interface MyListingAction {
-  id: 'open' | 'offers' | 'continue' | 'fix' | 'preview'
+  id: 'open' | 'offers' | 'continue' | 'fix' | 'preview' | 'republish'
   label: string
   primary?: boolean
 }
@@ -26,6 +26,7 @@ const TONE: Record<ListingStatus, StatusTone> = {
   moderation: 'wait',
   published: 'ok',
   rejected: 'bad',
+  withdrawn: 'info',
   sold: 'past',
 }
 
@@ -34,6 +35,7 @@ const LABEL: Record<ListingStatus, string> = {
   moderation: 'на модерации',
   published: 'опубликовано',
   rejected: 'отклонено',
+  withdrawn: 'снято с публикации',
   sold: 'продано',
 }
 
@@ -47,14 +49,22 @@ export const STATUS_TABS: { id: ListingStatus | 'all'; label: string }[] = [
 ]
 
 export function countByStatus(items: MyListingWire[], status: ListingStatus | 'all'): number {
-  return status === 'all' ? items.length : items.filter((item) => item.status === status).length
+  return status === 'all' ? items.length : filterByStatus(items, status).length
+}
+
+// Вкладка «Черновики» собирает и снятое: для продавца это одна стопка — то, что сейчас
+// не продаётся и ждёт его руки.
+const ON_TAB: Partial<Record<ListingStatus, ListingStatus[]>> = {
+  draft: ['draft', 'withdrawn'],
 }
 
 export function filterByStatus(
   items: MyListingWire[],
   status: ListingStatus | 'all',
 ): MyListingWire[] {
-  return status === 'all' ? items : items.filter((item) => item.status === status)
+  if (status === 'all') return items
+  const wanted = ON_TAB[status] ?? [status]
+  return items.filter((item) => wanted.includes(item.status))
 }
 
 export function toMyListingRow(wire: MyListingWire): MyListingRowView {
@@ -102,7 +112,16 @@ function metaFor(wire: MyListingWire): string {
 function actionsFor(status: ListingStatus): MyListingAction[] {
   if (status === 'draft') return [{ id: 'continue', label: 'Продолжить', primary: true }]
   if (status === 'moderation') return [{ id: 'preview', label: 'Как выглядит' }]
+  // Отклонённое чинится через возврат в черновик: сервер запрещает отправку из
+  // `rejected`, и «исправить» без этого шага упиралось бы в отказ на последнем нажатии.
   if (status === 'rejected') return [{ id: 'fix', label: 'Исправить и отправить', primary: true }]
+  // Снятое возвращают в продажу целиком — правки оно не требует, а мастер требовал бы
+  // пройти шесть шагов ради одного решения.
+  if (status === 'withdrawn')
+    return [
+      { id: 'republish', label: 'Вернуть в продажу', primary: true },
+      { id: 'continue', label: 'Доработать' },
+    ]
   if (status === 'published')
     return [
       { id: 'open', label: 'Открыть' },

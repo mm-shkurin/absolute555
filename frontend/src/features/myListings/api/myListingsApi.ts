@@ -4,7 +4,13 @@
 import { fetchMyListings as fetchMySaleCars } from '../../../shared/api/backend/saleCarApi'
 import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
 
-export type ListingStatus = 'draft' | 'moderation' | 'published' | 'rejected' | 'sold'
+export type ListingStatus =
+  | 'draft'
+  | 'moderation'
+  | 'published'
+  | 'rejected'
+  | 'withdrawn'
+  | 'sold'
 
 export interface MyListingWire {
   id: string
@@ -27,15 +33,15 @@ export interface MyListingWire {
   buyer_name: string | null
 }
 
-// Снятое с публикации объявление на экране показывается черновиком: снять и доработать —
-// это одно действие продавца, и отдельная вкладка ради него добавила бы шестую колонку,
-// в которой почти всегда пусто.
+// Снятое живёт на вкладке черновиков — отдельная колонка ради него была бы почти всегда
+// пустой, — но состояние своё: из снятого объявление возвращают в продажу одним
+// действием, а из черновика ведут по мастеру. Слить их значит предложить не то действие.
 const STATUS: Record<SaleCarWire['status'], ListingStatus> = {
   draft: 'draft',
   moderation: 'moderation',
   published: 'published',
   rejected: 'rejected',
-  withdrawn: 'draft',
+  withdrawn: 'withdrawn',
   sold: 'sold',
 }
 

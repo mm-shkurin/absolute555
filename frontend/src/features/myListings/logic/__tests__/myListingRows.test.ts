@@ -67,3 +67,34 @@ describe('мои объявления', () => {
     expect(filterByStatus(items, 'draft').map((item) => item.id)).toEqual(['l2'])
   })
 })
+
+describe('снятое и отклонённое', () => {
+  // Из `rejected` сервер отправку запрещает: сначала возврат в черновик, потом правка.
+  it('отклонённое зовёт исправить, а не отправить заново', () => {
+    expect(
+      toMyListingRow({ ...base, status: 'rejected' }).actions.map((action) => action.id),
+    ).toEqual(['fix'])
+  })
+
+  it('снятое возвращают в продажу целиком, мастер — отдельным действием', () => {
+    expect(
+      toMyListingRow({ ...base, status: 'withdrawn' }).actions.map((action) => action.id),
+    ).toEqual(['republish', 'continue'])
+  })
+
+  it('снятое называется снятым, а не черновиком', () => {
+    expect(toMyListingRow({ ...base, status: 'withdrawn' }).badge).toBe('снято с публикации')
+  })
+
+  // Стопка «то, что сейчас не продаётся» — одна: отдельная вкладка ради снятого была бы
+  // почти всегда пустой.
+  it('вкладка черновиков собирает и снятое', () => {
+    const items = [
+      { ...base, id: 'a', status: 'draft' as const },
+      { ...base, id: 'b', status: 'withdrawn' as const },
+      { ...base, id: 'c', status: 'sold' as const },
+    ]
+    expect(filterByStatus(items, 'draft').map((item) => item.id)).toEqual(['a', 'b'])
+    expect(countByStatus(items, 'draft')).toBe(2)
+  })
+})
