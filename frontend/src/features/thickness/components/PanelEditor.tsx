@@ -12,7 +12,7 @@ interface Props {
   detail: PanelDetail
   busy: boolean
   error: string | null
-  onSave: (valueUm: number, photo: File) => void
+  onSave: (valueUm: number | null, photo: File) => void
   onRemove: () => void
 }
 
@@ -59,7 +59,7 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove }: Props) {
         type="text"
         inputMode="numeric"
         className={styles.field}
-        placeholder="число с экрана прибора"
+        placeholder="число с экрана прибора — или оставьте пустым"
         data-testid="panel-value"
         value={value}
         onChange={(event) => setValue(event.target.value)}

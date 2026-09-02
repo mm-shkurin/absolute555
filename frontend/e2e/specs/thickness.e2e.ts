@@ -35,6 +35,17 @@ describe('Заполнение карты замеров', () => {
     await filling.assertCoverage('1 из 13')
   })
 
+  it('пустое поле оставляет число серверу, а не отправляет ноль', async () => {
+    await filling.openFillingScreen('l6')
+    await filling.selectPanel('roof')
+    await filling.attachDevicePhoto()
+    await filling.save()
+    // Что именно прочиталось, решает сервер: сценарий проверяет, что панель перестала
+    // быть незамеренной, а не конкретное число.
+    await filling.assertPanelMeasured('roof')
+    await filling.assertCoverage('1 из 13')
+  })
+
   it('замер без фотографии не уходит запросом', async () => {
     await filling.openFillingScreen('l5')
     await filling.selectPanel('roof')

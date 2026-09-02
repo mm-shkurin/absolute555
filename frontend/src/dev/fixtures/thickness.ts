@@ -16,7 +16,10 @@ const TOTAL_PANELS = 13
 
 // Карта есть только у первого объявления: у остальных её нет вовсе, и карточка обязана
 // честно молчать про замеры, а не показывать пустую.
+// Первому объявлению карта заполнена не до конца, второму — целиком: без полной карты
+// нечего показать фильтру «с картой замеров», без частичной — состоянию «замерено не всё».
 const MAPPED_CAR = 'l1'
+const FULLY_MAPPED_CAR = 'l2'
 
 const START: [BodyPanel, number][] = [
   ['hood', 96],
@@ -32,7 +35,16 @@ const START: [BodyPanel, number][] = [
   ['rear_bumper', 102],
 ]
 
-const measured = new Map<string, Map<BodyPanel, number>>([[MAPPED_CAR, new Map(START)]])
+const ALL_PANELS: [BodyPanel, number][] = [
+  ...START,
+  ['rear_right_fender', 105],
+  ['rear_right_door', 98],
+]
+
+const measured = new Map<string, Map<BodyPanel, number>>([
+  [MAPPED_CAR, new Map(START)],
+  [FULLY_MAPPED_CAR, new Map(ALL_PANELS)],
+])
 
 // Те же пороги, что у сервера: заглушка изображает его ответ, а не считает свой.
 function statusOf(valueUm: number): PanelStatus {

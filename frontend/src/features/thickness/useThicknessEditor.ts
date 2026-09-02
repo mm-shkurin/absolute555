@@ -5,7 +5,7 @@ import { deleteMeasurement, putMeasurement } from './api/thicknessApi'
 import type { PanelCode } from './logic/panels'
 
 export interface ThicknessEditor {
-  save: (panel: PanelCode, valueUm: number, photo: File) => Promise<void>
+  save: (panel: PanelCode, valueUm: number | null, photo: File) => Promise<void>
   remove: (panel: PanelCode) => Promise<void>
   busy: boolean
   error: string | null
@@ -19,7 +19,15 @@ export function useThicknessEditor(saleCarId: string): ThicknessEditor {
   const refresh = () => client.invalidateQueries({ queryKey: ['thickness', saleCarId] })
 
   const write = useMutation({
-    mutationFn: ({ panel, valueUm, photo }: { panel: PanelCode; valueUm: number; photo: File }) =>
+    mutationFn: ({
+      panel,
+      valueUm,
+      photo,
+    }: {
+      panel: PanelCode
+      valueUm: number | null
+      photo: File
+    }) =>
       putMeasurement(saleCarId, panel, valueUm, photo),
     onSuccess: refresh,
   })

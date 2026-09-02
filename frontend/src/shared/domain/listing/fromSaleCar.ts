@@ -30,9 +30,8 @@ export function toListingWire(car: SaleCarWire): ListingWire {
     // выдумать поле, которого в ответе не было.
     city: null,
     photo_url: car.preview_photo_url,
-    // Сводка замеров приходит в самой выдаче: отдельного вызова ради двух чисел нет,
-    // а её отсутствие честно означает «замеров нет», а не «не знаем».
-    has_thickness_map: (car.thickness?.measured_panels ?? 0) > 0,
+    // Бейдж обещает полную карту — значит, `is_complete`, а не «есть хоть один замер».
+    has_thickness_map: car.thickness?.is_complete ?? false,
     // VIN проверен, если он есть в ответе: сервер записывает его только из распознанного
     // документа, вручную его не вписывают.
     vin_verified: Boolean(car.vin),

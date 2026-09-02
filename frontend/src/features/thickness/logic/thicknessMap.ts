@@ -17,6 +17,10 @@ export interface PanelRow {
 export interface PanelDetail extends PanelRow {
   valueUm: number | null
   photoUrl: string | null
+  /** Что прочиталось со снимка, когда продавец вписал своё. `null` — правки не было,
+   *  и показывать нечего. */
+  ocrValueUm: number | null
+  corrected: boolean
   note: string
 }
 
@@ -70,16 +74,25 @@ export function toPanelDetail(wire: ThicknessMapWire, code: PanelCode): PanelDet
   const panel = PANELS.find((item) => item.code === code)
   const measurement = measurementOf(wire, code)
   const row = toRow(code, panel?.label ?? code, measurement)
+  // Правка видна ровно тогда, когда есть с чем сравнивать: продавец вписал своё
+  // (`source === 'seller'`), а распознанное число сохранено рядом.
+  const ocrValueUm = measurement?.ocr_value_um ?? null
+  const corrected = measurement?.source === 'seller' && ocrValueUm !== null
   return {
     ...row,
     valueUm: measurement?.value_um ?? null,
     photoUrl: measurement?.photo_url ?? null,
-    note: noteFor(row.grade),
+    ocrValueUm,
+    corrected,
+    note: noteFor(row.grade, corrected, ocrValueUm),
   }
 }
 
-function noteFor(grade: Grade): string {
+function noteFor(grade: Grade, corrected: boolean, ocrValueUm: number | null): string {
   if (grade === 'none') return 'Продавец не измерял эту панель.'
+  // Число, введённое человеком, стоит меньше считанного с прибора: покупатель обязан
+  // видеть и то, что прочиталось, а не только исправленное.
+  if (corrected) return `Продавец исправил распознанное число ${ocrValueUm} мкм на своё.`
   return `Значение снято с экрана прибора: ${GRADE_WORD[grade]}.`
 }
 

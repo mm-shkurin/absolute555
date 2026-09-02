@@ -47,6 +47,12 @@ export class ThicknessSellerStatements {
     await clickElement(this.driver, await waitForVisible(this.driver, 'panel-save'))
   }
 
+  async assertPanelMeasured(panel: string): Promise<void> {
+    const list = await waitForVisible(this.driver, 'panel-list')
+    const row = await list.findElement(By.css(`[data-panel="${panel}"]`))
+    await this.driver.wait(async () => (await row.getText()).includes('мкм'), 5000)
+  }
+
   async assertRefused(fragment: string): Promise<void> {
     expect(await textOf(this.driver, 'panel-refused')).toContain(fragment)
   }

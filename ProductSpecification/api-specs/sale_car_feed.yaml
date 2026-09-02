@@ -44,6 +44,13 @@ paths:
           schema:
             type: array
             items: { type: string }
+        - name: with_thickness_map
+          in: query
+          description: |
+            Только объявления с полной картой замеров — все тринадцать панелей
+            (история 15). Частичная карта под фильтр не попадает: «с картой» обещает
+            измеренную машину.
+          schema: { type: boolean, default: false }
         - name: sort
           in: query
           schema:

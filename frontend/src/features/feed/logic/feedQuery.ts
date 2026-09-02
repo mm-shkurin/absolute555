@@ -45,9 +45,9 @@ const numeric = (value?: string): number | undefined => {
   return value?.trim() && Number.isFinite(parsed) ? parsed : undefined
 }
 
-/** Перевод состояния фильтров в параметры ленты. Двух фильтров экрана сервер не знает:
- *  вкладка «под заказ» ждёт истории 17, «с картой замеров» — истории 14, и параметров под
- *  них в контракте нет. Отправлять их наугад значит получить отказ на весь запрос. */
+/** Перевод состояния фильтров в параметры ленты. Вкладку «под заказ» сервер пока не
+ *  знает — она ждёт истории 17, и параметра под неё в контракте нет; отправлять его
+ *  наугад значит получить отказ на весь запрос. */
 export function toFeedFilters(query: FeedQuery, page = 1): FeedFilters {
   return {
     brand_id: query.brand?.trim() || undefined,
@@ -59,6 +59,9 @@ export function toFeedFilters(query: FeedQuery, page = 1): FeedFilters {
     mileage_from: numeric(query.mileageFrom),
     mileage_to: numeric(query.mileageTo),
     transmission: query.transmissions.length > 0 ? query.transmissions : undefined,
+    // Ложное значение не отправляется: `with_thickness_map=false` и отсутствие параметра
+    // для сервера одно и то же, а в адресной строке лишний параметр читается как выбор.
+    with_thickness_map: query.withThicknessMap || undefined,
     sort: SORT_PARAM[query.sort],
     page,
   }

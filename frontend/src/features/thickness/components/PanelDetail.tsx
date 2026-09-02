@@ -20,6 +20,11 @@ export function PanelDetail({ detail }: { detail: Detail }) {
         </span>
         <span className={styles.unit}>{gradeCaption(detail)}</span>
       </div>
+      {detail.corrected ? (
+        <span className={styles.corrected} data-testid="panel-corrected">
+          уточнено продавцом
+        </span>
+      ) : null}
       <p className={styles.note}>{detail.note}</p>
     </div>
   )

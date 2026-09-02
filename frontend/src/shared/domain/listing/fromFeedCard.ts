@@ -15,9 +15,9 @@ export function fromFeedCard(card: FeedCardWire): ListingWire {
     transmission: card.transmission,
     city: null,
     photo_url: card.preview_photo_url,
-    // Сводка замеров приходит в самой карточке; канал «под заказ» — история 17, и до
-    // неё ни одна карточка в ленте не может заявить срок доставки.
-    has_thickness_map: (card.thickness?.measured_panels ?? 0) > 0,
+    // Бейдж обещает полную карту, поэтому и считается по `is_complete`, а не по факту
+    // хотя бы одного замера: частичная карта под это обещание не подходит.
+    has_thickness_map: card.thickness?.is_complete ?? false,
     vin_verified: false,
     import_delivery_days: null,
   }

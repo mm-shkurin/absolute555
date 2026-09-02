@@ -16,8 +16,8 @@ describe('форма замера', () => {
     })
   })
 
-  it('пустое поле называет себя, а не уезжает нулём', () => {
-    expect(checkMeasurement('  ', photo())).toMatchObject({ ok: false })
+  it('пустое поле означает «прочитай сам», а не ноль', () => {
+    expect(checkMeasurement('  ', photo())).toMatchObject({ ok: true, valueUm: null })
   })
 
   it('держит границы контракта: 1..3000', () => {

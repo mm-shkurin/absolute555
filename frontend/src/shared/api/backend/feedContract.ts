@@ -48,6 +48,9 @@ export interface FeedFilters {
   mileage_to?: number
   /** Повторяемый параметр: коробка выбирается несколькими значениями сразу. */
   transmission?: string[]
+  /** Только объявления с полной картой замеров — все тринадцать панелей (история 15).
+   *  Частичная карта под фильтр не попадает: «с картой» обещает измеренную машину. */
+  with_thickness_map?: boolean
   sort?: FeedSort
   page?: number
   size?: number

@@ -56,6 +56,43 @@ describe('карта замеров', () => {
     expect(detail.note).toBe('Значение снято с экрана прибора: шпаклёвка.')
   })
 
+  it('правку продавца показывает вместе с тем, что прочиталось', () => {
+    const corrected: ThicknessMapWire = {
+      ...wire,
+      measurements: [
+        {
+          panel: 'hood',
+          value_um: 96,
+          status: 'factory',
+          source: 'seller',
+          ocr_value_um: 966,
+          photo_url: 'https://s3/hood.jpg',
+        },
+      ],
+    }
+    const detail = toPanelDetail(corrected, 'hood')
+    expect(detail.corrected).toBe(true)
+    expect(detail.ocrValueUm).toBe(966)
+    expect(detail.note).toBe('Продавец исправил распознанное число 966 мкм на своё.')
+  })
+
+  it('распознанное без правки правкой не называет', () => {
+    const read: ThicknessMapWire = {
+      ...wire,
+      measurements: [
+        {
+          panel: 'hood',
+          value_um: 96,
+          status: 'factory',
+          source: 'ocr',
+          ocr_value_um: 96,
+          photo_url: 'https://s3/hood.jpg',
+        },
+      ],
+    }
+    expect(toPanelDetail(read, 'hood').corrected).toBe(false)
+  })
+
   it('о незамеренной панели говорит прямо, а не молчит', () => {
     const detail = toPanelDetail(wire, 'rear_right_door')
     expect(detail.measured).toBe(false)

@@ -63,12 +63,14 @@ export function feedPage(query: URLSearchParams): FeedPageWire {
   const priceTo = number(query.get('price_to'))
   const yearFrom = number(query.get('year_from'))
   const gearboxes = query.getAll('transmission')
+  const mapped = query.get('with_thickness_map') === 'true'
 
   let items = FEED.map(toCard).filter((card) => {
     if (priceFrom !== null && (card.price ?? 0) < priceFrom) return false
     if (priceTo !== null && (card.price ?? 0) > priceTo) return false
     if (yearFrom !== null && (card.year ?? 0) < yearFrom) return false
     if (gearboxes.length > 0 && !gearboxes.includes(card.transmission ?? '')) return false
+    if (mapped && !card.thickness?.is_complete) return false
     return true
   })
 
