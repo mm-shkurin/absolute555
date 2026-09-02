@@ -2,7 +2,7 @@
 //
 // Черновик живёт в состоянии страницы, а не в форме шага: человек ходит по шагам вперёд и
 // назад, и поле, размонтированное вместе со своим шагом, унесло бы значение с собой.
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { ROUTES } from '../../shared/navigation/routes'
@@ -23,8 +23,12 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
   const wizard = useDraftState()
   const { draft, state } = wizard
   const { saleCarId } = useParams()
+  // Канал выбирается адресом входа в мастер и дальше не меняется. Чужая роль получит на
+  // создании `403 NOT_AN_IMPORTER` — кнопку сюда показывают только поставщику.
+  const [search] = useSearchParams()
+  const kind = search.get('kind') === 'import' ? 'import' : 'stock'
   // Весь разговор с сервером — в одном хуке: страница остаётся разметкой шести шагов.
-  const server = useWizardServer({ ...wizard, stage: state.stage }, saleCarId)
+  const server = useWizardServer({ ...wizard, stage: state.stage }, saleCarId, kind)
   const goNext = () => server.saveAnd(wizard.goNext)
   // Число фотографий — это то, что лежит на сервере, а не счётчик нажатий: сводка перед
   // отправкой обязана совпадать с тем, что увидит модератор.

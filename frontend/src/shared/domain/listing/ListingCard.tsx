@@ -32,9 +32,14 @@ export function ListingCard({ listing }: { listing: ListingView }) {
         <div className={styles.price} data-testid="listing-price">
           {listing.price}
         </div>
+        {listing.turnkey ? (
+          <div className={styles.turnkey} data-testid="listing-turnkey">
+            {listing.turnkey}
+          </div>
+        ) : null}
         <div className={styles.spec}>{listing.spec}</div>
         <div className={styles.meta}>
-          <span>{listing.city}</span>
+          <span>{listing.isImport && listing.importFrom ? listing.importFrom : listing.city}</span>
           <span>{listing.vinNote}</span>
         </div>
       </div>

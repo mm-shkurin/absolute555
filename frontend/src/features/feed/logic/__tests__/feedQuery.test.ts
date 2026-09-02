@@ -12,9 +12,21 @@ describe('перевод фильтров ленты в параметры за�
       mileage_from: undefined,
       mileage_to: undefined,
       transmission: undefined,
+      model_id: undefined,
+      kind: 'stock',
+      with_thickness_map: undefined,
       sort: 'newest',
       page: 1,
     })
+  })
+
+  it('вкладка ленты уходит каналом поставки, а не остаётся в экране', () => {
+    expect(toFeedFilters({ ...EMPTY_QUERY, tab: 'import' }).kind).toBe('import')
+  })
+
+  it('«с картой замеров» отправляется только когда включено', () => {
+    expect(toFeedFilters(EMPTY_QUERY).with_thickness_map).toBeUndefined()
+    expect(toFeedFilters({ ...EMPTY_QUERY, withThicknessMap: true }).with_thickness_map).toBe(true)
   })
 
   it('переводит границы в числа, а не в строки', () => {

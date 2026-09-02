@@ -5,6 +5,7 @@
 // Отсюда правило — сохранение может провалиться молча, а мастер продолжает работать.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { isEmptyPatch, loadDraft, saveDraft, sendSts, startDraft, toDraft } from './api/draftApi'
+import type { ListingKind } from '../../shared/api/backend/saleCarContract'
 import { toPatch } from './logic/draftWire'
 import type { Draft } from './logic/draft'
 
@@ -22,7 +23,7 @@ export interface DraftSync {
 
 /** `existingId` — черновик, начатый раньше: мастер открыт по ссылке из «Моих объявлений»,
  *  и заводить второй черновик на ту же машину нельзя. */
-export function useDraftSync(enabled: boolean, existingId?: string): DraftSync {
+export function useDraftSync(enabled: boolean, existingId?: string, kind?: ListingKind): DraftSync {
   const [saleCarId, setSaleCarId] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
   // Идентификатор нужен обработчикам сразу после создания, до следующего рендера.
@@ -49,7 +50,7 @@ export function useDraftSync(enabled: boolean, existingId?: string): DraftSync {
     // заход разрешался бы в «черновика нет», и загрузка снимка ждала бы именно его,
     // навсегда. Записать идентификатор в размонтированном мастере безвредно: это ссылка,
     // а не состояние, и следующий заход её же и переиспользует.
-    creating.current = startDraft()
+    creating.current = startDraft(kind)
       .then((car) => {
         idRef.current = car.sale_car_id
         setSaleCarId(car.sale_car_id)
@@ -58,7 +59,7 @@ export function useDraftSync(enabled: boolean, existingId?: string): DraftSync {
       // Гость и оборванная сеть выглядят здесь одинаково: черновик остаётся только на
       // экране, и мастер об этом молчит до попытки отправки.
       .catch(() => null)
-  }, [enabled, existingId])
+  }, [enabled, existingId, kind])
 
   const save = useCallback(async (draft: Draft) => {
     const id = idRef.current

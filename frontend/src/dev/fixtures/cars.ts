@@ -16,7 +16,10 @@ export const LEXUS: ListingWire = {
   photo_url: null,
   has_thickness_map: true,
   vin_verified: true,
+  is_import: false,
+  import_country: null,
   import_delivery_days: null,
+  turnkey_price: null,
 }
 
 export const FEED: ListingWire[] = [
@@ -93,7 +96,10 @@ export const IMPORT_CARS: ListingWire[] = [
     city: 'Япония · Восток-Авто',
     has_thickness_map: false,
     vin_verified: false,
-    import_delivery_days: '55–70 дней',
+    is_import: true,
+    import_country: 'Япония',
+    import_delivery_days: '',
+    turnkey_price: 0,
   },
   {
     ...LEXUS,
@@ -108,7 +114,10 @@ export const IMPORT_CARS: ListingWire[] = [
     city: 'Япония · Восток-Авто',
     has_thickness_map: false,
     vin_verified: false,
-    import_delivery_days: '45–60 дней',
+    is_import: true,
+    import_country: 'Япония',
+    import_delivery_days: '',
+    turnkey_price: 0,
   },
   {
     ...LEXUS,
@@ -122,6 +131,9 @@ export const IMPORT_CARS: ListingWire[] = [
     city: 'Корея · АвтоЛинк',
     has_thickness_map: false,
     vin_verified: false,
-    import_delivery_days: '50–65 дней',
+    is_import: true,
+    import_country: 'Япония',
+    import_delivery_days: '',
+    turnkey_price: 0,
   },
 ]

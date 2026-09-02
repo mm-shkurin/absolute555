@@ -8,6 +8,8 @@ import { useCallback, useEffect, useState } from 'react'
 import { submitDraft } from './api/draftApi'
 import type { Draft } from './logic/draft'
 import { stageFor } from './logic/recognition'
+import { submitFailureText } from './logic/submitFailure'
+import type { ListingKind } from '../../shared/api/backend/saleCarContract'
 import { useDraftSync } from './useDraftSync'
 import { useGallery, type Gallery } from './useGallery'
 import { useStsRecognition } from './useStsRecognition'
@@ -33,8 +35,12 @@ export interface WizardServer {
   submitError: string | null
 }
 
-export function useWizardServer(wizard: WizardHandle, existingId?: string): WizardServer {
-  const sync = useDraftSync(true, existingId)
+export function useWizardServer(
+  wizard: WizardHandle,
+  existingId?: string,
+  kind?: ListingKind,
+): WizardServer {
+  const sync = useDraftSync(true, existingId, kind)
   const gallery = useGallery(sync.saleCarId)
   // Поток слушается только пока идёт распознавание: держать соединение открытым на
   // остальных шагах незачем, а сервер шлёт по нему пульс каждые тридцать секунд.
@@ -96,7 +102,9 @@ export function useWizardServer(wizard: WizardHandle, existingId?: string): Wiza
     try {
       await submitDraft(sync.saleCarId)
     } catch (failure) {
-      setSubmitError(failure instanceof Error ? failure.message : 'Не удалось отправить.')
+      // Отказ «не хватает полей» называет их поимённо: общий текст отправил бы продавца
+      // перечитывать шесть шагов подряд.
+      setSubmitError(submitFailureText(failure))
       return
     }
     wizard.submit()

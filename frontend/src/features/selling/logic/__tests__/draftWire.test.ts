@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { toDraft, toPatch } from '../draftWire'
 import { EMPTY_DRAFT } from '../draft'
+import { toDraft, toPatch } from '../draftWire'
 import type { SaleCarWire } from '../../../../shared/api/backend/saleCarContract'
 
 const car = (over: Partial<SaleCarWire> = {}): SaleCarWire => ({
@@ -31,6 +31,10 @@ const car = (over: Partial<SaleCarWire> = {}): SaleCarWire => ({
   autofill: null,
   seller: null,
   thickness: null,
+  listing_kind: 'stock',
+  import_country: null,
+  delivery_days: null,
+  turnkey_price: null,
   ...over,
 })
 
@@ -92,5 +96,24 @@ describe('черновик на провод', () => {
     })
     expect(patch).toMatchObject({ mark_raw: 'Toyota', model_raw: 'Camry' })
     expect(patch.brand_id).toBeUndefined()
+  })
+
+  it('привоз кладёт в правку страну, срок и цену под ключ', () => {
+    const patch = toPatch({
+      ...EMPTY_DRAFT,
+      kind: 'import',
+      importCountry: 'Япония',
+      deliveryDays: '60',
+      turnkeyPrice: '6690000',
+    })
+    expect(patch.import_country).toBe('Япония')
+    expect(patch.delivery_days).toBe(60)
+    expect(patch.turnkey_price).toBe(6690000)
+  })
+
+  it('машина в наличии полей привоза не отправляет, даже если они заполнены', () => {
+    const patch = toPatch({ ...EMPTY_DRAFT, importCountry: 'Япония', deliveryDays: '60' })
+    expect(patch.import_country).toBeUndefined()
+    expect(patch.delivery_days).toBeUndefined()
   })
 })

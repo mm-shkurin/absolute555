@@ -35,7 +35,9 @@ export function toListingWire(car: SaleCarWire): ListingWire {
     // VIN проверен, если он есть в ответе: сервер записывает его только из распознанного
     // документа, вручную его не вписывают.
     vin_verified: Boolean(car.vin),
-    // Канала «под заказ» на сервере нет: всё, что приходит, — машины в наличии.
-    import_delivery_days: null,
+    is_import: car.listing_kind === 'import',
+    import_country: car.import_country,
+    import_delivery_days: car.delivery_days === null ? null : `${car.delivery_days} дней`,
+    turnkey_price: car.turnkey_price,
   }
 }

@@ -8,7 +8,7 @@ import type { FeedCardWire, FeedPageWire } from '../../shared/api/backend/feedCo
 import type { OfferWire } from '../../shared/api/backend/offerContract'
 import type { SaleCarWire, SellerWire } from '../../shared/api/backend/saleCarContract'
 import type { UserWire } from '../../shared/api/backend/accountContract'
-import { FEED } from './cars'
+import { FEED, IMPORT_CARS } from './cars'
 import { PROFILE, offers as offerFixtures } from './people'
 import { thicknessSummary } from './thickness'
 
@@ -48,6 +48,14 @@ export function toCard(car: (typeof FEED)[number]): FeedCardWire {
     preview_photo_url: car.photo_url,
     published_at: new Date(Date.now() - 30 * HOURS).toISOString(),
     thickness: thicknessSummary(car.id),
+    // Привозные позиции живут в тех же фикстурах, отличаясь только каналом: лента одна
+    // на оба вида, и заглушка обязана изображать именно это.
+    listing_kind: car.is_import ? 'import' : 'stock',
+    import_country: car.import_country,
+    // Срок на проводе — число дней; строка «55–70 дней» живёт только в старых
+    // выдуманных фикстурах и до сервера не доезжает.
+    delivery_days: car.is_import ? 60 : null,
+    turnkey_price: car.turnkey_price,
   }
 }
 
@@ -65,7 +73,9 @@ export function feedPage(query: URLSearchParams): FeedPageWire {
   const gearboxes = query.getAll('transmission')
   const mapped = query.get('with_thickness_map') === 'true'
 
-  let items = FEED.map(toCard).filter((card) => {
+  const kind = query.get('kind')
+  let items = [...FEED, ...IMPORT_CARS].map(toCard).filter((card) => {
+    if (kind && card.listing_kind !== kind) return false
     if (priceFrom !== null && (card.price ?? 0) < priceFrom) return false
     if (priceTo !== null && (card.price ?? 0) > priceTo) return false
     if (yearFrom !== null && (card.year ?? 0) < yearFrom) return false

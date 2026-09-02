@@ -35,6 +35,12 @@ export interface ListingDetailWire {
   photos_total: number
   status: 'published' | 'sold'
   sold_at: string | null
+  /** Канал поставки и то, что он добавляет: откуда везут, за сколько дней и почём
+   *  под ключ (история 17). У машины в наличии — `false` и три `null`. */
+  is_import: boolean
+  import_country: string | null
+  delivery_days: number | null
+  turnkey_price: number | null
   thickness_map_complete: boolean
   has_thickness_map: boolean
   phone_available: boolean

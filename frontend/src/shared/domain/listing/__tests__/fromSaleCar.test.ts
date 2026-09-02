@@ -30,6 +30,10 @@ const wire = (over: Partial<SaleCarWire> = {}): SaleCarWire => ({
   autofill: null,
   seller: null,
   thickness: null,
+  listing_kind: 'stock',
+  import_country: null,
+  delivery_days: null,
+  turnkey_price: null,
   ...over,
 })
 

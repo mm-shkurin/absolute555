@@ -13,16 +13,23 @@ import {
   reorderPhotos,
   uploadPhotos,
 } from '../../../shared/api/backend/saleCarApi'
-import type { SaleCarPatch, SaleCarWire } from '../../../shared/api/backend/saleCarContract'
+import type {
+  ListingKind,
+  SaleCarPatch,
+  SaleCarWire,
+} from '../../../shared/api/backend/saleCarContract'
 import type { Draft } from '../logic/draft'
 import { toDraft, toPatch } from '../logic/draftWire'
 
 export type { SaleCarWire }
 
 /** Черновик создаётся пустым: первый шаг мастера — фотография документа, и полей на нём
- *  ещё нет. Сервер отвечает объявлением в статусе draft. */
-export function startDraft(): Promise<SaleCarWire> {
-  return createDraft()
+ *  ещё нет. Сервер отвечает объявлением в статусе draft.
+ *
+ *  Вид объявления выбирается здесь и потом не меняется: смена канала на живом объявлении
+ *  означала бы, что покупатель торговался за машину, которой в стране нет. */
+export function startDraft(kind: ListingKind = 'stock'): Promise<SaleCarWire> {
+  return createDraft(kind)
 }
 
 export function loadDraft(saleCarId: string, signal?: AbortSignal): Promise<SaleCarWire> {

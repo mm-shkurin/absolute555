@@ -134,3 +134,10 @@
     aspect-ratio: 16 / 10;
   }
 }
+
+/* Цена под ключ стоит под ценой, а не вместо неё: сравнивают машины по цене, платят эту. */
+.turnkey {
+  margin-top: 2px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}

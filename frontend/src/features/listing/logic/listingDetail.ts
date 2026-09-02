@@ -70,6 +70,24 @@ function specs(wire: ListingDetailWire): SpecRow[] {
     // VIN приходит уже замаскированным: полный номер в открытой карточке — подарок
     // перекупу, который клонирует объявление вместе с историей машины.
     { label: 'VIN', value: wire.vin_masked ?? DASH, mono: true },
+    // Строки привоза дописываются, а не заменяют существующие: канал добавляет к машине
+    // факты, а не превращает её в другую сущность.
+    ...(wire.is_import ? importSpecs(wire) : []),
+  ]
+}
+
+function importSpecs(wire: ListingDetailWire): SpecRow[] {
+  return [
+    { label: 'Откуда везут', value: wire.import_country ?? DASH },
+    {
+      label: 'Срок доставки',
+      value: wire.delivery_days === null ? DASH : `${wire.delivery_days} дней`,
+    },
+    {
+      label: 'Цена под ключ',
+      // Ноль читался бы как «доставка бесплатно», поэтому неназванная цена — прочерк.
+      value: wire.turnkey_price === null ? DASH : formatPrice(wire.turnkey_price),
+    },
   ]
 }
 

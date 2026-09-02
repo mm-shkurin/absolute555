@@ -19,6 +19,10 @@ const wire: ListingDetailWire = {
   photos_total: 12,
   status: 'published',
   sold_at: null,
+  is_import: false,
+  import_country: null,
+  delivery_days: null,
+  turnkey_price: null,
   thickness_map_complete: true,
   has_thickness_map: true,
   phone_available: true,
@@ -88,5 +92,25 @@ describe('карточка объявления', () => {
     expect(rows[1].when).toBe('вчера, 19:02')
     expect(rows[2].when).toBe('20 августа, 09:41')
     expect(rows[0].amount).toBe('3\u202F850\u202F000 ₽')
+  })
+
+  it('привоз дописывает к характеристикам страну, срок и цену под ключ', () => {
+    const view = toListingDetailView(
+      {
+        ...wire,
+        is_import: true,
+        import_country: 'Япония',
+        delivery_days: 60,
+        turnkey_price: 6690000,
+      },
+    )
+    expect(view.specs.map((row) => row.label)).toContain('Откуда везут')
+    expect(view.specs.find((row) => row.label === 'Срок доставки')?.value).toBe('60 дней')
+    expect(view.specs.find((row) => row.label === 'Цена под ключ')?.value).toContain('690')
+  })
+
+  it('машина в наличии строк привоза не получает', () => {
+    const view = toListingDetailView(wire)
+    expect(view.specs.map((row) => row.label)).not.toContain('Откуда везут')
   })
 })

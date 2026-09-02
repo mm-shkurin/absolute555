@@ -40,6 +40,10 @@ export function toListingDetailWire(
     // Отдельного времени продажи сервер не хранит: последняя правка статуса — ближайшее
     // честное приближение, и оно перестанет им быть, как только объявление отредактируют.
     sold_at: sold ? car.updated_at : null,
+    is_import: car.listing_kind === 'import',
+    import_country: car.import_country,
+    delivery_days: car.delivery_days,
+    turnkey_price: car.turnkey_price,
     thickness_map_complete: car.thickness?.is_complete ?? false,
     has_thickness_map: (car.thickness?.measured_panels ?? 0) > 0,
     // Телефон — отдельный запрос `POST /{id}/reveal-phone`, а не поле карточки: полем

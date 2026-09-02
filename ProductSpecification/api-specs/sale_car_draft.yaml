@@ -10,6 +10,14 @@ paths:
       operationId: createSaleCarDraft
       tags: [sale_car]
       security: [{ bearerAuth: [] }]
+      requestBody:
+        required: false
+        description: |
+          Чем будет объявление. Без тела — машина в наличии; привоз заводит только
+          поставщик, чужая роль получает 403 NOT_AN_IMPORTER (история 17).
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/DraftKind' }
       responses:
         '201':
           description: Черновик создан
@@ -127,6 +135,26 @@ components:
             продавца: распознавание его больше не перетирает, а предложение
             модератору по этому написанию закрывается (история 6).
         model_id: { type: string, format: uuid, nullable: true }
+        # Поля привоза правятся так же, как остальные; вид объявления — нет: он выбран
+        # при создании, и смена его на живом объявлении означала бы, что покупатель
+        # торговался за машину другого канала.
+        import_country: { type: string, maxLength: 60, nullable: true }
+        delivery_days: { type: integer, minimum: 1, maximum: 365, nullable: true }
+        turnkey_price: { type: number, minimum: 0, nullable: true }
+
+    DraftKind:
+      type: object
+      description: Чем будет объявление. Привоз создаёт только поставщик.
+      properties:
+        listing_kind: { $ref: '#/components/schemas/ListingKind' }
+
+    ListingKind:
+      type: string
+      description: |
+        Машина в наличии или машина под привоз. Один словарь состояний и одна лента на
+        оба вида: покупатель ищет машину, а не канал поставки.
+      enum: [stock, import]
+      default: stock
 
     SaleCar:
       type: object
@@ -167,6 +195,21 @@ components:
           description: |
             Словарь очереди, а не то, что показывают продавцу: для экрана есть
             autofill.state (история 6).
+        listing_kind: { $ref: '#/components/schemas/ListingKind' }
+        import_country:
+          type: string
+          nullable: true
+          description: Откуда везут. Только у привоза (история 17).
+        delivery_days:
+          type: integer
+          nullable: true
+          description: Срок доставки в днях. Только у привоза.
+        turnkey_price:
+          type: number
+          nullable: true
+          description: |
+            Цена под ключ — с доставкой, растаможкой и оформлением. Стоит рядом с ценой,
+            а не вместо неё: покупатель сравнивает машины по цене, а платит эту.
         preview_photo_url:
           type: string
           nullable: true

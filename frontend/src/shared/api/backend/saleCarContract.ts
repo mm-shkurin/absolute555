@@ -13,6 +13,10 @@ export type AutofillState = 'none' | 'pending' | 'unreadable' | 'undecoded' | 'd
 /** Кто вписал значение. `seller` старше `ocr` и распознаванием не перетирается. */
 export type FieldSource = 'ocr' | 'seller'
 
+/** Машина в наличии или под привоз. Одна лента и один словарь статусов на оба вида:
+ *  покупатель ищет машину, а не канал поставки. */
+export type ListingKind = 'stock' | 'import'
+
 export type SaleCarStatus = 'draft' | 'moderation' | 'published' | 'rejected' | 'withdrawn' | 'sold'
 
 export interface AutofillWire {
@@ -62,6 +66,14 @@ export interface SaleCarWire {
   milleage: number | null
   description: string | null
   status: SaleCarStatus
+  listing_kind: ListingKind
+  /** Откуда везут. Только у привоза. */
+  import_country: string | null
+  /** Срок доставки в днях. Только у привоза. */
+  delivery_days: number | null
+  /** Цена под ключ — с доставкой, растаможкой и оформлением. Стоит рядом с ценой, а не
+   *  вместо неё: сравнивают по цене, а платят эту. */
+  turnkey_price: number | null
   reject_reason: string | null
   /** Причина отказа из фиксированного списка: текст говорит одному продавцу, что
    *  исправить, а метка отвечает, что отклоняют чаще всего. */
@@ -92,6 +104,12 @@ export interface SaleCarPatch {
   year?: number
   transmission?: string
   engine_power?: number
+  /** Поля привоза правятся как остальные; сам вид объявления — нет: он выбран при
+   *  создании, и смена на живом объявлении означала бы, что покупатель торговался за
+   *  машину другого канала. */
+  import_country?: string
+  delivery_days?: number
+  turnkey_price?: number
 }
 
 export interface GalleryWire {

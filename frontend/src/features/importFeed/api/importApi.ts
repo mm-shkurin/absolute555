@@ -3,6 +3,8 @@
 // как получить машину, которой в стране ещё нет.
 import { API } from '../../../shared/api/endpoints'
 import { send } from '../../../shared/api/send'
+import { fetchFeed } from '../../../shared/api/backend/saleCarApi'
+import { fromFeedCard } from '../../../shared/domain/listing/fromFeedCard'
 import type { ListingWire } from '../../../shared/domain/listing/listingWire'
 
 export type ImportKind = 'cars' | 'suppliers' | 'requests'
@@ -37,9 +39,20 @@ export interface ImportFeedWire {
   requests_total: number
 }
 
+/** Машины под привоз приезжают настоящей лентой — это те же объявления, только другого
+ *  канала (история 17). Поставщики и заявки ещё выдуманы: их ручки ждут историй 16 и 18,
+ *  и смешивать одно с другим в одном запросе значит потерять, что из этого проверяемо. */
 export async function fetchImportFeed(
   kind: ImportKind,
   signal?: AbortSignal,
 ): Promise<ImportFeedWire> {
-  return send<ImportFeedWire>(`${API.listings.collection}?channel=import&kind=${kind}`, { signal })
+  const [invented, cars] = await Promise.all([
+    send<ImportFeedWire>(`${API.listings.collection}?channel=import&kind=${kind}`, { signal }),
+    fetchFeed({ kind: 'import' }, signal),
+  ])
+  return {
+    ...invented,
+    cars: cars.items.map(fromFeedCard),
+    cars_total: cars.total,
+  }
 }

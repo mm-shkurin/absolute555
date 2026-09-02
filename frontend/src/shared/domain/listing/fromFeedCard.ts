@@ -19,6 +19,9 @@ export function fromFeedCard(card: FeedCardWire): ListingWire {
     // хотя бы одного замера: частичная карта под это обещание не подходит.
     has_thickness_map: card.thickness?.is_complete ?? false,
     vin_verified: false,
-    import_delivery_days: null,
+    is_import: card.listing_kind === 'import',
+    import_country: card.import_country,
+    import_delivery_days: card.delivery_days === null ? null : `${card.delivery_days} дней`,
+    turnkey_price: card.turnkey_price,
   }
 }

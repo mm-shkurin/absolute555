@@ -45,9 +45,13 @@ const numeric = (value?: string): number | undefined => {
   return value?.trim() && Number.isFinite(parsed) ? parsed : undefined
 }
 
-/** Перевод состояния фильтров в параметры ленты. Вкладку «под заказ» сервер пока не
- *  знает — она ждёт истории 17, и параметра под неё в контракте нет; отправлять его
- *  наугад значит получить отказ на весь запрос. */
+// Вкладка — это канал поставки: сервер знает `stock` и `import`, а лента одна на оба.
+const KIND_PARAM: Record<FeedTab, 'stock' | 'import'> = {
+  available: 'stock',
+  import: 'import',
+}
+
+/** Перевод состояния фильтров в параметры ленты. */
 export function toFeedFilters(query: FeedQuery, page = 1): FeedFilters {
   return {
     brand_id: query.brand?.trim() || undefined,
@@ -61,6 +65,7 @@ export function toFeedFilters(query: FeedQuery, page = 1): FeedFilters {
     transmission: query.transmissions.length > 0 ? query.transmissions : undefined,
     // Ложное значение не отправляется: `with_thickness_map=false` и отсутствие параметра
     // для сервера одно и то же, а в адресной строке лишний параметр читается как выбор.
+    kind: KIND_PARAM[query.tab],
     with_thickness_map: query.withThicknessMap || undefined,
     sort: SORT_PARAM[query.sort],
     page,

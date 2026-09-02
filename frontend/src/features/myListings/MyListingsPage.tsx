@@ -11,6 +11,7 @@ import { PillTabs } from '../../shared/ui/PillTabs'
 import { ButtonLink } from '../../shared/ui/Button'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
+import { currentRole } from '../../shared/session/authSession'
 import { changeStatus } from '../../shared/api/backend/saleCarApi'
 import { fetchMyListings, type ListingStatus } from './api/myListingsApi'
 import {
@@ -21,6 +22,7 @@ import {
   type MyListingAction,
 } from './logic/myListingRows'
 import { MyListingList } from './components/MyListingRow'
+import styles from './myListings.module.css'
 
 export function MyListingsPage({ onSignIn }: { onSignIn?: () => void }) {
   const navigate = useNavigate()
@@ -65,7 +67,19 @@ export function MyListingsPage({ onSignIn }: { onSignIn?: () => void }) {
             <PageHeading
               title="Мои объявления"
               sub="Черновики, проверка, опубликованные и архив."
-              action={<ButtonLink to={ROUTES.selling}>Разместить автомобиль</ButtonLink>}
+              action={
+                <div className={styles.headActions}>
+                  <ButtonLink to={ROUTES.selling}>Разместить автомобиль</ButtonLink>
+                  {/* Привоз заводит только поставщик: чужой роли сервер отвечает
+                      403 NOT_AN_IMPORTER, и предлагать ей эту кнопку значит обещать
+                      отказ. */}
+                  {currentRole() === 'importer' ? (
+                    <ButtonLink tone="ghost" to={ROUTES.sellingImport} data-testid="sell-import">
+                      Разместить под привоз
+                    </ButtonLink>
+                  ) : null}
+                </div>
+              }
             />
             <PillTabs
               current={tab}

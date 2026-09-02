@@ -4,7 +4,7 @@
 // Пока история не доехала, `GET /sale_car/list` возвращает голый массив без страниц —
 // лента будет пуста до тех пор.
 import type { ThicknessSummaryWire } from './thicknessContract'
-import type { SaleCarStatus } from './saleCarContract'
+import type { ListingKind, SaleCarStatus } from './saleCarContract'
 
 export type FeedSort = 'newest' | 'price_asc' | 'price_desc'
 
@@ -22,6 +22,10 @@ export interface FeedCardWire {
   status: SaleCarStatus
   preview_photo_url: string | null
   published_at: string | null
+  listing_kind: ListingKind
+  import_country: string | null
+  delivery_days: number | null
+  turnkey_price: number | null
   /** Сводка карты замеров. `null` у объявления без единого замера. */
   thickness: ThicknessSummaryWire | null
 }
@@ -48,6 +52,8 @@ export interface FeedFilters {
   mileage_to?: number
   /** Повторяемый параметр: коробка выбирается несколькими значениями сразу. */
   transmission?: string[]
+  /** Канал поставки. Без параметра лента отдаёт оба вида. */
+  kind?: ListingKind
   /** Только объявления с полной картой замеров — все тринадцать панелей (история 15).
    *  Частичная карта под фильтр не попадает: «с картой» обещает измеренную машину. */
   with_thickness_map?: boolean

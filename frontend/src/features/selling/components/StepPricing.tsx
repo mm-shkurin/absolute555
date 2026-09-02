@@ -2,6 +2,7 @@
 import { Button } from '../../../shared/ui/Button'
 import type { Draft } from '../logic/draft'
 import { Form, Field, Select, Switch, TextArea, TextInput } from '../../../shared/ui/Form'
+import { ImportFields } from './ImportFields'
 import { WizardCard, NavSpacer } from './WizardCard'
 import styles from '../selling.module.css'
 
@@ -41,13 +42,17 @@ export function StepPricing({ draft, onField, onShowPhone, onBack, onNext }: Pro
             placeholder="4 020 000"
           />
         </Field>
-        <Field label="Пробег, км">
-          <TextInput
-            value={draft.mileage}
-            onChange={(value) => onField('mileage', value)}
-            placeholder="180 000"
-          />
-        </Field>
+        {/* У привоза пробега не бывает: машина ещё не приехала. */}
+        {draft.kind === 'import' ? null : (
+          <Field label="Пробег, км">
+            <TextInput
+              value={draft.mileage}
+              onChange={(value) => onField('mileage', value)}
+              placeholder="180 000"
+            />
+          </Field>
+        )}
+        <ImportFields draft={draft} onField={onField} />
         <Field label="Город">
           <Select
             value={draft.city}

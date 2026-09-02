@@ -16,7 +16,10 @@ const base: ListingWire = {
   photo_url: null,
   has_thickness_map: true,
   vin_verified: true,
+  is_import: false,
+  import_country: null,
   import_delivery_days: null,
+  turnkey_price: null,
 }
 
 describe('форматирование объявления для ленты', () => {
@@ -29,10 +32,25 @@ describe('форматирование объявления для ленты', 
   })
 
   it('у машины под заказ вместо пробега стоит срок доставки, а VIN отмечен отсутствующим', () => {
-    const view = toListingView({ ...base, mileage_km: null, import_delivery_days: '55–70 дней' })
+    const view = toListingView({
+      ...base,
+      mileage_km: null,
+      is_import: true,
+      import_country: 'Япония',
+      import_delivery_days: '55–70 дней',
+      turnkey_price: 6690000,
+    })
     expect(view.spec).toBe('срок доставки 55–70 дней · 181 л.с. · АКПП')
     expect(view.vinNote).toBe('без VIN')
     expect(view.isImport).toBe(true)
+    expect(view.importFrom).toBe('Япония')
+    expect(view.turnkey).toBe('6 690 000 ₽ под ключ')
+  })
+
+  it('канал берётся полем, а не выводится из проставленного срока доставки', () => {
+    const noDate = toListingView({ ...base, is_import: true, import_delivery_days: null })
+    expect(noDate.isImport).toBe(true)
+    expect(noDate.turnkey).toBeNull()
   })
 
   it('согласует слово «объявление» с числом', () => {

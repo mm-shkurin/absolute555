@@ -44,6 +44,12 @@ paths:
           schema:
             type: array
             items: { type: string }
+        - name: kind
+          in: query
+          description: |
+            Канал поставки: `stock` — машины в наличии, `import` — под привоз. Без
+            параметра лента отдаёт оба (история 17).
+          schema: { $ref: 'sale_car_draft.yaml#/components/schemas/ListingKind' }
         - name: with_thickness_map
           in: query
           description: |
@@ -170,6 +176,13 @@ components:
         status: { $ref: 'sale_car_draft.yaml#/components/schemas/SaleCarStatus' }
         preview_photo_url: { type: string, nullable: true }
         published_at: { type: string, format: date-time, nullable: true }
+        listing_kind: { $ref: 'sale_car_draft.yaml#/components/schemas/ListingKind' }
+        import_country: { type: string, nullable: true }
+        delivery_days: { type: integer, nullable: true }
+        turnkey_price:
+          type: number
+          nullable: true
+          description: Цена под ключ — с доставкой и растаможкой. Только у привоза.
         thickness:
           allOf: [{ $ref: 'sale_car_thickness.yaml#/components/schemas/ThicknessSummary' }]
           nullable: true

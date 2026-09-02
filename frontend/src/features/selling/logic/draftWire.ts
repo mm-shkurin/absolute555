@@ -41,6 +41,10 @@ export function toDraft(car: SaleCarWire): Draft {
     phone: text(car.phone_number),
     description: text(car.description),
     photosCount: car.photos.length,
+    kind: car.listing_kind,
+    importCountry: text(car.import_country),
+    deliveryDays: text(car.delivery_days),
+    turnkeyPrice: text(car.turnkey_price),
   }
 }
 
@@ -72,5 +76,10 @@ export function toPatch(draft: Draft): SaleCarPatch {
   put(patch, 'milleage', draft.mileage, true)
   put(patch, 'phone_number', draft.phone)
   put(patch, 'description', draft.description)
+  if (draft.kind === 'import') {
+    put(patch, 'import_country', draft.importCountry)
+    put(patch, 'delivery_days', draft.deliveryDays, true)
+    put(patch, 'turnkey_price', draft.turnkeyPrice, true)
+  }
   return patch
 }

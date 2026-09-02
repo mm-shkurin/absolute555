@@ -7,6 +7,7 @@ import { BACKEND } from './paths'
 import type { FeedFilters, FeedPageWire, RevealedPhone } from './feedContract'
 import type { RejectionLabel } from './moderationContract'
 import type {
+  ListingKind,
   DocumentLinkWire,
   GalleryWire,
   SaleCarPatch,
@@ -59,9 +60,14 @@ export function fetchListing(saleCarId: string, signal?: AbortSignal) {
   return send<SaleCarWire>(BACKEND.saleCar.one(saleCarId), { signal })
 }
 
-/** Черновик заводится пустым: полей в запросе нет, они дописываются правкой. */
-export function createDraft() {
-  return send<SaleCarWire>(BACKEND.saleCar.draft, { method: 'POST' })
+/** Черновик заводится пустым: полей в запросе нет, они дописываются правкой. Кроме
+ *  вида — он выбирается здесь и потом не меняется. Привоз заводит только поставщик,
+ *  чужая роль получает `403 NOT_AN_IMPORTER`. */
+export function createDraft(kind: ListingKind = 'stock') {
+  return send<SaleCarWire>(BACKEND.saleCar.draft, {
+    method: 'POST',
+    body: { listing_kind: kind },
+  })
 }
 
 export function patchListing(saleCarId: string, patch: SaleCarPatch) {

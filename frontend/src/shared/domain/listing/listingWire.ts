@@ -16,5 +16,12 @@ export interface ListingWire {
   photo_url: string | null
   has_thickness_map: boolean
   vin_verified: boolean
+  /** Канал поставки приходит полем, а не выводится из срока доставки: объявление под
+   *  привоз без проставленного срока иначе выглядело бы машиной в наличии. */
+  is_import: boolean
+  /** Откуда везут и за сколько дней. Строкой, потому что показывается как есть. */
+  import_country: string | null
   import_delivery_days: string | null
+  /** Цена под ключ — с доставкой и растаможкой. Рядом с ценой, а не вместо неё. */
+  turnkey_price: number | null
 }

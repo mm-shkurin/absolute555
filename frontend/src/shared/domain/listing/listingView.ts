@@ -15,6 +15,10 @@ export interface ListingView {
   photoUrl: string | null
   hasThicknessMap: boolean
   isImport: boolean
+  /** Откуда везут — пустая строка у машины в наличии. */
+  importFrom: string
+  /** Цена под ключ, подписью. `null` — сервер её не назвал. */
+  turnkey: string | null
 }
 
 function specLine(listing: ListingWire): string {
@@ -27,7 +31,7 @@ function specLine(listing: ListingWire): string {
 }
 
 export function toListingView(listing: ListingWire): ListingView {
-  const isImport = listing.import_delivery_days !== null
+  const isImport = listing.is_import
   return {
     id: listing.id,
     title: `${listing.brand} ${listing.model}`.trim(),
@@ -41,6 +45,13 @@ export function toListingView(listing: ListingWire): ListingView {
     photoUrl: listing.photo_url,
     hasThicknessMap: listing.has_thickness_map,
     isImport,
+    importFrom: isImport ? (listing.import_country ?? '') : '',
+    // Цена под ключ показывается только у привоза и только когда сервер её назвал: ноль
+    // читался бы как «доставка бесплатно».
+    turnkey:
+      isImport && listing.turnkey_price !== null
+        ? `${formatPrice(listing.turnkey_price)} под ключ`
+        : null,
   }
 }
 
