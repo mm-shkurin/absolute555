@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { PageHeading, PageSection } from '../../shared/ui/PageHeading'
+import { ModerationNav } from './components/ModerationNav'
 import { PillTabs } from '../../shared/ui/PillTabs'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { approveListing, fetchQueue, rejectListing, type QueueTab } from './api/moderationApi'
@@ -64,6 +65,7 @@ export function ModerationQueuePage() {
       <SiteHeader signedIn />
       <main data-testid="moderation-queue">
         <Container>
+          <ModerationNav />
           <PageSection>
             <PageHeading
               title="Очередь модерации"

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { PageHeading, PageSection } from '../../shared/ui/PageHeading'
+import { ModerationNav } from './components/ModerationNav'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import {
   approveSupplier,
@@ -36,6 +37,7 @@ export function SupplierQueuePage() {
       <SiteHeader signedIn />
       <main data-testid="supplier-queue">
         <Container>
+          <ModerationNav />
           <PageSection>
             <PageHeading
               title="Профили поставщиков"

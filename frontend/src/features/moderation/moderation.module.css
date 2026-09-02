@@ -158,3 +158,27 @@
     grid-template-columns: 72px 1fr;
   }
 }
+
+/* Полоса разделов модерации: одна строка над заголовком, чтобы переход стоил одного
+   нажатия, а не набора адреса. */
+.sections {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  padding-top: 18px;
+}
+
+.section {
+  padding: 6px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-sunken);
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-decoration: none;
+}
+
+.sectionCurrent {
+  background: var(--bg-selected);
+  color: var(--text-accent);
+  font-weight: 600;
+}

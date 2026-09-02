@@ -5,6 +5,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { PageHeading, PageSection } from '../../shared/ui/PageHeading'
+import { ModerationNav } from './components/ModerationNav'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { PillTabs } from '../../shared/ui/PillTabs'
 import { answerRoleApplication, fetchRoleApplications, type RoleTab } from './api/moderationApi'
@@ -47,6 +48,7 @@ export function RoleApplicationsPage() {
       <SiteHeader signedIn />
       <main data-testid="role-applications">
         <Container>
+          <ModerationNav />
           <PageSection>
             <PageHeading
               title="Заявки на роль поставщика"
