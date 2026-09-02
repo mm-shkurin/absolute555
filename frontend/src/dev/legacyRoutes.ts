@@ -12,7 +12,7 @@ import { listingDetail, thicknessMap } from './fixtures/detail'
 import { FEED, IMPORT_CARS, LEXUS } from './fixtures/cars'
 import { MY_LISTINGS, PROFILE, offers } from './fixtures/people'
 import { CHATS, MESSAGES, SELLER } from './fixtures/rest'
-import { COMPLAINTS, QUEUE, ROLE_APPLICATIONS } from './fixtures/moderation'
+import { COMPLAINTS, QUEUE } from './fixtures/moderation'
 
 function match(path: string, pattern: RegExp): string | null {
   return pattern.exec(path)?.[1] ?? null
@@ -47,7 +47,6 @@ export function legacyRoute(path: string, query: URLSearchParams): unknown {
   if (path === '/moderation/listings') return queue(query.get('tab') ?? 'pending')
   if (path === '/moderation/complaints')
     return { items: COMPLAINTS, open: COMPLAINTS.length, resolved: 31 }
-  if (path === '/role/role-requests') return ROLE_APPLICATIONS
 
   return null
 }

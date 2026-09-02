@@ -7,6 +7,7 @@
 // целиком, ничего больше не трогая.
 import { BRANDS, MODELS } from './fixtures/catalog'
 import { SELLER, SELLER_REVIEWS } from './fixtures/rest'
+import { MY_ROLE_REQUESTS, ROLE_APPLICATIONS } from './fixtures/moderation'
 import { legacyRoute } from './legacyRoutes'
 import * as wire from './fixtures/wire'
 import * as chatWire from './fixtures/wireChat'
@@ -52,6 +53,13 @@ function route(url: URL, method: string): unknown {
   if (path === '/moderation/complaints') return chatWire.complaintPage()
   if (path === '/chat/dialogs') return chatWire.dialogs()
   if (path === '/chat/unread') return { unread: 3 }
+  // Вкладку фильтрует сервер: заглушка делает то же самое, иначе расхождение параметра
+  // и выдачи стало бы невидимым.
+  if (path === '/role/role-requests') {
+    const status = query.get('status')
+    return status ? ROLE_APPLICATIONS.filter((one) => one.status === status) : ROLE_APPLICATIONS
+  }
+  if (path === '/role/my-role-requests') return MY_ROLE_REQUESTS
 
   const reviewsOf = match(path, /^\/seller\/([^/]+)\/reviews$/)
   if (reviewsOf)

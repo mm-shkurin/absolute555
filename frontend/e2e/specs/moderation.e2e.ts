@@ -44,6 +44,13 @@ describe('Модерация', () => {
     await moderation.openUnpublishReasons()
   })
 
+  it('заявка на роль отклоняется только с причиной', async () => {
+    await feed.openApp()
+    await moderation.openRoleRequests()
+    await moderation.assertRejectionNeedsText()
+    await moderation.assertDecidedTabEmptyExplains()
+  })
+
   it('покупатель жалуется на объявление, выбрав причину', async () => {
     await feed.openApp()
     await feed.openFeedFromHeader()

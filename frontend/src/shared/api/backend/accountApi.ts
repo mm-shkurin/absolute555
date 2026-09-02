@@ -9,6 +9,7 @@ import type {
   RoleRequestCreate,
   RoleRequestDecision,
   RoleRequestListItemWire,
+  RoleRequestStatus,
   RoleRequestWire,
   RoleStatsWire,
   TokenWire,
@@ -58,8 +59,10 @@ export function fetchMyRoleRequests(signal?: AbortSignal) {
   return send<RoleRequestWire[]>(BACKEND.role.myRequests, { signal })
 }
 
-export function fetchRoleRequests(signal?: AbortSignal) {
-  return send<RoleRequestListItemWire[]>(BACKEND.role.requests, { signal })
+/** Очередь заявок. Без статуса приезжают все — фильтр задаёт вкладка экрана. */
+export function fetchRoleRequests(status?: RoleRequestStatus, signal?: AbortSignal) {
+  const path = status ? `${BACKEND.role.requests}?status=${status}` : BACKEND.role.requests
+  return send<RoleRequestListItemWire[]>(path, { signal })
 }
 
 export function answerRoleRequest(requestId: string, decision: RoleRequestDecision) {

@@ -2,7 +2,10 @@ import type {
   ComplaintCaseWire,
   QueueItemWire,
 } from '../../features/moderation/api/moderationApi'
-import type { RoleRequestListItemWire } from '../../shared/api/backend/accountContract'
+import type {
+  RoleRequestListItemWire,
+  RoleRequestWire,
+} from '../../shared/api/backend/accountContract'
 
 const HOURS = 3600_000
 const DAYS = 24 * HOURS
@@ -142,6 +145,24 @@ export const ROLE_APPLICATIONS: RoleRequestListItemWire[] = [
     updated_at: new Date(Date.now() - 8 * DAYS).toISOString(),
     reviewed_by: 'u1',
     reviewed_at: new Date(Date.now() - 8 * DAYS).toISOString(),
+    review_comment: null,
+  },
+]
+
+/** Свои заявки: у демо-пользователя одна, и она ждёт решения — профиль показывает именно
+ *  это состояние, а не выдуманное «заявок не подавали». */
+export const MY_ROLE_REQUESTS: RoleRequestWire[] = [
+  {
+    id: 'my-ra1',
+    user_id: 'u1',
+    requested_role: 'importer',
+    reason: 'Хочу выставлять позиции под привоз сам.',
+    additional_info: 'Вожу из Кореи третий год.',
+    status: 'pending',
+    created_at: new Date(Date.now() - 3 * DAYS).toISOString(),
+    updated_at: null,
+    reviewed_by: null,
+    reviewed_at: null,
     review_comment: null,
   },
 ]

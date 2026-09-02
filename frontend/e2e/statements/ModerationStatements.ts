@@ -90,4 +90,28 @@ export class ModerationStatements {
   async assertHeaderUnreadShown(): Promise<void> {
     expect(await textOf(this.driver, 'header-unread')).not.toBe('')
   }
+
+  async openRoleRequests(): Promise<void> {
+    await this.driver.get(`${BASE_URL}/moderation/supplier-applications`)
+    await waitForVisible(this.driver, 'role-applications')
+  }
+
+  // Отказ без причины не уходит: сервер отвергает его, и кнопка выключена до текста.
+  async assertRejectionNeedsText(): Promise<void> {
+    const card = await waitForVisible(this.driver, 'role-application')
+    await clickElement(
+      this.driver,
+      await card.findElement(By.xpath('.//button[contains(., "Отклонить с причиной")]')),
+    )
+    const form = await waitForVisible(this.driver, 'role-rejection')
+    const send = await form.findElement(By.xpath('.//button[contains(., "Отправить отказ")]'))
+    expect(await send.getAttribute('disabled')).toBeTruthy()
+    await (await form.findElement(By.css('textarea'))).sendKeys('Не хватает описания опыта')
+    expect(await send.getAttribute('disabled')).toBeFalsy()
+  }
+
+  async assertDecidedTabEmptyExplains(): Promise<void> {
+    await this.switchTab('Отклонённые')
+    expect(await textOf(this.driver, 'list-empty')).toContain('Отклонённых заявок нет')
+  }
 }

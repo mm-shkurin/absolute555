@@ -53,9 +53,11 @@ export function canModerate(role: Role = currentRole()): boolean {
   return role === 'manager' || role === 'admin'
 }
 
-// Заявки на роль поставщика одобряет только владелец площадки — UserFlows, поток 9.
-export function canApproveSuppliers(role: Role = currentRole()): boolean {
-  return role === 'admin'
+// Заявки на роль разбирает тот же человек, что и очередь объявлений: право
+// VIEW_ROLE_REQUESTS есть у manager и у admin (история 13). Какие роли модератор вправе
+// выдать — правило сервера: свою и выше он не выдаёт, и клиент это не повторяет.
+export function canReviewRoleRequests(role: Role = currentRole()): boolean {
+  return role === 'manager' || role === 'admin'
 }
 
 export function startSession(session: Session): void {

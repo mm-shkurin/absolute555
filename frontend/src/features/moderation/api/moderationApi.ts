@@ -148,10 +148,12 @@ export async function fetchComplaints(
   return { items: page.items.map(toComplaintCase), open: page.total, resolved: 0 }
 }
 
-/** Заявки на роль. Разобранные приезжают той же выдачей — модератор смотрит, что решил
- *  вчера, не переключая экран. */
-export function fetchRoleApplications(signal?: AbortSignal) {
-  return fetchRoleRequests(signal)
+export type RoleTab = 'pending' | 'approved' | 'rejected'
+
+/** Заявки одной вкладки. Фильтрует сервер: клиентский фильтр по всей выдаче показывал бы
+ *  число заявок на кнопке и другое число под ней. */
+export function fetchRoleApplications(tab: RoleTab, signal?: AbortSignal) {
+  return fetchRoleRequests(tab, signal)
 }
 
 export function answerRoleApplication(requestId: string, decision: RoleRequestDecision) {
