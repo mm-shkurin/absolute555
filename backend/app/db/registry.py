@@ -19,6 +19,7 @@ from app.features.catalog.models.catalog import (
 )
 from app.features.chat.models.chat import Dialog, Message
 from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.models.thickness import ThicknessMeasurement
 from app.features.moderation.models.complaint import Complaint
 from app.features.offer.models.offer import Offer
 from app.features.review.models.review import Review
@@ -37,5 +38,6 @@ __all__ = [
     "Review",
     "RoleRequest",
     "SaleCars",
+    "ThicknessMeasurement",
     "Users",
 ]

@@ -1,0 +1,193 @@
+openapi: 3.0.3
+info:
+  title: Thickness map of a listing
+  version: 1.0.0
+  description: |
+    Карта замеров толщиномера по панелям кузова.
+
+    Замер — это число в микронах и фотография экрана прибора; и то, и другое обязательно.
+    Набор панелей фиксирован и живёт enum-ом: он не меняется от машины к машине.
+    Статус панели (заводская краска, перекрас, шпаклёвка) считает сервер по единым
+    порогам — иначе порог копируется в веб и в мобилку и там расходится.
+
+    Распознавание числа с фотографии прибора — история 15; здесь число присылает клиент,
+    а форма замера уже та, которую OCR унаследует.
+
+paths:
+  /api/v1/sale_car/{sale_car_id}/thickness:
+    get:
+      summary: Карта замеров объявления
+      operationId: getThicknessMap
+      tags: [thickness]
+      description: |
+        Читается теми же, кому видно само объявление: опубликованное — всем, черновик —
+        владельцу и модератору. Иначе 404, как и везде.
+      parameters:
+        - $ref: '#/components/parameters/SaleCarId'
+      responses:
+        '200':
+          description: Карта, возможно пустая
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ThicknessMap' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/sale_car/{sale_car_id}/thickness/{panel}:
+    put:
+      summary: Записать или перезаписать замер панели
+      operationId: putThicknessMeasurement
+      tags: [thickness]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Идемпотентно по адресу панели: повторный вызов перезаписывает замер, а не заводит
+        второй. Разрешено в любом статусе объявления — замер это исправляемая опечатка
+        продавца, а не новый материал на модерацию.
+      parameters:
+        - $ref: '#/components/parameters/SaleCarId'
+        - $ref: '#/components/parameters/Panel'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [value_um, photo]
+              properties:
+                value_um:
+                  type: integer
+                  minimum: 1
+                  maximum: 3000
+                  description: Толщина покрытия в микронах, как её показал прибор.
+                photo:
+                  type: string
+                  format: binary
+                  description: Фотография экрана прибора. Доказательство замера.
+      responses:
+        '200':
+          description: Карта после записи
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ThicknessMap' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+    delete:
+      summary: Убрать замер панели
+      operationId: deleteThicknessMeasurement
+      tags: [thickness]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: '#/components/parameters/SaleCarId'
+        - $ref: '#/components/parameters/Panel'
+      responses:
+        '200':
+          description: Карта после удаления
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/ThicknessMap' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  parameters:
+    SaleCarId:
+      name: sale_car_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+    Panel:
+      name: panel
+      in: path
+      required: true
+      schema: { $ref: '#/components/schemas/BodyPanel' }
+
+  responses:
+    Unauthorized:
+      description: Вызов без входа
+      content:
+        application/json:
+          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+    NotFound:
+      description: Объявления нет или оно не видно этому вызывающему
+      content:
+        application/json:
+          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+    TooLarge:
+      description: Фотография больше предела
+      content:
+        application/json:
+          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+    Unprocessable:
+      description: Значение вне диапазона или файл не изображение
+      content:
+        application/json:
+          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+
+  schemas:
+    BodyPanel:
+      type: string
+      description: Панель кузова. Тринадцать значений, набор фиксирован.
+      enum:
+        - hood
+        - roof
+        - trunk_lid
+        - front_left_door
+        - front_right_door
+        - rear_left_door
+        - rear_right_door
+        - front_left_fender
+        - front_right_fender
+        - rear_left_fender
+        - rear_right_fender
+        - front_bumper
+        - rear_bumper
+
+    PanelStatus:
+      type: string
+      description: |
+        Как читается число: factory — заводская краска (< 200 мкм), repaint — перекрас
+        (200-499), filler — шпаклёвка (>= 500).
+      enum: [factory, repaint, filler]
+
+    ThicknessMeasurement:
+      type: object
+      required: [panel, value_um, status, photo_url]
+      properties:
+        panel: { $ref: '#/components/schemas/BodyPanel' }
+        value_um: { type: integer, minimum: 1, maximum: 3000 }
+        status: { $ref: '#/components/schemas/PanelStatus' }
+        photo_url:
+          type: string
+          description: Фотография экрана прибора.
+        updated_at: { type: string, format: date-time }
+
+    ThicknessMap:
+      type: object
+      required: [sale_car_id, measurements, measured_panels, total_panels, is_complete]
+      properties:
+        sale_car_id: { type: string, format: uuid }
+        measurements:
+          type: array
+          items: { $ref: '#/components/schemas/ThicknessMeasurement' }
+        measured_panels: { type: integer, minimum: 0 }
+        total_panels: { type: integer, description: Сколько панелей в наборе — 13. }
+        is_complete:
+          type: boolean
+          description: |
+            Измерены все панели набора. Фильтр «с картой замеров» в ленте — история 15,
+            но признак считается уже здесь.
+
+    ThicknessSummary:
+      type: object
+      description: |
+        Сводка в карточке и детальной выдаче объявления. Отдельного вызова ради двух
+        чисел не заводится.
+      required: [measured_panels, total_panels, is_complete]
+      properties:
+        measured_panels: { type: integer, minimum: 0 }
+        total_panels: { type: integer }
+        is_complete: { type: boolean }

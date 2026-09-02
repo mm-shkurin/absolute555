@@ -22,6 +22,10 @@ from app.features.listing.services.listing_errors import (
     TooManyDrafts,
     TransitionNotAllowed,
 )
+from app.features.listing.services.thickness_errors import (
+    MeasurementNotFound,
+    ValueOutOfRange,
+)
 from app.features.listing.services.photo_errors import (
     DocumentNotFound,
     GalleryLimitReached,
@@ -96,6 +100,14 @@ def to_http(error: Exception):
             code="ORDER_MISMATCH",
             details={"missing": error.missing, "unknown": error.unknown},
         )
+
+    if isinstance(error, ValueOutOfRange):
+        return ValidationError(
+            str(error), code="VALUE_OUT_OF_RANGE", details={"value_um": error.value_um}
+        )
+
+    if isinstance(error, MeasurementNotFound):
+        return ResourceNotFoundError(str(error), code="MEASUREMENT_NOT_FOUND")
 
     if isinstance(error, DocumentNotFound):
         # Indistinguishable from a listing that never existed, on purpose.

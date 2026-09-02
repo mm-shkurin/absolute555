@@ -96,5 +96,14 @@ class SaleCars(Base):
     offers = relationship("Offer", back_populates="sale_car", cascade="all, delete-orphan")
     complaints = relationship("Complaint", back_populates="listing", cascade="all, delete-orphan")
 
+    # Карта замеров. selectin, потому что сводку по ней несёт каждая карточка ленты, а
+    # ленивая загрузка означала бы двадцать запросов на страницу.
+    thickness_measurements = relationship(
+        "ThicknessMeasurement",
+        back_populates="listing",
+        cascade="all, delete-orphan",
+        lazy="selectin",
+    )
+
     created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

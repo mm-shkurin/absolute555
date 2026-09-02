@@ -11,6 +11,8 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from app.features.listing.schemas.thickness import ThicknessSummary
+
 from app.features.listing.models.sale_car import SaleCarStatus
 
 MAX_PAGE_SIZE = 60
@@ -72,6 +74,7 @@ class FeedCard(BaseModel):
     status: SaleCarStatus
     preview_photo_url: Optional[str] = None
     published_at: Optional[str] = None
+    thickness: Optional[ThicknessSummary] = None
 
 
 class FeedPage(BaseModel):

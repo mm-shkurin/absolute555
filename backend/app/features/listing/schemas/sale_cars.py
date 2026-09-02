@@ -7,6 +7,7 @@ from datetime import datetime
 # two drift apart the first time one is extended.
 from app.features.listing.models.sale_car import AutofillState, FieldSource, SaleCarStatus
 from app.features.listing.schemas.feed import Seller
+from app.features.listing.schemas.thickness import ThicknessSummary
 
 
 class SaleCarCreate(BaseModel):
@@ -133,6 +134,7 @@ class SaleCarResponse(BaseModel):
     photos: List[Photo] = []
     autofill: Optional[Autofill] = None
     seller: Optional[Seller] = None
+    thickness: Optional[ThicknessSummary] = None
 
     class Config:
         from_attributes = True
