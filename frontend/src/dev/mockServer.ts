@@ -9,6 +9,7 @@ import { BRANDS, MODELS } from './fixtures/catalog'
 import { SELLER, SELLER_REVIEWS } from './fixtures/rest'
 import { MY_ROLE_REQUESTS, ROLE_APPLICATIONS } from './fixtures/moderation'
 import { legacyRoute } from './legacyRoutes'
+import { thicknessMap } from './fixtures/thickness'
 import * as wire from './fixtures/wire'
 import * as chatWire from './fixtures/wireChat'
 import { mutation } from './fixtures/mutations'
@@ -81,6 +82,9 @@ function route(url: URL, method: string): unknown {
 
   const offersOf = match(path, /^\/offer\/car\/([^/]+)$/)
   if (offersOf) return wire.carOffers(offersOf)
+
+  const thicknessOf = match(path, /^\/sale_car\/([^/]+)\/thickness$/)
+  if (thicknessOf) return thicknessMap(thicknessOf)
 
   const saleCarId = match(path, /^\/sale_car\/([^/]+)$/)
   if (saleCarId) return wire.saleCar(saleCarId)

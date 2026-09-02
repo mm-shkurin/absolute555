@@ -29,6 +29,7 @@ const wire = (over: Partial<SaleCarWire> = {}): SaleCarWire => ({
   photos: [],
   autofill: null,
   seller: null,
+  thickness: null,
   ...over,
 })
 

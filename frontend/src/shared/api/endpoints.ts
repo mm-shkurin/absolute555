@@ -17,10 +17,6 @@ export const API = {
   listings: {
     collection: `${V1}/listings`,
   },
-  // Карта замеров толщиномером — история 14.
-  thickness: {
-    map: (listingId: string) => `${V1}/listings/${encodeURIComponent(listingId)}/thickness`,
-  },
   // Отзывы о поставщике — история 16. Это не отзывы о продавце: у тех своя ручка
   // `/seller/{id}/reviews`, и смешивать их значит показать поставке оценку продажи.
   reviews: {

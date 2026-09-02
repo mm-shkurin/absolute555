@@ -171,6 +171,11 @@ components:
           type: string
           nullable: true
           description: Обложка — превью первой фотографии галереи.
+        thickness:
+          allOf: [{ $ref: 'sale_car_thickness.yaml#/components/schemas/ThicknessSummary' }]
+          nullable: true
+          description: |
+            Сводка карты замеров (история 14). `null` — замеров нет вовсе.
         photos:
           type: array
           description: |

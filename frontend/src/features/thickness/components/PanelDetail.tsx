@@ -16,13 +16,10 @@ export function PanelDetail({ detail }: { detail: Detail }) {
       )}
       <div className={styles.reading}>
         <span className={styles.value} style={{ color: detail.color }}>
-          {detail.micrometers ?? '—'}
+          {detail.valueUm ?? '—'}
         </span>
         <span className={styles.unit}>{gradeCaption(detail)}</span>
       </div>
-      {detail.manuallyCorrected ? (
-        <span className={styles.corrected}>уточнено продавцом</span>
-      ) : null}
       <p className={styles.note}>{detail.note}</p>
     </div>
   )

@@ -51,6 +51,13 @@ export const BACKEND = {
     approve: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/approve`,
     reject: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/reject`,
   },
+  thickness: {
+    map: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/thickness`,
+    // Панель — часть адреса, а не тело: отсюда идемпотентность PUT и уникальность
+    // «один замер на панель».
+    panel: (saleCarId: string, panel: string) =>
+      `${V1}/sale_car/${id(saleCarId)}/thickness/${id(panel)}`,
+  },
   offer: {
     collection: `${V1}/offer/`,
     mine: `${V1}/offer/my`,

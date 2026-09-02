@@ -1,5 +1,4 @@
 import type { ListingDetailWire } from '../../features/listing/api/listingApi'
-import type { ThicknessMapWire } from '../../features/thickness/api/thicknessApi'
 
 const HOURS = 3600_000
 
@@ -37,27 +36,6 @@ export function listingDetail(id: string, owned: boolean): ListingDetailWire {
       { id: 'o1', amount: 3850000, created_at: new Date(Date.now() - 2 * HOURS).toISOString() },
       { id: 'o2', amount: 3700000, created_at: new Date(Date.now() - 5 * HOURS).toISOString() },
       { id: 'o3', amount: 3600000, created_at: new Date(Date.now() - 30 * HOURS).toISOString() },
-    ],
-  }
-}
-
-export function thicknessMap(listingId: string): ThicknessMapWire {
-  return {
-    listing_id: listingId,
-    listing_title: 'Lexus LX 570',
-    factory_micrometers: 100,
-    panels: [
-      { panel: 'hood', micrometers: 96, photo_url: null, manually_corrected: false },
-      { panel: 'roof', micrometers: 91, photo_url: null, manually_corrected: false },
-      { panel: 'trunk', micrometers: 168, photo_url: null, manually_corrected: false },
-      { panel: 'fender-fl', micrometers: 103, photo_url: null, manually_corrected: false },
-      { panel: 'fender-fr', micrometers: 640, photo_url: null, manually_corrected: true },
-      { panel: 'fender-rl', micrometers: 99, photo_url: null, manually_corrected: false },
-      { panel: 'door-fl', micrometers: 94, photo_url: null, manually_corrected: false },
-      { panel: 'door-fr', micrometers: 210, photo_url: null, manually_corrected: false },
-      { panel: 'door-rl', micrometers: 97, photo_url: null, manually_corrected: false },
-      { panel: 'bumper-f', micrometers: 189, photo_url: null, manually_corrected: false },
-      { panel: 'bumper-r', micrometers: 102, photo_url: null, manually_corrected: false },
     ],
   }
 }

@@ -15,9 +15,9 @@ export function fromFeedCard(card: FeedCardWire): ListingWire {
     transmission: card.transmission,
     city: null,
     photo_url: card.preview_photo_url,
-    // Замеры — история 14, канал «под заказ» — история 17. До них ни одна карточка в
-    // ленте не может заявить ни карту, ни срок доставки.
-    has_thickness_map: false,
+    // Сводка замеров приходит в самой карточке; канал «под заказ» — история 17, и до
+    // неё ни одна карточка в ленте не может заявить срок доставки.
+    has_thickness_map: (card.thickness?.measured_panels ?? 0) > 0,
     vin_verified: false,
     import_delivery_days: null,
   }

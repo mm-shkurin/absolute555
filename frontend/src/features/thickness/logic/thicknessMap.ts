@@ -1,6 +1,9 @@
 // Сборка экрана карты: строка на панель, покрытие и разбор выбранной панели.
-import type { PanelWire, ThicknessMapWire } from '../api/thicknessApi'
-import { GRADE_COLOR, GRADE_WORD, PANELS, gradeOf, type Grade, type PanelCode } from './panels'
+import type {
+  ThicknessMapWire,
+  ThicknessMeasurementWire,
+} from '../../../shared/api/backend/thicknessContract'
+import { GRADE_COLOR, GRADE_WORD, PANELS, type Grade, type PanelCode } from './panels'
 
 export interface PanelRow {
   code: PanelCode
@@ -12,15 +15,13 @@ export interface PanelRow {
 }
 
 export interface PanelDetail extends PanelRow {
-  micrometers: number | null
+  valueUm: number | null
   photoUrl: string | null
-  manuallyCorrected: boolean
   note: string
 }
 
 export interface ThicknessView {
-  listingId: string
-  title: string
+  saleCarId: string
   rows: PanelRow[]
   measuredCount: number
   totalCount: number
@@ -28,8 +29,11 @@ export interface ThicknessView {
   complete: boolean
 }
 
-function measurementOf(wire: ThicknessMapWire, code: PanelCode): PanelWire | undefined {
-  return wire.panels.find((panel) => panel.panel === code)
+function measurementOf(
+  wire: ThicknessMapWire,
+  code: PanelCode,
+): ThicknessMeasurementWire | undefined {
+  return wire.measurements.find((measurement) => measurement.panel === code)
 }
 
 export function toThicknessView(wire: ThicknessMapWire): ThicknessView {
@@ -38,28 +42,27 @@ export function toThicknessView(wire: ThicknessMapWire): ThicknessView {
   const rows = PANELS.map((panel) =>
     toRow(panel.code, panel.label, measurementOf(wire, panel.code)),
   )
-  const measuredCount = rows.filter((row) => row.measured).length
   return {
-    listingId: wire.listing_id,
-    title: wire.listing_title,
+    saleCarId: wire.sale_car_id,
     rows,
-    measuredCount,
-    totalCount: rows.length,
-    coverageText: `${measuredCount} из ${rows.length}`,
-    complete: measuredCount === rows.length,
+    // Счётчики берутся с провода, а не пересчитываются по строкам: полноту карты
+    // определяет сервер, и второй ответ на тот же вопрос завёл бы второе правило.
+    measuredCount: wire.measured_panels,
+    totalCount: wire.total_panels,
+    coverageText: `${wire.measured_panels} из ${wire.total_panels}`,
+    complete: wire.is_complete,
   }
 }
 
-function toRow(code: PanelCode, label: string, wire?: PanelWire): PanelRow {
-  const micrometers = wire?.micrometers ?? null
-  const grade = gradeOf(micrometers)
+function toRow(code: PanelCode, label: string, wire?: ThicknessMeasurementWire): PanelRow {
+  const grade: Grade = wire?.status ?? 'none'
   return {
     code,
     label,
     grade,
     color: GRADE_COLOR[grade],
-    value: micrometers === null ? '—' : `${micrometers} мкм`,
-    measured: micrometers !== null,
+    value: wire ? `${wire.value_um} мкм` : '—',
+    measured: Boolean(wire),
   }
 }
 
@@ -69,20 +72,15 @@ export function toPanelDetail(wire: ThicknessMapWire, code: PanelCode): PanelDet
   const row = toRow(code, panel?.label ?? code, measurement)
   return {
     ...row,
-    micrometers: measurement?.micrometers ?? null,
+    valueUm: measurement?.value_um ?? null,
     photoUrl: measurement?.photo_url ?? null,
-    manuallyCorrected: measurement?.manually_corrected ?? false,
-    note: noteFor(row.grade, wire.factory_micrometers, measurement?.manually_corrected ?? false),
+    note: noteFor(row.grade),
   }
 }
 
-function noteFor(grade: Grade, factory: number | null, corrected: boolean): string {
+function noteFor(grade: Grade): string {
   if (grade === 'none') return 'Продавец не измерял эту панель.'
-  const source = corrected
-    ? 'Число уточнено продавцом вручную после распознавания.'
-    : 'Значение считано с экрана прибора.'
-  if (factory === null) return source
-  return `${source} Заводская толщина у этой модели — около ${factory} мкм.`
+  return `Значение снято с экрана прибора: ${GRADE_WORD[grade]}.`
 }
 
 export function gradeCaption(detail: PanelDetail): string {

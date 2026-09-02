@@ -3,6 +3,7 @@
 // Бэкенд пишет её сейчас; фронт связан со спекой, а не с тем, что сервер отдаёт сегодня.
 // Пока история не доехала, `GET /sale_car/list` возвращает голый массив без страниц —
 // лента будет пуста до тех пор.
+import type { ThicknessSummaryWire } from './thicknessContract'
 import type { SaleCarStatus } from './saleCarContract'
 
 export type FeedSort = 'newest' | 'price_asc' | 'price_desc'
@@ -21,6 +22,8 @@ export interface FeedCardWire {
   status: SaleCarStatus
   preview_photo_url: string | null
   published_at: string | null
+  /** Сводка карты замеров. `null` у объявления без единого замера. */
+  thickness: ThicknessSummaryWire | null
 }
 
 export interface FeedPageWire {

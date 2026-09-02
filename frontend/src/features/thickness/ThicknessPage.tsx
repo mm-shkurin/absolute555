@@ -33,8 +33,7 @@ export function ThicknessPage({
         <Container>
           <div className={styles.crumbs}>
             <Link to={ROUTES.feed}>Лента</Link> ›{' '}
-            <Link to={ROUTES.listing(listingId)}>{map.view?.title ?? 'Объявление'}</Link> › Карта
-            замеров
+            <Link to={ROUTES.listing(listingId)}>Объявление</Link> › Карта замеров
           </div>
           {map.isLoading ? <ThicknessSkeleton /> : null}
           {!map.isLoading && map.error ? (

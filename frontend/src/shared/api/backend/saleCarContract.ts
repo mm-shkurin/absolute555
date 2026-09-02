@@ -6,6 +6,8 @@
 
 /** Чем кончилось чтение фотографии СТС. `unreadable` лечится новым снимком,
  *  `undecoded` — только ручным вводом: поэтому они не слиты в одно значение. */
+import type { ThicknessSummaryWire } from './thicknessContract'
+
 export type AutofillState = 'none' | 'pending' | 'unreadable' | 'undecoded' | 'done'
 
 /** Кто вписал значение. `seller` старше `ocr` и распознаванием не перетирается. */
@@ -71,6 +73,8 @@ export interface SaleCarWire {
   photos: PhotoWire[]
   autofill: AutofillWire | null
   seller: SellerWire | null
+  /** Сводка карты замеров. `null` у объявления без единого замера. */
+  thickness: ThicknessSummaryWire | null
 }
 
 /** Любое подмножество полей. Сервер отвергает неизвестные ключи, а не игнорирует их,

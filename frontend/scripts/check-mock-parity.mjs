@@ -60,6 +60,9 @@ const UNMOCKED = [
   'offer.one',
   'offer.status',
   'offer.withdraw',
+  // Запись и снятие замера — PUT и DELETE: в моке им отвечает `dev/fixtures/mutations.ts`,
+  // куда гейт не смотрит. Экрана продавца, который их зовёт, ещё нет — ждёт мокапа.
+  'thickness.panel',
   'chat.read',
   'chat.messages',
   'moderation.dismissComplaint',

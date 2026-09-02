@@ -1,5 +1,5 @@
 // Пути, которых на сервере нет: под ними живут экраны, чьи истории ещё не доехали
-// (канал «под заказ», карта замеров, заявки поставщикам). Держатся отдельно от настоящих
+// (канал «под заказ», заявки поставщикам). Держатся отдельно от настоящих
 // адресов, чтобы одно не выглядело как другое.
 import {
   BIDS,
@@ -8,7 +8,7 @@ import {
   importRequest,
   supplierProfile,
 } from './fixtures/importing'
-import { listingDetail, thicknessMap } from './fixtures/detail'
+import { listingDetail } from './fixtures/detail'
 import { FEED, IMPORT_CARS, LEXUS } from './fixtures/cars'
 import { MY_LISTINGS, PROFILE, offers } from './fixtures/people'
 import { CHATS, MESSAGES, SELLER } from './fixtures/rest'
@@ -20,13 +20,9 @@ function match(path: string, pattern: RegExp): string | null {
 
 export function legacyRoute(path: string, query: URLSearchParams): unknown {
   if (path === '/listings') return listingsCollection(query)
-  if (path === '/listings/l-thickness') return null
 
   const listingId = match(path, /^\/listings\/([^/]+)$/)
   if (listingId) return listingDetail(listingId, listingId === 'l2')
-
-  const thicknessId = match(path, /^\/listings\/([^/]+)\/thickness$/)
-  if (thicknessId) return thicknessMap(thicknessId)
 
   if (path === '/offers') return offers(query.get('direction') ?? 'incoming')
   if (path === '/chats') return { items: CHATS }

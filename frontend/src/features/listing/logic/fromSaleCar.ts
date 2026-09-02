@@ -8,7 +8,9 @@ import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
 import { maskVin } from '../../../shared/domain/listing/vin'
 import type { ListingDetailWire, OfferWire } from '../api/listingApi'
 
-const TOTAL_PANELS = 11
+// Набор панелей знает сервер и присылает его в сводке. Число здесь — только на случай
+// объявления без единого замера, где сводки нет вовсе.
+const TOTAL_PANELS = 13
 
 function toOffer(offer: BackendOffer): OfferWire {
   return { id: offer.offer_id, amount: offer.price, created_at: offer.created_at }
@@ -38,8 +40,8 @@ export function toListingDetailWire(
     // Отдельного времени продажи сервер не хранит: последняя правка статуса — ближайшее
     // честное приближение, и оно перестанет им быть, как только объявление отредактируют.
     sold_at: sold ? car.updated_at : null,
-    thickness_map_complete: false,
-    has_thickness_map: false,
+    thickness_map_complete: car.thickness?.is_complete ?? false,
+    has_thickness_map: (car.thickness?.measured_panels ?? 0) > 0,
     // Телефон — отдельный запрос `POST /{id}/reveal-phone`, а не поле карточки: полем
     // телефоны площадки выкачиваются одним проходом. Владельцу сервер отдаёт его сразу.
     phone_available: owned ? Boolean(car.phone_number) : true,
@@ -49,8 +51,8 @@ export function toListingDetailWire(
     views_count: 0,
     opens_count: 0,
     offers_count: context.offers?.length ?? 0,
-    measured_panels: 0,
-    total_panels: TOTAL_PANELS,
+    measured_panels: car.thickness?.measured_panels ?? 0,
+    total_panels: car.thickness?.total_panels ?? TOTAL_PANELS,
     // Имя и аватар приходят от провайдера входа. Рейтинга и числа сделок в выдаче нет:
     // отзывы — история 12, и ноль сделок читался бы как «сделок не было», а не «не знаем».
     seller: {

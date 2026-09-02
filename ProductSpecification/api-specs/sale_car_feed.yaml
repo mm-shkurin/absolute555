@@ -163,3 +163,9 @@ components:
         status: { $ref: 'sale_car_draft.yaml#/components/schemas/SaleCarStatus' }
         preview_photo_url: { type: string, nullable: true }
         published_at: { type: string, format: date-time, nullable: true }
+        thickness:
+          allOf: [{ $ref: 'sale_car_thickness.yaml#/components/schemas/ThicknessSummary' }]
+          nullable: true
+          description: |
+            Сводка карты замеров (история 14). `null` — замеров нет вовсе; отдельного
+            вызова ради двух чисел карточка не делает.

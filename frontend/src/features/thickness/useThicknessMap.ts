@@ -16,10 +16,10 @@ export interface ThicknessResult {
   retry: () => void
 }
 
-export function useThicknessMap(listingId: string): ThicknessResult {
+export function useThicknessMap(saleCarId: string): ThicknessResult {
   const result = useQuery({
-    queryKey: ['thickness', listingId],
-    queryFn: ({ signal }) => fetchThicknessMap(listingId, signal),
+    queryKey: ['thickness', saleCarId],
+    queryFn: ({ signal }) => fetchThicknessMap(saleCarId, signal),
   })
 
   const wire = result.data ?? null

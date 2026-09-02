@@ -57,15 +57,13 @@ describe('Карточка объявления', () => {
     await listing.assertGalleryClosed()
   })
 
-  // Карты замеров на сервере нет вовсе — ни ручки, ни поля: история 14. До неё карточка
-  // честно не обещает карту, и открывать в этих трёх сценариях нечего.
-  it.skip('из карточки открывается карта замеров', async () => {
+  it('из карточки открывается карта замеров', async () => {
     await openListing()
     await listing.openThicknessMap()
     await listing.assertSchematicShown()
   })
 
-  it.skip('панель карты выбирается из списка и подсвечивается на схеме', async () => {
+  it('панель карты выбирается из списка и подсвечивается на схеме', async () => {
     await openListing()
     await listing.openThicknessMap()
     await listing.assertNoPanelSelected()
@@ -75,10 +73,10 @@ describe('Карточка объявления', () => {
     await listing.assertPanelHighlightedOnSchematic('hood', 3)
   })
 
-  it.skip('незамеренная панель говорит об этом, а не молчит', async () => {
+  it('незамеренная панель говорит об этом, а не молчит', async () => {
     await openListing()
     await listing.openThicknessMap()
-    await listing.selectPanelFromList('door-rr')
+    await listing.selectPanelFromList('rear_right_door')
     await listing.assertPanelDetail('не замерена')
   })
 })

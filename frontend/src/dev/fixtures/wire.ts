@@ -10,6 +10,7 @@ import type { SaleCarWire, SellerWire } from '../../shared/api/backend/saleCarCo
 import type { UserWire } from '../../shared/api/backend/accountContract'
 import { FEED } from './cars'
 import { PROFILE, offers as offerFixtures } from './people'
+import { thicknessSummary } from './thickness'
 
 const HOURS = 3_600_000
 
@@ -46,6 +47,7 @@ export function toCard(car: (typeof FEED)[number]): FeedCardWire {
     status: 'published',
     preview_photo_url: car.photo_url,
     published_at: new Date(Date.now() - 30 * HOURS).toISOString(),
+    thickness: thicknessSummary(car.id),
   }
 }
 
@@ -102,6 +104,7 @@ export function saleCar(saleCarId: string): SaleCarWire | null {
     photos: [],
     autofill: { state: 'done', brand_source: 'ocr', model_source: 'ocr', updated_at: null },
     seller: seller('u9', 'Дмитрий', 4.8, 12, 15),
+    thickness: thicknessSummary(saleCarId),
   }
 }
 
