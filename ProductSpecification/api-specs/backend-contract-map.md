@@ -28,6 +28,10 @@
 | `GET /role/*`, `PUT /role/users/{id}/role`, заявки на роль | роли и заявки | `accountApi` |
 | `GET /task/sse/{id}` | `text/event-stream` о распознавании | `listingStream.openListingStream` |
 | `GET`, `PUT`, `DELETE /sale_car/{id}/thickness…` | карта замеров толщиномера | клиента ещё нет |
+| `GET|PUT /supplier/me`, `POST /supplier/me/submit`, `GET /supplier/{id}` | профиль поставщика | клиента ещё нет |
+| `GET /moderation/suppliers`, `.../approve`, `.../reject` | очередь профилей | клиента ещё нет |
+| `POST|GET /request`, `/request/my`, `/request/{id}/close` | заявки покупателя | клиента ещё нет |
+| `PUT /request/{id}/response`, `GET /request/{id}/responses` | отклики поставщиков | клиента ещё нет |
 | `POST /offer/{id}/review`, `PATCH /review/{id}` | отзыв по закрытой сделке | клиента ещё нет |
 | `GET /seller/{id}`, `/seller/{id}/reviews`, `/seller/{id}/listings` | публичный профиль продавца | клиента ещё нет |
 
@@ -77,9 +81,8 @@
 
 ## Чего на сервере нет вовсе
 
-Распознавание экрана толщиномера; чаты; жалобы; отзывы и
-рейтинг продавца; публичный профиль чужого продавца; канал «под заказ» целиком
-(поставщики, заявки, отклики); очередь модерации как отдельная выдача; отзыв своего
+Чаты; жалобы; отзывы и
+рейтинг продавца; публичный профиль чужого продавца; очередь модерации как отдельная выдача; отзыв своего
 предложения — `DELETE /offer/{id}` и `GET /offer/{id}/with-details` в `app/features/offer/api/offer.py`
 лежат внутри строкового литерала и не зарегистрированы.
 
