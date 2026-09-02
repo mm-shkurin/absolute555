@@ -1,7 +1,7 @@
-// Условия поставщика в виде таблицы: по этим четырём строкам его и сравнивают с другими.
+// Условия поставщика таблицей: по этим строкам его и сравнивают с другими.
 import { ratingLine } from '../../../shared/format/rating'
 import { pluralize } from '../../../shared/format/money'
-import type { SupplierProfileWire } from '../api/supplierApi'
+import type { SupplierPageWire } from '../api/supplierApi'
 
 export interface TermRow {
   label: string
@@ -13,31 +13,36 @@ export interface SupplierView {
   name: string
   rating: number | null
   line: string
-  approved: boolean
   terms: TermRow[]
   about: string | null
   listingsTitle: string
   reviewsTitle: string
 }
 
-export function toSupplierView(wire: SupplierProfileWire): SupplierView {
+export function toSupplierView(wire: SupplierPageWire): SupplierView {
+  const { profile, seller } = wire
+  const days =
+    profile.delivery_days_min === null || profile.delivery_days_max === null
+      ? 'не указан'
+      : `${profile.delivery_days_min}–${profile.delivery_days_max} дней`
   return {
-    id: wire.id,
-    name: wire.name,
-    rating: wire.rating,
-    line: ratingLine(wire.rating, wire.deliveries_count, wire.member_since),
-    // Одобрение площадки — не украшение: неодобренный поставщик не может публиковать
-    // позиции, и покупателю важно видеть, кто перед ним.
-    approved: wire.approved,
+    id: profile.user_id,
+    // Имя компании — то, чем поставщик подписывает витрину; имя человека остаётся
+    // запасным: профиль без названия всё равно должен как-то называться.
+    name: profile.company_name ?? seller.name ?? 'Поставщик',
+    rating: seller.rating,
+    line: ratingLine(seller.rating, seller.deals_count, seller.member_since ?? ''),
     terms: [
-      { label: 'Страны', value: wire.countries.join(', ') || 'не указаны' },
-      { label: 'Марки', value: wire.brands.join(', ') || 'любые' },
-      { label: 'Срок доставки', value: wire.delivery_days },
-      { label: 'Предоплата', value: `${wire.prepayment_percent}% при заказе` },
+      { label: 'Страны', value: profile.countries.join(', ') || 'не указаны' },
+      { label: 'Марки', value: profile.brands.join(', ') || 'любые' },
+      { label: 'Срок доставки', value: days },
+      // Порядок расчётов приходит текстом: у каждого поставщика он свой, и процент
+      // предоплаты полем заставил бы всех уложиться в одно правило.
+      { label: 'Условия', value: profile.terms ?? 'по договорённости' },
     ],
-    about: wire.about,
+    about: profile.description,
     listingsTitle: `Позиции под привоз · ${wire.listings.length}`,
-    reviewsTitle: `Отзывы · ${wire.reviews_count}`,
+    reviewsTitle: `Отзывы · ${seller.reviews_count}`,
   }
 }
 

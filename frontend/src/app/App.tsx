@@ -22,6 +22,8 @@ import { ImportRequestPage } from '../features/importRequest/ImportRequestPage'
 import { SupplierPage } from '../features/supplier/SupplierPage'
 import { ModerationQueuePage } from '../features/moderation/ModerationQueuePage'
 import { ComplaintsPage } from '../features/moderation/ComplaintsPage'
+import { SupplierProfilePage } from '../features/supplierProfile/SupplierProfilePage'
+import { SupplierQueuePage } from '../features/moderation/SupplierQueuePage'
 import { RoleApplicationsPage } from '../features/moderation/RoleApplicationsPage'
 import { OAuthCallbackPage } from '../features/auth/OAuthCallbackPage'
 import { NewRequestPage } from '../features/importRequest/NewRequestPage'
@@ -101,6 +103,7 @@ export function App() {
         <Route path={ROUTES.chat()} element={<ChatsPage onSignIn={beginSignIn} />} />
         <Route path={ROUTES.profile} element={<ProfilePage />} />
         <Route path={ROUTES.supplierApplication} element={<SupplierApplicationPage />} />
+        <Route path={ROUTES.supplierProfile} element={<SupplierProfilePage />} />
         <Route path={ROUTES.newImportRequest} element={<NewRequestPage />} />
 
         <Route path={ROUTES.oauthCallback} element={<OAuthCallbackPage />} />
@@ -108,6 +111,7 @@ export function App() {
         <Route path={ROUTES.moderationQueue} element={<ModerationQueuePage />} />
         <Route path={ROUTES.moderationComplaints} element={<ComplaintsPage />} />
         <Route path={ROUTES.moderationRoles} element={<RoleApplicationsPage />} />
+        <Route path={ROUTES.moderationSuppliers} element={<SupplierQueuePage />} />
 
         <Route path="*" element={<Pending screen="Страница не найдена" />} />
       </Routes>

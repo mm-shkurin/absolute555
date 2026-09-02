@@ -39,6 +39,8 @@ export const ROUTES = {
   chat: (id = ':chatId') => `/my/chats/${id}`,
   profile: '/my/profile',
   supplierApplication: '/my/supplier-application',
+  // Витрина поставщика: заполняется после одобрения роли и проходит свою модерацию.
+  supplierProfile: '/my/supplier-profile',
   newImportRequest: '/import-requests/new',
 
   // Возврат от провайдера. Адрес зарегистрирован у Яндекса — менять его нельзя,
@@ -50,4 +52,5 @@ export const ROUTES = {
   moderationQueue: '/moderation/queue',
   moderationComplaints: '/moderation/complaints',
   moderationRoles: '/moderation/supplier-applications',
+  moderationSuppliers: '/moderation/suppliers',
 } as const

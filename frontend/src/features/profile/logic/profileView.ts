@@ -15,6 +15,8 @@ export interface SupplierStateView {
   badge: string | null
   tone: StatusTone
   invitation: boolean
+  /** Роль уже выдана: только тогда есть что заполнять в витрине (история 16). */
+  approved: boolean
 }
 
 export interface ImportRequestView {
@@ -87,10 +89,17 @@ function supplierState(
 ): SupplierStateView {
   const since = appliedAt ? ` с ${DATE.format(new Date(appliedAt))}` : ''
   if (status === 'pending')
-    return { badge: `заявка на рассмотрении${since}`, tone: 'wait', invitation: false }
-  if (status === 'approved') return { badge: 'вы поставщик', tone: 'ok', invitation: false }
-  if (status === 'rejected') return { badge: 'заявка отклонена', tone: 'bad', invitation: true }
-  return { badge: null, tone: 'info', invitation: true }
+    return {
+      badge: `заявка на рассмотрении${since}`,
+      tone: 'wait',
+      invitation: false,
+      approved: false,
+    }
+  if (status === 'approved')
+    return { badge: 'вы поставщик', tone: 'ok', invitation: false, approved: true }
+  if (status === 'rejected')
+    return { badge: 'заявка отклонена', tone: 'bad', invitation: true, approved: false }
+  return { badge: null, tone: 'info', invitation: true, approved: false }
 }
 
 function toRequestView(wire: ImportRequestWire): ImportRequestView {

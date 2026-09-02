@@ -1,41 +1,39 @@
-// Публичная страница поставщика: условия работы, его позиции и отзывы о поставках.
-import { API } from '../../../shared/api/endpoints'
-import { send } from '../../../shared/api/send'
+// Публичная страница поставщика: витрина (история 16), рейтинг с отзывами (12) и его
+// позиции под привоз (17). Три запроса, потому что это три разные сущности сервера —
+// отдельной сводной ручки под эту страницу нет.
+import { fetchSupplierProfile } from '../../../shared/api/backend/supplierApi'
+import {
+  fetchSellerListings,
+  fetchSellerProfile,
+  fetchSellerReviews,
+} from '../../../shared/api/backend/reviewApi'
+import { fromFeedCard } from '../../../shared/domain/listing/fromFeedCard'
 import type { ListingWire } from '../../../shared/domain/listing/listingWire'
+import type { SupplierProfileWire } from '../../../shared/api/backend/supplierContract'
+import type { SellerProfileWire, ReviewWire } from '../../../shared/api/backend/reviewContract'
 
-export interface SupplierProfileWire {
-  id: string
-  name: string
-  rating: number | null
-  deliveries_count: number
-  reviews_count: number
-  member_since: string
-  approved: boolean
-  countries: string[]
-  brands: string[]
-  delivery_days: string
-  prepayment_percent: number
-  about: string | null
+export interface SupplierPageWire {
+  profile: SupplierProfileWire
+  seller: SellerProfileWire
   listings: ListingWire[]
 }
 
-export interface SupplierReviewWire {
-  id: string
-  author_name: string
-  rating: number
-  body: string
-}
-
 export async function fetchSupplier(
-  id: string,
+  userId: string,
   signal?: AbortSignal,
-): Promise<SupplierProfileWire> {
-  return send<SupplierProfileWire>(API.importing.supplier(id), { signal })
+): Promise<SupplierPageWire> {
+  const [profile, seller, listings] = await Promise.all([
+    fetchSupplierProfile(userId, signal),
+    fetchSellerProfile(userId, signal),
+    fetchSellerListings(userId, {}, signal),
+  ])
+  return { profile, seller, listings: listings.items.map(fromFeedCard) }
 }
 
 export async function fetchSupplierReviews(
-  id: string,
+  userId: string,
   signal?: AbortSignal,
-): Promise<{ items: SupplierReviewWire[] }> {
-  return send<{ items: SupplierReviewWire[] }>(API.reviews.ofSeller(id), { signal })
+): Promise<{ items: ReviewWire[] }> {
+  const page = await fetchSellerReviews(userId, {}, signal)
+  return { items: page.items }
 }

@@ -61,10 +61,16 @@ describe('профиль', () => {
       badge: 'заявка на рассмотрении с 24 августа',
       tone: 'wait',
       invitation: false,
+      approved: false,
     })
     expect(
       toProfileView({ ...wire, supplier_status: 'none', supplier_applied_at: null }).supplier,
-    ).toEqual({ badge: null, tone: 'info', invitation: true })
+    ).toEqual({ badge: null, tone: 'info', invitation: true, approved: false })
+  })
+
+  it('одобренной роли профиль поставщика уже принадлежит', () => {
+    const view = toProfileView({ ...wire, supplier_status: 'approved', supplier_applied_at: null })
+    expect(view.supplier.approved).toBe(true)
   })
 
   it('заявка на привоз называет бюджет, дату и число откликов', () => {

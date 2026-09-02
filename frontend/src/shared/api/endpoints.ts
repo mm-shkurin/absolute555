@@ -17,14 +17,8 @@ export const API = {
   listings: {
     collection: `${V1}/listings`,
   },
-  // Отзывы о поставщике — история 16. Это не отзывы о продавце: у тех своя ручка
-  // `/seller/{id}/reviews`, и смешивать их значит показать поставке оценку продажи.
-  reviews: {
-    ofSeller: (userId: string) => `${V1}/users/${encodeURIComponent(userId)}/reviews`,
-  },
   // Поставщики и заявки на привоз — истории 16 и 17.
   importing: {
-    supplier: (id: string) => `${V1}/suppliers/${encodeURIComponent(id)}`,
     request: (id: string) => `${V1}/import-requests/${encodeURIComponent(id)}`,
     responses: (id: string) => `${V1}/import-requests/${encodeURIComponent(id)}/responses`,
   },

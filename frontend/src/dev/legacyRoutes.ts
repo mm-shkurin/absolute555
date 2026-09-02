@@ -6,7 +6,6 @@ import {
   REQUEST_CARDS,
   SUPPLIERS,
   importRequest,
-  supplierProfile,
 } from './fixtures/importing'
 import { listingDetail } from './fixtures/detail'
 import { FEED, IMPORT_CARS, LEXUS } from './fixtures/cars'
@@ -32,8 +31,6 @@ export function legacyRoute(path: string, query: URLSearchParams): unknown {
   if (/^\/users\/[^/]+\/listings$/.test(path)) return { items: [LEXUS, FEED[1]] }
   if (/^\/users\/[^/]+$/.test(path)) return SELLER
 
-  const supplierId = match(path, /^\/suppliers\/([^/]+)$/)
-  if (supplierId) return supplierProfile(supplierId)
   if (path === '/suppliers') return { items: SUPPLIERS }
 
   const requestId = match(path, /^\/import-requests\/([^/]+)$/)

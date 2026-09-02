@@ -10,6 +10,13 @@ import { SELLER, SELLER_REVIEWS } from './fixtures/rest'
 import { MY_ROLE_REQUESTS, ROLE_APPLICATIONS } from './fixtures/moderation'
 import { legacyRoute } from './legacyRoutes'
 import { eraseMeasurement, thicknessMap, writeMeasurement } from './fixtures/thickness'
+import {
+  editMyProfile,
+  myProfile,
+  publicProfile,
+  submitMyProfile,
+  supplierQueue,
+} from './fixtures/supplier'
 import type { BodyPanel } from '../shared/api/backend/thicknessContract'
 import * as wire from './fixtures/wire'
 import * as chatWire from './fixtures/wireChat'
@@ -62,6 +69,11 @@ function route(url: URL, method: string, payload?: BodyInit | null): unknown {
     return status ? ROLE_APPLICATIONS.filter((one) => one.status === status) : ROLE_APPLICATIONS
   }
   if (path === '/role/my-role-requests') return MY_ROLE_REQUESTS
+  if (path === '/supplier/me') return myProfile()
+  if (path === '/moderation/suppliers') return supplierQueue()
+
+  const supplierOf = match(path, /^\/supplier\/([^/]+)$/)
+  if (supplierOf) return publicProfile(supplierOf)
 
   const reviewsOf = match(path, /^\/seller\/([^/]+)\/reviews$/)
   if (reviewsOf)
@@ -99,6 +111,15 @@ function route(url: URL, method: string, payload?: BodyInit | null): unknown {
 // Замер записывается и снимается по адресу панели, и заглушка отвечает картой, как
 // сервер: экран рисует пришедшее, и на общем `{ok:true}` панель осталась бы серой.
 function mutate(path: string, method: string, payload?: BodyInit | null): unknown {
+  // Профиль поставщика в заглушке живой: правка и отправка меняют то, что экран
+  // прочитает следующим запросом, иначе статус разошёлся бы с кнопками.
+  if (path === '/supplier/me') return editMyProfile(jsonOf(payload))
+  if (path === '/supplier/me/submit') return submitMyProfile()
+  const approved = /^\/moderation\/suppliers\/([^/]+)\/approve$/.exec(path)
+  if (approved) return { ...publicProfile(approved[1]), status: 'published' }
+  const rejected = /^\/moderation\/suppliers\/([^/]+)\/reject$/.exec(path)
+  if (rejected) return { ...publicProfile(rejected[1]), status: 'rejected' }
+
   const panelPath = /^\/sale_car\/([^/]+)\/thickness\/([^/]+)$/.exec(path)
   if (panelPath) {
     const [, saleCarId, panel] = panelPath
@@ -107,6 +128,15 @@ function mutate(path: string, method: string, payload?: BodyInit | null): unknow
     return thicknessMap(saleCarId)
   }
   return mutation(path)
+}
+
+function jsonOf(payload?: BodyInit | null): Record<string, unknown> {
+  if (typeof payload !== 'string') return {}
+  try {
+    return JSON.parse(payload) as Record<string, unknown>
+  } catch {
+    return {}
+  }
 }
 
 function valueOf(payload?: BodyInit | null): number {

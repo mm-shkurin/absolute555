@@ -44,26 +44,39 @@ interface InputProps {
   mono?: boolean
   recognized?: boolean
   testId?: string
+  /** Поле, которое сейчас править нельзя — например профиль, ушедший в очередь. */
+  disabled?: boolean
 }
 
-export function TextInput({ value, onChange, placeholder, mono, recognized, testId }: InputProps) {
+export function TextInput({
+  value,
+  onChange,
+  placeholder,
+  mono,
+  recognized,
+  testId,
+  disabled,
+}: InputProps) {
   return (
     <input
       className={controlClass(mono, recognized)}
       value={value}
       placeholder={placeholder}
       data-testid={testId}
+      disabled={disabled}
       onChange={(event: ChangeEvent<HTMLInputElement>) => onChange(event.target.value)}
     />
   )
 }
 
-export function TextArea({ value, onChange, placeholder }: InputProps) {
+export function TextArea({ value, onChange, placeholder, testId, disabled }: InputProps) {
   return (
     <textarea
       className={styles.control}
       value={value}
       placeholder={placeholder}
+      data-testid={testId}
+      disabled={disabled}
       onChange={(event: ChangeEvent<HTMLTextAreaElement>) => onChange(event.target.value)}
     />
   )

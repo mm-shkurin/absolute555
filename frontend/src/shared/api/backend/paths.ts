@@ -83,6 +83,9 @@ export const BACKEND = {
       `${V1}/moderation/complaints/${id(complaintId)}/dismiss`,
     unpublish: (saleCarId: string) => `${V1}/moderation/listings/${id(saleCarId)}/unpublish`,
     complain: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/complaints`,
+    suppliers: `${V1}/moderation/suppliers`,
+    approveSupplier: (userId: string) => `${V1}/moderation/suppliers/${id(userId)}/approve`,
+    rejectSupplier: (userId: string) => `${V1}/moderation/suppliers/${id(userId)}/reject`,
   },
   review: {
     ofOffer: (offerId: string) => `${V1}/offer/${id(offerId)}/review`,
@@ -92,6 +95,11 @@ export const BACKEND = {
     one: (userId: string) => `${V1}/seller/${id(userId)}`,
     reviews: (userId: string) => `${V1}/seller/${id(userId)}/reviews`,
     listings: (userId: string) => `${V1}/seller/${id(userId)}/listings`,
+  },
+  supplier: {
+    me: `${V1}/supplier/me`,
+    submit: `${V1}/supplier/me/submit`,
+    one: (userId: string) => `${V1}/supplier/${id(userId)}`,
   },
   role: {
     users: `${V1}/role/users`,

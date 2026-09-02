@@ -1,4 +1,3 @@
-import type { SupplierProfileWire } from '../../features/supplier/api/supplierApi'
 import type { BidWire, RequestWire } from '../../features/importRequest/api/requestApi'
 import type { ImportRequestCardWire, SupplierWire } from '../../features/importFeed/api/importApi'
 
@@ -27,19 +26,6 @@ export const SUPPLIERS: SupplierWire[] = [
     prepayment_percent: 20,
   },
 ]
-
-export function supplierProfile(id: string): SupplierProfileWire {
-  const base = SUPPLIERS.find((item) => item.id === id) ?? SUPPLIERS[0]
-  return {
-    ...base,
-    reviews_count: 18,
-    member_since: 'июня 2026',
-    approved: true,
-    about:
-      'Вожу с аукционов Японии пятый год. Под заказ беру конкретный лот с аукционного листа, растаможку веду сам.',
-    listings: [],
-  }
-}
 
 export const REQUEST_CARDS: ImportRequestCardWire[] = [
   {

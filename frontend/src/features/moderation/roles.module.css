@@ -74,3 +74,19 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Карточка профиля поставщика в очереди: тот же вид, что у заявки на роль, — модератор
+   разбирает и то и другое подряд. */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-surface);
+  padding: 20px;
+  margin-top: 14px;
+}
+
+.card h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 700;
+}

@@ -57,11 +57,9 @@ export function SupplierPage({ signedIn = false }: { signedIn?: boolean }) {
                         <div className={styles.name}>{view.name}</div>
                         <Rating rating={view.rating}>{view.line}</Rating>
                       </div>
-                      {view.approved ? (
-                        <StatusBadge tone="ok">поставщик одобрен площадкой</StatusBadge>
-                      ) : (
-                        <StatusBadge tone="wait">заявка на рассмотрении</StatusBadge>
-                      )}
+                      {/* Страница отдаётся только у опубликованного профиля: сервер
+                          отвечает на неопубликованный тем же 404, что и на чужой. */}
+                      <StatusBadge tone="ok">профиль проверен площадкой</StatusBadge>
                     </div>
                     <div className={styles.terms}>
                       {view.terms.map((term) => (
@@ -89,14 +87,14 @@ export function SupplierPage({ signedIn = false }: { signedIn?: boolean }) {
                       <p>Отзывов пока нет — поставщик ещё не закрыл ни одной поставки.</p>
                     ) : (
                       (reviews.data?.items ?? []).map((review) => (
-                        <div key={review.id} className={styles.review}>
+                        <div key={review.review_id} className={styles.review}>
                           <Avatar size={40} />
                           <div>
                             <div className={styles.reviewName}>
-                              {review.author_name}{' '}
+                              {review.author?.name ?? 'Покупатель'}{' '}
                               <span className={styles.reviewStars}>{stars(review.rating)}</span>
                             </div>
-                            <p className={styles.reviewBody}>{review.body}</p>
+                            <p className={styles.reviewBody}>{review.text}</p>
                           </div>
                         </div>
                       ))
