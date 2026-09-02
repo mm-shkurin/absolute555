@@ -9,7 +9,8 @@ import { BRANDS, MODELS } from './fixtures/catalog'
 import { SELLER, SELLER_REVIEWS } from './fixtures/rest'
 import { MY_ROLE_REQUESTS, ROLE_APPLICATIONS } from './fixtures/moderation'
 import { legacyRoute } from './legacyRoutes'
-import { thicknessMap } from './fixtures/thickness'
+import { eraseMeasurement, thicknessMap, writeMeasurement } from './fixtures/thickness'
+import type { BodyPanel } from '../shared/api/backend/thicknessContract'
 import * as wire from './fixtures/wire'
 import * as chatWire from './fixtures/wireChat'
 import { mutation } from './fixtures/mutations'
@@ -24,7 +25,7 @@ export function installMockServer(): void {
     const url = new URL(typeof input === 'string' ? input : input.toString(), location.origin)
     if (!url.pathname.startsWith('/api/')) return original(input, init)
 
-    const body = route(url, init?.method ?? 'GET')
+    const body = route(url, init?.method ?? 'GET', init?.body)
     // Задержка намеренная: без неё скелетоны и спиннеры не увидеть ни разу, а они —
     // половина перенесённой работы.
     await new Promise((resolve) => setTimeout(resolve, LATENCY_MS))
@@ -35,11 +36,11 @@ export function installMockServer(): void {
   }
 }
 
-function route(url: URL, method: string): unknown {
+function route(url: URL, method: string, payload?: BodyInit | null): unknown {
   const path = url.pathname.replace('/api/v1', '')
   const query = url.searchParams
 
-  if (method !== 'GET') return mutation(path)
+  if (method !== 'GET') return mutate(path, method, payload)
 
   // Настоящие адреса сервера. Экраны, переведённые на них, обслуживаются отсюда;
   // выдуманные пути ниже держатся ради тех экранов, у которых ручек ещё нет.
@@ -93,6 +94,27 @@ function route(url: URL, method: string): unknown {
   // выдуманные пути с реальными в одном списке значит потерять, каких из них ждать от
   // сервера, а каких — нет.
   return legacyRoute(path, query)
+}
+
+// Замер записывается и снимается по адресу панели, и заглушка отвечает картой, как
+// сервер: экран рисует пришедшее, и на общем `{ok:true}` панель осталась бы серой.
+function mutate(path: string, method: string, payload?: BodyInit | null): unknown {
+  const panelPath = /^\/sale_car\/([^/]+)\/thickness\/([^/]+)$/.exec(path)
+  if (panelPath) {
+    const [, saleCarId, panel] = panelPath
+    if (method === 'DELETE') eraseMeasurement(saleCarId, panel as BodyPanel)
+    else writeMeasurement(saleCarId, panel as BodyPanel, valueOf(payload))
+    return thicknessMap(saleCarId)
+  }
+  return mutation(path)
+}
+
+function valueOf(payload?: BodyInit | null): number {
+  const sent = payload instanceof FormData ? payload.get('value_um') : null
+  const parsed = Number(sent ?? '')
+  // Пустое поле — история 15: число читает сервер. Заглушка читать не умеет и кладёт
+  // заведомо заводское значение, чтобы экран не остался без ответа.
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : 120
 }
 
 function match(path: string, pattern: RegExp): string | null {

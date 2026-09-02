@@ -117,3 +117,32 @@
     position: static;
   }
 }
+
+.file,
+.field {
+  display: block;
+  width: 100%;
+  margin-top: 12px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 10px;
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 14px;
+}
+
+.field {
+  font-family: var(--font-mono);
+}
+
+.refused {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--status-bad-ink);
+}
+
+.editorActions {
+  display: flex;
+  gap: 10px;
+  margin-top: 14px;
+}

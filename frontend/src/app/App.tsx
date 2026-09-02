@@ -10,6 +10,7 @@ import { LandingPage } from '../features/landing/LandingPage'
 import { FeedPage } from '../features/feed/FeedPage'
 import { ListingPage } from '../features/listing/ListingPage'
 import { ThicknessPage } from '../features/thickness/ThicknessPage'
+import { ThicknessSellerPage } from '../features/thickness/ThicknessSellerPage'
 import { SellingWizardPage } from '../features/selling/SellingWizardPage'
 import { OffersPage } from '../features/offers/OffersPage'
 import { ChatsPage } from '../features/chats/ChatsPage'
@@ -89,6 +90,10 @@ export function App() {
         <Route
           path={ROUTES.sellingDraft()}
           element={<SellingWizardPage onSignIn={beginSignIn} />}
+        />
+        <Route
+          path={ROUTES.sellingThickness()}
+          element={<ThicknessSellerPage signedIn={signedIn} />}
         />
         <Route path={ROUTES.myListings} element={<MyListingsPage onSignIn={beginSignIn} />} />
         <Route path={ROUTES.offers} element={<OffersPage onSignIn={beginSignIn} />} />

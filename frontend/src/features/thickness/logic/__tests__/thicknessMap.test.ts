@@ -5,12 +5,13 @@ import { toPanelDetail, toThicknessView } from '../thicknessMap'
 const wire: ThicknessMapWire = {
   sale_car_id: 'l1',
   measurements: [
-    { panel: 'hood', value_um: 96, status: 'factory', photo_url: 'https://s3/hood.jpg' },
-    { panel: 'trunk_lid', value_um: 168, status: 'factory', photo_url: 'https://s3/trunk.jpg' },
+    { panel: 'hood', value_um: 96, status: 'factory', source: 'seller', photo_url: 'https://s3/hood.jpg' },
+    { panel: 'trunk_lid', value_um: 168, status: 'factory', source: 'seller', photo_url: 'https://s3/trunk.jpg' },
     {
       panel: 'front_right_fender',
       value_um: 640,
       status: 'filler',
+      source: 'seller',
       photo_url: 'https://s3/fender.jpg',
     },
   ],

@@ -109,7 +109,15 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
                 />
               ) : null}
               {state.step === 'thickness' ? (
-                <StepThickness onBack={wizard.goBack} onSkip={goNext} onFill={goNext} />
+                <StepThickness
+                  onBack={wizard.goBack}
+                  onSkip={goNext}
+                  // Заполнять нечего, пока черновик не заведён на сервере: замер
+                  // кладётся по адресу объявления, и без него шаг просто идёт дальше.
+                  onFill={() =>
+                    saleCarId ? navigate(ROUTES.sellingThickness(saleCarId)) : goNext()
+                  }
+                />
               ) : null}
               {state.step === 'review' ? (
                 <StepReview
