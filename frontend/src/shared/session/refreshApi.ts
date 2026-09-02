@@ -1,7 +1,7 @@
 // Клиент обновления сессии. Зовёт `httpClient` напрямую, минуя `authorizedRequest`:
 // запрос, который получает новый токен, не может ходить через слой, добавляющий старый.
 import { postJson } from '../api/httpClient'
-import { API } from '../api/endpoints'
+import { BACKEND } from '../api/backend/paths'
 
 export interface TokenPair {
   accessToken: string
@@ -14,7 +14,7 @@ interface TokenPairWire {
 }
 
 export async function refreshTokens(refreshToken: string): Promise<TokenPair> {
-  const wire = await postJson<TokenPairWire>(API.auth.refresh, { refresh_token: refreshToken })
+  const wire = await postJson<TokenPairWire>(BACKEND.auth.refresh, { refresh_token: refreshToken })
   return fromWire(wire)
 }
 
