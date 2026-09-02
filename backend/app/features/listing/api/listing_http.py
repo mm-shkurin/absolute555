@@ -12,8 +12,7 @@ from app.core.exceptions import (
     ResourceNotFoundError,
     ValidationError,
 )
-from app.features.listing.models.sale_car import SaleCarStatus
-from app.features.account.models.users import Users
+from app.features.listing.statuses import SaleCarStatus
 from app.permissions.ownership import can_manage_sale_car
 from app.features.listing.services.listing_errors import (
     ListingFrozen,
@@ -105,7 +104,7 @@ def to_http(error: Exception):
     raise error
 
 
-async def listing_of(service, sale_car_id: str, user: Users):
+async def listing_of(service, sale_car_id: str, user):
     """The listing, if this caller is allowed to know it exists.
 
     A caller who may not manage the listing is told it is not there rather than that it

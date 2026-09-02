@@ -11,8 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AuthorizationError, ResourceNotFoundError, ValidationError
 from app.db.database import get_db
-from app.features.listing.models.sale_car import SaleCarStatus
-from app.features.account.models.users import Users
+from app.features.listing.statuses import SaleCarStatus
 from app.permissions.ownership import can_manage_sale_car
 from app.features.listing.schemas.feed import FeedPage, FeedQuery, PhoneRevealed
 from app.features.listing.schemas.sale_cars import SaleCarResponse, SaleCarUpdate
@@ -35,7 +34,7 @@ sale_car_router = APIRouter()
 @sale_car_router.post("", response_model=SaleCarResponse, status_code=status.HTTP_201_CREATED)
 async def create_draft(
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     try:
         draft = await ListingLifecycleService(db).create_draft(str(current_user.id))
@@ -68,7 +67,7 @@ async def list_sale_cars(
 async def list_my_sale_cars(
     status: Optional[SaleCarStatus] = None,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     service = SaleCarService(db)
     cars = await service.get_sale_cars_by_user(str(current_user.id), status=status)
@@ -79,7 +78,7 @@ async def list_my_sale_cars(
 async def get_sale_car_by_id(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Optional[Users] = Depends(get_current_user_or_none),
+    current_user=Depends(get_current_user_or_none),
 ):
     service = ListingLifecycleService(db)
     try:
@@ -102,7 +101,7 @@ async def update_sale_car(
     sale_car_id: str,
     sale_car_update: SaleCarUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     service = ListingLifecycleService(db)
     fields = sale_car_update.model_dump(exclude_unset=True)
@@ -121,7 +120,7 @@ async def update_sale_car(
 async def reveal_phone(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     """The seller's number, on request and only to someone signed in.
 
@@ -145,7 +144,7 @@ async def reveal_phone(
 async def delete_sale_car(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     service = SaleCarService(db)
     car = await service.get_sale_car_by_id(sale_car_id)

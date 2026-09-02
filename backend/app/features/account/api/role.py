@@ -5,7 +5,6 @@ from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.features.account.models.users import Users
 from app.features.account.schemas.role import (
     UserRoleUpdate,
     UserRoleInfo,
@@ -25,7 +24,7 @@ role_router = APIRouter()
 @role_router.get("/users", response_model=List[UserListResponse])
 async def get_all_users(
     role_filter: Optional[UserRole] = Query(None, description="Фильтр по роли"),
-    current_user: Users = Depends(require_permission(Permission.VIEW_USERS)),
+    current_user=Depends(require_permission(Permission.VIEW_USERS)),
     db: AsyncSession = Depends(get_db)
 ):
     service = RoleService(db)
@@ -62,7 +61,7 @@ async def get_all_users(
 async def update_user_role(
     user_id: UUID,
     role_data: UserRoleUpdate,
-    current_user: Users = Depends(require_permission(Permission.MANAGE_ALL_USERS)),
+    current_user=Depends(require_permission(Permission.MANAGE_ALL_USERS)),
     db: AsyncSession = Depends(get_db)
 ):
 
@@ -85,7 +84,7 @@ async def update_user_role(
 @role_router.get("/users/{user_id}/role-info", response_model=UserRoleInfo)
 async def get_user_role_info(
     user_id: UUID,
-    current_user: Users = Depends(require_permission(Permission.VIEW_USERS)),
+    current_user=Depends(require_permission(Permission.VIEW_USERS)),
     db: AsyncSession = Depends(get_db)
 ):
     service = RoleService(db)
@@ -102,7 +101,7 @@ async def get_user_role_info(
 
 @role_router.get("/stats", response_model=RoleStats)
 async def get_role_stats(
-    current_user: Users = Depends(require_permission(Permission.VIEW_ANALYTICS)),
+    current_user=Depends(require_permission(Permission.VIEW_ANALYTICS)),
     db: AsyncSession = Depends(get_db)
 ):
     service = RoleService(db)

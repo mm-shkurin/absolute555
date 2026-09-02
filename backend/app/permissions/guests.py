@@ -4,6 +4,8 @@ A guest is a real user row created from a device id, so every one of these is a 
 the caller rather than on what they are reaching for.
 """
 
+from typing import Annotated
+
 from fastapi import Depends
 
 from app.core.exceptions import AuthorizationError
@@ -87,3 +89,8 @@ async def check_guest_car_limit(
             details={"limit": 1},
         )
     return current_user
+
+
+# Тот же приём, что и у CurrentUser: роутеру нужен «вошедший не гостем», а не строка
+# таблицы. Псевдоним живёт здесь, потому что здесь же и проверка.
+SignedInUser = Annotated[Users, Depends(forbid_guest)]

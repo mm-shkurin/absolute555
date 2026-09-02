@@ -4,7 +4,7 @@ Ownership lives in ownership.py and the guest limits in guests.py; what stays he
 answers one question only -- does this caller's role carry this permission.
 """
 
-from typing import List
+from typing import Annotated, List
 
 from fastapi import Depends
 
@@ -16,6 +16,11 @@ from app.utils.security import get_current_user
 from .mapping import ROLE_PERMISSIONS
 from .permissions import Permission
 from .roles import UserRole
+
+# Кто зовёт, одним именем. Роутеру нужен вызывающий, а не таблица пользователей: без
+# этого псевдонима каждый маршрут импортировал ORM ради подсказки типа, и слой, который
+# не должен знать про хранение, знал про него в восьми файлах.
+CurrentUser = Annotated[Users, Depends(get_current_user)]
 
 async def get_user_permissions(user_role: UserRole) -> set[Permission]:
     return ROLE_PERMISSIONS.get(user_role, set())

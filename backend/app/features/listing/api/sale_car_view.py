@@ -1,12 +1,15 @@
 """One shape for a listing on the wire.
 
+Строки объявления приходят сюда уже прочитанными — вид их только раскладывает, поэтому
+класс модели здесь не назван: иначе слой, которому нельзя знать про хранение, знал бы про
+него ради подсказки типа.
+
 Five endpoints assembled this dictionary field by field, identically, and a field added
 to the model reached whichever of the five somebody remembered.
 """
 
 from typing import Iterable, List, Optional
 
-from app.features.listing.models.sale_car import SaleCars
 from app.core.config import PhotoSettings
 from app.shared.storage.s3_service import s3_service
 
@@ -36,7 +39,7 @@ _FIELDS = (
 )
 
 
-def autofill_view(listing: SaleCars) -> dict:
+def autofill_view(listing) -> dict:
     """The outcome of the reading, and who filled the two catalogue fields."""
     return {
         "state": listing.autofill_state,
@@ -80,7 +83,7 @@ def seller_view(owner) -> Optional[dict]:
     }
 
 
-async def to_view(listing: SaleCars, viewer=None) -> dict:
+async def to_view(listing, viewer=None) -> dict:
     """One listing, as the caller in front of it may see it.
 
     The phone number is the one field that depends on who is asking: it is the seller's
@@ -103,7 +106,7 @@ async def to_view(listing: SaleCars, viewer=None) -> dict:
     return view
 
 
-def to_gallery(listing: SaleCars) -> dict:
+def to_gallery(listing) -> dict:
     return {
         "sale_car_id": listing.sale_car_id,
         "photos": [_photo_view(photo) for photo in (listing.photos or [])],
@@ -111,13 +114,13 @@ def to_gallery(listing: SaleCars) -> dict:
     }
 
 
-def _may_read_phone(listing: SaleCars, viewer) -> bool:
+def _may_read_phone(listing, viewer) -> bool:
     if viewer is None:
         return False
     return str(viewer.id) == str(listing.user_id) or viewer.role in ("manager", "admin")
 
 
-def to_card(listing: SaleCars) -> dict:
+def to_card(listing) -> dict:
     """A listing as the feed shows it.
 
     Deliberately not `to_view` with fields removed: the feed answers twenty at a time,
@@ -138,5 +141,5 @@ def to_card(listing: SaleCars) -> dict:
     }
 
 
-async def to_views(listings: Iterable[SaleCars], viewer=None) -> List[dict]:
+async def to_views(listings: Iterable, viewer=None) -> List[dict]:
     return [await to_view(listing, viewer) for listing in listings]

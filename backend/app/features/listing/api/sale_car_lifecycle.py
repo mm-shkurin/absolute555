@@ -8,7 +8,6 @@ from fastapi import APIRouter, Body, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.features.account.models.users import Users
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 from app.features.moderation.schemas.moderation import ComplaintCreate, ComplaintResponse, RejectionReason
@@ -34,7 +33,7 @@ def _changed(listing) -> SaleCarStatusChanged:
     )
 
 
-async def _own_action(action, sale_car_id: str, db: AsyncSession, user: Users):
+async def _own_action(action, sale_car_id: str, db: AsyncSession, user):
     service = ListingLifecycleService(db)
     try:
         await listing_of(service, sale_car_id, user)
@@ -47,7 +46,7 @@ async def _own_action(action, sale_car_id: str, db: AsyncSession, user: Users):
 async def submit(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await _own_action("submit", sale_car_id, db, current_user)
 
@@ -56,7 +55,7 @@ async def submit(
 async def withdraw(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await _own_action("withdraw", sale_car_id, db, current_user)
 
@@ -65,7 +64,7 @@ async def withdraw(
 async def mark_sold(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await _own_action("mark_sold", sale_car_id, db, current_user)
 
@@ -74,7 +73,7 @@ async def mark_sold(
 async def republish(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await _own_action("republish", sale_car_id, db, current_user)
 
@@ -83,7 +82,7 @@ async def republish(
 async def revise(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     return await _own_action("revise", sale_car_id, db, current_user)
 
@@ -92,7 +91,7 @@ async def revise(
 async def approve(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    moderator: Users = Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
+    moderator=Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
 ):
     try:
         return _changed(await ListingReviewService(db).approve(sale_car_id, str(moderator.id)))
@@ -105,7 +104,7 @@ async def reject(
     sale_car_id: str,
     reason: RejectionReason,
     db: AsyncSession = Depends(get_db),
-    moderator: Users = Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
+    moderator=Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
 ):
     """Turn a listing back. The label is required; the comment the seller reads is not."""
     try:
@@ -124,7 +123,7 @@ async def complain(
     sale_car_id: str,
     complaint: ComplaintCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     """Anyone signed in, once per listing. Only about a listing that is published."""
     try:

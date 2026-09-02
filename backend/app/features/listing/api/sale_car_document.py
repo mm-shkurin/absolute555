@@ -9,7 +9,6 @@ from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.features.account.models.users import Users
 from app.features.listing.schemas.sale_cars import DocumentLink, StsAccepted
 from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_autofill import ListingAutofillService
@@ -27,7 +26,7 @@ document_router = APIRouter()
 async def get_document_link(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     """Owner and moderator only. Everyone else is told it is not there.
 
@@ -50,7 +49,7 @@ async def attach_document(
     sale_car_id: str,
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     """Accepted, not done: the reading runs on the queue and reports back separately.
 

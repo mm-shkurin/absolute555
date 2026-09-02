@@ -11,7 +11,6 @@ from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.features.account.models.users import Users
 from app.features.listing.schemas.sale_cars import GalleryResponse, PhotoOrder
 from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_lifecycle import ListingLifecycleService
@@ -24,7 +23,7 @@ from .sale_car_view import to_gallery
 photos_router = APIRouter()
 
 
-async def _own_listing(db: AsyncSession, sale_car_id: str, user: Users):
+async def _own_listing(db: AsyncSession, sale_car_id: str, user):
     return await listing_of(ListingLifecycleService(db), sale_car_id, user)
 
 
@@ -33,7 +32,7 @@ async def upload_photos(
     sale_car_id: str,
     files: List[UploadFile] = File(default=[]),
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     try:
         listing = await _own_listing(db, sale_car_id, current_user)
@@ -49,7 +48,7 @@ async def delete_photo(
     sale_car_id: str,
     photo_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     try:
         listing = await _own_listing(db, sale_car_id, current_user)
@@ -64,7 +63,7 @@ async def reorder_photos(
     sale_car_id: str,
     order: PhotoOrder,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user),
+    current_user=Depends(get_current_user),
 ):
     try:
         listing = await _own_listing(db, sale_car_id, current_user)

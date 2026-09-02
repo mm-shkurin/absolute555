@@ -4,8 +4,7 @@ from typing import List, Optional
 from loguru import logger
 
 from app.db.database import get_db
-from app.features.account.models.users import Users
-from app.features.offer.models.offer import OfferStatus as OfferStatusEnum
+from app.features.offer.statuses import OfferStatus as OfferStatusEnum
 from app.features.offer.services.offer_service import OfferService
 from app.features.offer.schemas.offer import (
     OfferCreate,
@@ -27,7 +26,7 @@ offer_router = APIRouter()
 async def create_offer(
     offer_in: OfferCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(forbid_guest)
+    current_user=Depends(forbid_guest)
 ):
     """A guest does not bargain: they cannot read the offers on their own listing either,
     so leaving this route open to them was an inconsistency rather than a decision."""
@@ -46,7 +45,7 @@ async def create_offer(
 async def get_my_offers(
     side: str = Query(default="sent", pattern="^(sent|received)$"),
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     """Two tabs, two queries: an offer carries the buyer and not the seller, so one
     combined list could not be split by the client that received it.
@@ -74,7 +73,7 @@ async def get_my_offers(
 async def withdraw_offer(
     offer_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     """The buyer takes an unanswered offer back. They may send another afterwards."""
     try:
@@ -86,7 +85,7 @@ async def withdraw_offer(
 async def get_offers_for_car(
     sale_car_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(forbid_guest)
+    current_user=Depends(forbid_guest)
 ):
     service = OfferService(db)
     if not await can_manage_offer_as_owner(current_user, sale_car_id, db):
@@ -101,7 +100,7 @@ async def get_offers_for_car(
 async def get_offer_by_id(
     offer_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     service = OfferService(db)
     try:
@@ -124,7 +123,7 @@ async def update_offer_status(
     offer_id: str,
     status_update: OfferStatusUpdate,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     service = OfferService(db)
     try:
@@ -152,7 +151,7 @@ async def update_offer_status(
 async def delete_offer(
     offer_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     service = OfferService(db)
     offer = await service.get_offer_by_id(offer_id)
@@ -170,7 +169,7 @@ async def delete_offer(
 async def get_offer_with_car_details(
     offer_id: str,
     db: AsyncSession = Depends(get_db),
-    current_user: Users = Depends(get_current_user)
+    current_user=Depends(get_current_user)
 ):
     service = OfferService(db)
     offer = await service.get_offer_by_id(offer_id)

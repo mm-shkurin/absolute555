@@ -6,24 +6,10 @@ from sqlalchemy.dialects.postgresql import JSONB, UUID
 from datetime import datetime
 from enum import Enum as PyEnum
 
-class OfferStatus(str, PyEnum):
-    """Six outcomes, because six different things happen.
+# Словарь состояний живёт отдельно (app/features/offer/statuses.py). Имена продолжают
+# читаться отсюда: для сервисов оффер и его статусы — один предмет.
+from app.features.offer.statuses import LIVE, OfferStatus  # noqa: F401
 
-    The screen writes "withdrawn by you", "expired" and "the car was sold" in different
-    words: one the buyer did, one nobody did, one the seller did with somebody else. A
-    single "rejected" would tell a buyer they were turned down when they were not.
-    """
-
-    PENDING = "pending"
-    ACCEPTED = "accepted"
-    REJECTED = "rejected"
-    WITHDRAWN = "withdrawn"
-    EXPIRED = "expired"
-    CAR_SOLD = "car_sold"
-
-
-# What may still be answered, withdrawn or expired. Everything else is settled.
-LIVE = frozenset({OfferStatus.PENDING})
 
 class Offer(Base):
     __tablename__ = "offers"

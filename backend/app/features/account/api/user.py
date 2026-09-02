@@ -12,7 +12,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 
 from app.db.database import get_db
-from app.features.account.models.users import Users
 from app.features.auth.schemas.token import Token
 from app.features.account.schemas.user import User_Data
 from app.features.account.services.user_service import UserService
@@ -23,11 +22,12 @@ from app.utils.security import (
     get_current_user,
 )
 import json
+from app.permissions.dependencies import CurrentUser
 
 user_router = APIRouter()
 
 @user_router.get("/profile", response_model=User_Data)
-async def get_profile(current_user: Users = Depends(get_current_user)):
+async def get_profile(current_user: CurrentUser):
     
     
     yandex_json_parsed = None

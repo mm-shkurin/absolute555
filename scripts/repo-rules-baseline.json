@@ -1,16 +1,3 @@
 {
-  "known": [
-    "backend/app/features/account/api/role.py:8: routers go through services, not the ORM",
-    "backend/app/features/account/api/user.py:15: routers go through services, not the ORM",
-    "backend/app/features/listing/api/listing_http.py:15: routers go through services, not the ORM",
-    "backend/app/features/listing/api/listing_http.py:16: routers go through services, not the ORM",
-    "backend/app/features/listing/api/sale_car.py:14: routers go through services, not the ORM",
-    "backend/app/features/listing/api/sale_car.py:15: routers go through services, not the ORM",
-    "backend/app/features/listing/api/sale_car_document.py:12: routers go through services, not the ORM",
-    "backend/app/features/listing/api/sale_car_lifecycle.py:11: routers go through services, not the ORM",
-    "backend/app/features/listing/api/sale_car_photos.py:14: routers go through services, not the ORM",
-    "backend/app/features/listing/api/sale_car_view.py:9: routers go through services, not the ORM",
-    "backend/app/features/offer/api/offer.py:7: routers go through services, not the ORM",
-    "backend/app/features/offer/api/offer.py:8: routers go through services, not the ORM"
-  ]
+  "known": []
 }

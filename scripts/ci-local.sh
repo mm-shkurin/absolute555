@@ -23,6 +23,7 @@ MINIO_CONTAINER="absolute555-ci-minio-$STACK"
 CI_NETWORK="absolute555-ci-net-$STACK"
 BACKEND_IMAGE="absolute555-backend:ci-local"
 TEST_IMAGE="absolute555-backend:ci-local-tests"
+COVERAGE=0
 FAILED=()
 RESULTS=()
 STARTED_AT=$SECONDS
@@ -34,14 +35,20 @@ for arg in "$@"; do
     --no-e2e)   RUN_E2E=0 ;;
     --images)   RUN_IMAGES=1 ;;
     --fast)     FAST=1; RUN_FRONTEND=0 ;;
+    --coverage) COVERAGE=1; FAST=1; RUN_FRONTEND=0 ;;
     --scope=*)  ;;
     tests/*)    SUITE="$SUITE $arg" ;;
     -h|--help)
       echo "usage: bash scripts/ci-local.sh [--backend|--frontend] [--no-e2e] [--images]"
       echo "       bash scripts/ci-local.sh --fast [tests/test_x.py ...]"
       echo ""
-      echo "  --fast  круг по коду: стек и образы переиспользуются, миграции и справочник"
-      echo "          пропускаются, если база уже готова. Перед пушем — полный прогон."
+      echo "       bash scripts/ci-local.sh --coverage [tests/test_x.py ...]"
+      echo ""
+      echo "  --fast      круг по коду: стек и образы переиспользуются, миграции и справочник"
+      echo "              пропускаются, если база уже готова. Перед пушем — полный прогон."
+      echo "  --coverage  тот же круг с замером покрытия. Отдельная цель, потому что мерить"
+      echo "              покрытие в каждом прогоне — платить временем за цифру, которая"
+      echo "              нужна изредка."
       exit 0 ;;
     *) echo "неизвестный аргумент: $arg" >&2; exit 2 ;;
   esac
@@ -285,6 +292,11 @@ backend_fast() {
 
   # Без отката ревизии и без гейтов правил: круг по коду отвечает на один вопрос —
   # проходят ли тесты. Всё остальное спрашивается полным прогоном перед пушем.
+  if [ "$COVERAGE" = "1" ]; then
+    step "backend: покрытие" run_in_backend       "python -m pytest ${SUITE:-} -q --cov=app --cov-report=term-missing:skip-covered --cov-report=xml:coverage.xml"
+    return
+  fi
+
   step "backend: тесты" run_in_backend "python -m pytest ${SUITE:-} -x -q"
 }
 
