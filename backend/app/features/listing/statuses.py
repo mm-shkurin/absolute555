@@ -44,6 +44,17 @@ class RejectionLabel(str, PyEnum):
     CONTACTS_IN_DESCRIPTION = "contacts_in_description"
 
 
+class ListingKind(str, PyEnum):
+    """Машина в наличии или машина под привоз.
+
+    Один словарь состояний и одна лента на оба вида: покупатель ищет машину, а не канал
+    поставки, и вторая таблица заставила бы дублировать ленту, модерацию и офферы.
+    """
+
+    STOCK = "stock"
+    IMPORT = "import"
+
+
 class SaleCarStatus(str, PyEnum):
     DRAFT = "draft"
     MODERATION = "moderation"
@@ -83,6 +94,16 @@ REQUIRED_TO_SUBMIT: tuple[str, ...] = (
     "milleage",
     "phone_number",
     "year",
+)
+
+# Машины ещё нет в стране: VIN и СТС требовать не с чего, зато без страны, срока и цены
+# под ключ объявление под привоз не говорит покупателю ничего.
+REQUIRED_TO_SUBMIT_IMPORT: tuple[str, ...] = (
+    "price",
+    "phone_number",
+    "import_country",
+    "delivery_days",
+    "turnkey_price",
 )
 
 MAX_DRAFTS_PER_USER = 5

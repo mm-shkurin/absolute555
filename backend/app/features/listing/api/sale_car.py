@@ -11,10 +11,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AuthorizationError, ResourceNotFoundError, ValidationError
 from app.db.database import get_db
-from app.features.listing.statuses import SaleCarStatus
+from app.features.listing.statuses import ListingKind, SaleCarStatus
+from app.permissions.dependencies import has_permission
 from app.permissions.ownership import can_manage_sale_car
+from app.permissions.permissions import Permission
 from app.features.listing.schemas.feed import FeedPage, FeedQuery, PhoneRevealed
-from app.features.listing.schemas.sale_cars import SaleCarResponse, SaleCarUpdate
+from app.features.listing.schemas.sale_cars import DraftKind, SaleCarResponse, SaleCarUpdate
 from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_feed import ListingFeedService
 from app.features.listing.services.listing_lifecycle import ListingLifecycleService
@@ -34,11 +36,21 @@ sale_car_router = APIRouter()
 
 @sale_car_router.post("", response_model=SaleCarResponse, status_code=status.HTTP_201_CREATED)
 async def create_draft(
+    kind: DraftKind = DraftKind(),
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
+    if kind.listing_kind == ListingKind.IMPORT and not await has_permission(
+        current_user.role, Permission.MANAGE_SUPPLIER_PROFILE
+    ):
+        # Объявление под привоз обещает покупателю доставку. Обещать её может тот, чью
+        # заявку на роль поставщика одобрил модератор, а не любой продавец.
+        raise AuthorizationError("Not an importer", code="NOT_AN_IMPORTER")
+
     try:
-        draft = await ListingLifecycleService(db).create_draft(str(current_user.id))
+        draft = await ListingLifecycleService(db).create_draft(
+            str(current_user.id), kind.listing_kind.value
+        )
     except ListingError as error:
         raise to_http(error)
     return await to_view(draft, current_user)

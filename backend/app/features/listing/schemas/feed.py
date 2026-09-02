@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.features.listing.schemas.thickness import ThicknessSummary
 
-from app.features.listing.models.sale_car import SaleCarStatus
+from app.features.listing.statuses import ListingKind, SaleCarStatus
 
 MAX_PAGE_SIZE = 60
 
@@ -36,6 +36,8 @@ class FeedQuery(BaseModel):
     mileage_from: Optional[float] = None
     mileage_to: Optional[float] = None
     transmission: List[str] = Field(default_factory=list)
+    with_thickness_map: bool = False
+    kind: Optional[ListingKind] = None
     sort: FeedSort = FeedSort.NEWEST
     page: int = Field(default=1, ge=1)
     size: int = Field(default=20, ge=1, le=MAX_PAGE_SIZE)
@@ -74,6 +76,10 @@ class FeedCard(BaseModel):
     status: SaleCarStatus
     preview_photo_url: Optional[str] = None
     published_at: Optional[str] = None
+    listing_kind: ListingKind = ListingKind.STOCK
+    import_country: Optional[str] = None
+    delivery_days: Optional[int] = None
+    turnkey_price: Optional[float] = None
     thickness: Optional[ThicknessSummary] = None
 
 

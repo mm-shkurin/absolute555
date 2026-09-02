@@ -23,6 +23,8 @@ from app.features.listing.models.sale_car import (
     ALLOWED_TRANSITIONS,
     MAX_DRAFTS_PER_USER,
     REQUIRED_TO_SUBMIT,
+    REQUIRED_TO_SUBMIT_IMPORT,
+    ListingKind,
     SaleCars,
     SaleCarStatus,
 )
@@ -44,7 +46,7 @@ class ListingLifecycleService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_draft(self, user_id: str) -> SaleCars:
+    async def create_draft(self, user_id: str, kind: str = ListingKind.STOCK.value) -> SaleCars:
         owner = uuid.UUID(user_id)
         drafts = await self.db.execute(
             select(func.count())
@@ -54,7 +56,7 @@ class ListingLifecycleService:
         if drafts.scalar_one() >= MAX_DRAFTS_PER_USER:
             raise TooManyDrafts(MAX_DRAFTS_PER_USER)
 
-        draft = SaleCars(user_id=owner, status=SaleCarStatus.DRAFT)
+        draft = SaleCars(user_id=owner, status=SaleCarStatus.DRAFT, listing_kind=kind)
         self.db.add(draft)
         await self.db.commit()
         return await self.get(str(draft.sale_car_id))
@@ -138,7 +140,12 @@ class ListingLifecycleService:
 
     @staticmethod
     def _missing(listing: SaleCars) -> list[str]:
-        missing = [name for name in REQUIRED_TO_SUBMIT if getattr(listing, name) in (None, "")]
+        required = (
+            REQUIRED_TO_SUBMIT_IMPORT
+            if listing.listing_kind == ListingKind.IMPORT.value
+            else REQUIRED_TO_SUBMIT
+        )
+        missing = [name for name in required if getattr(listing, name) in (None, "")]
         if len(listing.photos or []) < MIN_PHOTOS_TO_SUBMIT:
             # One photograph is nearly useless to a buyer, so the gate asks for three
             # (story 5). It reports the same "photos" either way: the wizard highlights a

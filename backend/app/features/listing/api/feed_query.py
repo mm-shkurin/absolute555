@@ -13,6 +13,7 @@ from fastapi import Query, Request
 from pydantic import ValidationError
 
 from app.core.exceptions import ValidationError as InvalidRequest
+from app.features.listing.statuses import ListingKind
 from app.features.listing.schemas.feed import FeedQuery, FeedSort
 
 KNOWN = set(FeedQuery.model_fields)
@@ -29,6 +30,8 @@ async def feed_query(
     mileage_from: Optional[float] = None,
     mileage_to: Optional[float] = None,
     transmission: List[str] = Query(default=[]),
+    with_thickness_map: bool = False,
+    kind: Optional[ListingKind] = None,
     sort: FeedSort = FeedSort.NEWEST,
     page: int = 1,
     size: int = 20,
@@ -55,6 +58,8 @@ async def feed_query(
             mileage_from=mileage_from,
             mileage_to=mileage_to,
             transmission=transmission,
+            with_thickness_map=with_thickness_map,
+            kind=kind,
             sort=sort,
             page=page,
             size=size,

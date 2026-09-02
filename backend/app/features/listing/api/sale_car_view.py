@@ -32,6 +32,10 @@ _FIELDS = (
     "milleage",
     "description",
     "status",
+    "listing_kind",
+    "import_country",
+    "delivery_days",
+    "turnkey_price",
     "reject_reason",
     "reject_label",
     "published_at",
@@ -113,6 +117,8 @@ def _measurement_view(measured) -> dict:
         "panel": measured.panel,
         "value_um": measured.value_um,
         "status": status_of(measured.value_um),
+        "source": measured.value_source,
+        "ocr_value_um": measured.ocr_value_um,
         "photo_url": s3_service.get_public_photo_url(measured.photo_key),
         "updated_at": measured.updated_at,
     }
@@ -169,6 +175,10 @@ def to_card(listing) -> dict:
         "status": listing.status,
         "preview_photo_url": photos[0]["preview_url"] if photos else None,
         "published_at": listing.published_at.isoformat() if listing.published_at else None,
+        "listing_kind": listing.listing_kind,
+        "import_country": listing.import_country,
+        "delivery_days": listing.delivery_days,
+        "turnkey_price": listing.turnkey_price,
         "thickness": thickness_summary(listing.thickness_measurements or []),
     }
 

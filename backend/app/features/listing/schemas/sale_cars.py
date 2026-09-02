@@ -5,7 +5,7 @@ from datetime import datetime
 
 # One vocabulary for the wire and the row. Re-declaring the six values here is how the
 # two drift apart the first time one is extended.
-from app.features.listing.models.sale_car import AutofillState, FieldSource, SaleCarStatus
+from app.features.listing.statuses import AutofillState, FieldSource, ListingKind, SaleCarStatus
 from app.features.listing.schemas.feed import Seller
 from app.features.listing.schemas.thickness import ThicknessSummary
 
@@ -39,6 +39,19 @@ class SaleCarUpdate(BaseModel):
     year: Optional[int] = None
     transmission: Optional[str] = None
     engine_power: Optional[int] = None
+
+    # Поля привоза правятся так же, как остальные; вид объявления — нет: он выбран при
+    # создании, и смена его на живом объявлении означала бы, что покупатель торговался
+    # за машину другого канала.
+    import_country: Optional[str] = Field(default=None, max_length=60)
+    delivery_days: Optional[int] = Field(default=None, ge=1, le=365)
+    turnkey_price: Optional[float] = Field(default=None, ge=0)
+
+
+class DraftKind(BaseModel):
+    """Чем будет объявление. Привоз создаёт только поставщик."""
+
+    listing_kind: ListingKind = ListingKind.STOCK
 
 
 class Autofill(BaseModel):
@@ -125,6 +138,10 @@ class SaleCarResponse(BaseModel):
     milleage: Optional[float] = None
     description: Optional[str] = None
     status: SaleCarStatus
+    listing_kind: ListingKind = ListingKind.STOCK
+    import_country: Optional[str] = None
+    delivery_days: Optional[int] = None
+    turnkey_price: Optional[float] = None
     reject_reason: Optional[str] = None
     reject_label: Optional[str] = None
     published_at: Optional[datetime] = None

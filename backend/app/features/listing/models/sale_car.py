@@ -15,6 +15,8 @@ from app.features.listing.statuses import (  # noqa: F401
     REQUIRED_TO_SUBMIT,
     AutofillState,
     FieldSource,
+    ListingKind,
+    REQUIRED_TO_SUBMIT_IMPORT,
     RejectionLabel,
     SaleCarStatus,
 )
@@ -48,6 +50,13 @@ class SaleCars(Base):
     year = Column(Integer, nullable=True)
     transmission = Column(String, nullable=True)
     engine_power = Column(Integer, nullable=True)
+
+    # Канал поставки и то, что он добавляет к объявлению. Пусто у машины в наличии:
+    # столбцы принадлежат привозу, а не всем объявлениям сразу.
+    listing_kind = Column(String, default=ListingKind.STOCK.value, nullable=False, index=True)
+    import_country = Column(String, nullable=True)
+    delivery_days = Column(Integer, nullable=True)
+    turnkey_price = Column(Float, nullable=True)
 
     price = Column(Float, nullable=True)
     milleage = Column(Float, nullable=True)

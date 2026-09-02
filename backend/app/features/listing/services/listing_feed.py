@@ -11,6 +11,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
+from app.features.listing.models.thickness import ThicknessMeasurement
+from app.features.listing.panels import TOTAL_PANELS
 from app.features.listing.schemas.feed import FeedQuery, FeedSort
 
 
@@ -62,6 +64,20 @@ class ListingFeedService:
 
         if query.transmission:
             found = found.where(SaleCars.transmission.in_(query.transmission))
+
+        if query.kind is not None:
+            found = found.where(SaleCars.listing_kind == query.kind.value)
+
+        if query.with_thickness_map:
+            # Полная карта — все панели набора. Считается подзапросом, а не хранимым
+            # флагом: флаг разошёлся бы с таблицей на первом же снятом замере.
+            measured = (
+                select(func.count())
+                .select_from(ThicknessMeasurement)
+                .where(ThicknessMeasurement.sale_car_id == SaleCars.sale_car_id)
+                .scalar_subquery()
+            )
+            found = found.where(measured >= TOTAL_PANELS)
 
         return found
 
