@@ -9,26 +9,12 @@ import { BRANDS, MODELS } from './fixtures/catalog'
 import { SELLER, SELLER_REVIEWS } from './fixtures/rest'
 import { MY_ROLE_REQUESTS, ROLE_APPLICATIONS } from './fixtures/moderation'
 import { legacyRoute } from './legacyRoutes'
-import { eraseMeasurement, thicknessMap, writeMeasurement } from './fixtures/thickness'
-import {
-  addRequest,
-  closeRequest,
-  myRequests,
-  openRequests,
-  putRequestResponse,
-  requestResponses,
-} from './fixtures/requests'
-import {
-  editMyProfile,
-  myProfile,
-  publicProfile,
-  submitMyProfile,
-  supplierQueue,
-} from './fixtures/supplier'
-import type { BodyPanel } from '../shared/api/backend/thicknessContract'
+import { mutate } from './mutationRoutes'
+import { myProfile, supplierQueue, publicProfile } from './fixtures/supplier'
+import { myRequests, openRequests, requestResponses } from './fixtures/requests'
+import { thicknessMap } from './fixtures/thickness'
 import * as wire from './fixtures/wire'
 import * as chatWire from './fixtures/wireChat'
-import { mutation } from './fixtures/mutations'
 import { currentSession, endSession, startSession } from '../shared/session/authSession'
 
 const LATENCY_MS = 250
@@ -119,50 +105,6 @@ function route(url: URL, method: string, payload?: BodyInit | null): unknown {
   // выдуманные пути с реальными в одном списке значит потерять, каких из них ждать от
   // сервера, а каких — нет.
   return legacyRoute(path, query)
-}
-
-// Замер записывается и снимается по адресу панели, и заглушка отвечает картой, как
-// сервер: экран рисует пришедшее, и на общем `{ok:true}` панель осталась бы серой.
-function mutate(path: string, method: string, payload?: BodyInit | null): unknown {
-  // Профиль поставщика в заглушке живой: правка и отправка меняют то, что экран
-  // прочитает следующим запросом, иначе статус разошёлся бы с кнопками.
-  if (path === '/supplier/me') return editMyProfile(jsonOf(payload))
-  if (path === '/supplier/me/submit') return submitMyProfile()
-  if (path === '/request') return addRequest(jsonOf(payload))
-  const closed = /^\/request\/([^/]+)\/close$/.exec(path)
-  if (closed) return closeRequest(closed[1])
-  const responded = /^\/request\/([^/]+)\/response$/.exec(path)
-  if (responded) return putRequestResponse(responded[1], jsonOf(payload))
-  const approved = /^\/moderation\/suppliers\/([^/]+)\/approve$/.exec(path)
-  if (approved) return { ...publicProfile(approved[1]), status: 'published' }
-  const rejected = /^\/moderation\/suppliers\/([^/]+)\/reject$/.exec(path)
-  if (rejected) return { ...publicProfile(rejected[1]), status: 'rejected' }
-
-  const panelPath = /^\/sale_car\/([^/]+)\/thickness\/([^/]+)$/.exec(path)
-  if (panelPath) {
-    const [, saleCarId, panel] = panelPath
-    if (method === 'DELETE') eraseMeasurement(saleCarId, panel as BodyPanel)
-    else writeMeasurement(saleCarId, panel as BodyPanel, valueOf(payload))
-    return thicknessMap(saleCarId)
-  }
-  return mutation(path)
-}
-
-function jsonOf(payload?: BodyInit | null): Record<string, unknown> {
-  if (typeof payload !== 'string') return {}
-  try {
-    return JSON.parse(payload) as Record<string, unknown>
-  } catch {
-    return {}
-  }
-}
-
-function valueOf(payload?: BodyInit | null): number {
-  const sent = payload instanceof FormData ? payload.get('value_um') : null
-  const parsed = Number(sent ?? '')
-  // Пустое поле — история 15: число читает сервер. Заглушка читать не умеет и кладёт
-  // заведомо заводское значение, чтобы экран не остался без ответа.
-  return Number.isFinite(parsed) && parsed > 0 ? parsed : 120
 }
 
 function match(path: string, pattern: RegExp): string | null {

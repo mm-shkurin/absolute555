@@ -17,10 +17,14 @@ const root = resolve(here, '../src')
 const paths = readFileSync(resolve(root, 'shared/api/backend/paths.ts'), 'utf8')
 // В заглушке пути живут и строками, и регулярками, где косая черта экранирована.
 // Сравнение идёт по нормализованному тексту, иначе `\/sale_car\/` не совпадёт с `/sale_car/`.
-const mock = readFileSync(resolve(root, 'dev/mockServer.ts'), 'utf8').replaceAll(
-  String.raw`\/`,
-  '/',
-)
+//
+// Читаются оба файла заглушки: чтение живёт в `mockServer.ts`, запись — в
+// `mutationRoutes.ts`, и гейт, знающий только про первый, объявил бы каждую мутацию
+// необслуженной.
+const mock = ['dev/mockServer.ts', 'dev/mutationRoutes.ts']
+  .map((file) => readFileSync(resolve(root, file), 'utf8'))
+  .join('\n')
+  .replaceAll(String.raw`\/`, '/')
 
 // Заглушке незачем изображать то, что не запрос: OAuth уводит страницу на сервер,
 // WebSocket и поток событий поднимают соединение, а не отвечают телом.
