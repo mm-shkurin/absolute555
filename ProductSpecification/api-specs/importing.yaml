@@ -1,0 +1,381 @@
+openapi: 3.0.3
+info:
+  title: Import channel — supplier profiles, buyer requests, responses
+  version: 1.0.0
+  description: |
+    Импортный канал: витрина поставщика, спрос покупателя и отклики на него.
+
+    Профиль поставщика проходит ту же модерацию, что и объявление: витрина,
+    опубликованная без проверки, ничем не отличается от объявления, обходящего очередь.
+    Заявка покупателя живёт своей таблицей — у неё нет ни машины, ни фотографий, ни
+    продавца, это спрос, а не объявление.
+
+    Объявления под привоз описаны не здесь: они лежат в той же таблице, что и машины в
+    наличии (`sale_car_draft.yaml`, `sale_car_feed.yaml`), и добавляют к ним поля
+    `listing_kind`, `import_country`, `delivery_days`, `turnkey_price`.
+
+paths:
+  /api/v1/supplier/me:
+    get:
+      summary: Свой профиль поставщика
+      operationId: readMySupplierProfile
+      tags: [supplier]
+      security: [{ bearerAuth: [] }]
+      description: Заводится при первом чтении, в статусе draft.
+      responses:
+        '200':
+          description: Профиль
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierProfile' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+    put:
+      summary: Заполнить профиль
+      operationId: editMySupplierProfile
+      tags: [supplier]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Правка после отказа возвращает профиль в черновик и снимает причину отказа: иначе
+        модератор видел бы «отклонён» рядом с уже исправленным текстом.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupplierProfileUpdate' }
+      responses:
+        '200':
+          description: Профиль после правки
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierProfile' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/v1/supplier/me/submit:
+    post:
+      summary: Отправить профиль на модерацию
+      operationId: submitMySupplierProfile
+      tags: [supplier]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Профиль в очереди
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierProfile' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /api/v1/supplier/{user_id}:
+    get:
+      summary: Публичная страница поставщика
+      operationId: readSupplierProfile
+      tags: [supplier]
+      description: |
+        Только опубликованный профиль. Неопубликованный и отсутствующий — один ответ:
+        другой сказал бы читателю, кто подал заявку и ещё не прошёл проверку.
+      parameters:
+        - { name: user_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Профиль
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierProfile' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/moderation/suppliers:
+    get:
+      summary: Очередь профилей поставщиков
+      operationId: readSupplierQueue
+      tags: [moderation]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Что ждёт проверки, старшее первым
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, total]
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/SupplierProfile' }
+                  total: { type: integer }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/v1/moderation/suppliers/{user_id}/approve:
+    post:
+      summary: Опубликовать профиль
+      operationId: approveSupplierProfile
+      tags: [moderation]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: user_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Профиль опубликован
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierProfile' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/moderation/suppliers/{user_id}/reject:
+    post:
+      summary: Отклонить профиль с причиной
+      operationId: rejectSupplierProfile
+      tags: [moderation]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - { name: user_id, in: path, required: true, schema: { type: string, format: uuid } }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [reason]
+              properties:
+                reason: { type: string, minLength: 1, maxLength: 1000 }
+      responses:
+        '200':
+          description: Профиль отклонён
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierProfile' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
+  /api/v1/request:
+    post:
+      summary: Открыть заявку «хочу такую»
+      operationId: openBuyerRequest
+      tags: [request]
+      security: [{ bearerAuth: [] }]
+      description: Больше трёх открытых заявок на покупателя — 409 REQUEST_LIMIT_REACHED.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BuyerRequestCreate' }
+      responses:
+        '201':
+          description: Заявка открыта
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BuyerRequest' }
+        '409': { $ref: '#/components/responses/Conflict' }
+    get:
+      summary: Лента спроса для поставщика
+      operationId: readOpenRequests
+      tags: [request]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Только открытые заявки, свежие первыми. Читает роль importer: покупателю эта
+        лента сказала бы, с кем он в очереди.
+      parameters:
+        - { name: page, in: query, schema: { type: integer, minimum: 1, default: 1 } }
+        - { name: size, in: query, schema: { type: integer, minimum: 1, maximum: 60, default: 20 } }
+      responses:
+        '200':
+          description: Страница заявок
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BuyerRequestPage' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+
+  /api/v1/request/my:
+    get:
+      summary: Свои заявки
+      operationId: readMyRequests
+      tags: [request]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Заявки покупателя, свежие первыми
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/BuyerRequest' }
+
+  /api/v1/request/{request_id}/close:
+    post:
+      summary: Закрыть свою заявку
+      operationId: closeBuyerRequest
+      tags: [request]
+      security: [{ bearerAuth: [] }]
+      description: Чужая заявка отвечает 404 — 403 подтвердил бы, что идентификатор живой.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Заявка закрыта
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/BuyerRequest' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+  /api/v1/request/{request_id}/response:
+    put:
+      summary: Откликнуться на заявку
+      operationId: putSupplierResponse
+      tags: [request]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Идемпотентно: один отклик на поставщика, повторный вызов правит свой. Иначе
+        покупатель видел бы одного поставщика дважды с двумя ценами.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/SupplierResponseCreate' }
+      responses:
+        '200':
+          description: Отклик
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierResponse' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+
+  /api/v1/request/{request_id}/responses:
+    get:
+      summary: Отклики на заявку
+      operationId: readRequestResponses
+      tags: [request]
+      security: [{ bearerAuth: [] }]
+      description: Автору заявки — все отклики, поставщику — свой, постороннему — 404.
+      parameters:
+        - $ref: '#/components/parameters/RequestId'
+      responses:
+        '200':
+          description: Отклики
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/SupplierResponse' }
+        '404': { $ref: '#/components/responses/NotFound' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  parameters:
+    RequestId:
+      name: request_id
+      in: path
+      required: true
+      schema: { type: string, format: uuid }
+
+  responses:
+    Forbidden:
+      description: У вызывающего нет нужной роли
+      content:
+        application/json:
+          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+    NotFound:
+      description: Нет или не видно этому вызывающему
+      content:
+        application/json:
+          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+    Conflict:
+      description: Состояние не допускает этого действия
+      content:
+        application/json:
+          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+    Unprocessable:
+      description: Данных не хватает или они не проходят проверку
+      content:
+        application/json:
+          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+
+  schemas:
+    SupplierStatus:
+      type: string
+      enum: [draft, pending, published, rejected]
+
+    SupplierProfileUpdate:
+      type: object
+      properties:
+        company_name: { type: string, maxLength: 120 }
+        countries: { type: array, items: { type: string } }
+        brands: { type: array, items: { type: string } }
+        delivery_days_min: { type: integer, minimum: 1, maximum: 365 }
+        delivery_days_max: { type: integer, minimum: 1, maximum: 365 }
+        terms: { type: string, maxLength: 4000 }
+        description: { type: string, maxLength: 4000 }
+
+    SupplierProfile:
+      type: object
+      required: [user_id, status, countries, brands]
+      properties:
+        user_id: { type: string, format: uuid }
+        company_name: { type: string, nullable: true }
+        countries: { type: array, items: { type: string } }
+        brands: { type: array, items: { type: string } }
+        delivery_days_min: { type: integer, nullable: true }
+        delivery_days_max: { type: integer, nullable: true }
+        terms: { type: string, nullable: true }
+        description: { type: string, nullable: true }
+        status: { $ref: '#/components/schemas/SupplierStatus' }
+        reject_reason: { type: string, nullable: true }
+        updated_at: { type: string, format: date-time, nullable: true }
+
+    BuyerRequestCreate:
+      type: object
+      properties:
+        brand_id: { type: string, format: uuid }
+        model_id: { type: string, format: uuid }
+        year_from: { type: integer, minimum: 1950, maximum: 2100 }
+        budget_max: { type: number, minimum: 0 }
+        comment: { type: string, maxLength: 2000 }
+
+    BuyerRequest:
+      type: object
+      required: [request_id, user_id, status, responses_count]
+      properties:
+        request_id: { type: string, format: uuid }
+        user_id: { type: string, format: uuid }
+        brand: { type: string, nullable: true, description: Название марки, не идентификатор. }
+        model: { type: string, nullable: true }
+        year_from: { type: integer, nullable: true }
+        budget_max: { type: number, nullable: true }
+        comment: { type: string, nullable: true }
+        status: { type: string, enum: [open, closed] }
+        responses_count: { type: integer, minimum: 0 }
+        created_at: { type: string, format: date-time }
+
+    BuyerRequestPage:
+      type: object
+      required: [items, total, page, size]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/BuyerRequest' }
+        total: { type: integer }
+        page: { type: integer }
+        size: { type: integer }
+
+    SupplierResponseCreate:
+      type: object
+      required: [price, delivery_days]
+      properties:
+        price: { type: number, minimum: 0 }
+        delivery_days: { type: integer, minimum: 1, maximum: 365 }
+        comment: { type: string, maxLength: 2000 }
+
+    SupplierResponse:
+      type: object
+      required: [response_id, request_id, supplier_id, price, delivery_days]
+      properties:
+        response_id: { type: string, format: uuid }
+        request_id: { type: string, format: uuid }
+        supplier_id: { type: string, format: uuid }
+        price: { type: number }
+        delivery_days: { type: integer }
+        comment: { type: string, nullable: true }
+        updated_at: { type: string, format: date-time, nullable: true }

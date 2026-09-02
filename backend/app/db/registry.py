@@ -18,6 +18,8 @@ from app.features.catalog.models.catalog import (
     ModelAlias,
 )
 from app.features.chat.models.chat import Dialog, Message
+from app.features.importing.models.request import BuyerRequest, SupplierResponse
+from app.features.importing.models.supplier import SupplierProfile
 from app.features.listing.models.sale_car import SaleCars
 from app.features.listing.models.thickness import ThicknessMeasurement
 from app.features.moderation.models.complaint import Complaint
@@ -27,6 +29,7 @@ from app.features.review.models.review import Review
 __all__ = [
     "Base",
     "Brand",
+    "BuyerRequest",
     "BrandAlias",
     "CarModel",
     "CatalogSuggestion",
@@ -38,6 +41,8 @@ __all__ = [
     "Review",
     "RoleRequest",
     "SaleCars",
+    "SupplierProfile",
+    "SupplierResponse",
     "ThicknessMeasurement",
     "Users",
 ]

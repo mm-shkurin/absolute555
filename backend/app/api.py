@@ -11,6 +11,7 @@ from app.features.account.api import role, role_request, user
 from app.features.auth.api import auth
 from app.features.catalog.api import catalog
 from app.features.chat.api import chat
+from app.features.importing.api import request as buyer_request, supplier
 from app.features.listing.api import sale_car
 from app.features.moderation.api import moderation
 from app.features.offer.api import offer
@@ -28,6 +29,11 @@ api_router.include_router(sale_car.sale_car_router, prefix="/sale_car", tags=["s
 api_router.include_router(offer.offer_router, prefix="/offer", tags=["offer"])
 api_router.include_router(catalog.catalog_router, prefix="/catalog", tags=["catalog"])
 api_router.include_router(moderation.moderation_router, prefix="/moderation", tags=["moderation"])
+api_router.include_router(
+    supplier.moderation_supplier_router, prefix="/moderation", tags=["moderation"]
+)
+api_router.include_router(supplier.supplier_router, prefix="/supplier", tags=["supplier"])
+api_router.include_router(buyer_request.request_router, prefix="/request", tags=["request"])
 api_router.include_router(chat.chat_router, prefix="/chat", tags=["chat"])
 api_router.include_router(review.review_router, tags=["review"])
 api_router.include_router(seller.seller_router, prefix="/seller", tags=["seller"])
