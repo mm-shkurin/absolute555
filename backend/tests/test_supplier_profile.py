@@ -43,13 +43,16 @@ def fill(client, headers, **fields):
     return client.put("/api/v1/supplier/me", headers=headers, json={**COMPLETE, **fields})
 
 
-def publish_profile(client, headers, moderator):
-    fill(client, headers)
-    assert client.post("/api/v1/supplier/me/submit", headers=headers).status_code == 200
-    approved = client.post(
-        f"/api/v1/supplier/{_id_of(headers)}/approve", headers=moderator
+def send_to_queue(client, headers):
+    filled = fill(client, headers)
+    assert filled.status_code == 200, filled.text
+    return client.post("/api/v1/supplier/me/submit", headers=headers)
+
+
+def decide(client, moderator, headers, verdict, **body):
+    return client.post(
+        f"/api/v1/moderation/suppliers/{_id_of(headers)}/{verdict}", headers=moderator, json=body or None
     )
-    return approved
 
 
 def test_should_open_an_empty_profile_for_a_new_importer(client, importer):
@@ -79,11 +82,8 @@ def test_should_refuse_an_incomplete_profile_at_the_queue(client, importer):
 
 
 def test_should_show_a_published_profile_to_anyone(client, importer, moderator):
-    fill(client, importer)
-    client.post("/api/v1/supplier/me/submit", headers=importer)
-    assert client.post(
-        f"/api/v1/moderation/suppliers/{_id_of(importer)}/approve", headers=moderator
-    ).status_code == 200
+    send_to_queue(client, importer)
+    assert decide(client, moderator, importer, "approve").status_code == 200
 
     seen = client.get(f"/api/v1/supplier/{_id_of(importer)}")
 
@@ -93,15 +93,13 @@ def test_should_show_a_published_profile_to_anyone(client, importer, moderator):
 
 
 def test_should_hide_a_profile_that_is_still_waiting(client, importer):
-    fill(client, importer)
-    client.post("/api/v1/supplier/me/submit", headers=importer)
+    send_to_queue(client, importer)
 
     assert client.get(f"/api/v1/supplier/{_id_of(importer)}").status_code == 404
 
 
 def test_should_hand_the_moderator_what_is_waiting(client, importer, moderator):
-    fill(client, importer)
-    client.post("/api/v1/supplier/me/submit", headers=importer)
+    send_to_queue(client, importer)
 
     waiting = client.get("/api/v1/moderation/suppliers", headers=moderator)
 
@@ -110,26 +108,16 @@ def test_should_hand_the_moderator_what_is_waiting(client, importer, moderator):
 
 
 def test_should_refuse_a_rejection_without_a_reason(client, importer, moderator):
-    fill(client, importer)
-    client.post("/api/v1/supplier/me/submit", headers=importer)
+    send_to_queue(client, importer)
 
-    refused = client.post(
-        f"/api/v1/moderation/suppliers/{_id_of(importer)}/reject",
-        headers=moderator,
-        json={"reason": "   "},
-    )
+    refused = decide(client, moderator, importer, "reject", reason="   ")
 
     assert refused.status_code == 422, refused.text
 
 
 def test_should_return_a_rejected_profile_to_a_draft_on_edit(client, importer, moderator):
-    fill(client, importer)
-    client.post("/api/v1/supplier/me/submit", headers=importer)
-    client.post(
-        f"/api/v1/moderation/suppliers/{_id_of(importer)}/reject",
-        headers=moderator,
-        json={"reason": "Условия описаны непонятно"},
-    )
+    send_to_queue(client, importer)
+    decide(client, moderator, importer, "reject", reason="Условия описаны непонятно")
 
     corrected = fill(client, importer, terms="Предоплата 20%, растаможка включена")
 
@@ -138,8 +126,7 @@ def test_should_return_a_rejected_profile_to_a_draft_on_edit(client, importer, m
 
 
 def test_should_freeze_a_profile_while_it_waits(client, importer):
-    fill(client, importer)
-    client.post("/api/v1/supplier/me/submit", headers=importer)
+    send_to_queue(client, importer)
 
     frozen = fill(client, importer, terms="Другие условия")
 
