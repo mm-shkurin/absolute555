@@ -50,6 +50,12 @@
 
 - [x] inf-01 one review per offer, enforced by the database
 
+## Tier 1 — Frontend
+
+- [x] fe-01 the seller page shows the rating, the reviews and the listings still on sale
+- [x] fe-02 a seller with no reviews says so instead of showing a zero
+- [x] fe-03 a guest reads the seller page: it is public, like the feed
+
 ## Отложено
 
 - [S] int-01 сквозной путь принятия и оценки — правило целиком проверено api-01 и api-07

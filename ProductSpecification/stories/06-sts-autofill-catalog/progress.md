@@ -45,6 +45,11 @@
 
 - [x] inf-01 existing listings stay sendable when the catalogue keys stop being required
 
+## Tier 1 — Frontend
+
+- [x] fe-01 a registration scan is attached from inside the browser and the wizard moves on
+- [x] fe-02 a recognised field is marked as coming from the document, not typed by the seller
+
 ## Отложено
 
 - [S] ui-01.. экран шага 2 мастера — фронтовая стори 20 в `stories.md`

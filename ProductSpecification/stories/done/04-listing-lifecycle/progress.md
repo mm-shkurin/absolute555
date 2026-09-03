@@ -43,7 +43,9 @@
 
 ## Tier 2 — Frontend
 
-- [~] ui-01 my listings are grouped by status (frontend lane, not started)
+- [x] ui-01 my listings are grouped by status
+- [x] ui-02 the wizard walks from the registration scan to the specifications
+- [x] ui-03 an empty listing is not sent to moderation and names what is missing
 
 ## Tier 2 — Security
 

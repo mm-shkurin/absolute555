@@ -52,6 +52,13 @@
 - [x] inf-01 one person cannot hold two complaints about one listing
 - [S] inf-02 listings rejected before the labels existed keep their text
 
+## Tier 1 — Frontend
+
+- [x] fe-01 the queue shows what waits and the moderator reviews it beside the list
+- [x] fe-02 a rejection asks for a labelled reason before it is sent
+- [x] fe-03 complaints are read on their own tab
+- [x] fe-04 the sections of moderation are reachable from one another
+
 ## Отложено
 
 - [S] inf-02 — миграция добавляет `reject_label` как nullable и ничего не трогает в

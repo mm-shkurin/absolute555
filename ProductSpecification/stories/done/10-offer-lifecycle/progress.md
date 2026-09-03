@@ -51,6 +51,12 @@
 - [x] inf-01 offers made before the statuses grew keep their meaning
 - [x] inf-02 the expiry runs on its own schedule
 
+## Tier 1 — Frontend
+
+- [x] fe-01 offers are split into received and sent, each with its own actions
+- [x] fe-02 a received offer is accepted, and an accepted own offer offers to write a review
+- [x] fe-03 an offer that is no longer live keeps its badge and loses its buttons
+
 ## Отложено
 
 - [S] int-01 — принятие уже идёт одной транзакцией сервиса; чтобы разорвать её посередине

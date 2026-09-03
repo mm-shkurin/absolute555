@@ -52,6 +52,20 @@
 
 - [x] inf-01 the columns the feed filters on are indexed
 
+## Tier 1 — Frontend
+
+- [x] fe-01 the feed shows cards with price and title, and the count line is the server's total
+- [x] fe-02 a make filter comes from the catalogue and narrows the feed
+- [x] fe-03 the "with a thickness map" filter keeps only complete maps
+- [x] fe-04 too narrow a set of conditions explains itself instead of showing an empty page
+- [x] fe-05 sorting by price is done by the server and the order on screen follows
+- [x] fe-06 a second page is loaded by a button and adds to the first instead of replacing it
+- [x] fe-07 a guest reads the feed: the contract opens it without signing in
+- [x] fe-08 the card shows the price and the seller to a signed-in buyer
+- [x] fe-09 a buyer reveals the phone number and offers a price from the same column
+- [x] fe-10 a guest sees the card but the bargaining is behind the sign-in wall
+- [x] fe-11 the gallery opens full screen and closes on Escape
+
 ## Отложено
 
 - [S] load-01, load-02 — `tests/tier3/`, меряют форму запроса недетерминированно

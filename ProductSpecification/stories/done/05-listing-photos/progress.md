@@ -52,6 +52,11 @@
 
 - [x] inf-02 documents already in the database move to the closed store
 
+## Tier 1 — Frontend
+
+- [x] fe-01 photographs are added in the wizard and the count in the summary follows the server
+- [x] fe-02 the gallery opens full screen and closes on Escape
+
 ## Отложено
 
 Разобрано в `deferred.md`. Сюда вынесены только те пункты, которые иначе выглядели бы

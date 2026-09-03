@@ -45,6 +45,12 @@
 
 - [x] int-01 from asking to publishing under the new role
 
+## Tier 1 — Frontend
+
+- [x] fe-01 a role application is filled in and sent from the profile
+- [x] fe-02 the reviewer sees the pending applications and answers them
+- [x] fe-03 a rejection opens the reason field: the applicant must learn what to fix
+
 ## Отложено
 
 - [S] профиль поставщика — история 16, здесь только право на него

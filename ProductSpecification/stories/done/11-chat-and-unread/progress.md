@@ -52,6 +52,12 @@
 
 - [x] inf-01 a pair talks in one dialogue about one listing
 
+## Tier 1 — Frontend
+
+- [x] fe-01 dialogues are listed with the last message and the unread count
+- [x] fe-02 on a phone the conversation replaces the list and the back button returns to it
+- [x] fe-03 a sent message appears in the thread without reloading the screen
+
 ## Отложено
 
 - [S] int-01 — сквозной путь разрезан надвое и покрыт по частям: запись отдаёт сообщение
