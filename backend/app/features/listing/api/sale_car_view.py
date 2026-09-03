@@ -79,7 +79,7 @@ def _moderator_view(listing) -> Optional[dict]:
     decided_by = getattr(listing, "moderator", None)
     if decided_by is None:
         return None
-    return {"user_id": decided_by.id, "name": decided_by.display_name}
+    return {"user_id": decided_by.id, "name": name_of(decided_by)}
 
 
 def _photo_view(photo: dict) -> dict:
