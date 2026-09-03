@@ -12,7 +12,7 @@
 
 import requests
 
-from app.core.config import GigaChatSettings
+from app.core.config_ml import GigaChatSettings
 from app.ml.model_answer import parse_answer
 from app.ml.sts_vision import MODEL, VisionUnavailable, access_token
 

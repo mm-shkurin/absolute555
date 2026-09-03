@@ -20,7 +20,7 @@ from app.permissions.ownership import can_manage_sale_car
 from app.utils.security import get_current_user, get_current_user_or_none
 
 from .listing_http import PUBLIC_STATUSES, listing_of, to_http
-from .sale_car_view import to_thickness_map
+from .sale_car_thickness_view import to_thickness_map
 
 thickness_router = APIRouter()
 

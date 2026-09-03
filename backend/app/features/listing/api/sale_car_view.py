@@ -11,8 +11,9 @@ to the model reached whichever of the five somebody remembered.
 from typing import Iterable, List, Optional
 
 from app.core.config import PhotoSettings
-from app.features.listing.panels import TOTAL_PANELS, status_of
 from app.shared.storage.s3_service import s3_service
+
+from .sale_car_thickness_view import thickness_summary, to_thickness_map
 
 photo_settings = PhotoSettings()
 
@@ -52,6 +53,32 @@ def autofill_view(listing) -> dict:
         "model_source": listing.model_source,
         "updated_at": listing.autofill_updated_at,
     }
+
+
+def moderation_view(listing, viewer) -> dict:
+    """Что с объявлением сделал модератор, в том объёме, который положен смотрящему.
+
+    Имя решившего — только модератору. Владелец видит, когда решили и за что вернули
+    (ярлык и причина лежат в объявлении отдельно), но не кем: имя сотрудника в выдаче,
+    которую получает продавец, — это адрес, по которому ему пишут лично про своё
+    объявление.
+    """
+    decided_at = listing.moderated_at
+    return {
+        "decided_at": decided_at.isoformat() if decided_at else None,
+        "decided_by": _moderator_view(listing) if _may_read_moderator(viewer) else None,
+    }
+
+
+def _may_read_moderator(viewer) -> bool:
+    return viewer is not None and viewer.role in ("manager", "admin")
+
+
+def _moderator_view(listing) -> Optional[dict]:
+    decided_by = getattr(listing, "moderator", None)
+    if decided_by is None:
+        return None
+    return {"user_id": decided_by.id, "name": decided_by.display_name}
 
 
 def _photo_view(photo: dict) -> dict:
@@ -100,6 +127,7 @@ async def to_view(listing, viewer=None) -> dict:
     view["model"] = listing.model.name if listing.model else None
 
     view["autofill"] = autofill_view(listing)
+    view["moderation"] = moderation_view(listing, viewer)
 
     if not _may_read_phone(listing, viewer):
         view["phone_number"] = None
@@ -110,37 +138,6 @@ async def to_view(listing, viewer=None) -> dict:
     view["preview_photo_url"] = photos[0]["preview_url"] if photos else None
     view["thickness"] = thickness_summary(listing.thickness_measurements or [])
     return view
-
-
-def _measurement_view(measured) -> dict:
-    return {
-        "panel": measured.panel,
-        "value_um": measured.value_um,
-        "status": status_of(measured.value_um),
-        "source": measured.value_source,
-        "ocr_value_um": measured.ocr_value_um,
-        "photo_url": s3_service.get_public_photo_url(measured.photo_key),
-        "updated_at": measured.updated_at,
-    }
-
-
-def to_thickness_map(listing, measurements) -> dict:
-    held = list(measurements)
-    return {
-        "sale_car_id": str(listing.sale_car_id),
-        "measurements": [_measurement_view(one) for one in held],
-        **thickness_summary(held),
-    }
-
-
-def thickness_summary(measurements) -> dict:
-    """Сколько панелей измерено и полна ли карта. Полная — это все тринадцать."""
-    measured = len(list(measurements))
-    return {
-        "measured_panels": measured,
-        "total_panels": TOTAL_PANELS,
-        "is_complete": measured >= TOTAL_PANELS,
-    }
 
 
 def to_gallery(listing) -> dict:

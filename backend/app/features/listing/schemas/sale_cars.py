@@ -67,6 +67,22 @@ class Autofill(BaseModel):
     updated_at: Optional[datetime] = None
 
 
+class Moderator(BaseModel):
+    user_id: UUID
+    name: Optional[str] = None
+
+
+class Moderation(BaseModel):
+    """Последнее решение модератора по объявлению.
+
+    decided_by заполнено только модератору: продавец видит, когда решили и за что
+    вернули, но не кем.
+    """
+
+    decided_at: Optional[datetime] = None
+    decided_by: Optional[Moderator] = None
+
+
 class StsAccepted(BaseModel):
     sale_car_id: UUID
     autofill: Autofill
@@ -162,6 +178,7 @@ class SaleCarResponse(BaseModel):
     preview_photo_url: Optional[str] = None
     photos: List[Photo] = []
     autofill: Optional[Autofill] = None
+    moderation: Optional[Moderation] = None
     seller: Optional[Seller] = None
     thickness: Optional[ThicknessSummary] = None
 

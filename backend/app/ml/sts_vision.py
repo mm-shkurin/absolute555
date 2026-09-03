@@ -26,7 +26,7 @@ from typing import Optional
 import requests
 from loguru import logger
 
-from app.core.config import GigaChatSettings
+from app.core.config_ml import GigaChatSettings
 from app.ml.model_answer import parse_answer
 
 MODEL = "GigaChat-2-Max"
@@ -37,15 +37,20 @@ ANSWER_TIMEOUT = 180
 # с единицей и нулём. Строка, где они есть, прочитана неверно.
 VIN_SHAPE = re.compile(r"^[A-HJ-NPR-Z0-9]{17}$")
 
-FIELDS = ("plate", "vin", "mark", "model", "year", "power", "body", "color")
+FIELDS = ("plate", "vin", "body_number", "mark", "model", "year", "power", "body_type", "color")
 
 PROMPT = """На изображении — свидетельство о регистрации транспортного средства (СТС) РФ.
 
 Верни СТРОГО JSON без пояснений:
-{"plate": null, "vin": null, "mark": null, "model": null, "year": null, "power": null, "body": null, "color": null}
+{"plate": null, "vin": null, "body_number": null, "mark": null, "model": null, "year": null, "power": null, "body_type": null, "color": null}
 
 Правила:
-- VIN — ровно 17 символов латиницей и цифрами, без букв I, O, Q.
+- vin — строка «Идентификационный номер (VIN)». Ровно 17 символов латиницей и цифрами,
+  без букв I, O, Q. Если там написано «ОТСУТСТВУЕТ» — так и верни, слово целиком.
+- body_number — строка «Кузов (кабина, прицеп) №». У праворульных японских машин VIN не
+  выдавали, и номер машины стоит именно здесь (GB6-1000952, RN7-3100986). Не путай его с
+  серией бланка внизу документа и с номером ПТС.
+- body_type — строка «Тип ТС» (седан, универсал, хэтчбек).
 - Марка и модель — латиницей, как написано в документе.
 - Поле, которого на изображении нет или которое не читается, — null.
 - НЕ УГАДЫВАЙ и не достраивай по знаниям о модели автомобиля: пустое поле честнее

@@ -17,7 +17,7 @@ import asyncio
 
 from loguru import logger
 
-from app.core.config import RecognitionSettings
+from app.core.config_ml import RecognitionSettings
 from app.ml.sts_number_ocr import read_number
 from app.ml.sts_reader import read_document
 from app.ml.sts_vision import VisionUnavailable, read_sts

@@ -92,6 +92,17 @@ def read_document(
             logger.warning(f"second opinion on the number failed: {error}")
 
     verdict = combine_number(fields.get("vin"), ocr_number)
+    if verdict["kind"] in (NumberKind.ABSENT, NumberKind.UNREADABLE):
+        # В строке VIN пусто или написано «ОТСУТСТВУЕТ» — у японской машины номер стоит
+        # строкой ниже, в «Кузов (кабина, прицеп) №». Это и есть номер этой машины.
+        from_body = classify(fields.get("body_number"))
+        if from_body is NumberKind.BODY:
+            verdict = {
+                "value": normalise(fields["body_number"]),
+                "kind": NumberKind.BODY,
+                "agreed": True,
+                "source": "vision",
+            }
     fields["vin"] = verdict["value"] if verdict["kind"] == NumberKind.VIN else None
     fields["body_number"] = verdict["value"] if verdict["kind"] == NumberKind.BODY else None
     fields["number_kind"] = verdict["kind"].value

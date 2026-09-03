@@ -100,6 +100,12 @@ class SaleCars(Base):
     # foreign_keys is required since moderated_by joined the table: two columns point at
     # users, and the seller is the one in user_id.
     owner = relationship("Users", foreign_keys=[user_id])
+
+    # Решивший модератор грузится вместе со строкой: ленивая подгрузка в асинхронной
+    # сессии — это MissingGreenlet на живом запросе, а выдача объявления строится в
+    # четырёх местах, и забытый там selectinload стоит пятисотки. Цена — один IN-запрос
+    # на выборку.
+    moderator = relationship("Users", foreign_keys=[moderated_by], lazy="selectin")
     brand = relationship("Brand")
     model = relationship("CarModel")
     offers = relationship("Offer", back_populates="sale_car", cascade="all, delete-orphan")
