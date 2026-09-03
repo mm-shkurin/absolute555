@@ -10,14 +10,10 @@
 комплектацию по марке, и достроенное приезжает в объявление как распознанное.
 """
 
-import json
-import re
-from typing import Optional
-
 import requests
-from loguru import logger
 
 from app.core.config import GigaChatSettings
+from app.ml.model_answer import parse_answer
 from app.ml.sts_vision import MODEL, VisionUnavailable, access_token
 
 ANSWER_TIMEOUT = 120
@@ -58,31 +54,6 @@ def _ask(api: str, access: str, vin: str) -> str:
     return answer.json()["choices"][0]["message"]["content"]
 
 
-def parse_answer(content: str) -> dict:
-    """Ответ модели как поля. Всё, что не разобралось, — пусто, а не догадка."""
-    match = re.search(r"\{.*\}", content or "", re.S)
-    if not match:
-        logger.warning("vin answer carried no JSON")
-        return {name: None for name in FIELDS}
-
-    try:
-        raw = json.loads(match.group(0))
-    except json.JSONDecodeError:
-        logger.warning("vin answer was not valid JSON")
-        return {name: None for name in FIELDS}
-
-    return {name: _clean(raw.get(name)) for name in FIELDS}
-
-
-def _clean(value) -> Optional[str]:
-    if value is None:
-        return None
-    text = str(value).strip()
-    if not text or text.lower() in {"null", "none", "-", "не указано", "неизвестно", "n/a"}:
-        return None
-    return text
-
-
 def read_vin(vin: str) -> dict:
     """Характеристики по VIN. Бросает VisionUnavailable, если провайдер не ответил."""
     settings = GigaChatSettings()
@@ -94,4 +65,4 @@ def read_vin(vin: str) -> dict:
     except Exception as error:
         raise VisionUnavailable(str(error)) from error
 
-    return parse_answer(content)
+    return parse_answer(content, FIELDS)

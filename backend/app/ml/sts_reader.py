@@ -46,6 +46,12 @@ def combine_number(vision_value, ocr_value) -> dict:
         # В документе написано «ОТСУТСТВУЕТ». Это прочитанный факт, а не сбой чтения.
         return {"value": None, "kind": NumberKind.ABSENT, "agreed": True, "source": "vision"}
 
+    if vision_kind is NumberKind.BODY:
+        # Номер кузова спорить не с кем: второй читатель видит только сплошной текст, а
+        # в нём эта строка неотличима от серии бланка и номера ПТС — на настоящих
+        # свидетельствах он предлагал именно их.
+        return {"value": vision, "kind": NumberKind.BODY, "agreed": not ocr_ok, "source": "vision"}
+
     if vision_ok and ocr_ok:
         if vision == ocr:
             return {"value": vision, "kind": vision_kind, "agreed": True, "source": "both"}

@@ -11,7 +11,8 @@ import pytest
 
 from app.ml import sts_vision
 from app.ml.decode_vin import decode_vin
-from app.ml.sts_vision import VisionUnavailable, parse_answer, read_sts, valid_vin
+from app.ml.model_answer import parse_answer
+from app.ml.sts_vision import VisionUnavailable, read_sts, valid_vin
 
 ANSWER = """{"plate": "Т432ЕС55", "vin": "XW8ZZZ61ZJG012345", "mark": "TOYOTA",
 "model": "CAMRY", "year": "2018", "power": "181", "body": "СЕДАН", "color": "ЧЕРНЫЙ"}"""
@@ -59,22 +60,18 @@ def test_should_leave_a_field_empty_rather_than_guess(provider):
     assert fields["mark"] == "KIA"
 
 
-def test_should_drop_a_vin_of_the_wrong_shape(provider):
-    """Шестнадцать символов — это потерянный символ, а не VIN.
+@pytest.mark.parametrize("number", ["XW8ZZZ61ZJ012345", "XW8ZZZ61ZJO012345"])
+def test_should_hand_a_number_that_is_not_a_vin_on_for_classification(provider, number):
+    """Шестнадцать символов и буква O — не VIN, но и не обязательно мусор.
 
-    Почти правильный VIN опаснее пустого: он проходит проверку длины на глаз и уезжает в
-    объявление, где по нему пробивают историю другой машины.
+    Обнулять такую строку здесь нельзя: у праворульной японской машины в этой же строке
+    стоит номер кузова. Что это за номер, решает vin_shape.classify, а до объявления
+    непроверенный VIN не доходит — за это отвечает спор двух читателей в sts_reader.
     """
-    provider('{"vin": "XW8ZZZ61ZJ012345", "mark": "TOYOTA", "model": "CAMRY"}')
+    provider('{"vin": "%s", "mark": "TOYOTA", "model": "CAMRY"}' % number)
 
-    assert read_sts(b"picture")["vin"] is None
-
-
-def test_should_drop_a_vin_carrying_letters_the_standard_forbids(provider):
-    """I, O и Q в VIN не бывает — стандарт исключил их, чтобы не путать с 1 и 0."""
-    provider('{"vin": "XW8ZZZ61ZJO012345", "mark": "TOYOTA"}')
-
-    assert read_sts(b"picture")["vin"] is None
+    assert read_sts(b"picture")["vin"] == number
+    assert not valid_vin(number)
 
 
 def test_should_answer_empty_fields_when_the_model_returns_prose(provider):
@@ -112,7 +109,7 @@ def test_should_judge_the_shape_of_a_vin(value, expected):
 
 
 def test_should_treat_a_missing_json_as_nothing_read():
-    assert parse_answer("") == {name: None for name in sts_vision.FIELDS}
+    assert parse_answer("", sts_vision.FIELDS) == {name: None for name in sts_vision.FIELDS}
 
 
 @pytest.mark.asyncio

@@ -76,10 +76,23 @@ class TestНомерПоДвумЧтениям:
 class TestМашиныБезVIN:
     def test_should_keep_a_japanese_body_number(self):
         """У праворульной машины VIN не выдавали: номер кузова — это прочитанный номер."""
-        verdict = combine_number(BODY_FREED, BODY_FREED)
+        verdict = combine_number(BODY_FREED, None)
 
         assert verdict["kind"] is NumberKind.BODY
         assert verdict["value"] == BODY_FREED
+
+    def test_should_not_let_the_second_reader_argue_about_a_body_number(self):
+        """На настоящих свидетельствах он предлагал вместо номера серию бланка.
+
+        Номер кузова короче VIN и по форме неотличим от того, что напечатано на бланке
+        рядом: серия документа «99 72 081780» и номер ПТС «25УВ 322839» проходили любую
+        проверку формы. Отличить их можно только по строке документа, а сплошной дамп
+        текста строк не помнит.
+        """
+        verdict = combine_number(BODY_FREED, "KT9972081780")
+
+        assert verdict["value"] == BODY_FREED
+        assert verdict["kind"] is NumberKind.BODY
 
     @pytest.mark.parametrize("number", ["RN7-3100986", "NHP130-2010843", "ES21400840"])
     def test_should_recognise_the_shapes_a_body_number_takes(self, number):

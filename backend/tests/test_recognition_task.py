@@ -8,7 +8,8 @@ HTTP, а разбор ответа модели — самое хрупкое, �
 import pytest
 
 from app.features.listing.models.sale_car import SaleCars
-from app.tasks.decode_vin import apply_decoded, failed_at
+from app.tasks.decode_persist import apply_decoded
+from app.tasks.decode_vin import failed_at
 from app.tasks.status_updater import TaskStatus
 
 

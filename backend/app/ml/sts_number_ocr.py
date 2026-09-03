@@ -12,11 +12,23 @@ from loguru import logger
 
 from app.ml.sts_image import prepare_candidates
 from app.ml.sts_ocr import read_text
-from app.ml.vin_shape import BODY_NUMBER, VIN, normalise
+from app.ml.vin_shape import normalise
+
+# Тот же алфавит, что у VIN, но без якорей: здесь номер ищется внутри сплошного дампа
+# текста, а не проверяется целая строка.
+VIN_INSIDE_TEXT = re.compile(r"[A-HJ-NPR-Z0-9]{17}")
 
 
 def read_number(body: bytes) -> Optional[str]:
-    """Идентификационный номер из дампа tesseract, или None, если его там нет."""
+    """VIN из дампа tesseract, или None.
+
+    Ищется только семнадцатизначный VIN. Номер кузова японской машины короче и по форме
+    неотличим от того, что стоит на бланке рядом: на настоящих свидетельствах отсюда
+    выходили серия документа («99 72 081780») и номер ПТС («25УВ 322839») — обе строки
+    проходили проверку формы и вставали на место номера машины. Отличить их можно только
+    по строке документа, а дамп текста строк не помнит: это знает зрение, и номер кузова
+    остаётся за ним.
+    """
     try:
         image, candidates = prepare_candidates(body)
         text = normalise(read_text(image, candidates))
@@ -24,13 +36,5 @@ def read_number(body: bytes) -> Optional[str]:
         logger.warning(f"tesseract could not read the document: {error}")
         return None
 
-    found = VIN.findall(re.sub(r"[^A-Z0-9]", "", text))
-    if found:
-        return found[0]
-
-    # Семнадцати символов подряд нет — ищем японский номер кузова. Он короче и с дефисом,
-    # поэтому по сплошной строке его не найти: разбиваем по разделителям.
-    for chunk in re.split(r"[^A-Z0-9\-]+", text):
-        if BODY_NUMBER.match(chunk):
-            return chunk
-    return None
+    found = VIN_INSIDE_TEXT.findall(re.sub(r"[^A-Z0-9]", "", text))
+    return found[0] if found else None

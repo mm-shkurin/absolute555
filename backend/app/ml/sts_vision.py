@@ -19,7 +19,6 @@ Vision выигрывает везде, кроме VIN, и проигрывае�
 уедет в объявление молча.
 """
 
-import json
 import re
 import uuid
 from typing import Optional
@@ -28,6 +27,7 @@ import requests
 from loguru import logger
 
 from app.core.config import GigaChatSettings
+from app.ml.model_answer import parse_answer
 
 MODEL = "GigaChat-2-Max"
 UPLOAD_TIMEOUT = 90
@@ -103,32 +103,6 @@ def _ask(api: str, access: str, file_id: str) -> str:
     return answer.json()["choices"][0]["message"]["content"]
 
 
-def parse_answer(content: str) -> dict:
-    """Ответ модели как поля. Всё, что не разобралось, — пусто, а не догадка."""
-    match = re.search(r"\{.*\}", content or "", re.S)
-    if not match:
-        logger.warning("vision answer carried no JSON")
-        return {name: None for name in FIELDS}
-
-    try:
-        raw = json.loads(match.group(0))
-    except json.JSONDecodeError:
-        logger.warning("vision answer was not valid JSON")
-        return {name: None for name in FIELDS}
-
-    return {name: _clean(raw.get(name)) for name in FIELDS}
-
-
-def _clean(value) -> Optional[str]:
-    if value is None:
-        return None
-    text = str(value).strip()
-    # Модель, которой нечего сказать, иногда пишет это словами вместо null.
-    if not text or text.lower() in {"null", "none", "-", "не указано", "неизвестно", "n/a"}:
-        return None
-    return text
-
-
 def valid_vin(value: Optional[str]) -> bool:
     if not value:
         return False
@@ -147,11 +121,11 @@ def read_sts(body: bytes) -> dict:
     except Exception as error:
         raise VisionUnavailable(str(error)) from error
 
-    fields = parse_answer(content)
-    if not valid_vin(fields.get("vin")):
-        # Семнадцать случайных символов — единственное поле СТС без избыточности:
-        # восстановить его нечем, и «почти правильный» VIN хуже пустого, потому что
-        # проходит проверку длины и уезжает в объявление.
-        logger.info("vision returned a VIN of the wrong shape; leaving it empty")
-        fields["vin"] = None
+    fields = parse_answer(content, FIELDS)
+    if fields.get("vin") and not valid_vin(fields["vin"]):
+        # Не VIN по форме — но и не обязательно мусор: у праворульной японской машины в
+        # этой строке стоит номер кузова (GB6-1000952), и обнулять его здесь значит
+        # терять верно прочитанное. Что это за строка, решает vin_shape.classify, а
+        # спорят о ней два читателя в sts_reader.
+        logger.info("vision returned a number that is not a VIN; leaving it for classification")
     return fields

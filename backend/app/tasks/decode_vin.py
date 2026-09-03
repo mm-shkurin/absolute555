@@ -1,11 +1,8 @@
 from loguru import logger
-from sqlalchemy import select
 
-from app.db.database import get_db_session
 from app.ml.decode_vin import decode_vin
-from app.features.listing.models.sale_car import SaleCars
-from app.features.catalog.services.catalog_resolver import CatalogResolver
 from app.shared.storage.s3_service import s3_service
+from app.tasks.decode_persist import persist_decoded
 from app.tasks.status_updater import TaskStatus, update_task_status
 
 
@@ -18,36 +15,6 @@ UNREADABLE = ("ocr_failed", "file_bytes is required")
 
 def failed_at(error: str | None) -> str:
     return TaskStatus.OcrFailed if error in UNREADABLE else TaskStatus.DecodeFailed
-
-
-def apply_decoded(sale_car: SaleCars, result: dict) -> None:
-    """Copy the decoded СТС fields onto the listing.
-
-    Make and model are not written here — they are names, and the listing stores
-    catalogue keys. `CatalogResolver` owns that step because resolving may also queue a
-    spelling for a moderator, which is a write this function has no business making.
-
-    Only truthy values are copied: GigaChat is asked never to leave a field empty and
-    to guess instead, but it still returns "" often enough that overwriting a value the
-    seller already corrected by hand would be a real regression.
-    """
-    if result.get("vin"):
-        sale_car.vin = result["vin"]
-
-    # year and engine_power come back as numbers most of the time and as strings the
-    # rest, depending on whether the model obeyed the prompt. int() on a stray "2018 г."
-    # would kill the task after the expensive part already succeeded.
-    for field in ("year", "engine_power"):
-        raw = result.get(field)
-        if raw in (None, ""):
-            continue
-        try:
-            setattr(sale_car, field, int(raw))
-        except (TypeError, ValueError):
-            logger.warning(f"decode_vin returned a non-numeric {field}: {raw!r}")
-
-    if result.get("transmission"):
-        sale_car.transmission = result["transmission"]
 
 
 async def decode_vin_from_sts(ctx: dict, sale_car_id: str, sts_key: str):
@@ -91,20 +58,10 @@ async def decode_vin_from_sts(ctx: dict, sale_car_id: str, sts_key: str):
         # row, so DecodeSuccess is reported once that write commits — not before it,
         # which would let a task report success over a listing that never changed.
         try:
-            async with get_db_session() as db:
-                res = await db.execute(select(SaleCars).where(SaleCars.sale_car_id == sale_car_id))
-                sale_car = res.scalar_one_or_none()
-                if sale_car is None:
-                    logger.warning(f"decode_vin finished for a listing that no longer exists: {sale_car_id}")
-                    await update_task_status(sale_car_id, TaskStatus.DecodeFailed, entity_type="sale_car")
-                    await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
-                    return {"sale_car_id": sale_car_id, "result": result, "error": True}
-
-                apply_decoded(sale_car, result)
-                await CatalogResolver(db).resolve_into(
-                    sale_car, result.get("mark"), result.get("model")
-                )
-                await db.commit()
+            if not await persist_decoded(sale_car_id, result):
+                await update_task_status(sale_car_id, TaskStatus.DecodeFailed, entity_type="sale_car")
+                await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
+                return {"sale_car_id": sale_car_id, "result": result, "error": True}
 
             await update_task_status(sale_car_id, TaskStatus.DecodeSuccess, entity_type="sale_car")
         except Exception:
