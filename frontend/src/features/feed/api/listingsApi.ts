@@ -10,9 +10,27 @@ export type { ListingWire }
 export interface FeedWire {
   items: ListingWire[]
   total: number
+  page: number
+  size: number
 }
 
-export async function fetchFeed(query: FeedQuery, signal?: AbortSignal): Promise<FeedWire> {
-  const page = await fetchFeedPage(toFeedFilters(query), signal)
-  return { items: page.items.map(fromFeedCard), total: page.total }
+export async function fetchFeed(
+  query: FeedQuery,
+  page = 1,
+  signal?: AbortSignal,
+): Promise<FeedWire> {
+  const wire = await fetchFeedPage(toFeedFilters(query, page), signal)
+  return {
+    items: wire.items.map(fromFeedCard),
+    total: wire.total,
+    page: wire.page,
+    size: wire.size,
+  }
+}
+
+/** Есть ли что грузить дальше. Считается по счётчику сервера, а не по «пришла полная
+ *  страница»: полная последняя страница выглядела бы как непоследняя, и кнопка «Показать
+ *  ещё» приводила бы к пустоте. */
+export function hasMorePages(loaded: number, total: number): boolean {
+  return loaded < total
 }

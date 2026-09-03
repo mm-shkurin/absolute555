@@ -137,3 +137,11 @@
   display: grid;
   gap: 8px;
 }
+
+/* Низ выдачи. Кнопка по центру: следующая страница — продолжение колонки, а не действие
+   над ней. */
+.more {
+  display: flex;
+  justify-content: center;
+  padding: 24px 0 8px;
+}

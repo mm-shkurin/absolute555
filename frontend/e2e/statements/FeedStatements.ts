@@ -136,4 +136,31 @@ export class FeedStatements {
     await clickElement(this.driver, await waitForButton(this.driver, sheet, 'Все модели'))
     expect(await textOf(this.driver, 'filter-brand')).toContain(brand)
   }
+
+  // Листание проверяется ростом числа карточек, а не адресом страницы: страницы копятся
+  // в одной колонке, и подмена показанного была бы видна именно здесь.
+  async loadMoreAndAssertGrows(): Promise<void> {
+    const before = await this.cardCount()
+    await clickElement(this.driver, await waitForVisible(this.driver, 'feed-more'))
+    await this.driver.wait(async () => (await this.cardCount()) > before, 8000)
+  }
+
+  async sortBy(value: string): Promise<void> {
+    const head = await waitForVisible(this.driver, 'feed-head')
+    const select = await head.findElement(By.css('select'))
+    await select.findElement(By.css(`option[value="${value}"]`)).click()
+  }
+
+  async assertPricesAscending(): Promise<void> {
+    await this.driver.wait(async () => {
+      const prices = await this.prices()
+      return prices.length > 1 && prices.every((price, index) => index === 0 || prices[index - 1] <= price)
+    }, 8000)
+  }
+
+  private async prices(): Promise<number[]> {
+    const cells = await this.driver.findElements(By.css('[data-testid="listing-price"]'))
+    const texts = await Promise.all(cells.map((cell) => cell.getText()))
+    return texts.map((text) => Number(text.replace(/[^0-9]/g, '')))
+  }
 }

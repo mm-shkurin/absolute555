@@ -58,4 +58,17 @@ describe('Лента объявлений', () => {
     await listing.assertListingShown()
     await listing.assertPriceShown()
   })
+
+  it('вторая страница дозагружается кнопкой, а не подменяет первую', async () => {
+    await feed.openApp()
+    await feed.openFeedFromHeader()
+    await feed.loadMoreAndAssertGrows()
+  })
+
+  it('сортировка по цене уходит на сервер и меняет порядок выдачи', async () => {
+    await feed.openApp()
+    await feed.openFeedFromHeader()
+    await feed.sortBy('price-asc')
+    await feed.assertPricesAscending()
+  })
 })

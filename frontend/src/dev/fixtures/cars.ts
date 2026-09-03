@@ -82,6 +82,21 @@ export const FEED: ListingWire[] = [
   },
 ]
 
+// Хвост ленты. Нужен ровно затем, чтобы вторая страница вообще существовала: с девятью
+// машинами кнопка «Показать ещё» не появляется, и листание нечем проверить.
+const FILLER: ListingWire[] = Array.from({ length: 18 }, (_, index) => ({
+  ...LEXUS,
+  id: `f${index + 1}`,
+  brand: 'Toyota',
+  model: 'Corolla',
+  year: 2014 + (index % 6),
+  price: 900000 + index * 70000,
+  mileage_km: 90000 + index * 5000,
+  has_thickness_map: false,
+}))
+
+FEED.push(...FILLER)
+
 export const IMPORT_CARS: ListingWire[] = [
   {
     ...LEXUS,
@@ -98,8 +113,8 @@ export const IMPORT_CARS: ListingWire[] = [
     vin_verified: false,
     is_import: true,
     import_country: 'Япония',
-    import_delivery_days: '',
-    turnkey_price: 0,
+    import_delivery_days: '55–70 дней',
+    turnkey_price: 6690000,
   },
   {
     ...LEXUS,
@@ -116,8 +131,8 @@ export const IMPORT_CARS: ListingWire[] = [
     vin_verified: false,
     is_import: true,
     import_country: 'Япония',
-    import_delivery_days: '',
-    turnkey_price: 0,
+    import_delivery_days: '45–60 дней',
+    turnkey_price: 2540000,
   },
   {
     ...LEXUS,
@@ -132,8 +147,8 @@ export const IMPORT_CARS: ListingWire[] = [
     has_thickness_map: false,
     vin_verified: false,
     is_import: true,
-    import_country: 'Япония',
-    import_delivery_days: '',
-    turnkey_price: 0,
+    import_country: 'Корея',
+    import_delivery_days: '50–65 дней',
+    turnkey_price: 4790000,
   },
 ]

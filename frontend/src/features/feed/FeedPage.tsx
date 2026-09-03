@@ -1,6 +1,7 @@
 // Лента: рабочий экран площадки. Тонкий оркестратор — состояние фильтров держит здесь,
 // переходы состояния берёт из `logic/feedQuery`, данные из `useFeed`, рисуют дети.
 import { useState } from 'react'
+import { Button } from '../../shared/ui/Button'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { FeedHead } from './components/FeedHead'
@@ -62,7 +63,23 @@ export function FeedPage({
                 <EmptyFeed filtered={isFiltered(query)} onReset={reset} />
               ) : null}
               {!feed.isLoading && !feed.error && feed.listings.length > 0 ? (
-                <ListingGrid listings={feed.listings} />
+                <>
+                  <ListingGrid listings={feed.listings} />
+                  {/* Кнопка, а не бесконечная прокрутка: у ленты есть низ, и человек
+                      должен до него доходить — иначе он не узнает, что выдача кончилась. */}
+                  {feed.hasMore ? (
+                    <div className={styles.more}>
+                      <Button
+                        tone="ghost"
+                        onClick={feed.loadMore}
+                        disabled={feed.isLoadingMore}
+                        data-testid="feed-more"
+                      >
+                        {feed.isLoadingMore ? 'Загружаем…' : 'Показать ещё'}
+                      </Button>
+                    </div>
+                  ) : null}
+                </>
               ) : null}
             </div>
           </div>
