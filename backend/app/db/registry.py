@@ -8,6 +8,7 @@ metadata it compares a revision against.
 """
 
 from app.db.database import Base
+from app.features.account.models.account_audit import AccountAudit
 from app.features.account.models.role_request import RoleRequest
 from app.features.account.models.users import Users
 from app.features.catalog.models.catalog import (
@@ -27,6 +28,7 @@ from app.features.offer.models.offer import Offer
 from app.features.review.models.review import Review
 
 __all__ = [
+    "AccountAudit",
     "Base",
     "Brand",
     "BuyerRequest",

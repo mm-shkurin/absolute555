@@ -23,6 +23,12 @@ class Users(BaseModel):
     role = Column(String, default=UserRole.USER.value, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     is_guest = Column(Boolean, default = False)
+    # Блокировка закрывает вход и всю активность разом: проверка стоит там, где
+    # разбирается токен, а не в каждой пишущей ручке — их полтора десятка, и
+    # пропущенная означает дыру, которую находит нарушитель, а не тест.
+    is_blocked = Column(Boolean, default=False, nullable=False, server_default="false")
+    blocked_reason = Column(Text, nullable=True)
+    blocked_at = Column(DateTime, nullable=True)
     # The aggregate lives on the seller rather than being averaged per read: it is shown
     # on every card of the feed, on every row of the moderation queue and on the profile,
     # and an AVG subquery per row is a query per card. Recalculated in the transaction

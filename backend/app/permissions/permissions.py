@@ -14,6 +14,12 @@ class Permission(str, Enum):
     DELETE_USER = "delete_user"
 
     MANAGE_ALL_USERS = "manage_all_users"
+    # Закрыть доступ нарушителю. Отдельно от MANAGE_ALL_USERS: разбор жалобы должен
+    # чем-то заканчиваться, а раздача ролей модератору не полагается.
+    BLOCK_USERS = "block_users"
+    # Журнал действий над учётной записью. Только admin: он показывает, кто из своих
+    # что сделал.
+    VIEW_ACCOUNT_AUDIT = "view_account_audit"
     MANAGE_ROLE_REQUESTS = "manage_role_requests"
     MANAGE_SYSTEM_SETTINGS = "manage_system_settings"
 

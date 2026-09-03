@@ -7,7 +7,7 @@ import jwt
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from app.core.exceptions import AuthenticationError
+from app.core.exceptions import AuthenticationError, AuthorizationError
 from app.core.config import JWTSettings
 from app.core.config import CookieSettings
 from app.db.database import get_db
@@ -102,7 +102,17 @@ async def get_current_user(request: Request, token: str = Depends(auth_scheme), 
     
     if user is None:
         raise credentials_exception
-    
+
+    if user.is_blocked:
+        # 403, а не 401: токен подлинный, дело не в нём. На 401 клиент пошёл бы
+        # обновлять исправный токен по кругу и показал бы человеку сбой входа вместо
+        # закрытой двери. Проверка стоит здесь, а не в каждой пишущей ручке: их
+        # полтора десятка, и пропущенная — дыра, которую находит нарушитель.
+        raise AuthorizationError(
+            user.blocked_reason or "Доступ закрыт",
+            code="USER_BLOCKED",
+        )
+
     return user
 
 
@@ -119,3 +129,6 @@ async def get_current_user_or_none(
         return await get_current_user(request, token, db)
     except AuthenticationError:
         return None
+    # AuthorizationError не перехватывается намеренно: заблокированный, пришедший с
+    # токеном, получает закрытую дверь и на публичном маршруте. Молча понизить его до
+    # гостя значило бы показать ленту тому, кому доступ закрыли, и не сказать об этом.

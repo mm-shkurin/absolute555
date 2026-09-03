@@ -5,12 +5,14 @@ from fastapi import APIRouter, Depends, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.features.account.api.admin_console import list_people
+from app.features.account.schemas.admin import UserPage
 from app.features.account.schemas.role import (
     UserRoleUpdate,
     UserRoleInfo,
-    UserListResponse,
     RoleStats,
 )
+from app.features.account.services.account_access_service import AccountAccessService
 from app.core.exceptions import BusinessRuleError, ResourceNotFoundError
 from app.features.account.services.role_service import RoleService
 from app.utils.security import get_current_user
@@ -21,41 +23,25 @@ from loguru import logger
 
 role_router = APIRouter()
 
-@role_router.get("/users", response_model=List[UserListResponse])
+@role_router.get("/users", response_model=UserPage)
 async def get_all_users(
-    role_filter: Optional[UserRole] = Query(None, description="Фильтр по роли"),
+    query: Optional[str] = Query(None, description="Поиск по имени"),
+    role_filter: Optional[UserRole] = Query(None, alias="role", description="Фильтр по роли"),
+    blocked: Optional[bool] = Query(None, description="Только закрытые или только открытые"),
+    page: int = Query(1, ge=1),
+    page_size: int = Query(20, ge=1, le=100),
     current_user=Depends(require_permission(Permission.VIEW_USERS)),
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
 ):
-    service = RoleService(db)
-    users = await service.get_all_users(role_filter)
-    
-    result = []
-    for user in users:
-        name = "Неизвестный пользователь"
-        platform = None
-        
-        if user.vk_json and isinstance(user.vk_json, dict):
-            first_name = user.vk_json.get('first_name', '')
-            last_name = user.vk_json.get('last_name', '')
-            name = f"{first_name} {last_name}".strip()
-            platform = "vk"
-        elif user.yandex_json and isinstance(user.yandex_json, dict):
-            first_name = user.yandex_json.get('first_name', '')
-            last_name = user.yandex_json.get('last_name', '')
-            name = f"{first_name} {last_name}".strip()
-            platform = "yandex"
-        
-        result.append(UserListResponse(
-            id=user.id,
-            role=user.role,
-            is_verified=user.is_verified,
-            created_at=user.created_at.isoformat() if user.created_at else "",
-            name=name,
-            platform=platform
-        ))
-    
-    return result
+    """Страница списка.
+
+    Прежняя форма отдавала всю таблицу одним массивом и собирала вид прямо здесь. При
+    плановых тысячах учётных записей это ответ на всю базу ради одного экрана.
+    """
+    return await list_people(
+        query, role_filter.value if role_filter else None, blocked, page, page_size, db
+    )
+
 
 @role_router.put("/users/{user_id}/role", response_model=dict)
 async def update_user_role(
@@ -66,12 +52,20 @@ async def update_user_role(
 ):
 
     service = RoleService(db)
+    was = await service.get_user_by_id(user_id)
+    if not was:
+        raise ResourceNotFoundError("Пользователь не найден", code="USER_NOT_FOUND")
+    previous_role = was.role
+
     user = await service.update_user_role(user_id, role_data.new_role)
-    
     if not user:
         raise ResourceNotFoundError("Пользователь не найден", code="USER_NOT_FOUND")
-    
-    logger.info(f"User {user_id} role updated to {role_data.new_role.value} by {current_user.id}. Reason: {role_data.reason}")
+
+    # Причина принималась и уходила в лог контейнера, где жила до перезапуска. Теперь
+    # она в журнале — там, где её ищут, когда спрашивают «на каком основании».
+    await AccountAccessService(db).record_role_change(
+        user, current_user, role_data.reason, previous_role, role_data.new_role.value
+    )
     
     return {
         "message": "Роль успешно обновлена", 

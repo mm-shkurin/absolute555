@@ -30,6 +30,10 @@ ROLE_PERMISSIONS: Dict[UserRole, Set[Permission]] = {
 
     UserRole.MANAGER: {
         Permission.VIEW_ANALYTICS,
+        # Люди и блокировка — инструменты того, кто разбирает жалобы. Роли и журнал
+        # остаются у admin: ручка разбора иначе становится дорогой наверх.
+        Permission.VIEW_USERS,
+        Permission.BLOCK_USERS,
         # Заявки разбирает тот же человек, что и очередь объявлений. Какие роли он
         # вправе выдать — правило истории 13, и оно живёт в сервисе, а не здесь.
         Permission.VIEW_ROLE_REQUESTS,

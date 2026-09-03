@@ -13,14 +13,6 @@ class UserRoleInfo(BaseModel):
     current_role: str
     is_verified: bool
 
-class UserListResponse(BaseModel):
-    id: UUID
-    role: str
-    is_verified: bool
-    created_at: str
-    name: Optional[str] = None
-    platform: Optional[str] = None  
-
 class RoleStats(BaseModel):
     total_users: int
     users_by_role: dict  

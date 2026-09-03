@@ -12,13 +12,12 @@ import pytest
 
 from tests.conftest import run_sql
 
-# Reading the user list stays an administrator's. The application queue moved to the
-# moderator in story 13: the person who works the listing queue works the role queue too,
-# and it was the administrator only because nobody had decided otherwise.
-ADMIN_ROUTES = ["/api/v1/role/users"]
+# Читать список людей стало модераторским с истории 21: разбор жалобы должен чем-то
+# заканчиваться, а закрыть доступ, не видя, кому, нельзя. Роли остались администраторскими
+# — граница проходит по власти над ролями, а не по разделам.
 MODERATOR_QUEUE = "/api/v1/role/role-requests"
-MODERATOR_ROUTES = ["/api/v1/role/stats"]
-PRIVILEGED_ROUTES = ADMIN_ROUTES + MODERATOR_ROUTES + [MODERATOR_QUEUE]
+MODERATOR_ROUTES = ["/api/v1/role/stats", "/api/v1/role/users"]
+PRIVILEGED_ROUTES = MODERATOR_ROUTES + [MODERATOR_QUEUE]
 
 
 def _id_of(headers):
@@ -60,7 +59,7 @@ def test_should_refuse_an_unauthenticated_caller_the_moderator_routes(client, pa
     assert client.get(path).status_code == 401
 
 
-def test_should_let_a_moderator_read_the_counts_and_the_queue_but_not_the_users(client, moderator):
+def test_should_let_a_moderator_read_the_counts_the_queue_and_the_people(client, moderator):
     stats = client.get("/api/v1/role/stats", headers=moderator)
 
     assert stats.status_code == 200, stats.text
@@ -68,17 +67,14 @@ def test_should_let_a_moderator_read_the_counts_and_the_queue_but_not_the_users(
     assert isinstance(stats.json()["users_by_role"], dict)
 
     assert client.get(MODERATOR_QUEUE, headers=moderator).status_code == 200
-
-    for path in ADMIN_ROUTES:
-        refused = client.get(path, headers=moderator)
-        assert refused.status_code == 403, f"{path}: {refused.text}"
+    assert client.get("/api/v1/role/users", headers=moderator).status_code == 200
 
 
 def test_should_let_an_administrator_read_the_users(client, admin):
     users = client.get("/api/v1/role/users", headers=admin)
 
     assert users.status_code == 200, users.text
-    assert users.json()
+    assert users.json()["items"]
 
 
 def test_should_not_let_a_moderator_hand_out_roles(client, moderator, seller):

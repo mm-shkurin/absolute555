@@ -10,6 +10,7 @@ from sqlalchemy import Select, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.features.account.models.users import Users
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
 from app.features.listing.models.thickness import ThicknessMeasurement
 from app.features.listing.panels import TOTAL_PANELS
@@ -44,7 +45,15 @@ class ListingFeedService:
         price ceiling and a year floor means all three, not whichever the query happened
         to reach last.
         """
-        found = select(SaleCars).where(SaleCars.status == SaleCarStatus.PUBLISHED)
+        found = (
+            select(SaleCars)
+            .join(Users, Users.id == SaleCars.user_id)
+            .where(SaleCars.status == SaleCarStatus.PUBLISHED)
+            # Объявления того, кому закрыли доступ, из ленты уходят, но не удаляются:
+            # видимость — правило ленты, а не судьба записи, и разблокировка вернёт их
+            # такими, какими они были.
+            .where(Users.is_blocked.is_(False))
+        )
 
         if query.brand_id is not None:
             found = found.where(SaleCars.brand_id == query.brand_id)
