@@ -240,9 +240,45 @@ components:
           description: |
             Исход распознавания СТС и источник марки и модели. Повторяет то, что
             приезжает по SSE, чтобы перезагрузка страницы не теряла исход.
+        moderation:
+          allOf: [{ $ref: '#/components/schemas/Moderation' }]
+          description: |
+            Что с объявлением сделал модератор. Приходит владельцу и модератору;
+            в публичной карточке ленты блока нет вовсе.
         published_at: { type: string, format: date-time, nullable: true }
         created_at: { type: string, format: date-time }
         updated_at: { type: string, format: date-time }
+
+    Moderation:
+      type: object
+      description: |
+        Последнее решение модератора по объявлению. Строка помнит только его: одобрено —
+        отклонено — снова одобрено складывается в один момент. История решений — предмет
+        админки, не этой выдачи.
+      required: [decided_at, decided_by]
+      properties:
+        decided_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: Момент последнего решения. null, пока решения не было.
+        decided_by:
+          allOf: [{ $ref: '#/components/schemas/Moderator' }]
+          nullable: true
+          description: |
+            Кто решил. Заполнено только для модератора: владелец видит, когда решили и
+            за что вернули, но не кем — имя сотрудника в его выдаче это адрес, по
+            которому ему пишут лично про своё объявление.
+
+    Moderator:
+      type: object
+      required: [user_id, name]
+      properties:
+        user_id: { type: string, format: uuid }
+        name:
+          type: string
+          nullable: true
+          description: Имя из провайдера, которым сотрудник вошёл.
 
     DraftLimitError:
       allOf:

@@ -1,0 +1,152 @@
+.search {
+  display: flex;
+  gap: 10px;
+  padding-bottom: 16px;
+}
+
+.search input {
+  flex: 1;
+  min-width: 0;
+  padding: 10px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-card);
+  color: inherit;
+}
+
+.list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: baseline;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-card);
+}
+
+.name {
+  flex: 1;
+  min-width: 160px;
+  font-weight: 600;
+  color: inherit;
+}
+
+.role {
+  color: var(--text-muted);
+}
+
+.meta {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.blocked {
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--bg-danger, rgba(220, 60, 60, 0.12));
+  color: var(--text-danger, #c33);
+  font-size: 13px;
+}
+
+.pager {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 0 90px;
+}
+
+.facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 28px;
+  margin: 0;
+  padding: 4px 0 18px;
+}
+
+.facts dt {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.facts dd {
+  margin: 2px 0 0;
+  font-size: 22px;
+}
+
+.blockedNotice {
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-danger, rgba(220, 60, 60, 0.12));
+}
+
+.actions {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  padding-bottom: 20px;
+}
+
+.dialog {
+  display: grid;
+  gap: 8px;
+  width: min(520px, 100%);
+  padding: 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  background: var(--bg-card);
+}
+
+.dialog textarea {
+  padding: 10px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 12px;
+  background: var(--bg-page, transparent);
+  color: inherit;
+  resize: vertical;
+}
+
+.reasonLabel {
+  font-weight: 600;
+}
+
+.reasonError {
+  margin: 0;
+  color: var(--text-danger, #c33);
+}
+
+.dialogActions {
+  display: flex;
+  gap: 10px;
+}
+
+.journal {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0 0 90px;
+  list-style: none;
+}
+
+.journalRow {
+  display: grid;
+  gap: 2px;
+  padding: 12px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 14px;
+  background: var(--bg-card);
+}
+
+.reason {
+  color: inherit;
+}

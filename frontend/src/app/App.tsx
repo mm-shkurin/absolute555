@@ -25,6 +25,11 @@ import { ComplaintsPage } from '../features/moderation/ComplaintsPage'
 import { SupplierProfilePage } from '../features/supplierProfile/SupplierProfilePage'
 import { SupplierQueuePage } from '../features/moderation/SupplierQueuePage'
 import { RoleApplicationsPage } from '../features/moderation/RoleApplicationsPage'
+import { AccessClosedPage } from '../features/auth/AccessClosedPage'
+import { AccessClosedWatch } from '../features/auth/AccessClosedWatch'
+import { AdminSummaryPage } from '../features/moderation/AdminSummaryPage'
+import { PeoplePage } from '../features/moderation/PeoplePage'
+import { PersonPage } from '../features/moderation/PersonPage'
 import { OAuthCallbackPage } from '../features/auth/OAuthCallbackPage'
 import { NewRequestPage } from '../features/importRequest/NewRequestPage'
 import { SupplierApplicationPage } from '../features/profile/SupplierApplicationPage'
@@ -56,6 +61,7 @@ export function App() {
 
   return (
     <BrowserRouter>
+      <AccessClosedWatch />
       <Routes>
         <Route
           path={ROUTES.home}
@@ -108,6 +114,10 @@ export function App() {
 
         <Route path={ROUTES.oauthCallback} element={<OAuthCallbackPage />} />
 
+        <Route path={ROUTES.accessClosed} element={<AccessClosedPage />} />
+        <Route path={ROUTES.adminSummary} element={<AdminSummaryPage />} />
+        <Route path={ROUTES.adminPeople} element={<PeoplePage />} />
+        <Route path={ROUTES.adminPerson()} element={<PersonPage />} />
         <Route path={ROUTES.moderationQueue} element={<ModerationQueuePage />} />
         <Route path={ROUTES.moderationComplaints} element={<ComplaintsPage />} />
         <Route path={ROUTES.moderationRoles} element={<RoleApplicationsPage />} />

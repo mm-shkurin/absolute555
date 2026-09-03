@@ -5,6 +5,7 @@
 // Это НЕ контракт. Формы ответов списаны с типов в `features/*/api/*.ts`; когда появится
 // настоящий бэкенд, расхождение вылезет здесь же — и папку `src/dev/` можно будет удалить
 // целиком, ничего больше не трогая.
+import { peoplePage, personCard, personJournal, roleStats } from './fixtures/admin'
 import { BRANDS, MODELS } from './fixtures/catalog'
 import { SELLER, SELLER_REVIEWS } from './fixtures/rest'
 import { MY_ROLE_REQUESTS, ROLE_APPLICATIONS } from './fixtures/moderation'
@@ -25,6 +26,23 @@ export function installMockServer(): void {
   window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
     const url = new URL(typeof input === 'string' ? input : input.toString(), location.origin)
     if (!url.pathname.startsWith('/api/')) return original(input, init)
+
+    // Закрытый доступ — настоящий отказ сервера, а не подставленный экран: сценарий
+    // должен пройти тот же путь, что и человек, включая перехват в слое запросов.
+    // Признак живёт в адресной строке приложения, потому что заглушке неоткуда узнать,
+    // кого закрыли.
+    if (location.search.includes('as=blocked')) {
+      await new Promise((resolve) => setTimeout(resolve, LATENCY_MS))
+      return new Response(
+        JSON.stringify({
+          error: true,
+          message: 'объявления с чужими фотографиями',
+          code: 'USER_BLOCKED',
+          details: {},
+        }),
+        { status: 403, headers: { 'content-type': 'application/json' } },
+      )
+    }
 
     const body = route(url, init?.method ?? 'GET', init?.body)
     // Задержка намеренная: без неё скелетоны и спиннеры не увидеть ни разу, а они —
@@ -63,6 +81,12 @@ function route(url: URL, method: string, payload?: BodyInit | null): unknown {
     return status ? ROLE_APPLICATIONS.filter((one) => one.status === status) : ROLE_APPLICATIONS
   }
   if (path === '/role/my-role-requests') return MY_ROLE_REQUESTS
+  if (path === '/role/users') return peoplePage(query)
+  if (path === '/role/stats') return roleStats()
+  const auditOf = match(path, /^\/role\/users\/([^/]+)\/audit$/)
+  if (auditOf) return personJournal(auditOf)
+  const personOf = match(path, /^\/role\/users\/([^/]+)$/)
+  if (personOf) return personCard(personOf)
   if (path === '/supplier/me') return myProfile()
   if (path === '/request') return openRequests()
   if (path === '/request/my') return myRequests()

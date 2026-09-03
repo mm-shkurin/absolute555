@@ -53,4 +53,13 @@ export const ROUTES = {
   moderationComplaints: '/moderation/complaints',
   moderationRoles: '/moderation/supplier-applications',
   moderationSuppliers: '/moderation/suppliers',
+  // Консоль стоит рядом с разделами модерации, а не отдельным кабинетом: человек, который
+  // разбирает жалобу, закрывает по ней доступ, и уводить его в другое место значит
+  // разрывать одно действие надвое.
+  // Куда попадает тот, кому закрыли доступ: свой адрес, а не плашка поверх экрана,
+  // иначе человек остаётся на странице, которая ему уже ничего не покажет.
+  accessClosed: '/access-closed',
+  adminSummary: '/moderation',
+  adminPeople: '/moderation/people',
+  adminPerson: (id = ':userId') => `/moderation/people/${id}`,
 } as const

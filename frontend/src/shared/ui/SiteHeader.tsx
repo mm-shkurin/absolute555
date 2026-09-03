@@ -2,6 +2,7 @@
 // того, вошёл человек или нет: остальное публично, и гость видит те же разделы.
 import { NavLink, Link } from 'react-router-dom'
 import { ROUTES } from '../navigation/routes'
+import { canModerate } from '../session/authSession'
 import { useUnreadMessages } from '../session/useUnread'
 import { Button, ButtonLink } from './Button'
 import { Container } from './Container'
@@ -55,6 +56,18 @@ export function SiteHeader({
         <span className={styles.spacer} />
         <div className={styles.actions}>
           <ThemeToggle />
+          {/* Раздел показывается только тому, кто им пользуется. Не «спрятать кнопку от
+              чужого» — маршрут и без того отдаёт чужому «не найдено», — а не занимать
+              шапку у того, кому она нужна под ленту и объявление. */}
+          {signedIn && canModerate() ? (
+            <Link
+              to={ROUTES.adminSummary}
+              className={[styles.chats, styles.moderation].join(' ')}
+              data-testid="header-moderation"
+            >
+              Модерация
+            </Link>
+          ) : null}
           {signedIn ? (
             <Link to={ROUTES.chats} className={styles.chats} aria-label="Чаты">
               Чаты

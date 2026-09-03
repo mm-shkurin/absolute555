@@ -3,6 +3,7 @@
 // Повтор один, и это не осторожность, а необходимость: второй 401 после свежего токена
 // означает, что сессия действительно кончилась, и цикл «обновить и повторить» на таком
 // ответе крутился бы до таймаута, показывая человеку спиннер вместо экрана входа.
+import { accessClosedFrom, rememberClosedAccess } from './accessClosed'
 import { isHttpError, request, type RequestOptions } from '../api/httpClient'
 import { currentSession, endSession, renewTokens } from './authSession'
 import { refreshTokens } from './refreshApi'
@@ -30,6 +31,15 @@ export async function authorizedRequest<T>(path: string, options: RequestOptions
   try {
     return await request<T>(path, withToken(options, session.accessToken))
   } catch (error) {
+    // Закрытый доступ проверяется до обновления токена: обновлять исправный токен
+    // человеку, которому закрыли доступ, значит крутить его по кругу и в конце
+    // показать сбой входа вместо причины.
+    const closed = accessClosedFrom(error)
+    if (closed) {
+      rememberClosedAccess(closed.reason)
+      endSession()
+      throw closed
+    }
     if (!isUnauthorized(error)) throw error
     if (!(await renewOnce())) {
       endSession()

@@ -23,10 +23,10 @@
 
 ## Tier 1 — Frontend
 
-- [~] ui-01 the moderator finds the way in from the header
-- [ ] ui-03 the summary says where the work has piled up
+- [x] ui-01 the moderator finds the way in from the header
+- [x] ui-03 the summary says where the work has piled up
 
-- [ ] harvest
+- [x] harvest
 
 ## Tier 2 — Backend
 
@@ -44,16 +44,16 @@
 
 ## Tier 2 — Frontend
 
-- [ ] ui-02 an ordinary person is not told the console exists
-- [ ] ui-04 the people screen searches and pages
-- [ ] ui-05 blocking asks for a reason before it acts
-- [ ] ui-06 the card shows the journal to an administrator only
-- [ ] ui-07 the blocked person is told plainly
+- [x] ui-02 an ordinary person is not told the console exists
+- [x] ui-04 the people screen searches and pages
+- [x] ui-05 blocking asks for a reason before it acts
+- [x] ui-06 the card shows the journal to an administrator only
+- [x] ui-07 the blocked person is told plainly
 
 ## Tier 2 — Infrastructure
 
-- [ ] inf-02 the revision that adds the block rolls back
+- [x] inf-02 the revision that adds the block rolls back
 
 ## Tier 2 — Integration
 
-- [ ] int-01 from complaint to closed door
+- [~] int-01 from complaint to closed door

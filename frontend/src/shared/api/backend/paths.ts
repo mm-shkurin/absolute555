@@ -90,6 +90,16 @@ export const BACKEND = {
     approveSupplier: (userId: string) => `${V1}/moderation/suppliers/${id(userId)}/approve`,
     rejectSupplier: (userId: string) => `${V1}/moderation/suppliers/${id(userId)}/reject`,
   },
+  // Консоль: люди живут под тем же префиксом `/role`, что и роли, — список отвечает
+  // на `/role/users` с самого начала истории проекта.
+  admin: {
+    users: `${V1}/role/users`,
+    user: (userId: string) => `${V1}/role/users/${id(userId)}`,
+    userAudit: (userId: string) => `${V1}/role/users/${id(userId)}/audit`,
+    blockUser: (userId: string) => `${V1}/role/users/${id(userId)}/block`,
+    unblockUser: (userId: string) => `${V1}/role/users/${id(userId)}/unblock`,
+    stats: `${V1}/role/stats`,
+  },
   review: {
     ofOffer: (offerId: string) => `${V1}/offer/${id(offerId)}/review`,
     one: (reviewId: string) => `${V1}/review/${id(reviewId)}`,

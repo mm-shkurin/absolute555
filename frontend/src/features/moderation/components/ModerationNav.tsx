@@ -5,11 +5,15 @@ import { NavLink } from 'react-router-dom'
 import { ROUTES } from '../../../shared/navigation/routes'
 import styles from '../moderation.module.css'
 
+// «Сводка» первой: с неё видно, где затор, и оттуда переходят в раздел. «Люди» —
+// последними: туда идут от конкретного разбора, а не наоборот.
 const SECTIONS = [
+  { to: ROUTES.adminSummary, label: 'Сводка', end: true },
   { to: ROUTES.moderationQueue, label: 'Объявления' },
   { to: ROUTES.moderationComplaints, label: 'Жалобы' },
   { to: ROUTES.moderationSuppliers, label: 'Поставщики' },
   { to: ROUTES.moderationRoles, label: 'Заявки на роль' },
+  { to: ROUTES.adminPeople, label: 'Люди' },
 ]
 
 export function ModerationNav() {
@@ -19,6 +23,9 @@ export function ModerationNav() {
         <NavLink
           key={section.to}
           to={section.to}
+          // `end` только у сводки: её адрес — начало всех остальных, и без этого она
+          // подсвечивалась бы текущей на каждом разделе.
+          end={section.end}
           className={({ isActive }) =>
             [styles.section, isActive ? styles.sectionCurrent : ''].join(' ')
           }
