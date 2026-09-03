@@ -86,12 +86,14 @@ export function useDraftSync(enabled: boolean, existingId?: string, kind?: Listi
     }
   }, [])
 
-  const attachDocument = useCallback(
-    async (file: File) => {
+  // Снимок и вписанный VIN — два входа в одно распознавание, и запускаются одинаково:
+  // дождаться черновика, послать, ответить мастеру, дошло ли.
+  const start = useCallback(
+    async (send: (id: string) => Promise<unknown>) => {
       const id = await draftId()
       if (!id) return false
       try {
-        await sendSts(id, file)
+        await send(id)
         return true
       } catch {
         return false
@@ -100,19 +102,9 @@ export function useDraftSync(enabled: boolean, existingId?: string, kind?: Listi
     [draftId],
   )
 
-  const decodeByVin = useCallback(
-    async (vin: string) => {
-      const id = await draftId()
-      if (!id) return false
-      try {
-        await sendVin(id, vin)
-        return true
-      } catch {
-        return false
-      }
-    },
-    [draftId],
-  )
+  const attachDocument = useCallback((file: File) => start((id) => sendSts(id, file)), [start])
+
+  const decodeByVin = useCallback((vin: string) => start((id) => sendVin(id, vin)), [start])
 
   const reload = useCallback(async () => {
     const id = idRef.current

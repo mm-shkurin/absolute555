@@ -78,32 +78,29 @@ export function useWizardServer(
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [recognition.outcome])
 
-  const pickDocument = useCallback(
-    (file: File) => {
+  // Запрос не приняли — черновика на сервере нет или сеть отказала. Мастер возвращается
+  // на тот экран, с которого распознавание запускали: «распознаём» без запроса крутилось
+  // бы вечно.
+  const startRecognition = useCallback(
+    (send: () => Promise<boolean>, fallback: DocumentStage) => {
       wizard.goStage('recognizing')
       recognition.reset()
-      void sync.attachDocument(file).then((accepted) => {
-        // Снимок не приняли — черновика на сервере нет или сеть отказала. Возвращаем на
-        // выбор файла: «распознаём» без загрузки крутилось бы вечно.
-        if (!accepted) wizard.goStage('await')
+      void send().then((accepted) => {
+        if (!accepted) wizard.goStage(fallback)
       })
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [recognition, sync],
+    [recognition],
+  )
+
+  const pickDocument = useCallback(
+    (file: File) => startRecognition(() => sync.attachDocument(file), 'await'),
+    [startRecognition, sync],
   )
 
   const checkVin = useCallback(
-    (vin: string) => {
-      wizard.goStage('recognizing')
-      recognition.reset()
-      void sync.decodeByVin(vin).then((accepted) => {
-        // Не приняли — возвращаем на тот же экран ввода: «распознаём» без запроса
-        // крутилось бы вечно.
-        if (!accepted) wizard.goStage('novin')
-      })
-    },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [recognition, sync],
+    (vin: string) => startRecognition(() => sync.decodeByVin(vin), 'novin'),
+    [startRecognition, sync],
   )
 
   // Отказ сервера показывается текстом и НЕ переводит мастер на экран «отправлено»: чего
