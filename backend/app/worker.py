@@ -11,6 +11,7 @@ from loguru import logger
 
 from app.db.database import get_engine
 from app.queue import queue_settings
+from app.tasks.decode_by_vin import decode_car_from_vin
 from app.tasks.decode_vin import decode_vin_from_sts
 from app.tasks.expire_offers import expire_stale_offers
 
@@ -27,7 +28,7 @@ async def shutdown(ctx: dict) -> None:
 
 class WorkerSettings:
     redis_settings = queue_settings()
-    functions = [decode_vin_from_sts, expire_stale_offers]
+    functions = [decode_vin_from_sts, decode_car_from_vin, expire_stale_offers]
 
     # Every quarter of an hour. An offer stands for days, so the granularity only decides
     # how long a lapsed offer can still be accepted, and fifteen minutes is well inside

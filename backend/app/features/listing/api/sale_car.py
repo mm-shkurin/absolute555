@@ -29,6 +29,7 @@ from .sale_car_document import document_router
 from .sale_car_lifecycle import lifecycle_router
 from .sale_car_photos import photos_router
 from .sale_car_thickness import thickness_router
+from .sale_car_vin import vin_router
 from .sale_car_view import to_card, to_view, to_views
 
 sale_car_router = APIRouter()
@@ -174,3 +175,4 @@ sale_car_router.include_router(lifecycle_router)
 sale_car_router.include_router(photos_router)
 sale_car_router.include_router(document_router)
 sale_car_router.include_router(thickness_router)
+sale_car_router.include_router(vin_router)

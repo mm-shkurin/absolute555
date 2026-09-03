@@ -57,7 +57,7 @@ class VisionUnavailable(Exception):
     """Провайдер не ответил. Отличается от «прочитал и не нашёл»."""
 
 
-def _token(settings: GigaChatSettings) -> str:
+def access_token(settings: GigaChatSettings) -> str:
     answer = requests.post(
         str(settings.giga_oauth_url),
         headers={
@@ -141,7 +141,7 @@ def read_sts(body: bytes) -> dict:
     api = str(settings.giga_api_url).rstrip("/")
 
     try:
-        access = _token(settings)
+        access = access_token(settings)
         file_id = _upload(api, access, body)
         content = _ask(api, access, file_id)
     except Exception as error:

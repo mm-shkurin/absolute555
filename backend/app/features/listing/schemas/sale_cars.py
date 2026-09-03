@@ -72,6 +72,18 @@ class StsAccepted(BaseModel):
     autofill: Autofill
 
 
+class VinDecodeRequest(BaseModel):
+    """Идентификационный номер, переписанный продавцом из документа.
+
+    Форма проверяется в сервисе, а не здесь: «не похоже на VIN» — это отказ предметной
+    области со своим кодом, а не поле, не прошедшее разбор запроса.
+    """
+
+    model_config = ConfigDict(extra="forbid")
+
+    vin: str
+
+
 class Photo(BaseModel):
     photo_id: str
     url: str

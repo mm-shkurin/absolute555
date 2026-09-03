@@ -22,7 +22,7 @@ def provider(monkeypatch):
     """Подменённый провайдер: тест решает, что «увидела» модель."""
 
     def _use(content: str):
-        monkeypatch.setattr(sts_vision, "_token", lambda settings: "test-token")
+        monkeypatch.setattr(sts_vision, "access_token", lambda settings: "test-token")
         monkeypatch.setattr(sts_vision, "_upload", lambda api, access, body: "file-1")
         monkeypatch.setattr(sts_vision, "_ask", lambda api, access, file_id: content)
 
@@ -90,7 +90,7 @@ def test_should_report_an_unavailable_provider(monkeypatch):
     def _fail(settings):
         raise ConnectionError("connection reset")
 
-    monkeypatch.setattr(sts_vision, "_token", _fail)
+    monkeypatch.setattr(sts_vision, "access_token", _fail)
 
     with pytest.raises(VisionUnavailable):
         read_sts(b"picture")

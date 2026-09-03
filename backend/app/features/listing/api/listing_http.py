@@ -21,6 +21,7 @@ from app.features.listing.services.listing_errors import (
     RejectionNeedsReason,
     TooManyDrafts,
     TransitionNotAllowed,
+    VinMalformed,
 )
 from app.features.listing.services.thickness_errors import (
     GaugeUnreadable,
@@ -68,6 +69,9 @@ def to_http(error: Exception):
         return ValidationError(
             str(error), code="LISTING_INCOMPLETE", details={"missing_fields": error.missing}
         )
+
+    if isinstance(error, VinMalformed):
+        return ValidationError(str(error), code="VIN_MALFORMED", details={"vin": error.vin})
 
     if isinstance(error, RejectionNeedsReason):
         return ValidationError(str(error), code="REJECTION_NEEDS_REASON")

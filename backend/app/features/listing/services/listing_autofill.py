@@ -15,8 +15,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.features.catalog.models.catalog import CatalogSuggestion, SuggestionKind, SuggestionStatus
 from app.features.listing.models.sale_car import AutofillState, FieldSource, SaleCars
 from app.features.catalog.services.catalog_normalize import normalize
-from app.features.listing.services.listing_errors import ListingFrozen
+from app.features.listing.services.listing_errors import ListingFrozen, VinMalformed
 from app.features.listing.services.listing_document import ListingDocumentService
+from app.ml.vin_shape import NumberKind, classify, normalise
 from app.queue import enqueue
 
 # The queue reports its own progress in its own vocabulary; this is the translation into
@@ -62,6 +63,39 @@ class ListingAutofillService:
         from app.tasks.decode_vin import decode_vin_from_sts
 
         job = await enqueue(decode_vin_from_sts, str(listing.sale_car_id), listing.sts_key)
+        listing.task_id = getattr(job, "job_id", None)
+        listing.task_status = "Pending"
+        await self.db.commit()
+        return listing
+
+    async def decode_from_vin(self, listing: SaleCars, vin: str) -> SaleCars:
+        """Take the VIN the seller typed and read the car by it.
+
+        The shape is checked here rather than left to the reading: a VIN of the wrong
+        length is not a car that could not be found, and a job queued for it would answer
+        `undecoded` a minute later while saying nothing the seller could act on.
+
+        Только VIN, не номер кузова: по номеру кузова расшифровывать нечего -- в нём
+        закодирован завод, а не машина. Японская машина без VIN заполняется руками.
+        """
+        if listing.status not in EDITABLE_IN:
+            raise ListingFrozen(listing.status)
+
+        if classify(vin) is not NumberKind.VIN:
+            raise VinMalformed(vin)
+
+        # Записан до постановки задачи и как выбор продавца: задача читает по нему, но
+        # его самого не трогает -- он и есть то, что продавец выбрал.
+        listing.vin = normalise(vin).replace("-", "")
+        listing.autofill_state = AutofillState.PENDING.value
+        listing.autofill_updated_at = datetime.utcnow()
+        await self.db.commit()
+
+        # Imported here for the same reason attach_scan does it: the task reports its
+        # progress through status_updater, which asks this service to translate it.
+        from app.tasks.decode_by_vin import decode_car_from_vin
+
+        job = await enqueue(decode_car_from_vin, str(listing.sale_car_id), listing.vin)
         listing.task_id = getattr(job, "job_id", None)
         listing.task_status = "Pending"
         await self.db.commit()

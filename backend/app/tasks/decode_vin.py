@@ -20,7 +20,7 @@ def failed_at(error: str | None) -> str:
     return TaskStatus.OcrFailed if error in UNREADABLE else TaskStatus.DecodeFailed
 
 
-def _apply_decoded(sale_car: SaleCars, result: dict) -> None:
+def apply_decoded(sale_car: SaleCars, result: dict) -> None:
     """Copy the decoded СТС fields onto the listing.
 
     Make and model are not written here — they are names, and the listing stores
@@ -100,7 +100,7 @@ async def decode_vin_from_sts(ctx: dict, sale_car_id: str, sts_key: str):
                     await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
                     return {"sale_car_id": sale_car_id, "result": result, "error": True}
 
-                _apply_decoded(sale_car, result)
+                apply_decoded(sale_car, result)
                 await CatalogResolver(db).resolve_into(
                     sale_car, result.get("mark"), result.get("model")
                 )

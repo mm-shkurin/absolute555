@@ -92,6 +92,133 @@ paths:
             application/json:
               schema: { $ref: 'errors.yaml#/components/schemas/Error' }
 
+  /api/v1/sale_car/{sale_car_id}/vin:
+    parameters:
+      - name: sale_car_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      summary: Распознать машину по VIN, вписанному продавцом
+      operationId: decodeSaleCarVin
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Второй вход в то же распознавание. Снимок СТС прочитан, а VIN в нём — нет:
+        продавец вписывает семнадцать символов сам, и по ним подтягиваются марка,
+        модель, год и характеристики.
+
+        Форма ответа та же, что у снимка: принято сразу, исход приезжает по SSE и
+        повторяется полем autofill в выдаче объявления. Экран поэтому не различает,
+        чем распознавание было запущено.
+
+        Вписанный VIN сохраняется в объявлении как значение продавца: повторное
+        распознавание его не перетирает.
+
+        Разрешено в draft и rejected — там же, где разрешена правка полей.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [vin]
+              properties:
+                vin:
+                  type: string
+                  minLength: 17
+                  maxLength: 17
+                  description: Семнадцать символов из документа.
+      responses:
+        '202':
+          description: VIN принят, распознавание поставлено в очередь
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StsAccepted' }
+        '400':
+          description: VIN не похож на VIN — длина не семнадцать символов.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: Объявление не найдено или принадлежит другому пользователю.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: |
+            Статус объявления не допускает правки — VIN принимается только в draft
+            и rejected.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/sale_car/{sale_car_id}/decode-vin:
+    parameters:
+      - name: sale_car_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    post:
+      summary: Распознать характеристики по VIN, который вписал продавец
+      operationId: decodeSaleCarVin
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Второй вход в то же распознавание. Первый — снимок СТС; этот нужен там, где
+        снимок прочитали, а идентификационный номер из него не разобрали
+        (autofill.state = undecoded): продавец переписывает VIN из документа руками, и
+        распознавать надо по нему.
+
+        Отдельная ручка, а не PATCH объявления с побочным эффектом: правка полей и
+        запуск фоновой задачи — разные действия, и «сохранил VIN» не должно молча
+        означать «запустил задачу».
+
+        Форма ответа та же, что у снимка: 202, задача в очереди, исход приезжает по SSE
+        /api/v1/task/sse/{sale_car_id} и повторяется полем autofill в выдаче
+        объявления.
+
+        Вписанный VIN — выбор продавца, и распознавание его не перетирает: задача
+        читает по нему характеристики, но сам номер оставляет как есть.
+
+        Исходы прежние: pending, undecoded, done. unreadable здесь невозможен по
+        построению — читать нечего, снимка нет; VIN, по которому машина не нашлась, —
+        это undecoded.
+
+        Разрешено в draft и rejected — там же, где разрешена правка полей.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/VinDecodeRequest' }
+      responses:
+        '202':
+          description: VIN принят, распознавание поставлено в очередь
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/StsAccepted' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: Объявление не найдено или принадлежит другому пользователю.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: |
+            Статус объявления не допускает правки — VIN принимается только в draft
+            и rejected.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422':
+          description: |
+            Строка не похожа на VIN. Проверяется до постановки задачи: молчаливая
+            задача, которая через минуту вернёт undecoded, ничего продавцу не говорит.
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/VinMalformedError' }
+
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
@@ -142,6 +269,30 @@ components:
           format: date-time
           nullable: true
           description: Когда исход в последний раз менялся.
+
+    VinDecodeRequest:
+      type: object
+      required: [vin]
+      properties:
+        vin:
+          type: string
+          description: |
+            Семнадцать символов по ISO 3779: латиница и цифры, без букв I, O и Q —
+            их исключили из стандарта, чтобы не путать с единицей и нулём. Пробелы и
+            дефисы отбрасываются, регистр приводится к верхнему.
+          example: XTA210740A1234567
+          pattern: '^[A-HJ-NPR-Z0-9]{17}$'
+
+    VinMalformedError:
+      allOf:
+        - $ref: 'errors.yaml#/components/schemas/Error'
+        - type: object
+          properties:
+            code: { type: string, enum: [VIN_MALFORMED] }
+            details:
+              type: object
+              properties:
+                vin: { type: string, description: Строка, как её прислали. }
 
     StsLink:
       type: object

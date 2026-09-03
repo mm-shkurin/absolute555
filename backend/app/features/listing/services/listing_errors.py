@@ -45,3 +45,9 @@ class TooManyDrafts(ListingError):
 class RejectionNeedsReason(ListingError):
     def __init__(self):
         super().__init__("a rejection without a reason gives the seller nothing to fix")
+
+
+class VinMalformed(ListingError):
+    def __init__(self, vin: str):
+        super().__init__("this is not a VIN: seventeen characters of ISO 3779, no I, O or Q")
+        self.vin = vin

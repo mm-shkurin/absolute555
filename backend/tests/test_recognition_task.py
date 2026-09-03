@@ -8,7 +8,7 @@ HTTP, а разбор ответа модели — самое хрупкое, �
 import pytest
 
 from app.features.listing.models.sale_car import SaleCars
-from app.tasks.decode_vin import _apply_decoded, failed_at
+from app.tasks.decode_vin import apply_decoded, failed_at
 from app.tasks.status_updater import TaskStatus
 
 
@@ -29,7 +29,7 @@ def test_should_tell_a_failed_reading_from_a_failed_decoding(error, expected):
 def test_should_write_what_the_reading_returned():
     listing = SaleCars()
 
-    _apply_decoded(listing, {"vin": "XTA210990", "year": 2015, "engine_power": 98, "transmission": "МКПП"})
+    apply_decoded(listing, {"vin": "XTA210990", "year": 2015, "engine_power": 98, "transmission": "МКПП"})
 
     assert listing.vin == "XTA210990"
     assert listing.year == 2015
@@ -40,7 +40,7 @@ def test_should_write_what_the_reading_returned():
 def test_should_take_numbers_that_came_back_as_words():
     listing = SaleCars()
 
-    _apply_decoded(listing, {"year": "2015", "engine_power": "98"})
+    apply_decoded(listing, {"year": "2015", "engine_power": "98"})
 
     assert listing.year == 2015
     assert listing.engine_power == 98
@@ -49,7 +49,7 @@ def test_should_take_numbers_that_came_back_as_words():
 def test_should_keep_what_the_seller_typed_when_the_reading_is_empty():
     listing = SaleCars(vin="УЖЕ ВПИСАН", year=2010, transmission="АКПП")
 
-    _apply_decoded(listing, {"vin": "", "year": None, "transmission": ""})
+    apply_decoded(listing, {"vin": "", "year": None, "transmission": ""})
 
     assert listing.vin == "УЖЕ ВПИСАН"
     assert listing.year == 2010
@@ -60,7 +60,7 @@ def test_should_survive_a_number_that_is_not_one():
     """«2018 г.» не должно убивать задачу после того, как дорогая часть уже прошла."""
     listing = SaleCars(year=2010)
 
-    _apply_decoded(listing, {"year": "2018 г.", "engine_power": "сто"})
+    apply_decoded(listing, {"year": "2018 г.", "engine_power": "сто"})
 
     assert listing.year == 2010
     assert listing.engine_power is None
@@ -70,7 +70,7 @@ def test_should_leave_the_catalogue_fields_to_the_resolver():
     """Марка и модель — имена, а объявление хранит ключи справочника."""
     listing = SaleCars()
 
-    _apply_decoded(listing, {"mark": "Тойота", "model": "Королла"})
+    apply_decoded(listing, {"mark": "Тойота", "model": "Королла"})
 
     assert listing.brand_id is None
     assert listing.model_id is None
