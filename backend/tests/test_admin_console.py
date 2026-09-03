@@ -180,6 +180,29 @@ def test_should_refuse_to_unblock_someone_who_has_their_access(client, admin, se
     assert _unblock(client, admin, _id_of(seller)).status_code == 409
 
 
+def test_should_narrow_the_list_by_name(client, admin, signed_in):
+    """api-11, вторая половина: поиск по части имени.
+
+    Имя живёт внутри профиля провайдера, а не своей колонкой, поэтому ищется по тексту
+    профиля — и именно это первая версия запроса собирала так, что сервер отвечал 500
+    на любой поиск. Проверка нужна тестом: сценарий api-11 её называл, а первый тест
+    сверял только роль и доступ.
+    """
+    person = signed_in()
+    run_sql(
+        "UPDATE users SET yandex_json = :profile WHERE id = :id",
+        {
+            "profile": '{"first_name": "Пелагея", "last_name": "Кузнецова"}',
+            "id": uuid.UUID(_id_of(person)),
+        },
+    )
+
+    found = client.get("/api/v1/role/users?query=Пелаг", headers=admin)
+
+    assert found.status_code == 200, found.text
+    assert _id_of(person) in [item["id"] for item in found.json()["items"]]
+
+
 def test_should_narrow_the_list_by_role_and_by_access(client, admin, signed_in):
     """api-11."""
     blocked_id = _id_of(signed_in())

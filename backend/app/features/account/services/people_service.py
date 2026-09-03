@@ -8,7 +8,7 @@
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlalchemy import desc, func, or_, select
+from sqlalchemy import Text, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.account.models.users import Users
@@ -73,8 +73,8 @@ class PeopleService:
             like = f"%{query.lower()}%"
             conditions.append(
                 or_(
-                    func.lower(func.cast(Users.yandex_json, func.text().type)).like(like),
-                    func.lower(func.cast(Users.vk_json, func.text().type)).like(like),
+                    func.lower(Users.yandex_json.cast(Text)).like(like),
+                    func.lower(Users.vk_json.cast(Text)).like(like),
                 )
             )
         return conditions
