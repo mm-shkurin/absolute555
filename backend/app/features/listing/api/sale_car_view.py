@@ -22,6 +22,7 @@ _FIELDS = (
     "sale_car_id",
     "user_id",
     "vin",
+    "body_number",
     "mark_raw",
     "model_raw",
     "year",

@@ -49,6 +49,9 @@ export interface SaleCarWire {
   sale_car_id: string
   user_id: string
   vin: string | null
+  /** Номер кузова праворульной машины: у неё VIN не выдавали, и опознаётся она этим
+   *  номером. Приходит вместо vin, а не вместе с ним. */
+  body_number: string | null
   /** Из справочника, если марка распознана и связана. */
   brand: string | null
   model: string | null
@@ -93,6 +96,7 @@ export interface SaleCarWire {
  *  поэтому `status` сюда не входит: он меняется только переходами жизненного цикла. */
 export interface SaleCarPatch {
   vin?: string
+  body_number?: string
   phone_number?: string
   price?: number
   milleage?: number

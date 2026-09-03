@@ -28,6 +28,7 @@ class SaleCarUpdate(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     vin: Optional[str] = None
+    body_number: Optional[str] = Field(default=None, max_length=40)
     phone_number: Optional[str] = None
     price: Optional[float] = None
     milleage: Optional[float] = None
@@ -133,6 +134,7 @@ class SaleCarUpdateResponse(BaseModel):
     sale_car_id: UUID
     user_id: UUID
     vin: Optional[str]
+    body_number: Optional[str] = None
     brand: Optional[str] = None
     model: Optional[str] = None
     mark_raw: Optional[str] = None

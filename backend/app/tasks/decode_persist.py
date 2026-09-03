@@ -27,6 +27,11 @@ def apply_decoded(sale_car: SaleCars, result: dict) -> None:
     if result.get("vin"):
         sale_car.vin = result["vin"]
 
+    # Номер кузова — это номер машины, у которой VIN не выдавали: половина документов на
+    # омском рынке праворульные. Без своей колонки он читался и терялся.
+    if result.get("body_number"):
+        sale_car.body_number = result["body_number"]
+
     # year and engine_power come back as numbers most of the time and as strings the
     # rest, depending on whether the model obeyed the prompt. int() on a stray "2018 г."
     # would kill the task after the expensive part already succeeded.

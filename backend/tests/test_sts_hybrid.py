@@ -23,8 +23,8 @@ BODY_FREED = "GB6-1000952"
 
 def vision_answer(**fields):
     base = {
-        "plate": None, "vin": None, "mark": None, "model": None,
-        "year": None, "power": None, "body": None, "color": None,
+        "plate": None, "vin": None, "body_number": None, "mark": None, "model": None,
+        "year": None, "power": None, "body_type": None, "color": None,
     }
     base.update(fields)
     return lambda body: base
@@ -173,7 +173,8 @@ async def test_should_hand_the_task_both_the_number_and_its_confidence(monkeypat
     monkeypatch.setattr(
         "app.ml.decode_vin.read_sts",
         lambda body: {"vin": VIN_JEEP, "mark": "JEEP", "model": "CHEROKEE", "year": "1992",
-                      "power": "185", "plate": "К568ТВ55", "body": None, "color": "БЕЛЫЙ"},
+                      "power": "185", "plate": "К568ТВ55", "body_number": None,
+                      "body_type": "УНИВЕРСАЛ", "color": "БЕЛЫЙ"},
     )
     monkeypatch.setattr("app.ml.decode_vin.read_number", lambda body: VIN_JEEP)
 
@@ -194,14 +195,17 @@ async def test_should_publish_a_japanese_car_without_a_vin(monkeypatch):
         "app.ml.decode_vin.read_sts",
         lambda body: {"vin": "ОТСУТСТВУЕТ", "mark": "HONDA", "model": "CIVIC FERIO",
                       "year": "2006", "power": None, "plate": "У271ОМ55",
-                      "body": "ES21400840", "color": "БЕЛЫЙ"},
+                      "body_number": "ES21400840", "body_type": "СЕДАН", "color": "БЕЛЫЙ"},
     )
     monkeypatch.setattr("app.ml.decode_vin.read_number", lambda body: None)
 
     decoded = await decode_vin(b"picture")
 
     assert decoded["vin"] is None
-    assert decoded["number_kind"] == "absent"
+    # Номер стоит строкой ниже — «Кузов (кабина, прицеп) №». Это номер этой машины, и
+    # терять его значило бы читать документ хуже, чем он прочитан.
+    assert decoded["body_number"] == "ES21400840"
+    assert decoded["number_kind"] == "body"
     assert decoded["mark"] == "HONDA"
     assert "error" not in decoded
 
@@ -220,7 +224,7 @@ async def test_should_read_without_the_second_opinion_by_default(monkeypatch):
     monkeypatch.setattr(
         module, "read_sts", lambda body: {"vin": VIN_JEEP, "mark": "JEEP", "model": "CHEROKEE",
                                           "year": "1992", "power": None, "plate": None,
-                                          "body": None, "color": None}
+                                          "body_number": None, "body_type": None, "color": None}
     )
     monkeypatch.setattr(module, "read_number", lambda body: called.append(body) or VIN_JEEP)
 
@@ -229,3 +233,62 @@ async def test_should_read_without_the_second_opinion_by_default(monkeypatch):
     assert called == []
     assert decoded["vin"] == VIN_JEEP
     assert decoded["number_agreed"] is False
+
+
+def test_should_take_the_number_from_the_body_line_when_the_vin_is_absent():
+    """«ОТСУТСТВУЕТ» в строке VIN — не конец чтения: номер стоит строкой ниже.
+
+    На настоящем свидетельстве Civic Ferio так и написано, а сама машина опознаётся
+    номером кузова ES21400840.
+    """
+    fields = read_document(
+        b"picture",
+        vision=vision_answer(vin="ОТСУТСТВУЕТ", body_number="ES21400840", mark="HONDA"),
+        second_opinion=None,
+    )
+
+    assert fields["vin"] is None
+    assert fields["body_number"] == "ES21400840"
+    assert fields["number_kind"] == "body"
+
+
+def test_should_stay_empty_when_neither_line_carries_a_number():
+    fields = read_document(
+        b"picture",
+        vision=vision_answer(vin="ОТСУТСТВУЕТ", body_number=None, mark="HONDA"),
+        second_opinion=None,
+    )
+
+    assert fields["number_kind"] == "absent"
+    assert fields["body_number"] is None
+
+
+def test_should_write_the_body_number_onto_the_listing():
+    """Прочитанный номер японской машины должен доехать до строки, а не пропасть.
+
+    До появления своей колонки он читался и выбрасывался: половина документов на омском
+    рынке праворульные, и объявление по ним публиковалось без номера вовсе.
+    """
+    from app.features.listing.models.sale_car import SaleCars
+    from app.tasks.decode_persist import apply_decoded
+
+    listing = SaleCars()
+
+    apply_decoded(listing, {"vin": None, "body_number": "GB6-1000952", "year": "2016"})
+
+    assert listing.body_number == "GB6-1000952"
+    assert listing.vin is None
+    assert listing.year == 2016
+
+
+def test_should_not_wipe_a_number_the_seller_typed():
+    """Пустое чтение не затирает то, что продавец уже вписал руками."""
+    from app.features.listing.models.sale_car import SaleCars
+    from app.tasks.decode_persist import apply_decoded
+
+    listing = SaleCars(vin=VIN_JEEP, body_number="RN7-3100986")
+
+    apply_decoded(listing, {"vin": None, "body_number": None})
+
+    assert listing.vin == VIN_JEEP
+    assert listing.body_number == "RN7-3100986"

@@ -45,6 +45,12 @@ class SaleCars(Base):
     mark_raw = Column(String, nullable=True)
     model_raw = Column(String, nullable=True)
 
+    # Номер кузова праворульной японской машины. У неё VIN не выдавали вовсе: в строке
+    # «Идентификационный номер» стоит «ОТСУТСТВУЕТ», а машина опознаётся этим номером —
+    # он же печатается в строке «Кузов (кабина, прицеп) №». Отдельная колонка, а не vin,
+    # потому что формат другой и проверять их надо по-разному.
+    body_number = Column(String, nullable=True)
+
     # The rest of what the СТС yields. Nullable because a listing can be filled in by
     # hand with no document at all, and an import listing has no VIN to decode.
     year = Column(Integer, nullable=True)

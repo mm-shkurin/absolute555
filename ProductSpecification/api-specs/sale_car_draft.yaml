@@ -116,6 +116,7 @@ components:
       description: Все поля необязательны. Поле status здесь не принимается.
       properties:
         vin: { type: string, nullable: true }
+        body_number: { type: string, nullable: true, maxLength: 40 }
         phone_number: { type: string, nullable: true }
         price: { type: number, nullable: true }
         milleage: { type: number, nullable: true }
@@ -164,6 +165,13 @@ components:
         user_id: { type: string, format: uuid }
         status: { $ref: '#/components/schemas/SaleCarStatus' }
         vin: { type: string, nullable: true }
+        body_number:
+          type: string
+          nullable: true
+          description: |
+            Номер кузова праворульной машины. У неё VIN не выдавали: в строке
+            «Идентификационный номер» стоит «ОТСУТСТВУЕТ», а опознаётся она этим номером.
+            Заполнено вместо vin, а не вместе с ним.
         brand: { type: string, nullable: true }
         model: { type: string, nullable: true }
         mark_raw: { type: string, nullable: true }
