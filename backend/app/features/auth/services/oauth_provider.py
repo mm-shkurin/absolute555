@@ -48,9 +48,16 @@ class YandexOAuthProvider:
         )
 
     async def fetch_identity(self, code: str) -> Identity:
-        async with httpx.AsyncClient(timeout=10) as http:
-            token = await self._exchange(http, code)
-            return await self._read_identity(http, token)
+        # Сеть до провайдера рвётся так же буднично, как провайдер отказывает, и для
+        # человека это одно и то же событие. Без этого таймаут уходил наверх и колбэк
+        # отвечал страницей ошибки — а его открывает сам браузер, так что человек
+        # оставался в тупике с уже потраченным кодом и без пути назад ко входу.
+        try:
+            async with httpx.AsyncClient(timeout=10) as http:
+                token = await self._exchange(http, code)
+                return await self._read_identity(http, token)
+        except httpx.HTTPError as unreachable:
+            raise OAuthFailed(f"the provider could not be reached: {unreachable!r}") from unreachable
 
     async def _exchange(self, http: httpx.AsyncClient, code: str) -> str:
         answer = await http.post(
@@ -65,7 +72,10 @@ class YandexOAuthProvider:
         if answer.status_code != 200:
             raise OAuthFailed(f"the token endpoint answered {answer.status_code}")
 
-        token = answer.json().get("access_token")
+        try:
+            token = answer.json().get("access_token")
+        except ValueError as unreadable:
+            raise OAuthFailed("the token response was not readable") from unreadable
         if not token:
             raise OAuthFailed("the token response carried no access token")
         return token
@@ -76,7 +86,10 @@ class YandexOAuthProvider:
         if answer.status_code != 200:
             raise OAuthFailed(f"the info endpoint answered {answer.status_code}")
 
-        profile = answer.json()
+        try:
+            profile = answer.json()
+        except ValueError as unreadable:
+            raise OAuthFailed("the info response was not readable") from unreadable
         subject = profile.get("id")
         if not subject:
             # Without a stable subject there is nothing to recognise this person by next

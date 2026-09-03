@@ -8,9 +8,15 @@ that never travels in a URL.
 
 from urllib.parse import parse_qs, urlparse
 
+import httpx
 import pytest
 
-from app.features.auth.services.oauth_provider import FakeOAuthProvider, YandexOAuthProvider, provider_for
+from app.features.auth.services.oauth_provider import (
+    FakeOAuthProvider,
+    OAuthFailed,
+    YandexOAuthProvider,
+    provider_for,
+)
 from app.features.auth.services.oauth_store import OAuthStore
 
 pytestmark = pytest.mark.asyncio
@@ -131,6 +137,24 @@ async def test_should_report_a_provider_that_refused(client):
     response = _callback(client, code="refuse-me", state=state)
 
     assert _handoff(response)["error"] == ["provider_failed"]
+
+
+async def test_should_report_a_provider_that_could_not_be_reached(monkeypatch):
+    """Сеть до провайдера — такой же отказ, как и его «нет», а не поломка сервера.
+
+    Колбэк открывает сам браузер: страница с ошибкой сервера оставляет человека в
+    тупике, с уже потраченным кодом на руках и без пути назад ко входу. Отказ
+    провайдера колбэк умеет вернуть редиректом, поэтому оборвавшаяся сеть должна
+    прийти к нему тем же самым отказом.
+    """
+
+    async def unreachable(*_args, **_kwargs):
+        raise httpx.ConnectTimeout("the handshake operation timed out")
+
+    monkeypatch.setattr(httpx.AsyncClient, "post", unreachable)
+
+    with pytest.raises(OAuthFailed):
+        await YandexOAuthProvider().fetch_identity("a-code")
 
 
 async def test_should_refuse_a_handoff_code_nobody_issued(client):
