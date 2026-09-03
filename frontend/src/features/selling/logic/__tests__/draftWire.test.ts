@@ -39,7 +39,7 @@ const car = (over: Partial<SaleCarWire> = {}): SaleCarWire => ({
 })
 
 describe('черновик с провода', () => {
-  it('помечает распознанные марку и модель как пришедшие из документа', () => {
+  it('помечает распознанные марку и модель как заполненные приложением', () => {
     const draft = toDraft(
       car({
         brand: 'Toyota',
@@ -52,8 +52,26 @@ describe('черновик с провода', () => {
         },
       }),
     )
-    expect(draft.brand).toEqual({ value: 'Toyota', source: 'document' })
-    expect(draft.model.source).toBe('document')
+    expect(draft.brand).toEqual({ value: 'Toyota', source: 'recognized' })
+    expect(draft.model.source).toBe('recognized')
+  })
+
+  // История 20: пометка ставится только там, где источник подтвердил сервер. Год, коробка,
+  // мощность и VIN своего источника на проводе не имеют, и метка на них была бы догадкой.
+  it('не помечает распознанным то, чей источник сервер не назвал', () => {
+    const draft = toDraft(
+      car({
+        year: 2012,
+        transmission: 'АКПП',
+        engine_power: 367,
+        vin: 'XW8ZZZ61ZJG012345',
+        autofill: { state: 'done', brand_source: 'ocr', model_source: 'ocr', updated_at: null },
+      }),
+    )
+    expect(draft.year).toEqual({ value: '2012', source: 'manual' })
+    expect(draft.transmission.source).toBe('manual')
+    expect(draft.enginePower.source).toBe('manual')
+    expect(draft.vin.source).toBe('manual')
   })
 
   it('поле, переписанное продавцом, перестаёт быть распознанным', () => {

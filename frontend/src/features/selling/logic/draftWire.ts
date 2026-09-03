@@ -1,9 +1,10 @@
 // Перевод черновика между экраном и проводом.
 //
 // Экран держит каждое поле вместе с его происхождением: подставленное распознаванием надо
-// перечитать, введённое руками — уже прочитано автором. Сервер хранит происхождение только
-// у марки и модели (`autofill.brand_source`, `model_source`), поэтому у остальных полей
-// оно живёт до перезагрузки страницы и не восстанавливается.
+// перечитать, введённое руками — уже прочитано автором. Сервер подтверждает происхождение
+// только у марки и модели (`autofill.brand_source`, `model_source`) — только они и
+// помечаются. Год, коробка, мощность и VIN приезжают без источника, и метка на них была
+// бы догадкой фронта, на которую продавец полагается как на факт.
 import type {
   FieldSource as WireSource,
   SaleCarPatch,
@@ -14,7 +15,7 @@ import { EMPTY_DRAFT } from './draft'
 
 // `ocr` на проводе означает «прочитано с документа»: распознавание СТС — единственный
 // источник, который сервер отличает от продавца.
-const SOURCE: Record<WireSource, FieldSource> = { ocr: 'document', seller: 'manual' }
+const SOURCE: Record<WireSource, FieldSource> = { ocr: 'recognized', seller: 'manual' }
 
 function field(value: string | number | null, source: WireSource | null): DraftField {
   return {
@@ -30,12 +31,10 @@ export function toDraft(car: SaleCarWire): Draft {
     ...EMPTY_DRAFT,
     brand: field(car.brand ?? car.mark_raw, car.autofill?.brand_source ?? null),
     model: field(car.model ?? car.model_raw, car.autofill?.model_source ?? null),
-    // Год, коробка, мощность и VIN приезжают из того же распознавания, но своего
-    // происхождения на проводе не имеют: сервер помечает только марку и модель.
-    year: field(car.year, car.autofill?.brand_source ?? null),
-    transmission: field(car.transmission, car.autofill?.brand_source ?? null),
-    enginePower: field(car.engine_power, car.autofill?.brand_source ?? null),
-    vin: field(car.vin, car.vin ? 'ocr' : null),
+    year: field(car.year, null),
+    transmission: field(car.transmission, null),
+    enginePower: field(car.engine_power, null),
+    vin: field(car.vin, null),
     price: text(car.price),
     mileage: text(car.milleage),
     phone: text(car.phone_number),

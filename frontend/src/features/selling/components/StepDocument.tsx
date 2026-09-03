@@ -17,6 +17,8 @@ export interface DocumentHandlers {
   onRetake: () => void
   onCancel: () => void
   onDone: () => void
+  /** Запустить распознавание по VIN, вписанному руками. */
+  onCheckVin: () => void
 }
 
 export function StepDocument({

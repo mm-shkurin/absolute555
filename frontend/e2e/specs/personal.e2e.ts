@@ -35,6 +35,16 @@ describe('Личные разделы', () => {
     await personal.assertStepMarkedCurrent(2)
   })
 
+  it('пометку получают только поля, чей источник назвал сервер', async () => {
+    await feed.openApp()
+    await personal.startSellingFromHeader()
+    await personal.attachDocument()
+    await personal.assertWizardStep('step-specs')
+    // Год, коробка, мощность и VIN приезжают без источника: раньше экран помечал их
+    // источником марки — догадкой, на которую продавец полагался как на факт.
+    await personal.assertRecognizedFields(['Марка', 'Модель'])
+  })
+
   it('пустое объявление не отправляется на модерацию', async () => {
     await feed.openApp()
     await personal.startSellingFromHeader()

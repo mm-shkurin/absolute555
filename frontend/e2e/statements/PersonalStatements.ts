@@ -36,6 +36,18 @@ export class PersonalStatements {
     `)
   }
 
+  // История 20: пометку получают только поля, чей источник назвал сервер. Утверждение
+  // читает подписи с пометкой целиком — так видно и лишнюю пометку, и пропавшую.
+  async assertRecognizedFields(labels: string[]): Promise<void> {
+    const step = await waitForVisible(this.driver, 'step-specs')
+    const tagged = await step.findElements(
+      By.xpath('.//span[span[contains(text(), "заполнило приложение")]]'),
+    )
+    const texts = await Promise.all(tagged.map((element) => element.getText()))
+    const names = texts.map((text) => text.replace('заполнило приложение', '').trim())
+    expect(names.toSorted()).toEqual(labels.toSorted())
+  }
+
   async goToNextStep(button: string): Promise<void> {
     await clickElement(this.driver, await waitForVisible(this.driver, button))
   }

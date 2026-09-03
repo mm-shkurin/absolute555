@@ -4,9 +4,9 @@ import { isPassed, nextStep, previousStep } from '../wizardSteps'
 
 const filled = {
   ...EMPTY_DRAFT,
-  brand: { value: 'Lexus', source: 'vin' as const },
-  model: { value: 'LX 570', source: 'vin' as const },
-  year: { value: '2012', source: 'vin' as const },
+  brand: { value: 'Lexus', source: 'recognized' as const },
+  model: { value: 'LX 570', source: 'recognized' as const },
+  year: { value: '2012', source: 'recognized' as const },
   price: '4020000',
   mileage: '180000',
   phone: '+79130000000',

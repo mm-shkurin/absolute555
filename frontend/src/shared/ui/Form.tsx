@@ -6,8 +6,7 @@ import styles from './Form.module.css'
 
 const SOURCE_TAG: Record<FieldSource, string | null> = {
   manual: null,
-  vin: 'из VIN',
-  document: 'из СТС',
+  recognized: 'заполнило приложение',
 }
 
 export function Form({ children }: { children: ReactNode }) {

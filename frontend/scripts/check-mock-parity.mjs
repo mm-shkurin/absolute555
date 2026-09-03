@@ -18,10 +18,10 @@ const paths = readFileSync(resolve(root, 'shared/api/backend/paths.ts'), 'utf8')
 // В заглушке пути живут и строками, и регулярками, где косая черта экранирована.
 // Сравнение идёт по нормализованному тексту, иначе `\/sale_car\/` не совпадёт с `/sale_car/`.
 //
-// Читаются оба файла заглушки: чтение живёт в `mockServer.ts`, запись — в
-// `mutationRoutes.ts`, и гейт, знающий только про первый, объявил бы каждую мутацию
-// необслуженной.
-const mock = ['dev/mockServer.ts', 'dev/mutationRoutes.ts']
+// Читаются все файлы заглушки: чтение живёт в `mockServer.ts`, разбор мутаций — в
+// `mutationRoutes.ts`, а ответы на них — в `fixtures/mutations.ts`. Гейт, знающий только
+// про первый, объявил бы каждую мутацию необслуженной.
+const mock = ['dev/mockServer.ts', 'dev/mutationRoutes.ts', 'dev/fixtures/mutations.ts']
   .map((file) => readFileSync(resolve(root, file), 'utf8'))
   .join('\n')
   .replaceAll(String.raw`\/`, '/')

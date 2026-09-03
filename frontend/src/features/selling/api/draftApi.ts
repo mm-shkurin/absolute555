@@ -5,6 +5,7 @@
 // `sale_car_lifecycle.yaml`.
 import {
   attachSts,
+  decodeVin,
   changeStatus,
   createDraft,
   deletePhoto,
@@ -50,6 +51,11 @@ export function isEmptyPatch(patch: SaleCarPatch): boolean {
  *  и повторяется полем `autofill` в выдаче объявления. */
 export function sendSts(saleCarId: string, file: File) {
   return attachSts(saleCarId, file)
+}
+
+/** Распознать по VIN, вписанному руками. Тот же исход и тот же поток, что у снимка. */
+export function sendVin(saleCarId: string, vin: string) {
+  return decodeVin(saleCarId, vin)
 }
 
 export function addPhotos(saleCarId: string, files: File[]) {

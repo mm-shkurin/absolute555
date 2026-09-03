@@ -29,7 +29,13 @@ export function VinPrompt({
           <Button tone="ghost" onClick={handlers.onRetake}>
             Переснять СТС
           </Button>
-          <Button onClick={handlers.onDone}>Проверить VIN</Button>
+          <Button
+            onClick={handlers.onCheckVin}
+            disabled={vin.trim().length !== 17}
+            data-testid="check-vin"
+          >
+            Проверить VIN
+          </Button>
         </>
       }
     >

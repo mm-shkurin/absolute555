@@ -103,6 +103,15 @@ export function attachSts(saleCarId: string, file: File) {
   return send<StsAcceptedWire>(BACKEND.saleCar.sts(saleCarId), { method: 'POST', body: form })
 }
 
+/** Распознавание по вписанному VIN. Форма ответа та же, что у снимка: принято сразу,
+ *  исход приезжает потоком — экран не различает, чем распознавание было запущено. */
+export function decodeVin(saleCarId: string, vin: string) {
+  return send<StsAcceptedWire>(BACKEND.saleCar.decodeVin(saleCarId), {
+    method: 'POST',
+    body: JSON.stringify({ vin }),
+  })
+}
+
 export function fetchStsLink(saleCarId: string, signal?: AbortSignal) {
   return send<DocumentLinkWire>(BACKEND.saleCar.sts(saleCarId), { signal })
 }

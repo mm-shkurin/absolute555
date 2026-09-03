@@ -31,6 +31,8 @@ export interface WizardServer {
    *  сохранять чаще значит слать запрос на каждое нажатие клавиши. */
   saveAnd: (next: () => void) => void
   pickDocument: (file: File) => void
+  /** Проверить VIN, вписанный руками, когда снимок прочитан, а VIN в нём — нет. */
+  checkVin: (vin: string) => void
   submitForReview: () => Promise<void>
   submitError: string | null
 }
@@ -90,6 +92,20 @@ export function useWizardServer(
     [recognition, sync],
   )
 
+  const checkVin = useCallback(
+    (vin: string) => {
+      wizard.goStage('recognizing')
+      recognition.reset()
+      void sync.decodeByVin(vin).then((accepted) => {
+        // Не приняли — возвращаем на тот же экран ввода: «распознаём» без запроса
+        // крутилось бы вечно.
+        if (!accepted) wizard.goStage('novin')
+      })
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [recognition, sync],
+  )
+
   // Отказ сервера показывается текстом и НЕ переводит мастер на экран «отправлено»: чего
   // именно не хватает, знает сервер, и молча объявить успех значит соврать продавцу.
   const submitForReview = async () => {
@@ -118,6 +134,7 @@ export function useWizardServer(
       next()
     },
     pickDocument,
+    checkVin,
     submitForReview,
     submitError,
   }

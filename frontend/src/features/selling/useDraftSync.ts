@@ -4,7 +4,15 @@
 // человек фотографирует машину во дворе, и потеря связи не должна стирать введённое.
 // Отсюда правило — сохранение может провалиться молча, а мастер продолжает работать.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { isEmptyPatch, loadDraft, saveDraft, sendSts, startDraft, toDraft } from './api/draftApi'
+import {
+  isEmptyPatch,
+  loadDraft,
+  saveDraft,
+  sendSts,
+  sendVin,
+  startDraft,
+  toDraft,
+} from './api/draftApi'
 import type { ListingKind } from '../../shared/api/backend/saleCarContract'
 import { toPatch } from './logic/draftWire'
 import type { Draft } from './logic/draft'
@@ -17,6 +25,9 @@ export interface DraftSync {
   /** Приложить снимок СТС. Возвращает false, если черновика на сервере ещё нет или
    *  загрузка не удалась: мастер тогда остаётся на шаге с документом. */
   attachDocument: (file: File) => Promise<boolean>
+  /** Запустить распознавание по вписанному VIN. Возвращает false там же, где и снимок:
+   *  черновика на сервере нет или запрос не удался. */
+  decodeByVin: (vin: string) => Promise<boolean>
   /** Перечитать объявление после распознавания. `null`, если читать нечего. */
   reload: () => Promise<Draft | null>
 }
@@ -89,6 +100,20 @@ export function useDraftSync(enabled: boolean, existingId?: string, kind?: Listi
     [draftId],
   )
 
+  const decodeByVin = useCallback(
+    async (vin: string) => {
+      const id = await draftId()
+      if (!id) return false
+      try {
+        await sendVin(id, vin)
+        return true
+      } catch {
+        return false
+      }
+    },
+    [draftId],
+  )
+
   const reload = useCallback(async () => {
     const id = idRef.current
     if (!id) return null
@@ -99,5 +124,5 @@ export function useDraftSync(enabled: boolean, existingId?: string, kind?: Listi
     }
   }, [])
 
-  return { saleCarId, saved, save, attachDocument, reload }
+  return { saleCarId, saved, save, attachDocument, decodeByVin, reload }
 }

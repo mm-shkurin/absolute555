@@ -43,6 +43,9 @@ export const BACKEND = {
       `${V1}/sale_car/${id(saleCarId)}/photos/${id(photoId)}`,
     photoOrder: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/photos/order`,
     sts: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/sts`,
+    // Второй вход в то же распознавание: снимок прочитан, а VIN в нём — нет, и
+    // семнадцать символов вписывает продавец.
+    decodeVin: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/decode-vin`,
     submit: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/submit`,
     withdraw: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/withdraw`,
     sold: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/sold`,

@@ -43,6 +43,7 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
     onRetake: () => wizard.goStage('await'),
     onCancel: () => wizard.goStage('await'),
     onDone: () => wizard.goStep('specs'),
+    onCheckVin: () => server.checkVin(draft.vin.value),
   }
 
   if (state.submitted) {
