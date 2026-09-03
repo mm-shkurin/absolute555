@@ -56,7 +56,11 @@ def combine_number(vision_value, ocr_value) -> dict:
         if vision == ocr:
             return {"value": vision, "kind": vision_kind, "agreed": True, "source": "both"}
         logger.info("readers disagree on the identification number")
-        return {"value": ocr, "kind": ocr_kind, "agreed": False, "source": CHAR_READER}
+        # На настоящих фотографиях выигрывает зрение: из четырёх документов с настоящим
+        # VIN оно прочитало все четыре, а посимвольный читатель на тех же кадрах вытащил
+        # серию бланка и обрывки строк документа. Его слово оставлено подтверждением, а
+        # не решением: совпали — номер принят молча, разошлись — подтверждает продавец.
+        return {"value": vision, "kind": vision_kind, "agreed": False, "source": "vision"}
 
     if vision_ok:
         return {"value": vision, "kind": vision_kind, "agreed": False, "source": "vision"}

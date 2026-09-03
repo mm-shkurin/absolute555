@@ -39,12 +39,16 @@ class TestНомерПоДвумЧтениям:
         assert verdict["agreed"] is True
 
     def test_should_flag_a_number_the_readers_disagree_on(self):
-        """Обе строки проходят проверку формы — отличить их может только расхождение."""
+        """Обе строки проходят проверку формы — отличить их может только расхождение.
+
+        Показывается вариант зрения: на настоящих фотографиях оно прочитало все четыре
+        документа с настоящим VIN, а посимвольный читатель на тех же кадрах вытаскивал
+        серию бланка. Его роль — подтверждение, а не решение.
+        """
         verdict = combine_number("WBA5A31090D123456", "WBASA31090D123456")
 
         assert verdict["agreed"] is False
-        # Посимвольный читатель точнее на длинной случайной строке, но пометка остаётся.
-        assert verdict["value"] == "WBASA31090D123456"
+        assert verdict["value"] == "WBA5A31090D123456"
 
     def test_should_take_the_only_reading_there_is(self):
         verdict = combine_number(VIN_ALMERA, None)
@@ -53,7 +57,7 @@ class TestНомерПоДвумЧтениям:
         assert verdict["agreed"] is False
 
     def test_should_take_the_second_opinion_when_vision_lost_a_character(self):
-        """Шестнадцать символов — потерянный символ, а не второй кандидат."""
+        """Шестнадцать символов — потерянный символ: зрению тут возразить нечем."""
         verdict = combine_number("Z8NAJL1105549357", VIN_ALMERA)
 
         assert verdict["value"] == VIN_ALMERA
@@ -161,7 +165,10 @@ class TestЧтениеДокументаЦеликом:
 
 @pytest.mark.asyncio
 async def test_should_hand_the_task_both_the_number_and_its_confidence(monkeypatch):
+    """Со включённым подтверждением номер, на котором сошлись оба, приходит подтверждённым."""
     from app.ml.decode_vin import decode_vin
+
+    monkeypatch.setenv("CONFIRM_NUMBER_WITH_OCR", "true")
 
     monkeypatch.setattr(
         "app.ml.decode_vin.read_sts",
@@ -197,3 +204,28 @@ async def test_should_publish_a_japanese_car_without_a_vin(monkeypatch):
     assert decoded["number_kind"] == "absent"
     assert decoded["mark"] == "HONDA"
     assert "error" not in decoded
+
+
+@pytest.mark.asyncio
+async def test_should_read_without_the_second_opinion_by_default(monkeypatch):
+    """Настройка выключена: посимвольный читатель не зовётся вовсе.
+
+    На двенадцати настоящих свидетельствах он подтвердил один номер, один раз подсунул
+    номер ПТС вместо номера машины и добавлял 20-58 секунд к каждому документу поверх
+    7-18 у зрения.
+    """
+    from app.ml import decode_vin as module
+
+    called = []
+    monkeypatch.setattr(
+        module, "read_sts", lambda body: {"vin": VIN_JEEP, "mark": "JEEP", "model": "CHEROKEE",
+                                          "year": "1992", "power": None, "plate": None,
+                                          "body": None, "color": None}
+    )
+    monkeypatch.setattr(module, "read_number", lambda body: called.append(body) or VIN_JEEP)
+
+    decoded = await module.decode_vin(b"picture")
+
+    assert called == []
+    assert decoded["vin"] == VIN_JEEP
+    assert decoded["number_agreed"] is False

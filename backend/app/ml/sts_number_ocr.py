@@ -36,5 +36,18 @@ def read_number(body: bytes) -> Optional[str]:
         logger.warning(f"tesseract could not read the document: {error}")
         return None
 
-    found = VIN_INSIDE_TEXT.findall(re.sub(r"[^A-Z0-9]", "", text))
-    return found[0] if found else None
+    # По словам, а не по склеенному тексту. Склейка убирает пробелы, и семнадцать подряд
+    # идущих символов находятся всегда: «ГОД ВЫПУСКА ТС МАКС МАССА» после замены
+    # кириллических двойников выглядит как VIN и проходит проверку алфавита.
+    for token in re.split(r"[^A-Z0-9]+", text):
+        if VIN_INSIDE_TEXT.fullmatch(token) and _has_digits(token):
+            return token
+    return None
+
+
+def _has_digits(token: str) -> bool:
+    """VIN всегда несёт цифры: год модели, завод, серийный номер.
+
+    Строка из одних букв — это прочитанные слова бланка, а не номер машины.
+    """
+    return sum(character.isdigit() for character in token) >= 2

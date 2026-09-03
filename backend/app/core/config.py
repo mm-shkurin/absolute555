@@ -170,6 +170,20 @@ class PhotoSettings(BaseSettings):
 
     model_config = BaseConfig.model_config
 
+class RecognitionSettings(BaseSettings):
+    """Чем читается СТС.
+
+    Второе мнение по номеру выключено: на двенадцати настоящих свидетельствах оно
+    пригодилось один раз, один раз подсунуло номер ПТС вместо номера машины, а к каждому
+    документу добавляло 20-58 секунд поверх 7-18 у зрения. Настройка оставлена, потому
+    что на чистых сканах соотношение обратное.
+    """
+
+    confirm_number_with_ocr: bool = Field(False, alias="CONFIRM_NUMBER_WITH_OCR")
+
+    model_config = BaseConfig.model_config
+
+
 class OllamaSettings(BaseSettings):
     ollama_url: HttpUrl = Field(..., alias="OLLAMA_URL")
     ollama_model_name: str = Field(..., min_length=1, alias="OLLAMA_MODEL_NAME")
