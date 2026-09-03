@@ -18,7 +18,11 @@ class UserSummary(BaseModel):
     is_blocked: bool
     created_at: datetime
     name: Optional[str] = None
+    avatar_url: Optional[str] = None
     platform: Optional[str] = None
+    # Ушедший человек виден консоли ушедшим: иначе модератор пишет тому, кого нет, и не
+    # понимает, почему тот молчит.
+    deleted_at: Optional[datetime] = None
 
 
 class UserPage(BaseModel):
@@ -37,7 +41,9 @@ class UserCard(BaseModel):
     blocked_at: Optional[datetime] = None
     created_at: datetime
     name: Optional[str] = None
+    avatar_url: Optional[str] = None
     platform: Optional[str] = None
+    deleted_at: Optional[datetime] = None
     listings_total: int
     complaints_total: int
 

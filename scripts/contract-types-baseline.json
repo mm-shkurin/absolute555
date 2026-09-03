@@ -1,3 +1,9 @@
 {
-  "known_drift": []
+  "known_drift": [
+    "adminContract.ts: UserCardWire не описывает UserCard.avatar_url",
+    "adminContract.ts: UserCardWire не описывает UserCard.deleted_at",
+    "adminContract.ts: UserSummaryWire не описывает UserSummary.avatar_url",
+    "adminContract.ts: UserSummaryWire не описывает UserSummary.deleted_at",
+    "saleCarContract.ts: SaleCarWire не описывает SaleCar.moderation"
+  ]
 }

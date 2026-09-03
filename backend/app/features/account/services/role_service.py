@@ -107,6 +107,3 @@ class RoleService:
             return target_user.role == UserRole.USER.value
         
         return current_user.id == target_user.id
-
-    def _get_user_name(self, user: Users) -> str:
-        return user.display_name

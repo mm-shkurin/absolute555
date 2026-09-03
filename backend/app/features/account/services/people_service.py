@@ -27,12 +27,13 @@ class PeopleService:
         query: Optional[str] = None,
         role: Optional[str] = None,
         blocked: Optional[bool] = None,
+        deleted: Optional[bool] = None,
         page: int = 1,
         page_size: int = 20,
     ) -> Tuple[List[Users], int, int, int]:
         page = max(page, 1)
         page_size = min(max(page_size, 1), MAX_PAGE_SIZE)
-        conditions = self._conditions(query, role, blocked)
+        conditions = self._conditions(query, role, blocked, deleted)
 
         total = await self.db.scalar(select(func.count()).select_from(Users).where(*conditions))
         rows = await self.db.execute(
@@ -60,12 +61,24 @@ class PeopleService:
         )
         return user, listings or 0, complaints or 0
 
-    def _conditions(self, query: Optional[str], role: Optional[str], blocked: Optional[bool]):
+    def _conditions(
+        self,
+        query: Optional[str],
+        role: Optional[str],
+        blocked: Optional[bool],
+        deleted: Optional[bool] = None,
+    ):
         conditions = []
         if role:
             conditions.append(Users.role == role)
         if blocked is not None:
             conditions.append(Users.is_blocked.is_(blocked))
+        if deleted is not None:
+            # Ушедшие остаются в списке: история 21 удаляет пометкой, и объявления с
+            # отзывами остаются вместе с ними. Фильтр — чтобы их можно было отделить,
+            # а не чтобы спрятать.
+            column = Users.deleted_at
+            conditions.append(column.is_not(None) if deleted else column.is_(None))
         if query:
             # Имя живёт внутри профиля провайдера, а не отдельной колонкой, поэтому
             # ищется по тексту профиля. Кандидат на отдельную колонку, когда список

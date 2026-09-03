@@ -10,6 +10,7 @@
 
 from typing import Iterable, List, Optional
 
+from app.features.account.api.account_view import avatar_url
 from app.features.account.schemas.admin import (
     AuditEntry,
     UserAccess,
@@ -35,7 +36,9 @@ def summary_of(user) -> UserSummary:
         is_blocked=user.is_blocked,
         created_at=user.created_at,
         name=user.display_name,
+        avatar_url=avatar_url(user),
         platform=platform_of(user),
+        deleted_at=user.deleted_at,
     )
 
 
@@ -58,7 +61,9 @@ def card_of(user, listings_total: int, complaints_total: int) -> UserCard:
         blocked_at=user.blocked_at,
         created_at=user.created_at,
         name=user.display_name,
+        avatar_url=avatar_url(user),
         platform=platform_of(user),
+        deleted_at=user.deleted_at,
         listings_total=listings_total,
         complaints_total=complaints_total,
     )

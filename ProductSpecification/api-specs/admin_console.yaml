@@ -37,6 +37,13 @@ paths:
           in: query
           schema: { type: boolean }
           description: Только заблокированные или только доступные
+        - name: deleted
+          in: query
+          schema: { type: boolean }
+          description: |
+            Только ушедшие или только живые. Учётная запись удаляется пометкой
+            (история 21), поэтому ушедшие остаются в списке — фильтр отделяет их, а не
+            прячет.
         - name: page
           in: query
           schema: { type: integer, minimum: 1, default: 1 }
@@ -186,6 +193,14 @@ components:
         is_blocked: { type: boolean }
         created_at: { type: string, format: date-time }
         name: { type: string, nullable: true }
+        avatar_url: { type: string, nullable: true }
+        deleted_at:
+          type: string
+          format: date-time
+          nullable: true
+          description: |
+            Когда владелец удалил запись. Заполнено — человека уже нет: писать ему
+            бессмысленно, а закрывать ему доступ нечего.
         platform:
           type: string
           nullable: true
@@ -214,6 +229,8 @@ components:
         blocked_at: { type: string, format: date-time, nullable: true }
         created_at: { type: string, format: date-time }
         name: { type: string, nullable: true }
+        avatar_url: { type: string, nullable: true }
+        deleted_at: { type: string, format: date-time, nullable: true }
         platform: { type: string, nullable: true }
         listings_total:
           type: integer

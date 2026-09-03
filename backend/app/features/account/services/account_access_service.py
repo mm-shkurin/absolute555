@@ -44,6 +44,10 @@ class AccountAccessService:
 
     async def block(self, user_id: UUID, actor: Users, reason: str) -> Users:
         user = await self._target(user_id, actor)
+        if user.deleted_at is not None:
+            # Дверь уже закрыта. Запись в журнале о блокировке ушедшего создавала бы
+            # видимость действия, которого не было.
+            raise AccessConflict("Учётная запись удалена владельцем")
         if user.is_blocked:
             # Не «успех, ничего не делаю»: экран показал бы состоявшимся второе
             # действие, которого нет в журнале.

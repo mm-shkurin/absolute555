@@ -94,10 +94,13 @@ async def list_people(
     query: Optional[str],
     role: Optional[str],
     blocked: Optional[bool],
+    deleted: Optional[bool],
     page: int,
     page_size: int,
     db: AsyncSession,
 ) -> UserPage:
     """Страница списка. Вызывается из `role.py`, где маршрут `/users` живёт с самого
     начала: переносить путь ради красоты значило бы сломать всех, кто его уже зовёт."""
-    return page_of(*await PeopleService(db).page(query, role, blocked, page, page_size))
+    return page_of(
+        *await PeopleService(db).page(query, role, blocked, deleted, page, page_size)
+    )

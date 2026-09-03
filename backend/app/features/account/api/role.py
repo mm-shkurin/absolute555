@@ -28,6 +28,7 @@ async def get_all_users(
     query: Optional[str] = Query(None, description="Поиск по имени"),
     role_filter: Optional[UserRole] = Query(None, alias="role", description="Фильтр по роли"),
     blocked: Optional[bool] = Query(None, description="Только закрытые или только открытые"),
+    deleted: Optional[bool] = Query(None, description="Только ушедшие или только живые"),
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     current_user=Depends(require_permission(Permission.VIEW_USERS)),
@@ -39,7 +40,7 @@ async def get_all_users(
     плановых тысячах учётных записей это ответ на всю базу ради одного экрана.
     """
     return await list_people(
-        query, role_filter.value if role_filter else None, blocked, page, page_size, db
+        query, role_filter.value if role_filter else None, blocked, deleted, page, page_size, db
     )
 
 
