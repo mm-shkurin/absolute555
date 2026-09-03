@@ -11,6 +11,7 @@ to the model reached whichever of the five somebody remembered.
 from typing import Iterable, List, Optional
 
 from app.core.config import PhotoSettings
+from app.features.account.api.account_view import avatar_url, name_of
 from app.shared.storage.s3_service import s3_service
 
 from .sale_car_thickness_view import thickness_summary, to_thickness_map
@@ -101,14 +102,10 @@ def seller_view(owner) -> Optional[dict]:
     if owner is None:
         return None
 
-    profile = owner.yandex_json if isinstance(owner.yandex_json, dict) else {}
-    name = " ".join(
-        part for part in (profile.get("first_name"), profile.get("last_name")) if part
-    ).strip()
     return {
         "user_id": owner.id,
-        "name": name or None,
-        "avatar_url": None,
+        "name": name_of(owner),
+        "avatar_url": avatar_url(owner),
         "rating": owner.rating_avg,
         "reviews_count": owner.reviews_count or 0,
         "deals_count": owner.deals_count or 0,

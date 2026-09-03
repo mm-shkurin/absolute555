@@ -10,7 +10,9 @@ unreachable provider wired into the router is a route that answers 500. The file
 listed in .gitignore so a local copy does not drift back in.
 """
 
-from fastapi import APIRouter, Body, Depends
+from typing import Optional
+
+from fastapi import APIRouter, Body, Depends, status
 
 from app.core.exceptions import BaseErrorApp, ExternalServiceError
 from loguru import logger
@@ -19,7 +21,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.database import get_db
 from app.features.auth.schemas.token import Token
 from app.features.account.services.user_service import UserService
-from app.utils.security import create_access_token, create_refresh_token, refresh_access_token
+from app.features.auth.services import token_revocation
+from app.utils.security import (
+    auth_scheme,
+    create_access_token,
+    create_refresh_token,
+    jwt_settings,
+    refresh_access_token,
+    verify_token,
+)
 
 from .auth_yandex import yandex_router
 
@@ -35,6 +45,30 @@ async def refresh(refresh_token: str = Body(..., embed=True), db: AsyncSession =
         token_type="bearer"
     )
 
+
+@auth_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
+async def logout(
+    refresh_token: Optional[str] = Body(None, embed=True),
+    token: Optional[str] = Depends(auth_scheme),
+):
+    """Отозвать оба токена: тот, что в заголовке, и тот, что прислан телом.
+
+    Ответ один и тот же, был токен действителен или нет: иначе ручка отвечает на вопрос
+    «жив ли этот токен» кому угодно, кто его подобрал.
+    """
+    if token:
+        await _revoke(token.removeprefix("Bearer "), jwt_settings.secret_key)
+    if refresh_token:
+        await _revoke(refresh_token, jwt_settings.refresh_token_secret_key)
+
+
+async def _revoke(token: str, secret: str) -> None:
+    try:
+        payload = await verify_token(token, secret, jwt_settings.algorithm)
+    except Exception:
+        # Истёкший или подделанный отзывать нечего: он и так не пройдёт проверку подписи.
+        return
+    await token_revocation.revoke(token, payload)
 
 @auth_router.post("/guest/login", response_model=Token)
 async def guest_login(

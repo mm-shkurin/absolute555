@@ -23,6 +23,7 @@ from app.utils.security import (
 )
 import json
 from app.permissions.dependencies import CurrentUser
+from .account_view import avatar_url, name_of
 
 user_router = APIRouter()
 
@@ -56,6 +57,8 @@ async def get_profile(current_user: CurrentUser):
     user_type = "guest" if current_user.is_guest else "regular"
 
     return User_Data(
+        name=name_of(current_user),
+        avatar_url=avatar_url(current_user),
         id=current_user.id,
         device_id=current_user.device_id,         
         vk_id=current_user.vk_id,

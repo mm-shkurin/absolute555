@@ -19,6 +19,11 @@ class User_Data(BaseModel):
     vk_json: Optional[Dict[str, Any]] = None
     guest_json: Optional[Dict[str, Any]] = None   
     
+    # Имя и фотография профиля: то же, что отдают ручки правки. Прежние поля с сырыми
+    # ответами провайдера остались рядом, чтобы не ломать экраны, читающие их сегодня.
+    name: Optional[str] = None
+    avatar_url: Optional[str] = None
+
     user_type: str = "regular"
     role: Optional[str] = None
     is_verified: Optional[bool] = None

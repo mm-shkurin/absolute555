@@ -1,0 +1,176 @@
+openapi: 3.0.3
+info:
+  title: Account
+  version: 1.0.0
+  description: |
+    Учётная запись как предмет: своё имя, своя фотография, выход и удаление.
+
+    До этой спеки аккаунт умел ровно одно — отдать себя целиком вместе с сырыми ответами
+    провайдера. Имя вычислялось из них при каждом чтении и поменять его было нельзя.
+
+paths:
+  /api/v1/user/profile:
+    get:
+      summary: Свой профиль
+      operationId: getProfile
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Профиль вызывающего
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+    patch:
+      summary: Изменить своё имя
+      operationId: updateProfile
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Имя, вписанное здесь, перекрывает имя провайдера и переживает его смену.
+        Пустая строка возвращает профиль к имени провайдера.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ProfilePatch' }
+      responses:
+        '200':
+          description: Профиль после правки
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '422':
+          description: Имя длиннее допустимого или состоит из пробелов.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
+  /api/v1/user:
+    delete:
+      summary: Удалить свою учётную запись
+      operationId: deleteAccount
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Вход закрывается немедленно: действующий токен перестаёт работать и отвечает
+        так же, как токен несуществующего пользователя — обратной дороги нет, и ответ,
+        приглашающий написать в поддержку, обещал бы её.
+
+        Объявления, офферы, отзывы и диалоги остаются. Отзыв, оставленный ушедшим
+        покупателем, — часть рейтинга чужого продавца, и вычёркивать его задним числом
+        значит переписывать чужую репутацию.
+      responses:
+        '204': { description: Учётная запись удалена }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/user/avatar:
+    put:
+      summary: Загрузить фотографию профиля
+      operationId: uploadAvatar
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Уходит в тот же публичный бакет, что и галерея объявлений: аватар видит каждый,
+        кто видит объявление. Повторная загрузка заменяет прежнюю фотографию.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [file]
+              properties:
+                file: { type: string, format: binary }
+      responses:
+        '200':
+          description: Профиль с новой фотографией
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '413':
+          description: Файл больше допустимого.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422':
+          description: Файл не является изображением.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+    delete:
+      summary: Убрать фотографию профиля
+      operationId: deleteAvatar
+      tags: [user]
+      security: [{ bearerAuth: [] }]
+      responses:
+        '200':
+          description: Профиль без фотографии
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Profile' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/auth/logout:
+    post:
+      summary: Выйти
+      operationId: logout
+      tags: [auth]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Отзывает refresh-токен из тела и access-токен из заголовка: оба перестают
+        работать до собственного истечения. Клиент, стирающий токен у себя, не отвечает
+        на вопрос «выйти с чужого устройства», а именно за этим кнопку и нажимают.
+
+        Повторный выход тем же токеном — тоже 204: выход не сообщает, был ли токен
+        действителен, иначе ручка отвечает на вопрос «жив ли этот токен» кому угодно.
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '204': { description: Токены отозваны }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  schemas:
+    Profile:
+      type: object
+      required: [id, name, role, is_guest]
+      properties:
+        id: { type: string, format: uuid }
+        name:
+          type: string
+          nullable: true
+          description: |
+            Своё имя, если вписано; иначе имя из провайдера; иначе null.
+        avatar_url:
+          type: string
+          nullable: true
+          description: Ссылка на фотографию профиля в публичном бакете.
+        role: { type: string }
+        is_guest: { type: boolean }
+        is_verified: { type: boolean }
+        rating: { type: number, nullable: true }
+        reviews_count: { type: integer }
+        deals_count: { type: integer }
+        created_at: { type: string, format: date-time, nullable: true }
+
+    ProfilePatch:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+          maxLength: 60
+          description: Пустая строка возвращает профиль к имени провайдера.

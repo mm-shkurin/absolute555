@@ -52,6 +52,12 @@ async def verify_token(token:str, secret_key:str, algorithm:str):
         raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
 async def refresh_access_token(refresh_token: str):
+    from app.features.auth.services.token_revocation import is_revoked
+
+    if await is_revoked(refresh_token):
+        # Вышедший не обновляется: иначе «выйти» означало бы «выйти до конца часа».
+        raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
+
     try:
         refresh_token_payload = await verify_token(
             refresh_token, 
@@ -72,6 +78,13 @@ async def refresh_access_token(refresh_token: str):
     except Exception:
         raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
+async def _is_revoked(token: str) -> bool:
+    # Импорт внутри: отзыв живёт в фиче авторизации, а она читает эти же утилиты.
+    from app.features.auth.services.token_revocation import is_revoked
+
+    return await is_revoked(token)
+
+
 async def get_current_user(request: Request, token: str = Depends(auth_scheme), db: AsyncSession = Depends(get_db)):
     credentials_exception = AuthenticationError(
         "Could not validate credentials",
@@ -89,6 +102,8 @@ async def get_current_user(request: Request, token: str = Depends(auth_scheme), 
             token = token[7:]
         
         payload = await verify_token(token, jwt_settings.secret_key, jwt_settings.algorithm)
+        if await _is_revoked(token):
+            raise credentials_exception
         id: str = payload.get("id")
         if id is None:
             raise credentials_exception
@@ -100,7 +115,9 @@ async def get_current_user(request: Request, token: str = Depends(auth_scheme), 
     result = await db.execute(select(Users).where(Users.id == id))
     user = result.scalar_one_or_none()
     
-    if user is None:
+    if user is None or user.deleted_at is not None:
+        # Удалённая запись неотличима от несуществующей: обратной дороги нет, и ответ,
+        # приглашающий написать в поддержку, обещал бы её.
         raise credentials_exception
 
     if user.is_blocked:

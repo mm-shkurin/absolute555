@@ -20,6 +20,16 @@ class Users(BaseModel):
     vk_json = Column(JSONB, nullable=True)
     guest_json = Column(JSONB,nullable=True)
     
+    # Своё имя и своя фотография: провайдер заполняет их при первом входе, дальше они
+    # принадлежат человеку. Пустое profile_name уступает имени из провайдера, поэтому
+    # смена имени в Яндексе не затирает то, что человек написал у нас.
+    profile_name = Column(String(60), nullable=True)
+    avatar_key = Column(String, nullable=True)
+
+    # Учётная запись удалена по просьбе владельца. Строки остаются: отзыв, оставленный
+    # ушедшим покупателем, — часть рейтинга чужого продавца.
+    deleted_at = Column(DateTime, nullable=True)
+
     role = Column(String, default=UserRole.USER.value, nullable=False)
     is_verified = Column(Boolean, default=False, nullable=False)
     is_guest = Column(Boolean, default = False)
@@ -50,6 +60,9 @@ class Users(BaseModel):
         Жило двумя одинаковыми копиями в двух сервисах ролей. Принадлежит строке: имя
         собирается из её же колонок и ни от чего больше не зависит.
         """
+        if self.profile_name and self.profile_name.strip():
+            return self.profile_name.strip()
+
         for profile in (self.vk_json, self.yandex_json):
             if isinstance(profile, dict):
                 name = " ".join(
