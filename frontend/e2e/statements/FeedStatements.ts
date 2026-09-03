@@ -39,6 +39,17 @@ export class FeedStatements {
     }
   }
 
+  /** Заглушка держит выбор гостя между переходами: `?guest=1` гасит демо-сессию. */
+  async openAppAsGuest(): Promise<void> {
+    await this.driver.get(`${BASE_URL}/?guest=1`)
+    await waitForVisible(this.driver, 'site-header')
+  }
+
+  async leaveGuestMode(): Promise<void> {
+    await this.driver.get(`${BASE_URL}/?guest=0`)
+    await waitForVisible(this.driver, 'site-header')
+  }
+
   async openFeedFromHeader(): Promise<void> {
     await this.driver.findElement(By.linkText('В наличии')).click()
     await waitForVisible(this.driver, 'feed')

@@ -2,12 +2,13 @@
 //
 // Клиент знает только форму провода. Что показать человеку — решает фича.
 import { send } from '../send'
+import { sendPublic } from '../sendPublic'
 import { BACKEND } from './paths'
 import type { BodyPanel, ThicknessMapWire } from './thicknessContract'
 
 /** Карта читается теми же, кому видно само объявление; иначе сервер отвечает 404. */
 export function fetchThicknessMap(saleCarId: string, signal?: AbortSignal) {
-  return send<ThicknessMapWire>(BACKEND.thickness.map(saleCarId), { signal })
+  return sendPublic<ThicknessMapWire>(BACKEND.thickness.map(saleCarId), { signal })
 }
 
 /** Идемпотентно по адресу панели: повторный вызов перезаписывает замер, а не заводит

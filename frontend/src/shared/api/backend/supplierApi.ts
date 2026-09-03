@@ -1,5 +1,6 @@
 // Профиль поставщика: свой, чужой публичный и очередь модератора.
 import { send } from '../send'
+import { sendPublic } from '../sendPublic'
 import { BACKEND } from './paths'
 import type {
   SupplierProfileUpdate,
@@ -24,7 +25,7 @@ export function submitMyProfile() {
 /** Только опубликованный профиль. Неопубликованный и отсутствующий — один ответ: другой
  *  сказал бы читателю, кто подал заявку и ещё не прошёл проверку. */
 export function fetchSupplierProfile(userId: string, signal?: AbortSignal) {
-  return send<SupplierProfileWire>(BACKEND.supplier.one(userId), { signal })
+  return sendPublic<SupplierProfileWire>(BACKEND.supplier.one(userId), { signal })
 }
 
 export function fetchSupplierQueue(signal?: AbortSignal) {

@@ -1,5 +1,6 @@
 // Отзыв о сделке и публичный профиль продавца.
 import { send } from '../send'
+import { sendPublic } from '../sendPublic'
 import { BACKEND } from './paths'
 import type {
   ReviewCreate,
@@ -36,13 +37,13 @@ export function updateReview(reviewId: string, patch: ReviewPatch) {
 
 /** Профиль открыт гостю: рейтинг — часть решения о покупке. */
 export function fetchSellerProfile(userId: string, signal?: AbortSignal) {
-  return send<SellerProfileWire>(BACKEND.seller.one(userId), { signal })
+  return sendPublic<SellerProfileWire>(BACKEND.seller.one(userId), { signal })
 }
 
 export function fetchSellerReviews(userId: string, page: Page = {}, signal?: AbortSignal) {
-  return send<ReviewPageWire>(paged(BACKEND.seller.reviews(userId), page), { signal })
+  return sendPublic<ReviewPageWire>(paged(BACKEND.seller.reviews(userId), page), { signal })
 }
 
 export function fetchSellerListings(userId: string, page: Page = {}, signal?: AbortSignal) {
-  return send<SellerListingPageWire>(paged(BACKEND.seller.listings(userId), page), { signal })
+  return sendPublic<SellerListingPageWire>(paged(BACKEND.seller.listings(userId), page), { signal })
 }

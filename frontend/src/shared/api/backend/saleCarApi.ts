@@ -3,6 +3,7 @@
 // Клиент знает только форму провода. Ни одного правила о том, что показать человеку,
 // здесь нет — это решает фича.
 import { send } from '../send'
+import { sendPublic } from '../sendPublic'
 import { BACKEND } from './paths'
 import type { FeedFilters, FeedPageWire, RevealedPhone } from './feedContract'
 import type { RejectionLabel } from './moderationContract'
@@ -35,7 +36,7 @@ function feedQuery(filters: FeedFilters): string {
 
 /** Лента по контракту истории 7: страница, точный счётчик, фильтры и сортировка. */
 export function fetchFeed(filters: FeedFilters = {}, signal?: AbortSignal) {
-  return send<FeedPageWire>(`${BACKEND.saleCar.published}${feedQuery(filters)}`, { signal })
+  return sendPublic<FeedPageWire>(`${BACKEND.saleCar.published}${feedQuery(filters)}`, { signal })
 }
 
 /** Телефон — отдельный запрос, а не поле выдачи: полем телефоны всей площадки
@@ -57,7 +58,7 @@ export function fetchMyListings(status?: SaleCarStatus, signal?: AbortSignal) {
 /** Чужое неопубликованное объявление сервер отдаёт как ненайденное — это одно и то же
  *  и снаружи неразличимо намеренно. */
 export function fetchListing(saleCarId: string, signal?: AbortSignal) {
-  return send<SaleCarWire>(BACKEND.saleCar.one(saleCarId), { signal })
+  return sendPublic<SaleCarWire>(BACKEND.saleCar.one(saleCarId), { signal })
 }
 
 /** Черновик заводится пустым: полей в запросе нет, они дописываются правкой. Кроме

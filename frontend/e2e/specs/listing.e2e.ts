@@ -79,4 +79,15 @@ describe('Карточка объявления', () => {
     await listing.selectPanelFromList('rear_right_door')
     await listing.assertPanelDetail('не замерена')
   })
+
+  it('гость видит карточку, но торг за стеной входа', async () => {
+    await feed.openAppAsGuest()
+    await feed.openFeedFromHeader()
+    await feed.openFirstCard()
+    await listing.assertViewerMode('guest')
+    await listing.assertSignInWallOnOffer()
+    // Гостевой режим держится в заглушке между переходами — снимаем, чтобы следующий
+    // файл сценариев не начинался гостем.
+    await feed.leaveGuestMode()
+  })
 })

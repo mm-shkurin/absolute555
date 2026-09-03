@@ -117,4 +117,12 @@ export class ListingStatements {
     )
     expect(await textOf(this.driver, 'revealed-phone')).toContain('+7')
   }
+
+  // Гость упирается в стену входа: кнопки на месте, но ведут они не к торгу, а на вход.
+  // Проверяется исход — адрес провайдера, — а не то, что кнопка нажалась.
+  async assertSignInWallOnOffer(): Promise<void> {
+    const side = await waitForVisible(this.driver, 'listing-side')
+    await clickElement(this.driver, await side.findElement(By.css('[data-testid="offer-price"]')))
+    await this.driver.wait(async () => (await this.driver.getCurrentUrl()).includes('/auth/'), 8000)
+  }
 }
