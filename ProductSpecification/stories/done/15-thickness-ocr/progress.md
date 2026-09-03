@@ -14,6 +14,13 @@
 - [x] api-03 a correction is recorded against what was read
 - [x] api-04 the feed filters by a complete map
 
+## Tier 1 — Frontend
+
+- [x] fe-01 an empty value field leaves the reading to the server instead of sending a zero
+- [x] fe-02 a correction is shown together with what was read from the device
+- [x] fe-03 a reading that was not corrected is not called a correction
+- [x] fe-04 the feed filter keeps only listings with a complete map
+
 ## Отложено
 
 - [S] подъём объявления с полной картой в сортировке — правило «выше чего» не задано

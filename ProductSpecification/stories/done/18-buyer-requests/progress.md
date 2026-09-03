@@ -25,6 +25,14 @@
 - [x] sec-02 a stranger reads no responses
 - [x] sec-03 somebody elses request is not closed
 
+## Tier 1 — Frontend
+
+- [x] fe-01 a request shows its responses with price and term, the cheapest marked in place
+- [x] fe-02 the author closes their own request and it stops being open
+- [x] fe-03 the new-request form requires make, model and budget, and takes them from the catalogue
+- [x] fe-04 a request over the limit says how many are open and what to do about it
+- [x] fe-05 the demand feed is read by a supplier only
+
 ## Отложено
 
 - [S] модерация заявок — вместо неё лимит открытых

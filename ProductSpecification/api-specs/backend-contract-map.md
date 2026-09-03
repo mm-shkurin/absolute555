@@ -27,13 +27,13 @@
 | `PATCH /offer/{id}/status` | ответ на предложение | `offerApi.answerOffer` |
 | `GET /role/*`, `PUT /role/users/{id}/role`, заявки на роль | роли и заявки | `accountApi` |
 | `GET /task/sse/{id}` | `text/event-stream` о распознавании | `listingStream.openListingStream` |
-| `GET`, `PUT`, `DELETE /sale_car/{id}/thickness…` | карта замеров толщиномера | клиента ещё нет |
-| `GET|PUT /supplier/me`, `POST /supplier/me/submit`, `GET /supplier/{id}` | профиль поставщика | клиента ещё нет |
-| `GET /moderation/suppliers`, `.../approve`, `.../reject` | очередь профилей | клиента ещё нет |
-| `POST|GET /request`, `/request/my`, `/request/{id}/close` | заявки покупателя | клиента ещё нет |
-| `PUT /request/{id}/response`, `GET /request/{id}/responses` | отклики поставщиков | клиента ещё нет |
-| `POST /offer/{id}/review`, `PATCH /review/{id}` | отзыв по закрытой сделке | клиента ещё нет |
-| `GET /seller/{id}`, `/seller/{id}/reviews`, `/seller/{id}/listings` | публичный профиль продавца | клиента ещё нет |
+| `GET`, `PUT`, `DELETE /sale_car/{id}/thickness…` | карта замеров толщиномера | `thicknessApi` |
+| `GET|PUT /supplier/me`, `POST /supplier/me/submit`, `GET /supplier/{id}` | профиль поставщика | `supplierApi` |
+| `GET /moderation/suppliers`, `.../approve`, `.../reject` | очередь профилей | `supplierApi` |
+| `POST|GET /request`, `/request/my`, `/request/{id}/close` | заявки покупателя | `requestApi` |
+| `PUT /request/{id}/response`, `GET /request/{id}/responses` | отклики поставщиков | `requestApi` |
+| `POST /offer/{id}/review`, `PATCH /review/{id}` | отзыв по закрытой сделке | `reviewApi` |
+| `GET /seller/{id}`, `/seller/{id}/reviews`, `/seller/{id}/listings` | публичный профиль продавца | `reviewApi`, `sellerApi` |
 
 ## Расхождения с тем, что фронт уже предполагает
 
@@ -85,6 +85,29 @@
 рейтинг продавца; публичный профиль чужого продавца; очередь модерации как отдельная выдача; отзыв своего
 предложения — `DELETE /offer/{id}` и `GET /offer/{id}/with-details` в `app/features/offer/api/offer.py`
 лежат внутри строкового литерала и не зарегистрированы.
+
+## Спека отставала от сервера — дописано фронтом
+
+Обе стороны кодировали поле, которого в YAML не было; расхождение нашлось гейтом
+`check_contract_types.py`, а не в проде. Дописано в тех же коммитах, что и клиенты:
+
+- сводка `thickness` в `SaleCar` и `FeedCard`, параметр ленты `with_thickness_map`
+  (`sale_car_draft.yaml`, `sale_car_feed.yaml`);
+- поля привоза `listing_kind`, `import_country`, `delivery_days`, `turnkey_price`,
+  тело создания черновика `DraftKind` и параметр ленты `kind` — там же.
+
+## Чего сервер не отдаёт, а экрану нужно
+
+- **Одной заявки по адресу нет.** `GET /request/{id}` в контракте отсутствует: автор
+  читает свои заявки списком, поставщик — ленту спроса, и страница ищет заявку там же,
+  где её видит вызывающий. Не нашлось — значит она этому человеку не видна.
+- **Имени поставщика в отклике нет** — только `supplier_id`. Карточка отклика ведёт на
+  витрину поставщика, где имя, рейтинг и условия и живут.
+- **Ленты поставщиков нет ни в одной спеке.** `/suppliers` — единственный выдуманный
+  путь, который ещё жив в заглушке; покупатель находит поставщика через его позиции и
+  заявки, а список всех поставщиков никто не заказывал.
+- **Сводки кабинета нет**: профиль собирается четырьмя запросами (`/user/profile`,
+  свои объявления, свои заявки на роль, свои заявки на привоз).
 
 ## Что закрылось на сервере
 

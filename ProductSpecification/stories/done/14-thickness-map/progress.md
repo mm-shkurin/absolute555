@@ -38,6 +38,15 @@
 
 - [x] inf-01 one measurement per panel, enforced by the database
 
+## Tier 1 — Frontend
+
+- [x] fe-01 the map colours a panel by the status the server sent, not by a threshold of its own
+- [x] fe-02 an unmeasured panel stays in the list and says so
+- [x] fe-03 the coverage counter and completeness come off the wire, not from counting rows
+- [x] fe-04 a seller records a measurement and the panel is coloured on the schematic
+- [x] fe-05 a measurement without a photograph never becomes a request
+- [x] fe-06 a value outside 1..3000 is refused before the request
+
 ## Отложено
 
 - [S] tier3 — записаны в `tests/scenarios.md`

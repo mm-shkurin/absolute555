@@ -23,6 +23,14 @@
 
 - [x] sec-01 a user without the role reaches no profile routes
 
+## Tier 1 — Frontend
+
+- [x] fe-01 a filled profile goes to the queue and stops being editable there
+- [x] fe-02 a rejected profile shows the reason beside the form
+- [x] fe-03 the moderator cannot reject a profile without a reason
+- [x] fe-04 the public page composes the shopfront, the seller rating and the listings
+- [x] fe-05 a profile with no name is signed by the person behind it
+
 ## Отложено
 
 - [S] компания с несколькими сотрудниками — отдельная история
