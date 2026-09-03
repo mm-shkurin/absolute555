@@ -1,0 +1,263 @@
+openapi: 3.0.3
+info:
+  title: Admin console — people, roles, blocks, audit
+  version: 1.0.0
+  description: |
+    Учётные записи глазами того, кто разбирает жалобы, и того, кто раздаёт роли.
+
+    Граница между ними проходит по власти над ролями: manager видит людей, карточку и
+    сводку и закрывает доступ нарушителю; смена роли и журнал действий остаются у admin.
+    Это продолжение правила истории 13 — manager не выдавал роли своего уровня и выше,
+    здесь он не выдаёт их вовсе.
+
+    Блокировка закрывает вход и всю активность разом. Мягкий вариант — «читать можно,
+    писать нельзя» — потребовал бы правила в каждой пишущей ручке, а их полтора десятка;
+    пропущенная означает дыру, которую находит нарушитель, а не тест.
+
+paths:
+  /api/v1/role/users:
+    get:
+      summary: Люди, страницей
+      operationId: listUsers
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Прежняя форма отдавала всю таблицу одним массивом. Это страница: при плановых
+        тысячах записей ответ на всю базу ради одного экрана — не форма, а авария,
+        отложенная до роста.
+      parameters:
+        - name: query
+          in: query
+          schema: { type: string }
+          description: Поиск по имени
+        - name: role
+          in: query
+          schema: { $ref: 'roles_requests.yaml#/components/schemas/UserRole' }
+        - name: blocked
+          in: query
+          schema: { type: boolean }
+          description: Только заблокированные или только доступные
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: page_size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 100, default: 20 }
+      responses:
+        '200':
+          description: Страница списка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserPage' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/role/users/{user_id}:
+    get:
+      summary: Карточка человека
+      operationId: getUserCard
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Кто это, что у него есть и закрыт ли ему доступ
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserCard' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/role/users/{user_id}/audit:
+    get:
+      summary: Журнал действий над учётной записью
+      operationId: listUserAudit
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Только admin, и только чтение. Запись, которую можно поправить или стереть, не
+        отвечает на вопрос «кто это сделал» — а именно на него журнал и заводится.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Записи, новые первыми
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/AuditEntry' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/role/users/{user_id}/block:
+    post:
+      summary: Закрыть доступ
+      operationId: blockUser
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccessChange' }
+      responses:
+        '200':
+          description: Доступ закрыт
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserAccess' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: |
+            manager не закрывает доступ manager и admin: власть над равным — тот же тихий
+            путь наверх, который история 13 закрыла у заявок.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+        '409':
+          description: |
+            Себя заблокировать нельзя, и уже заблокированного второй раз тоже: экран
+            показал бы состоявшимся действие, которого нет в журнале.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/role/users/{user_id}/unblock:
+    post:
+      summary: Вернуть доступ
+      operationId: unblockUser
+      tags: [admin]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AccessChange' }
+      responses:
+        '200':
+          description: Доступ вернулся, объявления снова видны
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserAccess' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+        '409':
+          description: Доступ и так открыт.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+
+components:
+  securitySchemes:
+    bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
+
+  schemas:
+    UserSummary:
+      type: object
+      required: [id, role, is_verified, is_blocked, created_at]
+      properties:
+        id: { type: string, format: uuid }
+        role: { $ref: 'roles_requests.yaml#/components/schemas/UserRole' }
+        is_verified: { type: boolean }
+        is_blocked: { type: boolean }
+        created_at: { type: string, format: date-time }
+        name: { type: string, nullable: true }
+        platform:
+          type: string
+          nullable: true
+          description: Чем человек вошёл — yandex или vk.
+
+    UserPage:
+      type: object
+      required: [items, total, page, page_size]
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/UserSummary' }
+        total: { type: integer }
+        page: { type: integer }
+        page_size: { type: integer }
+
+    UserCard:
+      type: object
+      required: [id, role, is_verified, is_blocked, created_at, listings_total, complaints_total]
+      properties:
+        id: { type: string, format: uuid }
+        role: { $ref: 'roles_requests.yaml#/components/schemas/UserRole' }
+        is_verified: { type: boolean }
+        is_blocked: { type: boolean }
+        blocked_reason: { type: string, nullable: true }
+        blocked_at: { type: string, format: date-time, nullable: true }
+        created_at: { type: string, format: date-time }
+        name: { type: string, nullable: true }
+        platform: { type: string, nullable: true }
+        listings_total:
+          type: integer
+          description: Сколько объявлений завёл.
+        complaints_total:
+          type: integer
+          description: Сколько жалоб на его объявления.
+
+    UserAccess:
+      type: object
+      required: [id, is_blocked]
+      properties:
+        id: { type: string, format: uuid }
+        is_blocked: { type: boolean }
+        blocked_reason: { type: string, nullable: true }
+        blocked_at: { type: string, format: date-time, nullable: true }
+
+    AccessChange:
+      type: object
+      required: [reason]
+      properties:
+        reason:
+          type: string
+          minLength: 1
+          description: |
+            Обязательна. Причина — то, что человек увидит на экране отказа, и то, чем
+            спор «за что» разрешается позже.
+
+    AuditEntry:
+      type: object
+      required: [id, action, actor_id, created_at, reason]
+      properties:
+        id: { type: string, format: uuid }
+        action:
+          type: string
+          enum: [role_changed, blocked, unblocked]
+        actor_id:
+          type: string
+          format: uuid
+          description: Кто это сделал.
+        actor_name: { type: string, nullable: true }
+        reason: { type: string }
+        details:
+          type: string
+          nullable: true
+          description: Для смены роли — из какой в какую.
+        created_at: { type: string, format: date-time }
