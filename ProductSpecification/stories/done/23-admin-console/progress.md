@@ -56,4 +56,4 @@
 
 ## Tier 2 — Integration
 
-- [~] int-01 from complaint to closed door
+- [x] int-01 from complaint to closed door

@@ -15,6 +15,7 @@ import jwt
 import pytest
 
 from tests.conftest import run_sql
+from tests.test_complaints import published  # noqa: F401 — фикстура публикации истории 9
 
 
 def _id_of(headers) -> str:
@@ -226,6 +227,39 @@ def test_should_show_the_card_a_moderator_judges_by(client, moderator, seller):
     assert body["is_blocked"] is False
     assert body["listings_total"] == 0
     assert body["complaints_total"] == 0
+
+
+def test_should_walk_from_a_complaint_to_a_closed_door(
+    client, admin, seller, moderator, published, signed_in
+):
+    """int-01. Разбор жалобы заканчивается закрытой дверью, а не снятым объявлением.
+
+    Сценарий целиком: жалоба, снятие с публикации, блокировка автора. Без последнего шага
+    человек публикует заново, и модерация ходит по кругу.
+    """
+    listing_id = published()
+    complaint = client.post(
+        f"/api/v1/sale_car/{listing_id}/complaints",
+        headers=signed_in(),
+        json={"reason": "photos_of_another_car", "text": "фотографии чужой машины"},
+    )
+    assert complaint.status_code in (200, 201), complaint.text
+
+    taken_down = client.post(
+        f"/api/v1/moderation/listings/{listing_id}/unpublish",
+        headers=moderator,
+        json={"label": "photos_of_another_car", "comment": "фотографии не от этой машины"},
+    )
+    assert taken_down.status_code == 200, taken_down.text
+
+    closed = _block(client, admin, _id_of(seller), reason="фотографии чужих машин")
+    assert closed.status_code == 200, closed.text
+
+    assert client.get("/api/v1/user/profile", headers=seller).status_code == 403
+    feed = client.get("/api/v1/sale_car/list").json()
+    assert listing_id not in [item["sale_car_id"] for item in feed["items"]]
+    journal = client.get(f"/api/v1/role/users/{_id_of(seller)}/audit", headers=admin).json()
+    assert journal[0]["reason"] == "фотографии чужих машин"
 
 
 def test_should_take_the_console_from_a_blocked_administrator(client, admin, signed_in):
