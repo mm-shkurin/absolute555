@@ -4,8 +4,12 @@
 // этот — что нажатие доходит до сервера и меняет там состояние. Первый зелён и на
 // фикстурах; второй ловит ровно то, чего первый не видит.
 //
+// Расширение `.live.ts`, а не `.e2e.ts`, — намеренно: общий прогон идёт против собранного
+// приложения на фикстурах, а этому нужен поднятый стек и права на базу. В общем списке он
+// падал бы по причине, не имеющей отношения к тому, что проверяет.
+//
 // Запускается вручную против поднятого стека:
-//   E2E_BASE_URL=http://localhost npx vitest run --config e2e/vitest.config.ts e2e/specs/adminLive.e2e.ts
+//   E2E_BASE_URL=http://localhost npx vitest run --config e2e/vitest.live.config.ts
 import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { WebDriver } from 'selenium-webdriver'
 import { BASE_URL, DESKTOP, clickElement, openBrowser, resize, textOf, waitForVisible } from '../driver'
