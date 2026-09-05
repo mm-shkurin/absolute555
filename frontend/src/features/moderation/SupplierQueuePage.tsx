@@ -40,8 +40,8 @@ export function SupplierQueuePage() {
           <ModerationNav />
           <PageSection>
             <PageHeading
-              title="Профили поставщиков"
-              sub="Опубликованный профиль виден покупателям и подписывает позиции под привоз."
+              title="Витрины поставщиков"
+              sub="Витрину отправляет тот, кому роль уже выдана. Сама заявка на роль решается в соседнем разделе."
             />
             {query.isPending ? <ListSkeleton /> : null}
             {query.error ? (
@@ -58,7 +58,9 @@ export function SupplierQueuePage() {
             ) : null}
             {!query.isPending && !query.error && items.length === 0 ? (
               <EmptyNotice title="Очередь пуста">
-                Профили появятся здесь, как только поставщики отправят их на проверку.
+                Здесь витрины уже одобренных поставщиков, отправленные на проверку. Тот,
+                кто только просится в поставщики, ждёт в разделе «Заявки в поставщики» —
+                это разные шаги, и решение по одному не меняет другой.
               </EmptyNotice>
             ) : null}
             {items.map((profile) => (

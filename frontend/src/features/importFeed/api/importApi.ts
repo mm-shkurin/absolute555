@@ -1,8 +1,6 @@
 // Направление «под заказ»: позиции поставщиков, сами поставщики и заявки покупателей.
 // Три разные сущности в одной ленте, потому что покупателю они отвечают на один вопрос —
 // как получить машину, которой в стране ещё нет.
-import { API } from '../../../shared/api/endpoints'
-import { send } from '../../../shared/api/send'
 import { fetchFeed } from '../../../shared/api/backend/saleCarApi'
 import { fetchOpenRequests } from '../../../shared/api/backend/requestApi'
 import type { BuyerRequestWire } from '../../../shared/api/backend/requestContract'
@@ -32,18 +30,16 @@ export interface ImportFeedWire {
   requests_total: number
 }
 
-/** Заявки покупателей — тоже настоящая ручка (история 18); её читает роль importer,
- *  и постороннему сервер отвечает 403.
+/** Лента направления «под заказ» целиком: машины и заявки покупателей.
  *
- *  Машины под привоз приезжают настоящей лентой — это те же объявления, только другого
- *  канала (история 17). Поставщики и заявки ещё выдуманы: их ручки ждут историй 16 и 18,
- *  и смешивать одно с другим в одном запросе значит потерять, что из этого проверяемо. */
-export async function fetchImportFeed(
-  kind: ImportKind,
-  signal?: AbortSignal,
-): Promise<ImportFeedWire> {
-  const [invented, cars, requests] = await Promise.all([
-    send<ImportFeedWire>(`${API.listings.collection}?channel=import&kind=${kind}`, { signal }),
+ *  Машины — та же лента объявлений, только другого канала (история 17). Заявки читает
+ *  роль поставщика (история 18), остальным сервер отвечает 403, и вместо отказа они
+ *  получают пустой список.
+ *
+ *  Вкладка выбирается на экране, а не запросом: обе выдачи невелики, приходят разом, и
+ *  переключение вкладок не гоняет сеть. */
+export async function fetchImportFeed(signal?: AbortSignal): Promise<ImportFeedWire> {
+  const [cars, requests] = await Promise.all([
     fetchFeed({ kind: 'import' }, signal),
     // Ленту спроса читает только поставщик. Остальным она не показывается вовсе — иначе
     // покупатель увидел бы, с кем он в очереди.
@@ -51,11 +47,18 @@ export async function fetchImportFeed(
       ? fetchOpenRequests(1, signal)
       : Promise.resolve({ items: [], total: 0, page: 1, size: 0 }),
   ])
+
   return {
-    ...invented,
     cars: cars.items.map(fromFeedCard),
     cars_total: cars.total,
     requests: requests.items,
     requests_total: requests.total,
+    // Витрины одобренных поставщиков сервер списком не отдаёт: есть страница одного
+    // (`GET /supplier/{user_id}`) и очередь модератора, а ленты нет. Пустой список
+    // честнее выдуманного запроса, который до этой правки уходил на `/api/v1/listings`
+    // и получал 404 — Promise.all падал, и раздел «Под заказ» не открывался ни у кого,
+    // включая вкладку с машинами, которая работает. Записано в backend-contract-map.md.
+    suppliers: [],
+    suppliers_total: 0,
   }
 }

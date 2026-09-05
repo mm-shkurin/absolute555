@@ -23,8 +23,8 @@ export function ImportFeedPage({ signedIn = false }: { signedIn?: boolean }) {
   const [kind, setKind] = useState<ImportKind>('cars')
   const now = new Date()
   const query = useQuery({
-    queryKey: ['import-feed', kind],
-    queryFn: ({ signal }) => fetchImportFeed(kind, signal),
+    queryKey: ['import-feed'],
+    queryFn: ({ signal }) => fetchImportFeed(signal),
   })
   const data = query.data ?? null
 

@@ -11,8 +11,8 @@ const SECTIONS = [
   { to: ROUTES.adminSummary, label: 'Сводка', end: true },
   { to: ROUTES.moderationQueue, label: 'Объявления' },
   { to: ROUTES.moderationComplaints, label: 'Жалобы' },
-  { to: ROUTES.moderationSuppliers, label: 'Поставщики' },
-  { to: ROUTES.moderationRoles, label: 'Заявки на роль' },
+  { to: ROUTES.moderationSuppliers, label: 'Витрины поставщиков' },
+  { to: ROUTES.moderationRoles, label: 'Заявки в поставщики' },
   { to: ROUTES.adminPeople, label: 'Люди' },
 ]
 

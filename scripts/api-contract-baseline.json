@@ -1,7 +1,3 @@
 {
-  "not_in_contract": [
-    "/api/v1/import-requests/{}",
-    "/api/v1/import-requests/{}/responses",
-    "/api/v1/listings"
-  ]
+  "not_in_contract": []
 }
