@@ -11,6 +11,7 @@ const empty: ImportFeedWire = {
   cars_total: 34,
   suppliers_total: 7,
   requests_total: 12,
+  requests_locked: false,
 }
 
 describe('лента под заказ', () => {

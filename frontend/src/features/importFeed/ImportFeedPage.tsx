@@ -72,7 +72,28 @@ export function ImportFeedPage({ signedIn = false }: { signedIn?: boolean }) {
               )
             ) : null}
 
-            {data && kind !== 'cars' ? (
+            {data && kind === 'requests' && data.requests_locked ? (
+              <EmptyNotice title="Лента заявок открыта поставщикам">
+                Здесь покупатели описывают, что нужно привезти, и поставщики отвечают
+                ценой под ключ. Свои заявки видно в профиле, а чужие — тем, кто по ним
+                работает: иначе покупатель видел бы, с кем он в очереди.
+              </EmptyNotice>
+            ) : null}
+
+            {data && kind === 'requests' && !data.requests_locked && data.requests.length === 0 ? (
+              <EmptyNotice title="Заявок пока нет">
+                Покупатели ещё ничего не просили привезти.
+              </EmptyNotice>
+            ) : null}
+
+            {data && kind === 'suppliers' && data.suppliers.length === 0 ? (
+              <EmptyNotice title="Витрин поставщиков пока не видно">
+                Одобренные поставщики публикуют позиции на вкладке «Машины под привоз».
+                Отдельного списка витрин сервер пока не отдаёт.
+              </EmptyNotice>
+            ) : null}
+
+            {data && kind !== 'cars' && !(kind === 'requests' && data.requests_locked) ? (
               <div className={styles.grid}>
                 {kind === 'suppliers'
                   ? data.suppliers.map((supplier) => (

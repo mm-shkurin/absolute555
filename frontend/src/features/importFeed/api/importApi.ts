@@ -4,7 +4,6 @@
 import { fetchFeed } from '../../../shared/api/backend/saleCarApi'
 import { fetchOpenRequests } from '../../../shared/api/backend/requestApi'
 import type { BuyerRequestWire } from '../../../shared/api/backend/requestContract'
-import { currentRole } from '../../../shared/session/authSession'
 import { fromFeedCard } from '../../../shared/domain/listing/fromFeedCard'
 import type { ListingWire } from '../../../shared/domain/listing/listingWire'
 
@@ -28,6 +27,10 @@ export interface ImportFeedWire {
   cars_total: number
   suppliers_total: number
   requests_total: number
+  /** Ленту спроса сервер открывает не всем. Пустой список и закрытый раздел — разные
+   *  вещи, и экран обязан их различать: иначе покупатель видит ноль заявок там, где их
+   *  шестьдесят четыре, и думает, что сломалось. */
+  requests_locked: boolean
 }
 
 /** Лента направления «под заказ» целиком: машины и заявки покупателей.
@@ -39,20 +42,22 @@ export interface ImportFeedWire {
  *  Вкладка выбирается на экране, а не запросом: обе выдачи невелики, приходят разом, и
  *  переключение вкладок не гоняет сеть. */
 export async function fetchImportFeed(signal?: AbortSignal): Promise<ImportFeedWire> {
+  // Кому лента спроса открыта, решает сервер, а не клиент: раньше здесь стояло
+  // сравнение роли с `importer`, и модератор с администратором не спрашивали её вовсе —
+  // экран показывал им ноль заявок при шестидесяти четырёх открытых.
   const [cars, requests] = await Promise.all([
     fetchFeed({ kind: 'import' }, signal),
-    // Ленту спроса читает только поставщик. Остальным она не показывается вовсе — иначе
-    // покупатель увидел бы, с кем он в очереди.
-    currentRole() === 'importer'
-      ? fetchOpenRequests(1, signal)
-      : Promise.resolve({ items: [], total: 0, page: 1, size: 0 }),
+    fetchOpenRequests(1, signal).catch(() => null),
   ])
 
   return {
     cars: cars.items.map(fromFeedCard),
     cars_total: cars.total,
-    requests: requests.items,
-    requests_total: requests.total,
+    requests: requests?.items ?? [],
+    requests_total: requests?.total ?? 0,
+    // Отказ сервера — это «не для вас», а не сбой: покупателю лента спроса закрыта
+    // намеренно, иначе он увидел бы, с кем стоит в очереди.
+    requests_locked: requests === null,
     // Витрины одобренных поставщиков сервер списком не отдаёт: есть страница одного
     // (`GET /supplier/{user_id}`) и очередь модератора, а ленты нет. Пустой список
     // честнее выдуманного запроса, который до этой правки уходил на `/api/v1/listings`
