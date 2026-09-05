@@ -2,6 +2,7 @@
 // и ровно это в ней и есть: какая роль, зачем и что человек добавил от себя. Условия
 // поставки (страны, марки, сроки, предоплата) — профиль поставщика, история 16: их
 // заполняют после одобрения, и в заявке их нет ни на сервере, ни на экране.
+import { dayAndMonth } from '../../../shared/format/dates'
 import type { RoleRequestListItemWire } from '../../../shared/api/backend/accountContract'
 import type { UserRole } from '../../../shared/api/backend/accountContract'
 
@@ -15,7 +16,6 @@ export interface RoleApplicationView {
   answered: boolean
 }
 
-const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
 
 const ROLE: Record<UserRole, string> = {
   guest: 'гость',
@@ -36,7 +36,7 @@ export function toRoleApplication(wire: RoleRequestListItemWire): RoleApplicatio
     id: wire.id,
     // Имени может не быть: человек входил через провайдера, который его не отдал.
     name: wire.user_name ?? 'Без имени',
-    meta: [`заявка от ${DATE.format(new Date(wire.created_at))}`, STATUS[wire.status]].join(' · '),
+    meta: [`заявка от ${dayAndMonth(wire.created_at)}`, STATUS[wire.status]].join(' · '),
     role: ROLE[wire.requested_role] ?? wire.requested_role,
     reason: wire.reason,
     about: wire.additional_info,

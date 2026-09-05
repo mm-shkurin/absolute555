@@ -1,6 +1,7 @@
 // Перевод карточки с провода в то, что видит человек, и одно решение: в каком режиме
 // показывать правую колонку. Режим считается здесь, а не в разметке — иначе три экрана
 // мокапа превратились бы в три ветки JSX, разъезжающиеся при первой же правке.
+import { dayAndMonth } from '../../../shared/format/dates'
 import { formatAmount, formatPrice } from '../../../shared/format/money'
 import { dealsLabel, stars } from '../../../shared/format/rating'
 import type { ListingDetailWire, OfferWire } from '../api/listingApi'
@@ -128,11 +129,11 @@ export function toListingDetailView(wire: ListingDetailWire): ListingDetailView 
       wire.seller.rating === null
         ? 'пока без отзывов'
         : `${wire.seller.rating.toFixed(1).replace('.', ',')} · ${dealsLabel(wire.seller.deals_count)}`,
-    soldOn: wire.sold_at ? DATE.format(new Date(wire.sold_at)) : null,
+    soldOn: dayAndMonth(wire.sold_at) || null,
     phoneAvailable: wire.phone_available,
     chatAllowed: wire.chat_allowed,
-    publishedOn: wire.published_at ? DATE.format(new Date(wire.published_at)) : null,
-    decidedOn: wire.moderation?.decided_at ? DATE.format(new Date(wire.moderation.decided_at)) : null,
+    publishedOn: dayAndMonth(wire.published_at) || null,
+    decidedOn: dayAndMonth(wire.moderation?.decided_at) || null,
     decidedBy: wire.moderation?.decided_by?.name ?? null,
     stats: [
       { label: 'показов', value: formatAmount(wire.views_count) },

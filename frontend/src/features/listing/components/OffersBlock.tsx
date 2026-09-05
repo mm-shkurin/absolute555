@@ -1,14 +1,21 @@
-// Лента предложений по цене. Гостю она закрыта: чужой торг — это и есть то, ради чего
-// стоит войти, и открытый список убрал бы единственную причину.
-import type { OfferRow } from '../logic/listingDetail'
+// Лента предложений по цене.
+//
+// Закрыта она двум разным людям и по разным причинам, а текст был один — и вошедшему
+// покупателю предлагал авторизоваться, хотя он уже вошёл. Гостю закрыт вход: чужой торг
+// и есть повод войти. Вошедшему чужие предложения не отдаёт сервер — их видит только
+// продавец (история 10), и звать его «авторизоваться» значит обещать то, чего вход
+// не даст.
+import type { OfferRow, ViewerMode } from '../logic/listingDetail'
 import styles from './SidePanel.module.css'
 
-export function OffersBlock({ offers }: { offers: OfferRow[] | null }) {
+export function OffersBlock({ offers, mode }: { offers: OfferRow[] | null; mode: ViewerMode }) {
   if (offers === null) {
     return (
       <div className={styles.locked} data-testid="offers-locked">
         <div className={styles.lockedLabel}>ЗАКРЫТО</div>
-        Авторизуйтесь, чтобы увидеть предложения других покупателей
+        {mode === 'guest'
+          ? 'Авторизуйтесь, чтобы увидеть предложения других покупателей'
+          : 'Предложения других покупателей видит только продавец'}
       </div>
     )
   }

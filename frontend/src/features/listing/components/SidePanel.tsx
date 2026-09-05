@@ -56,7 +56,7 @@ export function SidePanel({ view, mode, offers, phone, handlers }: Props) {
 
       <div className={listing.block}>
         <h3>Предложения по цене</h3>
-        <OffersBlock offers={offers} />
+        <OffersBlock offers={offers} mode={mode} />
       </div>
 
       <SellerBlock view={view} />

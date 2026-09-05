@@ -1,5 +1,6 @@
 // Профиль в том виде, в каком он читается: строка под именем, четыре плитки разделов и
 // состояние заявки на роль поставщика.
+import { dayAndMonth } from '../../../shared/format/dates'
 import { formatPrice, pluralize } from '../../../shared/format/money'
 import { ratingLine, reviewsLabel, ratingValue } from '../../../shared/format/rating'
 import type { StatusTone } from '../../../shared/ui/StatusBadge'
@@ -38,7 +39,6 @@ export interface ProfileView {
   requests: ImportRequestView[]
 }
 
-const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
 
 export function toProfileView(wire: ProfileWire): ProfileView {
   return {
@@ -89,7 +89,7 @@ function supplierState(
   status: SupplierApplicationStatus,
   appliedAt: string | null,
 ): SupplierStateView {
-  const since = appliedAt ? ` с ${DATE.format(new Date(appliedAt))}` : ''
+  const since = appliedAt && dayAndMonth(appliedAt) ? ` с ${dayAndMonth(appliedAt)}` : ''
   if (status === 'pending')
     return {
       badge: `заявка на рассмотрении${since}`,
@@ -106,7 +106,7 @@ function supplierState(
 
 function toRequestView(wire: ImportRequestWire): ImportRequestView {
   const budget = wire.budget_max === null ? null : `бюджет до ${formatPrice(wire.budget_max)}`
-  const created = `создана ${DATE.format(new Date(wire.created_at))}`
+  const created = `создана ${dayAndMonth(wire.created_at)}`
   return {
     id: wire.id,
     title: wire.title,

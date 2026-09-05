@@ -1,4 +1,5 @@
 // Заявка и отклики в читаемом виде.
+import { dayAndMonth } from '../../../shared/format/dates'
 import { formatPrice, pluralize } from '../../../shared/format/money'
 import type {
   BuyerRequestWire,
@@ -31,7 +32,6 @@ export interface BidView {
   cheapest: boolean
 }
 
-const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
 const DASH = '—'
 
 export function requestTitle(wire: BuyerRequestWire): string {
@@ -42,7 +42,7 @@ export function toRequestView(wire: BuyerRequestWire): RequestView {
   return {
     id: wire.request_id,
     title: requestTitle(wire),
-    subtitle: `Заявка на привоз · создана ${DATE.format(new Date(wire.created_at))}`,
+    subtitle: `Заявка на привоз · создана ${dayAndMonth(wire.created_at)}`,
     active: wire.status === 'open',
     specs: [
       { label: 'Марка и модель', value: requestTitle(wire) },

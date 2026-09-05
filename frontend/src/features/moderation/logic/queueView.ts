@@ -1,4 +1,5 @@
 // Очередь модерации: что модератор видит в строке и на чём задерживает взгляд.
+import { hoursAndMinutes } from '../../../shared/format/dates'
 import { formatPrice, pluralize } from '../../../shared/format/money'
 import { ratingValue } from '../../../shared/format/rating'
 import type { StatusTone } from '../../../shared/ui/StatusBadge'
@@ -19,7 +20,6 @@ export interface ReviewCardView {
   facts: { label: string; value: string; mono?: boolean }[]
 }
 
-const TIME = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
 export function toQueueRow(wire: QueueItemWire): QueueRowView {
   return {
@@ -53,7 +53,10 @@ function metaLine(wire: QueueItemWire): string {
       ? `${wire.seller_name} · новый продавец`
       : `${wire.seller_name} · рейтинг ${ratingValue(wire.seller_rating)}`,
   )
-  parts.push(`отправлено ${TIME.format(new Date(wire.submitted_at))}`)
+    // Момент отправки бывает пустым: объявление могло попасть на проверку в обход
+  // мастера. Пустая строка вместо времени — не поломка; поломкой было падение экрана.
+  const sentAt = hoursAndMinutes(wire.submitted_at)
+  if (sentAt) parts.push(`отправлено ${sentAt}`)
   parts.push(`${wire.photos_count} ${pluralize(wire.photos_count, 'фото', 'фото', 'фото')}`)
   parts.push(
     wire.measured_panels === 0

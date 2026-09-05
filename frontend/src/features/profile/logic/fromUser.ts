@@ -3,6 +3,7 @@
 // `GET /user/profile` отдаёт строку пользователя: идентификаторы провайдеров, их сырые
 // ответы, роль и даты. Ни рейтинга, ни числа сделок, ни счётчиков разделов там нет —
 // отзывы это история 12, а сводка кабинета вообще не сделана.
+import { monthAndYear } from '../../../shared/format/dates'
 import type {
   RoleRequestWire,
   UserWire,
@@ -10,7 +11,6 @@ import type {
 import type { BuyerRequestWire } from '../../../shared/api/backend/requestContract'
 import type { ProfileWire, SupplierApplicationStatus } from '../api/profileApi'
 
-const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' })
 
 /** Имя, каким его назвал сервер: своё, если человек его вписал, иначе провайдерское
  *  (история 21 — правило живёт на строке, а не здесь). Разбор `yandex_json` остался
@@ -45,7 +45,7 @@ export function toProfileWire(
     rating: null,
     deals_count: 0,
     reviews_count: 0,
-    member_since: user.created_at ? MONTH.format(new Date(user.created_at)) : '',
+    member_since: monthAndYear(user.created_at),
     listings_count: listings.total,
     rejected_listings: listings.rejected,
     // Счётчиков непрочитанного и предложений сервер не считает; их экраны сами покажут,

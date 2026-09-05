@@ -1,5 +1,6 @@
 // Провод в то, что читает человек. Единственное место, где учётная запись превращается
 // в строку списка и в карточку.
+import { shortDay } from '../../../shared/format/dates'
 import type {
   AuditEntryWire,
   UserCardWire,
@@ -63,7 +64,7 @@ export function toPersonRow(wire: UserSummaryWire): PersonRow {
     platform: platformName(wire.platform),
     blocked: wire.is_blocked,
     departed: wire.deleted_at !== null,
-    since: formatDay(wire.created_at),
+    since: shortDay(wire.created_at),
   }
 }
 
@@ -98,7 +99,7 @@ export function toJournalRow(wire: AuditEntryWire): JournalRow {
     actor: displayName(wire.actor_name),
     reason: wire.reason,
     details: wire.details,
-    at: formatDay(wire.created_at),
+    at: shortDay(wire.created_at),
   }
 }
 
@@ -108,9 +109,4 @@ export function pageCount(total: number, pageSize: number): number {
   return Math.max(1, Math.ceil(total / Math.max(pageSize, 1)))
 }
 
-function formatDay(value: string): string {
-  const at = new Date(value)
-  return Number.isNaN(at.getTime())
-    ? ''
-    : at.toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: 'numeric' })
-}
+

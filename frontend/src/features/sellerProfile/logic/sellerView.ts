@@ -1,4 +1,5 @@
 // Продавец и отзывы о нём.
+import { dayAndMonth, monthAndYear } from '../../../shared/format/dates'
 import { ratingLine, reviewsLabel } from '../../../shared/format/rating'
 import type { ReviewWire, SellerProfileWire } from '../api/sellerApi'
 
@@ -10,15 +11,13 @@ export interface ReviewView {
   body: string
 }
 
-const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
-const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' })
 
 export function sellerLine(wire: SellerProfileWire): string {
   // Сделки, а не отзывы: сделка бывает без отзыва, и подменять одно другим значит
   // приписывать продавцу молчание покупателей как отсутствие опыта.
   // Дата с провода — ISO; в строку она идёт месяцем и годом: день регистрации ничего не
   // говорит о продавце, а «на площадке с 2024-03-14T09:12:00Z» не читается вовсе.
-  const since = wire.member_since ? MONTH.format(new Date(wire.member_since)) : null
+  const since = monthAndYear(wire.member_since) || null
   return ratingLine(wire.rating, wire.deals_count, since)
 }
 
@@ -33,7 +32,7 @@ export function toReviewView(wire: ReviewWire): ReviewView {
     rating: wire.rating,
     // Машины, по которой написан отзыв, в выдаче нет — только её идентификатор. Дата
     // одна честнее выдуманного заголовка.
-    meta: `· ${DATE.format(new Date(wire.created_at))}`,
+    meta: `· ${dayAndMonth(wire.created_at)}`,
     body: wire.text ?? '',
   }
 }
