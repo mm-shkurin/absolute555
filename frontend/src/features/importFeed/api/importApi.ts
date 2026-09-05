@@ -2,12 +2,34 @@
 // Три разные сущности в одной ленте, потому что покупателю они отвечают на один вопрос —
 // как получить машину, которой в стране ещё нет.
 import { fetchFeed } from '../../../shared/api/backend/saleCarApi'
+import { fetchSuppliers } from '../../../shared/api/backend/supplierApi'
+import type { SupplierProfileWire } from '../../../shared/api/backend/supplierContract'
 import { fetchOpenRequests } from '../../../shared/api/backend/requestApi'
 import type { BuyerRequestWire } from '../../../shared/api/backend/requestContract'
 import { fromFeedCard } from '../../../shared/domain/listing/fromFeedCard'
 import type { ListingWire } from '../../../shared/domain/listing/listingWire'
 
 export type ImportKind = 'cars' | 'suppliers' | 'requests'
+
+/** Витрина с провода в то, что рисует карточка.
+ *
+ *  Рейтинга и числа поставок у профиля нет: сделки поставщика сервер не считает, а
+ *  показывать ноль значило бы сказать «ни одной поставки» про того, кто их сделал. */
+function toSupplier(wire: SupplierProfileWire): SupplierWire {
+  return {
+    id: wire.user_id,
+    name: wire.company_name ?? 'Без названия',
+    rating: null,
+    deliveries_count: 0,
+    countries: wire.countries,
+    brands: wire.brands,
+    delivery_days:
+      wire.delivery_days_min && wire.delivery_days_max
+        ? `${wire.delivery_days_min}–${wire.delivery_days_max} дней`
+        : 'срок не указан',
+    prepayment_percent: 0,
+  }
+}
 
 export interface SupplierWire {
   id: string
@@ -45,9 +67,10 @@ export async function fetchImportFeed(signal?: AbortSignal): Promise<ImportFeedW
   // Кому лента спроса открыта, решает сервер, а не клиент: раньше здесь стояло
   // сравнение роли с `importer`, и модератор с администратором не спрашивали её вовсе —
   // экран показывал им ноль заявок при шестидесяти четырёх открытых.
-  const [cars, requests] = await Promise.all([
+  const [cars, requests, suppliers] = await Promise.all([
     fetchFeed({ kind: 'import' }, signal),
     fetchOpenRequests(1, signal).catch(() => null),
+    fetchSuppliers(1, signal),
   ])
 
   return {
@@ -58,12 +81,7 @@ export async function fetchImportFeed(signal?: AbortSignal): Promise<ImportFeedW
     // Отказ сервера — это «не для вас», а не сбой: покупателю лента спроса закрыта
     // намеренно, иначе он увидел бы, с кем стоит в очереди.
     requests_locked: requests === null,
-    // Витрины одобренных поставщиков сервер списком не отдаёт: есть страница одного
-    // (`GET /supplier/{user_id}`) и очередь модератора, а ленты нет. Пустой список
-    // честнее выдуманного запроса, который до этой правки уходил на `/api/v1/listings`
-    // и получал 404 — Promise.all падал, и раздел «Под заказ» не открывался ни у кого,
-    // включая вкладку с машинами, которая работает. Записано в backend-contract-map.md.
-    suppliers: [],
-    suppliers_total: 0,
+    suppliers: suppliers.items.map(toSupplier),
+    suppliers_total: suppliers.total,
   }
 }

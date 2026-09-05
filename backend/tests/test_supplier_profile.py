@@ -136,3 +136,38 @@ def test_should_freeze_a_profile_while_it_waits(client, importer):
 
 def test_should_refuse_a_user_without_the_role(client, seller):
     assert client.get("/api/v1/supplier/me", headers=seller).status_code == 403
+
+
+class TestStorefronts:
+    """Лента витрин: то, ради чего вкладка «Поставщики» и существует.
+
+    До этой ручки сервер умел отдать витрину одного поставщика по идентификатору и
+    очередь модератору, а списка не было вовсе: одобренный поставщик не появлялся нигде,
+    и экран показывал ноль при тринадцати опубликованных профилях.
+    """
+
+    def test_should_show_a_published_storefront_to_anyone(self, client, importer, moderator):
+        assert send_to_queue(client, importer).status_code == 200
+        approved = decide(client, moderator, importer, "approve")
+        assert approved.status_code == 200, approved.text
+
+        response = client.get("/api/v1/supplier")
+
+        assert response.status_code == 200, response.text
+        assert _id_of(importer) in [one["user_id"] for one in response.json()["items"]]
+
+    def test_should_keep_an_unapproved_storefront_out_of_the_list(self, client, importer):
+        """Черновик и отправленный на проверку — работа над витриной, а не витрина."""
+        assert send_to_queue(client, importer).status_code == 200
+
+        listed = client.get("/api/v1/supplier").json()["items"]
+
+        assert _id_of(importer) not in [one["user_id"] for one in listed]
+
+    def test_should_answer_a_page_with_its_size_and_total(self, client):
+        response = client.get("/api/v1/supplier?page=1&size=5")
+
+        body = response.json()
+        assert response.status_code == 200, response.text
+        assert body["page"] == 1 and body["size"] == 5
+        assert len(body["items"]) <= 5

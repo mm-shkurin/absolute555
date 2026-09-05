@@ -116,6 +116,8 @@ export const BACKEND = {
     listings: (userId: string) => `${V1}/seller/${id(userId)}/listings`,
   },
   supplier: {
+    // Лента одобренных витрин. Открыта всем: витрина и есть публичная страница.
+    collection: `${V1}/supplier`,
     me: `${V1}/supplier/me`,
     submit: `${V1}/supplier/me/submit`,
     one: (userId: string) => `${V1}/supplier/${id(userId)}`,

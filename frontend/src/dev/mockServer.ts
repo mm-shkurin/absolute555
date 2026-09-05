@@ -12,7 +12,7 @@ import { SELLER, SELLER_REVIEWS } from './fixtures/rest'
 import { MY_ROLE_REQUESTS, ROLE_APPLICATIONS } from './fixtures/moderation'
 import { legacyRoute } from './legacyRoutes'
 import { mutate } from './mutationRoutes'
-import { myProfile, supplierQueue, publicProfile } from './fixtures/supplier'
+import { myProfile, supplierList, supplierQueue, publicProfile } from './fixtures/supplier'
 import { myRequests, openRequests, requestResponses } from './fixtures/requests'
 import { thicknessMap } from './fixtures/thickness'
 import * as wire from './fixtures/wire'
@@ -88,6 +88,7 @@ function route(url: URL, method: string, payload?: BodyInit | null): unknown {
   if (auditOf) return personJournal(auditOf)
   const personOf = match(path, /^\/role\/users\/([^/]+)$/)
   if (personOf) return personCard(personOf)
+  if (path === '/supplier') return supplierList()
   if (path === '/supplier/me') return myProfile()
   if (path === '/request') return openRequests()
   if (path === '/request/my') return myRequests()

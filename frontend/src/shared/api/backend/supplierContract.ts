@@ -33,6 +33,13 @@ export interface SupplierProfileUpdate {
   description?: string
 }
 
+export interface SupplierPageWire {
+  items: SupplierProfileWire[]
+  total: number
+  page: number
+  size: number
+}
+
 export interface SupplierQueueWire {
   items: SupplierProfileWire[]
   total: number

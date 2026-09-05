@@ -38,6 +38,13 @@ class SupplierProfileResponse(BaseModel):
         from_attributes = True
 
 
+class SupplierPage(BaseModel):
+    items: List[SupplierProfileResponse]
+    total: int
+    page: int
+    size: int
+
+
 class SupplierQueue(BaseModel):
     items: List[SupplierProfileResponse]
     total: int

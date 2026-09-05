@@ -45,6 +45,19 @@ export function supplierQueue(): { items: SupplierProfileWire[]; total: number }
   return { items, total: items.length }
 }
 
+/** Лента одобренных витрин. Свой профиль попадает в неё, как только его одобрили —
+ *  иначе экран показывал бы пустоту сразу после одобрения. */
+export function supplierList(): {
+  items: SupplierProfileWire[]
+  total: number
+  page: number
+  size: number
+} {
+  const items = [profile('u9', 'published'), profile('u7', 'published')]
+  if (mine.status === 'published') items.unshift(mine)
+  return { items, total: items.length, page: 1, size: 20 }
+}
+
 export function publicProfile(userId: string): SupplierProfileWire {
   return profile(userId, 'published')
 }

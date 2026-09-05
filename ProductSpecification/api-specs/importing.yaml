@@ -65,6 +65,32 @@ paths:
               schema: { $ref: '#/components/schemas/SupplierProfile' }
         '422': { $ref: '#/components/responses/Unprocessable' }
 
+  /api/v1/supplier:
+    get:
+      summary: Витрины одобренных поставщиков
+      operationId: listSuppliers
+      tags: [supplier]
+      description: |
+        Лента вкладки «Поставщики»: кто что возит и на каких условиях. Отдаются только
+        опубликованные витрины — те, что прошли проверку модератора; черновик и
+        отклонённый профиль не витрина, а работа над ней.
+
+        Открыта всем, включая гостя: витрина — это и есть публичная страница поставщика,
+        и прятать её от того, кто выбирает, кому доверить привоз, значит прятать выбор.
+      parameters:
+        - name: page
+          in: query
+          schema: { type: integer, minimum: 1, default: 1 }
+        - name: size
+          in: query
+          schema: { type: integer, minimum: 1, maximum: 60, default: 20 }
+      responses:
+        '200':
+          description: Страница витрин
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/SupplierPage' }
+
   /api/v1/supplier/{user_id}:
     get:
       summary: Публичная страница поставщика

@@ -3,6 +3,7 @@ import { send } from '../send'
 import { sendPublic } from '../sendPublic'
 import { BACKEND } from './paths'
 import type {
+  SupplierPageWire,
   SupplierProfileUpdate,
   SupplierProfileWire,
   SupplierQueueWire,
@@ -24,6 +25,11 @@ export function submitMyProfile() {
 
 /** Только опубликованный профиль. Неопубликованный и отсутствующий — один ответ: другой
  *  сказал бы читателю, кто подал заявку и ещё не прошёл проверку. */
+/** Витрины одобренных поставщиков — лента вкладки «Поставщики». Открыта и гостю. */
+export function fetchSuppliers(page = 1, signal?: AbortSignal) {
+  return send<SupplierPageWire>(`${BACKEND.supplier.collection}?page=${page}`, { signal })
+}
+
 export function fetchSupplierProfile(userId: string, signal?: AbortSignal) {
   return sendPublic<SupplierProfileWire>(BACKEND.supplier.one(userId), { signal })
 }

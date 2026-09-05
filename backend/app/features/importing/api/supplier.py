@@ -1,11 +1,12 @@
 """Профиль поставщика, по HTTP: свой профиль, публичная страница, очередь модератора."""
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import ValidationError
 from app.db.database import get_db
 from app.features.importing.schemas.supplier import (
+    SupplierPage,
     SupplierProfileResponse,
     SupplierProfileUpdate,
     SupplierQueue,
@@ -50,6 +51,22 @@ async def submit_my_profile(db: AsyncSession = Depends(get_db), importer=Depends
         return await SupplierProfileService(db).submit(str(importer.id))
     except SupplierError as error:
         raise to_http(error)
+
+
+@supplier_router.get("", response_model=SupplierPage)
+async def list_storefronts(
+    page: int = Query(default=1, ge=1),
+    size: int = Query(default=20, ge=1, le=60),
+    db: AsyncSession = Depends(get_db),
+):
+    """Витрины одобренных поставщиков. Открыты всем, включая гостя.
+
+    Витрина и есть публичная страница: прятать её от того, кто выбирает, кому доверить
+    привоз, значит прятать сам выбор. Стоит выше `/{user_id}`, иначе пустой путь ушёл бы
+    в него параметром.
+    """
+    found, total = await SupplierProfileService(db).storefronts(page, size)
+    return {"items": found, "total": total, "page": page, "size": size}
 
 
 @supplier_router.get("/{user_id}", response_model=SupplierProfileResponse)

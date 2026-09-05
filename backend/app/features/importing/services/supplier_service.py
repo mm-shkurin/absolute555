@@ -6,9 +6,9 @@
 """
 
 from datetime import datetime
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
-from sqlalchemy import select
+from sqlalchemy import desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.importing.models.supplier import (
@@ -72,6 +72,26 @@ class SupplierProfileService:
         held.reject_reason = None
         await self._save(held)
         return held
+
+    async def storefronts(self, page: int, size: int) -> Tuple[List[SupplierProfile], int]:
+        """Опубликованные витрины страницей — лента вкладки «Поставщики».
+
+        Только published: черновик и отклонённый профиль — это работа над витриной, а не
+        витрина. Порядок по моменту решения, свежие сверху: одобренный вчера успел
+        меньше, чем работающий год, и прятать его в конце значит не дать начать.
+        """
+        where = SupplierProfile.status == SupplierStatus.PUBLISHED.value
+        total = await self.db.scalar(
+            select(func.count()).select_from(SupplierProfile).where(where)
+        )
+        found = await self.db.execute(
+            select(SupplierProfile)
+            .where(where)
+            .order_by(desc(SupplierProfile.moderated_at), SupplierProfile.user_id)
+            .offset((page - 1) * size)
+            .limit(size)
+        )
+        return list(found.scalars().all()), total or 0
 
     async def queue(self) -> List[SupplierProfile]:
         found = await self.db.execute(
