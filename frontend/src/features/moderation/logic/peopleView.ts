@@ -50,6 +50,8 @@ export interface PersonRow {
   role: string
   platform: string | null
   blocked: boolean
+  /** Ушёл сам. Не то же, что закрытый доступ: блокировку снимают, уход — нет. */
+  departed: boolean
   since: string
 }
 
@@ -60,6 +62,7 @@ export function toPersonRow(wire: UserSummaryWire): PersonRow {
     role: roleName(wire.role),
     platform: platformName(wire.platform),
     blocked: wire.is_blocked,
+    departed: wire.deleted_at !== null,
     since: formatDay(wire.created_at),
   }
 }

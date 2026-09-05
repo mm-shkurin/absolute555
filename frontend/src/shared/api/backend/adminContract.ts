@@ -15,6 +15,10 @@ export interface UserSummaryWire {
   is_blocked: boolean
   created_at: string
   name: string | null
+  avatar_url: string | null
+  /** Когда владелец удалил свою запись. Заполнено — человека уже нет: писать ему
+   *  бессмысленно, а закрывать доступ нечего (история 24). */
+  deleted_at: string | null
   /** Чем человек вошёл — `yandex` или `vk`. */
   platform: string | null
 }
@@ -55,6 +59,9 @@ export interface PeopleQuery {
   query?: string
   role?: Role
   blocked?: boolean
+  /** Только ушедшие или только живые. Удаление — пометка, поэтому ушедшие остаются в
+   *  списке: фильтр их отделяет, а не прячет (история 24). */
+  deleted?: boolean
   page?: number
   page_size?: number
 }

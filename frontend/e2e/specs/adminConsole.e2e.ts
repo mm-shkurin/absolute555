@@ -76,6 +76,16 @@ describe('Консоль модератора', () => {
     }, 5000)
   })
 
+  it('ушедший помечен в списке — модератор не пишет тому, кого нет', async () => {
+    await driver.get(`${BASE_URL}/moderation/people`)
+    await waitForVisible(driver, 'people-list')
+
+    // Восьмой в фикстурах ушёл сам: удаление — пометка, и запись остаётся в списке.
+    await driver.get(`${BASE_URL}/moderation/people/p8`)
+
+    await waitForVisible(driver, 'person-departed')
+  })
+
   it('доступ не закрывается, пока не написана причина', async () => {
     await driver.get(`${BASE_URL}/moderation/people/p1`)
     await waitForVisible(driver, 'admin-person')

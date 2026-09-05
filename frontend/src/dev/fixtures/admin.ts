@@ -26,6 +26,11 @@ const PEOPLE: UserSummaryWire[] = Array.from({ length: 23 }, (_, index) => ({
   is_blocked: index === 4 || index === 11,
   created_at: new Date(Date.now() - (index + 1) * 9 * DAYS).toISOString(),
   name: NAMES[index % NAMES.length],
+  avatar_url: null,
+  // Двое ушли сами: список обязан отличать их от закрытых доступом, иначе модератор
+  // пишет тому, кого уже нет.
+  deleted_at:
+    index === 7 || index === 15 ? new Date(Date.now() - index * DAYS).toISOString() : null,
   platform: index % 2 === 0 ? 'yandex' : 'vk',
 }))
 

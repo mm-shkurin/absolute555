@@ -86,6 +86,11 @@ export function PeoplePage() {
                         доступ закрыт
                       </span>
                     ) : null}
+                    {row.departed ? (
+                      <span className={styles.departed} data-testid="people-departed">
+                        удалил запись
+                      </span>
+                    ) : null}
                   </li>
                 ))}
               </ul>

@@ -20,6 +20,8 @@ const SUMMARY: UserSummaryWire = {
   is_verified: true,
   is_blocked: false,
   created_at: '2026-03-04T10:00:00Z',
+  avatar_url: null,
+  deleted_at: null,
   name: 'Пелагея Кузнецова',
   platform: 'yandex',
 }
@@ -90,5 +92,24 @@ describe('люди в консоли', () => {
     // Не ноль: экран всё равно показывает первую страницу, и «1 из 0» читается как
     // поломка, а не как пустой список.
     expect(pageCount(0, 20)).toBe(1)
+  })
+})
+
+describe('ушедший человек в консоли (история 24)', () => {
+  it('помечает того, кто удалил свою запись', () => {
+    const row = toPersonRow({ ...SUMMARY, deleted_at: '2026-09-03T10:00:00Z' })
+
+    expect(row.departed).toBe(true)
+  })
+
+  it('не путает ушедшего с закрытым доступом', () => {
+    const blocked = toPersonRow({ ...SUMMARY, is_blocked: true, deleted_at: null })
+
+    expect(blocked.blocked).toBe(true)
+    expect(blocked.departed).toBe(false)
+  })
+
+  it('живого не помечает', () => {
+    expect(toPersonRow(SUMMARY).departed).toBe(false)
   })
 })

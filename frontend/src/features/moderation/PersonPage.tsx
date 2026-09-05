@@ -112,6 +112,12 @@ function Card({ card }: { card: ReturnType<typeof toPersonCard> }) {
           <dd>{card.since}</dd>
         </div>
       </dl>
+      {card.departed ? (
+        <p className={styles.departedNotice} data-testid="person-departed">
+          Человек удалил свою запись. Писать ему некуда, а закрывать доступ нечего — он
+          уже закрыт.
+        </p>
+      ) : null}
       {card.blocked ? (
         <p className={styles.blockedNotice} data-testid="person-blocked">
           Доступ закрыт{card.blockedReason ? `: ${card.blockedReason}` : ''}

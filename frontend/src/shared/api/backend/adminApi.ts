@@ -14,6 +14,7 @@ function withQuery(path: string, query: PeopleQuery): string {
   if (query.query) params.set('query', query.query)
   if (query.role) params.set('role', query.role)
   if (query.blocked !== undefined) params.set('blocked', String(query.blocked))
+  if (query.deleted !== undefined) params.set('deleted', String(query.deleted))
   if (query.page !== undefined) params.set('page', String(query.page))
   if (query.page_size !== undefined) params.set('page_size', String(query.page_size))
   const search = params.toString()
