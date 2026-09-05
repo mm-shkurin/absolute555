@@ -14,7 +14,7 @@ class UserService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_or_get_yandex_user(self, yandex_id: str, yandex_json: str):
+    async def create_or_get_yandex_user(self, yandex_id: str, yandex_json: dict):
         logger.info(f"Looking for user with yandex_id: {yandex_id}")
         logger.debug("yandex_json received")
         exists = await self.db.execute(select(Users).where(Users.yandex_id == yandex_id))
@@ -36,7 +36,7 @@ class UserService:
             logger.debug("User yandex_json updated")
             return user.id
 
-    async def create_or_get_vk_user(self, vk_id: str, vk_json: str):
+    async def create_or_get_vk_user(self, vk_id: str, vk_json: dict):
         logger.info(f"Looking for user with vk_id: {vk_id}")
         logger.debug("vk_json received")
         exists = await self.db.execute(select(Users).where(Users.vk_id == vk_id))

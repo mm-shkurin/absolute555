@@ -1,4 +1,3 @@
-import json
 from typing import Annotated
 from urllib.parse import urlencode
 
@@ -21,8 +20,9 @@ from app.utils.security import (
     refresh_access_token,
     get_current_user,
 )
-import json
 from app.permissions.dependencies import CurrentUser
+from app.features.account.provider_profile import as_profile
+
 from .account_view import avatar_url, name_of
 
 user_router = APIRouter()
@@ -31,28 +31,13 @@ user_router = APIRouter()
 async def get_profile(current_user: CurrentUser):
     
     
-    yandex_json_parsed = None
-    if current_user.yandex_json:
-        try:
-            yandex_json_parsed = json.loads(current_user.yandex_json)
-        except json.JSONDecodeError:
-            yandex_json_parsed = None
-    
-    vk_json_parsed = None
-    if current_user.vk_json:
-        try:
-            if isinstance(current_user.vk_json, dict):
-                vk_json_parsed = current_user.vk_json
-            else:
-                vk_json_parsed = json.loads(current_user.vk_json)
-        except (json.JSONDecodeError, TypeError):
-            vk_json_parsed = None
-    guest_json_parsed = None
-    if current_user.guest_json:
-        try:
-            guest_json_parsed = current_user.guest_json if isinstance(current_user.guest_json, dict) else json.loads(current_user.guest_json)
-        except (json.JSONDecodeError, TypeError):
-            guest_json_parsed = None
+    # Разбор ответа провайдера — один на всё приложение (`Users._as_profile`): колонка
+    # JSONB, но записи, заведённые до правки 2026-09-05, лежат в ней строкой. Здесь
+    # раньше стояли три почти одинаковых блока try/except, и один из них разбирал только
+    # строку — он и падал, когда вход начал класть словарь.
+    yandex_json_parsed = as_profile(current_user.yandex_json) or None
+    vk_json_parsed = as_profile(current_user.vk_json) or None
+    guest_json_parsed = as_profile(current_user.guest_json) or None
 
     user_type = "guest" if current_user.is_guest else "regular"
 

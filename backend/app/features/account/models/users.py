@@ -7,6 +7,7 @@ from sqlalchemy.orm import declarative_base
 from datetime import datetime
 from app.db.database import BaseModel
 from app.features.offer.models.offer import Offer
+from app.features.account.provider_profile import as_profile, name_in
 from app.permissions.roles import UserRole
 class Users(BaseModel):
     __tablename__ = "users"
@@ -59,15 +60,16 @@ class Users(BaseModel):
 
         Жило двумя одинаковыми копиями в двух сервисах ролей. Принадлежит строке: имя
         собирается из её же колонок и ни от чего больше не зависит.
+
+        Гость назван гостем, а не «неизвестным»: у гостевого входа профиля нет по
+        устройству, и «неизвестный» читается как сбой чтения, а не как способ входа.
         """
         if self.profile_name and self.profile_name.strip():
             return self.profile_name.strip()
 
-        for profile in (self.vk_json, self.yandex_json):
-            if isinstance(profile, dict):
-                name = " ".join(
-                    part for part in (profile.get("first_name"), profile.get("last_name")) if part
-                ).strip()
-                if name:
-                    return name
-        return "Неизвестный пользователь"
+        for profile in (as_profile(self.vk_json), as_profile(self.yandex_json)):
+            name = name_in(profile)
+            if name:
+                return name
+
+        return "Гость" if self.is_guest else "Без имени"

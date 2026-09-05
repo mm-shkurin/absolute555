@@ -10,7 +10,6 @@ is what stops a callback forged by someone else from signing a victim into an ac
 they control.
 """
 
-import json
 
 from fastapi import APIRouter, Body, Depends
 from fastapi.responses import RedirectResponse
@@ -64,8 +63,11 @@ async def finish_yandex_sign_in(
         logger.warning(f"yandex sign-in failed: {failure}")
         return _back_to_frontend(error="provider_failed", provider=provider.name)
 
+    # Ответ провайдера кладётся объектом, а не строкой: колонка JSONB, и `json.dumps`
+    # превращал её содержимое в строку внутри JSONB. Всё, что потом читало профиль
+    # словарём — имя в консоли модератора, — молча получало пустоту.
     user_id = await UserService(db).create_or_get_yandex_user(
-        yandex_id=identity.subject, yandex_json=json.dumps(identity.raw, ensure_ascii=False)
+        yandex_id=identity.subject, yandex_json=identity.raw
     )
     handoff = await OAuthStore().mint_handoff(str(user_id))
     return _back_to_frontend(code=handoff, provider=provider.name)
