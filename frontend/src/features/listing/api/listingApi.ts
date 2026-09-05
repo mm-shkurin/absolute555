@@ -5,6 +5,7 @@ import { fetchOffersForCar } from '../../../shared/api/backend/offerApi'
 import { fetchListing as fetchSaleCar } from '../../../shared/api/backend/saleCarApi'
 import { currentSession } from '../../../shared/session/authSession'
 import { toListingDetailWire } from '../logic/fromSaleCar'
+import type { ModerationWire } from '../../../shared/api/backend/saleCarContract'
 
 export interface SellerWire {
   id: string
@@ -49,6 +50,9 @@ export interface ListingDetailWire {
   // счётчики и управление, а не кнопка «предложить цену» самому себе.
   owned_by_me: boolean
   published_at: string | null
+  /** Решение модератора: когда и кем. Имя приходит только модератору — сервер решает,
+   *  кому его показать, и экран не достраивает его по роли (история 22). */
+  moderation: ModerationWire | null
   views_count: number
   opens_count: number
   offers_count: number

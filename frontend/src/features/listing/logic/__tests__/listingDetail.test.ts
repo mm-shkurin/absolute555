@@ -28,6 +28,7 @@ const wire: ListingDetailWire = {
   phone_available: true,
   chat_allowed: true,
   owned_by_me: false,
+  moderation: null,
   published_at: new Date(2026, 7, 22).toISOString(),
   views_count: 1284,
   opens_count: 96,
@@ -112,5 +113,37 @@ describe('карточка объявления', () => {
   it('машина в наличии строк привоза не получает', () => {
     const view = toListingDetailView(wire)
     expect(view.specs.map((row) => row.label)).not.toContain('Откуда везут')
+  })
+})
+
+describe('решение модератора (история 22)', () => {
+  it('показывает владельцу, когда решили', () => {
+    const view = toListingDetailView({
+      ...wire,
+      moderation: { decided_at: new Date(2026, 8, 3, 12).toISOString(), decided_by: null },
+    })
+
+    expect(view.decidedOn).toBe('3 сентября')
+    // Имя сервер владельцу не отдаёт — и экран не достраивает его по роли.
+    expect(view.decidedBy).toBeNull()
+  })
+
+  it('называет модератору того, кто решил', () => {
+    const view = toListingDetailView({
+      ...wire,
+      moderation: {
+        decided_at: new Date(2026, 8, 3, 12).toISOString(),
+        decided_by: { user_id: 'm1', name: 'Иван Петров' },
+      },
+    })
+
+    expect(view.decidedBy).toBe('Иван Петров')
+  })
+
+  it('молчит про объявление, по которому решения не было', () => {
+    const view = toListingDetailView({ ...wire, moderation: null })
+
+    expect(view.decidedOn).toBeNull()
+    expect(view.decidedBy).toBeNull()
   })
 })

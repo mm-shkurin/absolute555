@@ -38,6 +38,10 @@ export interface ListingDetailView {
   phoneAvailable: boolean
   chatAllowed: boolean
   publishedOn: string | null
+  /** Когда модератор решил по объявлению и, если смотрит модератор, кто именно.
+   *  Продавцу сервер имени не отдаёт, поэтому здесь оно просто пусто. */
+  decidedOn: string | null
+  decidedBy: string | null
   stats: { label: string; value: string }[]
   measuredPanels: number
   totalPanels: number
@@ -128,6 +132,8 @@ export function toListingDetailView(wire: ListingDetailWire): ListingDetailView 
     phoneAvailable: wire.phone_available,
     chatAllowed: wire.chat_allowed,
     publishedOn: wire.published_at ? DATE.format(new Date(wire.published_at)) : null,
+    decidedOn: wire.moderation?.decided_at ? DATE.format(new Date(wire.moderation.decided_at)) : null,
+    decidedBy: wire.moderation?.decided_by?.name ?? null,
     stats: [
       { label: 'показов', value: formatAmount(wire.views_count) },
       { label: 'открытий', value: formatAmount(wire.opens_count) },

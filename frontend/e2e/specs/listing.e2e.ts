@@ -1,7 +1,7 @@
 // Карточка объявления и карта замеров — то, ради чего человек и приходит на площадку.
 import { afterAll, beforeAll, describe, it } from 'vitest'
 import type { WebDriver } from 'selenium-webdriver'
-import { DESKTOP, openBrowser, resize } from '../driver'
+import { BASE_URL, DESKTOP, openBrowser, resize } from '../driver'
 import { FeedStatements } from '../statements/FeedStatements'
 import { ListingStatements } from '../statements/ListingStatements'
 
@@ -26,6 +26,16 @@ describe('Карточка объявления', () => {
     await feed.openFeedFromHeader()
     await feed.openFirstCard()
   }
+
+  it('владелец видит, когда его объявление проверили', async () => {
+    await feed.openApp()
+    // Своё объявление — третье в ленте фикстур: у первого владелец другой, и владельцу
+    // вместо панели управления показалась бы колонка торга.
+    await driver.get(`${BASE_URL}/listings/l3`)
+
+    await listing.assertOwnerPanelShown()
+    await listing.assertDecidedByModeratorShown()
+  })
 
   it('вошедший покупатель видит цену и продавца', async () => {
     await openListing()

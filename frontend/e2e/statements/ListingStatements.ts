@@ -32,6 +32,13 @@ export class ListingStatements {
     await waitForVisible(this.driver, 'owner-panel')
   }
 
+  // Решение модератора — история объявления, а не его состояние: бейдж говорит, что
+  // объявление опубликовано, эта строка — когда его до этого проверили.
+  async assertDecidedByModeratorShown(): Promise<void> {
+    const line = await waitForVisible(this.driver, 'listing-decided')
+    expect(await line.getText()).toContain('Проверено модератором')
+  }
+
   async openGallery(): Promise<void> {
     const gallery = await waitForVisible(this.driver, 'gallery')
     await clickElement(this.driver, await gallery.findElement(By.css('button')))

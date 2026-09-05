@@ -114,6 +114,13 @@ export function saleCar(saleCarId: string): SaleCarWire | null {
     created_at: new Date(Date.now() - 40 * HOURS).toISOString(),
     updated_at: new Date(Date.now() - 30 * HOURS).toISOString(),
     photos: [],
+    // Опубликованное объявление кто-то одобрил: решение и есть то, что вывело его в
+    // ленту. Имя решившего заглушка не подставляет — сервер отдаёт его модератору, а
+    // не владельцу, и выдуманное здесь имя увело бы экран от правды.
+    moderation: {
+      decided_at: new Date(Date.now() - 26 * HOURS).toISOString(),
+      decided_by: null,
+    },
     autofill: { state: 'done', brand_source: 'ocr', model_source: 'ocr', updated_at: null },
     seller: seller('u9', 'Дмитрий', 4.8, 12, 15),
     thickness: thicknessSummary(saleCarId),
@@ -141,6 +148,8 @@ export function myCars(): SaleCarWire[] {
       car.status = status
       car.user_id = VIEWER_ID
       car.reject_reason = rejected ? 'Видны номера на фотографиях' : null
+      // Черновик никто не смотрел: решения по нему нет и быть не может.
+      if (status === 'draft') car.moderation = { decided_at: null, decided_by: null }
       car.reject_label = rejected ? 'plate_or_face_visible' : null
       return car
     })

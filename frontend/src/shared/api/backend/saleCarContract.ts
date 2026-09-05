@@ -17,6 +17,18 @@ export type FieldSource = 'ocr' | 'seller'
  *  покупатель ищет машину, а не канал поставки. */
 export type ListingKind = 'stock' | 'import'
 
+/** Кто решил по объявлению. Имя приходит только модератору: продавцу сервер отдаёт
+ *  `null`, и экран не выдумывает его из роли (история 22). */
+export interface ModeratorWire {
+  user_id: string
+  name: string | null
+}
+
+export interface ModerationWire {
+  decided_at: string | null
+  decided_by: ModeratorWire | null
+}
+
 export type SaleCarStatus = 'draft' | 'moderation' | 'published' | 'rejected' | 'withdrawn' | 'sold'
 
 export interface AutofillWire {
@@ -87,6 +99,8 @@ export interface SaleCarWire {
   preview_photo_url: string | null
   photos: PhotoWire[]
   autofill: AutofillWire | null
+  /** Решение модератора: когда и, если смотрит модератор, кем. */
+  moderation: ModerationWire | null
   seller: SellerWire | null
   /** Сводка карты замеров. `null` у объявления без единого замера. */
   thickness: ThicknessSummaryWire | null

@@ -52,6 +52,7 @@ export function toListingDetailWire(
     chat_allowed: false,
     owned_by_me: owned,
     published_at: car.published_at,
+    moderation: car.moderation ?? null,
     views_count: 0,
     opens_count: 0,
     offers_count: context.offers?.length ?? 0,

@@ -29,6 +29,7 @@ const car = (over: Partial<SaleCarWire> = {}): SaleCarWire => ({
   updated_at: null,
   preview_photo_url: null,
   photos: [],
+  moderation: null,
   autofill: null,
   seller: null,
   thickness: null,

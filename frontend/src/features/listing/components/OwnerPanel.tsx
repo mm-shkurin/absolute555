@@ -42,6 +42,13 @@ export function OwnerPanel({
         <div className={styles.price}>{view.price}</div>
         <div className={styles.summary}>{view.summary}</div>
 
+        {view.decidedOn ? (
+          <div className={styles.decided} data-testid="listing-decided">
+            Проверено модератором {view.decidedOn}
+            {view.decidedBy ? ` · ${view.decidedBy}` : ''}
+          </div>
+        ) : null}
+
         <div className={styles.stats}>
           {view.stats.map((stat) => (
             <div key={stat.label}>
