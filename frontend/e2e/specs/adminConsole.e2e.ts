@@ -33,6 +33,18 @@ describe('Консоль модератора', () => {
     await waitForVisible(driver, 'admin-summary')
   })
 
+  it('в профиль вынесен вход в кабинет — им и заходят с узкого экрана', async () => {
+    // Ссылка в шапке живёт только на десктопе, а профиль открыт с любой ширины: без
+    // этого входа модератор с планшета помнил бы адрес наизусть.
+    await driver.get(`${BASE_URL}/my/profile`)
+
+    const entry = await waitForVisible(driver, 'profile-moderation')
+    expect(await entry.getText()).toContain('Кабинет модератора')
+
+    await clickElement(driver, await entry.findElement(By.xpath('.//a[contains(., "Перейти")]')))
+    await waitForVisible(driver, 'admin-summary')
+  })
+
   it('сводка называет, где затор, и ведёт в этот раздел', async () => {
     await driver.get(`${BASE_URL}/moderation`)
 

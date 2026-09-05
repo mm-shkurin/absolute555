@@ -6,6 +6,7 @@ import { request } from '../httpClient'
 import { send } from '../send'
 import { BACKEND } from './paths'
 import type {
+  ProfilePatchWire,
   RoleRequestCreate,
   RoleRequestDecision,
   RoleRequestListItemWire,
@@ -29,6 +30,37 @@ export function guestLogin(deviceId: string) {
 
 export function fetchProfile(signal?: AbortSignal) {
   return send<UserWire>(BACKEND.user.profile, { signal })
+}
+
+/** Своё имя вместо имени провайдера. Пустая строка возвращает провайдерское. */
+export function renameProfile(name: string) {
+  return send<UserWire>(BACKEND.user.profile, {
+    method: 'PATCH',
+    body: { name } satisfies ProfilePatchWire,
+  })
+}
+
+export function uploadAvatar(file: File) {
+  const form = new FormData()
+  form.append('file', file)
+  return send<UserWire>(BACKEND.user.avatar, { method: 'PUT', body: form })
+}
+
+export function removeAvatar() {
+  return send<UserWire>(BACKEND.user.avatar, { method: 'DELETE' })
+}
+
+/** Выход отзывает оба токена на сервере: тот, что в заголовке, и присланный телом. */
+export function logout(refreshToken: string) {
+  return send<void>(BACKEND.auth.logout, {
+    method: 'POST',
+    body: { refresh_token: refreshToken },
+  })
+}
+
+/** Удаление своей записи. Объявления и отзывы остаются — правило сервера, не клиента. */
+export function deleteAccount() {
+  return send<void>(BACKEND.user.account, { method: 'DELETE' })
 }
 
 export function fetchUsers(signal?: AbortSignal) {

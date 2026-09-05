@@ -4,6 +4,8 @@ import type { UserWire } from '../../../../shared/api/backend/accountContract'
 
 const user = (over: Partial<UserWire> = {}): UserWire => ({
   id: 'u1',
+  name: null,
+  avatar_url: null,
   tg_id: null,
   vk_id: null,
   yandex_id: null,
@@ -51,5 +53,46 @@ describe('профиль из строки пользователя', () => {
 
   it('показывает месяц регистрации словами', () => {
     expect(toProfileWire(user(), none).member_since).toBe('март 2026 г.')
+  })
+})
+
+describe('имя и фотография профиля (история 21)', () => {
+  it('предпочитает своё имя имени провайдера', () => {
+    const wire = toProfileWire(
+      user({ name: 'Пётр Кузнецов', yandex_json: { real_name: 'Пётр К.' } }),
+      { total: 0, rejected: 0 },
+    )
+
+    expect(wire.name).toBe('Пётр Кузнецов')
+  })
+
+  it('падает обратно на провайдера, когда своего имени нет', () => {
+    const wire = toProfileWire(
+      user({ name: null, yandex_json: { real_name: 'Пётр К.' } }),
+      { total: 0, rejected: 0 },
+    )
+
+    expect(wire.name).toBe('Пётр К.')
+  })
+
+  it('не выдумывает имя, когда его нет нигде', () => {
+    const wire = toProfileWire(user({ name: null }), { total: 0, rejected: 0 })
+
+    expect(wire.name).toBe('')
+  })
+
+  it('переносит фотографию с провода как есть', () => {
+    const wire = toProfileWire(
+      user({ avatar_url: 'http://localhost:9000/absolute/u1/avatars/a.png' }),
+      { total: 0, rejected: 0 },
+    )
+
+    expect(wire.avatar_url).toBe('http://localhost:9000/absolute/u1/avatars/a.png')
+  })
+
+  it('оставляет фотографию пустой, а не подставляет заглушку', () => {
+    const wire = toProfileWire(user({ avatar_url: null }), { total: 0, rejected: 0 })
+
+    expect(wire.avatar_url).toBeNull()
   })
 })

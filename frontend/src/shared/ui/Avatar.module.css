@@ -2,6 +2,8 @@
   border-radius: 50%;
   background: var(--border-subtle);
   flex: none;
+  /* Фотография приходит любой формы: кадрируем по кругу, а не сплющиваем. */
+  object-fit: cover;
 }
 
 .rating {

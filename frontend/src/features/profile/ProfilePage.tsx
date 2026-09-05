@@ -1,24 +1,25 @@
-// Свой профиль. Имя и аватар приходят от провайдера входа — здесь их не редактируют,
-// поэтому экран целиком про навигацию и состояния, а не про форму настроек.
+// Свой профиль: кто вошёл, что у него есть и как отсюда выйти. Имя и фотография
+// правятся здесь же (история 21) — раньше их приносил только провайдер входа.
 import { useNavigate } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { PageHeading, PageSection } from '../../shared/ui/PageHeading'
-import { Panel } from '../../shared/ui/Panel'
-import { PersonHead } from '../../shared/ui/Avatar'
-import { Button } from '../../shared/ui/Button'
 import { FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
 import { fetchProfile } from './api/profileApi'
 import { toProfileView } from './logic/profileView'
+import { ProfileIdentity } from './components/ProfileIdentity'
+import { useProfileIdentity } from './useProfileIdentity'
+import { ModerationEntry } from './components/ModerationEntry'
 import { Shortcuts } from './components/Shortcuts'
 import { SupplierApplication } from './components/SupplierApplication'
 import { MyRequests } from './components/MyRequests'
 
-export function ProfilePage({ onSignOut }: { onSignOut?: () => void }) {
+export function ProfilePage() {
   const navigate = useNavigate()
   const query = useQuery({ queryKey: ['profile'], queryFn: ({ signal }) => fetchProfile(signal) })
+  const identity = useProfileIdentity()
   const view = query.data ? toProfileView(query.data) : null
 
   return (
@@ -29,7 +30,7 @@ export function ProfilePage({ onSignOut }: { onSignOut?: () => void }) {
           <PageSection>
             <PageHeading
               title="Профиль"
-              sub="Имя и аватар пришли от провайдера входа. Пароля здесь нет."
+              sub="Имя и фотографию можно поменять. Пароля здесь нет — вход через провайдера."
             />
             {query.isPending ? <ListSkeleton rows={3} /> : null}
             {!query.isPending && query.error ? (
@@ -40,18 +41,14 @@ export function ProfilePage({ onSignOut }: { onSignOut?: () => void }) {
             ) : null}
             {view ? (
               <>
-                <Panel first>
-                  <PersonHead
-                    name={view.name}
-                    rating={view.rating}
-                    line={view.line}
-                    action={
-                      <Button tone="ghost" onClick={() => onSignOut?.()}>
-                        Выйти
-                      </Button>
-                    }
-                  />
-                </Panel>
+                <ProfileIdentity
+                  name={view.name}
+                  avatarUrl={view.avatarUrl}
+                  rating={view.rating}
+                  line={view.line}
+                  actions={identity}
+                />
+                <ModerationEntry />
                 <Shortcuts shortcuts={view.shortcuts} />
                 <SupplierApplication
                   state={view.supplier}

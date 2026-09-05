@@ -5,6 +5,7 @@ import type { ProfileWire } from '../../api/profileApi'
 const wire: ProfileWire = {
   id: 'u1',
   name: 'Михаил',
+  avatar_url: null,
   rating: 4.8,
   deals_count: 12,
   reviews_count: 9,

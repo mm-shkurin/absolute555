@@ -13,6 +13,10 @@ export interface TokenWire {
  *  и их форму задаёт провайдер, а не мы. */
 export interface UserWire {
   id: string
+  // Своё имя и своя фотография (история 21). Провайдер заполняет их при первом входе,
+  // дальше они принадлежат человеку: `name` перекрывает имя из `yandex_json`.
+  name: string | null
+  avatar_url: string | null
   tg_id: string | null
   vk_id: string | null
   yandex_id: string | null
@@ -27,6 +31,11 @@ export interface UserWire {
   is_guest: boolean
   created_at: string | null
   updated_at: string | null
+}
+
+/** Что клиент отправляет, меняя имя. Пустая строка возвращает имя провайдера. */
+export interface ProfilePatchWire {
+  name: string
 }
 
 export interface UserRoleInfoWire {

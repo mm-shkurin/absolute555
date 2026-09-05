@@ -6,6 +6,7 @@
 // настоящий бэкенд, расхождение вылезет здесь же — и папку `src/dev/` можно будет удалить
 // целиком, ничего больше не трогая.
 import { peoplePage, personCard, personJournal, roleStats } from './fixtures/admin'
+import { user } from './fixtures/identity'
 import { BRANDS, MODELS } from './fixtures/catalog'
 import { SELLER, SELLER_REVIEWS } from './fixtures/rest'
 import { MY_ROLE_REQUESTS, ROLE_APPLICATIONS } from './fixtures/moderation'
@@ -65,7 +66,7 @@ function route(url: URL, method: string, payload?: BodyInit | null): unknown {
   // выдуманные пути ниже держатся ради тех экранов, у которых ручек ещё нет.
   if (path === '/sale_car/list') return wire.feedPage(query)
   if (path === '/sale_car/user') return wire.myCars()
-  if (path === '/user/profile') return wire.user()
+  if (path === '/user/profile') return user()
   if (path === '/catalog/brands') return BRANDS
   const modelsOf = match(path, /^\/catalog\/brands\/([^/]+)\/models$/)
   if (modelsOf) return MODELS(modelsOf)

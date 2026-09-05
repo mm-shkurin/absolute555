@@ -118,3 +118,64 @@
   color: var(--status-bad-ink);
   font-size: 14px;
 }
+
+/* Форма имени и кнопки под шапкой профиля. Кнопки в строку и переносятся на узком
+   экране: их три, и на телефоне они иначе выпадают за край. */
+.identityForm {
+  margin-top: 16px;
+}
+
+.identityActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.identityError {
+  margin: 12px 0 0;
+  color: var(--status-bad-ink);
+  font-size: 14px;
+}
+
+/* Поле выбора файла спрятано, а не убрано: браузер открывает выбор только по клику
+   по настоящему input, поэтому кнопка нажимает на него, а он остаётся в разметке. */
+.picker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+/* Вход в кабинет модератора: у большинства этого блока нет, поэтому он выделен рамкой
+   акцента, а не растворён среди личных разделов. */
+.moderationEntry {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--accent);
+  border-radius: 16px;
+  background: var(--bg-card);
+}
+
+.moderationEntry p {
+  margin: 4px 0 0;
+}
+
+.moderationLink {
+  padding: 10px 18px;
+  border-radius: 12px;
+  background: var(--accent);
+  color: var(--on-accent, #fff);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+}

@@ -6,6 +6,7 @@ const wire = (over: Partial<SaleCarWire> = {}): SaleCarWire => ({
   sale_car_id: 'c1',
   user_id: 'u1',
   vin: 'XW8ZZZ61ZJG012345',
+  body_number: null,
   brand: 'Toyota',
   model: 'Camry',
   mark_raw: null,

@@ -23,9 +23,15 @@ export const BACKEND = {
     oauthExchange: `${V1}/auth/oauth/exchange`,
     refresh: `${V1}/auth/refresh`,
     guestLogin: `${V1}/auth/guest/login`,
+    // Выход отзывает токены на сервере. Клиент, стирающий ключ у себя, не отвечает на
+    // вопрос «выйти с чужого устройства», а именно за этим кнопку и жмут.
+    logout: `${V1}/auth/logout`,
   },
   user: {
     profile: `${V1}/user/profile`,
+    avatar: `${V1}/user/avatar`,
+    // Удаление своей учётной записи. Без сегмента: ручка висит на корне /user.
+    account: `${V1}/user`,
   },
   catalog: {
     brands: `${V1}/catalog/brands`,

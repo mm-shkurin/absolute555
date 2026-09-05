@@ -7,9 +7,8 @@
 import type { FeedCardWire, FeedPageWire } from '../../shared/api/backend/feedContract'
 import type { OfferWire } from '../../shared/api/backend/offerContract'
 import type { SaleCarWire, SellerWire } from '../../shared/api/backend/saleCarContract'
-import type { UserWire } from '../../shared/api/backend/accountContract'
 import { FEED, IMPORT_CARS } from './cars'
-import { PROFILE, offers as offerFixtures } from './people'
+import { offers as offerFixtures } from './people'
 import { thicknessSummary } from './thickness'
 
 const HOURS = 3_600_000
@@ -102,6 +101,7 @@ export function saleCar(saleCarId: string): SaleCarWire | null {
     // сценариях, и владельцу вместо колонки с торгом показалась бы панель управления.
     user_id: saleCarId === 'l3' ? VIEWER_ID : 'u9',
     vin: 'XW8ZZZ61ZJG012345',
+    body_number: null,
     mark_raw: null,
     model_raw: null,
     engine_power: 249,
@@ -177,24 +177,4 @@ export function carOffers(saleCarId: string): OfferWire[] {
     can_review: false,
     review_id: null,
   }))
-}
-
-export function user(): UserWire {
-  return {
-    id: VIEWER_ID,
-    tg_id: null,
-    vk_id: null,
-    yandex_id: 'ya-1',
-    device_id: null,
-    tg_json: null,
-    yandex_json: { real_name: PROFILE.name },
-    vk_json: null,
-    guest_json: null,
-    user_type: 'regular',
-    role: 'admin',
-    is_verified: true,
-    is_guest: false,
-    created_at: new Date(Date.now() - 200 * 24 * HOURS).toISOString(),
-    updated_at: null,
-  }
 }

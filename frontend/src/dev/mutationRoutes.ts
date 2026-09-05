@@ -4,6 +4,7 @@
 // `{ok:true}` вернул бы экрану успех без данных — панель осталась бы серой, а статус
 // профиля разошёлся бы с кнопками.
 import { accessChanged } from './fixtures/admin'
+import { dropUserPhoto, renameUser, setUserPhoto } from './fixtures/identity'
 import { mutation } from './fixtures/mutations'
 import { editMyProfile, publicProfile, submitMyProfile } from './fixtures/supplier'
 import { addRequest, closeRequest, putRequestResponse } from './fixtures/requests'
@@ -11,6 +12,14 @@ import { eraseMeasurement, thicknessMap, writeMeasurement } from './fixtures/thi
 import type { BodyPanel } from '../shared/api/backend/thicknessContract'
 
 export function mutate(path: string, method: string, payload?: BodyInit | null): unknown {
+  // Своё имя и фотография тоже живые: экран перечитывает профиль после правки, и
+  // общий `{ok:true}` вернул бы ему прежнее имя как сохранённое.
+  if (path === '/user/profile') return renameUser(String(jsonOf(payload).name ?? ''))
+  if (path === '/user/avatar')
+    return method === 'DELETE' ? dropUserPhoto() : setUserPhoto()
+  // Выход и удаление записи не отвечают телом — как и сервер, 204.
+  if (path === '/auth/logout' || path === '/user') return null
+
   // Профиль поставщика в заглушке живой: правка и отправка меняют то, что экран
   // прочитает следующим запросом, иначе статус разошёлся бы с кнопками.
   if (path === '/supplier/me') return editMyProfile(jsonOf(payload))

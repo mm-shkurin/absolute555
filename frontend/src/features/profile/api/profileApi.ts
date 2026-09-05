@@ -23,6 +23,7 @@ export interface ImportRequestWire {
 export interface ProfileWire {
   id: string
   name: string
+  avatar_url: string | null
   rating: number | null
   deals_count: number
   reviews_count: number

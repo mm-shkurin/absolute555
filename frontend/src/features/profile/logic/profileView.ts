@@ -30,6 +30,7 @@ export interface ImportRequestView {
 
 export interface ProfileView {
   name: string
+  avatarUrl: string | null
   rating: number | null
   line: string
   shortcuts: ShortcutView[]
@@ -42,6 +43,7 @@ const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
 export function toProfileView(wire: ProfileWire): ProfileView {
   return {
     name: wire.name,
+    avatarUrl: wire.avatar_url,
     rating: wire.rating,
     line: ratingLine(wire.rating, wire.deals_count, wire.member_since),
     shortcuts: shortcuts(wire),

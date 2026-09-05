@@ -12,9 +12,13 @@ import type { ProfileWire, SupplierApplicationStatus } from '../api/profileApi'
 
 const MONTH = new Intl.DateTimeFormat('ru-RU', { month: 'long', year: 'numeric' })
 
-/** Имя берётся из ответа провайдера, которым человек вошёл: своего поля имени у нас нет.
- *  Если провайдер его не дал — пусто, и экран покажет вход вместо выдуманного имени. */
+/** Имя, каким его назвал сервер: своё, если человек его вписал, иначе провайдерское
+ *  (история 21 — правило живёт на строке, а не здесь). Разбор `yandex_json` остался
+ *  запасным ходом для записей, заведённых до появления колонки: сервер отдаёт по ним
+ *  `null`, а имя в их профиле провайдера есть. */
 function nameOf(user: UserWire): string {
+  if (user.name && user.name.trim()) return user.name.trim()
+
   const source = user.yandex_json ?? user.vk_json ?? user.tg_json ?? {}
   const candidates = [source.real_name, source.display_name, source.first_name, source.name]
   const found = candidates.find((value) => typeof value === 'string' && value.trim())
@@ -35,6 +39,7 @@ export function toProfileWire(
   return {
     id: user.id,
     name: nameOf(user),
+    avatar_url: user.avatar_url,
     // Рейтинг и сделки появятся с отзывами: `null` показывается как «пока без оценок»,
     // а ноль читался бы как «оценили на ноль».
     rating: null,
