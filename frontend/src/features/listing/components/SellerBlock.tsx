@@ -10,7 +10,7 @@ export function SellerBlock({ view }: { view: ListingDetailView }) {
   return (
     <div className={listing.block} data-testid="seller-block">
       <div className={styles.seller}>
-        <Avatar size={44} url={view.sellerAvatar} />
+        <Avatar size={48} url={view.sellerAvatar} />
         <div>
           <div className={styles.sellerName}>{view.sellerName}</div>
           <div className={styles.rating}>

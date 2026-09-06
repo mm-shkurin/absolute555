@@ -9,6 +9,7 @@
 // экран разделом, которого у большинства нет.
 import { Link } from 'react-router-dom'
 import { canModerate, currentRole } from '../../../shared/session/authSession'
+import { Panel } from '../../../shared/ui/Panel'
 import { ROUTES } from '../../../shared/navigation/routes'
 import styles from '../profile.module.css'
 
@@ -21,16 +22,18 @@ export function ModerationEntry() {
   if (!canModerate()) return null
 
   return (
-    <section className={styles.moderationEntry} data-testid="profile-moderation">
-      <div>
-        <b>Кабинет модератора</b>
-        <p className={styles.shortcutMeta}>
-          {WHAT_THEY_DO[currentRole()] ?? WHAT_THEY_DO.manager}
-        </p>
+    <Panel tone="accent" testId="profile-moderation">
+      <div className={styles.moderationEntry}>
+        <div>
+          <b>Кабинет модератора</b>
+          <p className={styles.shortcutMeta}>
+            {WHAT_THEY_DO[currentRole()] ?? WHAT_THEY_DO.manager}
+          </p>
+        </div>
+        <Link to={ROUTES.adminSummary} className={styles.moderationLink}>
+          Перейти
+        </Link>
       </div>
-      <Link to={ROUTES.adminSummary} className={styles.moderationLink}>
-        Перейти
-      </Link>
-    </section>
+    </Panel>
   )
 }

@@ -91,9 +91,12 @@
   padding: 0;
 }
 
+/* На тёмном холсте кадры сливались в одну ленту: промежутка 8 px мало, а границы у
+   миниатюр нет. Текущий берёт рамку, остальные притушены — граница видна между любыми
+   двумя соседями, а не только у выбранного. */
 .strip {
   display: flex;
-  gap: 8px;
+  gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
 }
@@ -106,8 +109,11 @@
   border-color: transparent;
   padding: 0;
   overflow: hidden;
+  opacity: 0.55;
 }
 
 .stripShot.current {
   outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  opacity: 1;
 }

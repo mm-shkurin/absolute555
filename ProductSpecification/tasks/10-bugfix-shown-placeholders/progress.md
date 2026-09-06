@@ -8,4 +8,5 @@
 - [x] аватары: complaintView, DialogList, SiteHeader + сессия, SellerBlock, sellerProfile
 - [x] правка 15: убрать обёртку `.cards`, проп `columns` у `ListingGrid`
 - [x] прогон `bash scripts/ci-local.sh --frontend`
-- [~] терминальный ревью-батч, архив в `tasks/done/`
+- [x] терминальный ревью-батч: аватары вернулись к прежним размерам, находка про планшет отклонена
+- [~] архив в `tasks/done/`

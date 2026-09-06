@@ -22,7 +22,7 @@ export function DialogList({
           className={[styles.dialog, dialog.id === current ? styles.current : ''].join(' ')}
           onClick={() => onSelect(dialog.id)}
         >
-          <Avatar size={38} url={dialog.avatarUrl} />
+          <Avatar size={44} url={dialog.avatarUrl} />
           <span className={styles.dialogBody}>
             <span className={styles.dialogName}>
               {dialog.name}

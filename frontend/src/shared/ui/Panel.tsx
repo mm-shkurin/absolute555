@@ -5,18 +5,24 @@ export function Panel({
   title,
   aside,
   first,
+  tone,
   children,
   testId,
 }: {
   title?: string
   aside?: ReactNode
   first?: boolean
+  /** Рамкой акцента выделяется поверхность, которой у большинства людей нет вовсе —
+   *  вход в кабинет модератора. Отступы при этом остаются панельными. */
+  tone?: 'accent'
   children: ReactNode
   testId?: string
 }) {
   return (
     <section
-      className={[styles.panel, first ? styles.first : ''].filter(Boolean).join(' ')}
+      className={[styles.panel, first ? styles.first : '', tone ? styles.accent : '']
+        .filter(Boolean)
+        .join(' ')}
       data-testid={testId}
     >
       {title && aside ? (

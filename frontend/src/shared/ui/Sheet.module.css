@@ -38,7 +38,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 14px 16px 10px;
+  padding: 16px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
@@ -67,9 +67,11 @@
   background: var(--border-subtle);
 }
 
+/* Шторка — вложенная поверхность: 16 px, как у остальных вложенных блоков. Прежние
+   4 px прижимали текст к краям, и заголовок с телом стояли по-разному. */
 .body {
   overflow-y: auto;
-  padding: 4px 4px 8px;
+  padding: 16px;
 }
 
 /* Шторка — телефонная форма. Шире 767 её открывать нечем, но если открыли программно,
