@@ -45,7 +45,7 @@ export function Gallery({ photos, total }: { photos: string[]; total: number }) 
 
   return (
     <div data-testid="gallery">
-      <div className={styles.stage}>
+      <div className={styles.frame}>
         <button
           type="button"
           className={styles.main}

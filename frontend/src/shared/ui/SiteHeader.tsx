@@ -83,7 +83,7 @@ export function SiteHeader({
           ) : null}
           {signedIn ? (
             <Link to={ROUTES.profile} className={styles.avatar} aria-label="Профиль">
-              <Avatar size={32} url={session?.avatarUrl} />
+              <Avatar size={38} url={session?.avatarUrl} />
             </Link>
           ) : (
             <Button tone="ghost" onClick={onSignIn} data-testid="header-sign-in">

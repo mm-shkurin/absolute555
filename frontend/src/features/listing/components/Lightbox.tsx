@@ -64,7 +64,7 @@ export function Lightbox({ photos, total, current, onCurrent, onClose }: Props) 
           <button
             key={url + index}
             type="button"
-            className={[styles.stripShot, index === current ? styles.stripCurrent : ""].join(" ")}
+            className={[styles.stripShot, index === current ? styles.current : ""].join(" ")}
             onClick={() => onCurrent(index)}
           >
             <Cover url={url} caption={String(index + 1)} />

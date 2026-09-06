@@ -31,12 +31,16 @@
   font-size: 10px;
 }
 
+/* Заголовок и мера — две строки, а не одна: оба span строчные, и без display они
+   слипались в «Мои объявления1». */
 .shortcutTitle {
+  display: block;
   font-weight: 700;
   font-size: 16px;
 }
 
 .shortcutMeta {
+  display: block;
   margin-top: 3px;
   color: var(--text-muted);
   font-size: 13.5px;
@@ -49,11 +53,18 @@
   flex-wrap: wrap;
 }
 
+/* Строки заявок разделены: подряд идущие карточки без просвета читались одним списком
+   без границ, и взгляд не находил, где кончается одна заявка. */
 .request {
   display: grid;
   grid-template-columns: 76px 1fr auto;
   gap: 12px;
   align-items: center;
+  padding: 12px 0;
+}
+
+.request + .request {
+  border-top: 1px solid var(--border-subtle);
 }
 
 .requestPhoto {
