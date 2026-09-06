@@ -3,9 +3,11 @@
 import { NavLink, Link } from 'react-router-dom'
 import { ROUTES } from '../navigation/routes'
 import { canModerate } from '../session/authSession'
+import { useCurrentSession } from '../session/useCurrentSession'
 import { useUnreadMessages } from '../session/useUnread'
 import { Button, ButtonLink } from './Button'
 import { Container } from './Container'
+import { Avatar } from './Avatar'
 import { ThemeToggle } from './ThemeToggle'
 import styles from './SiteHeader.module.css'
 
@@ -30,6 +32,7 @@ export function SiteHeader({
   // широком экране бейдж иначе не появляется нигде. Прокинуть его пропом через каждый
   // экран значит забыть его ровно там, где новый экран добавят завтра.
   const unread = useUnreadMessages()
+  const session = useCurrentSession()
 
   return (
     <header
@@ -79,7 +82,9 @@ export function SiteHeader({
             </Link>
           ) : null}
           {signedIn ? (
-            <Link to={ROUTES.profile} className={styles.avatar} aria-label="Профиль" />
+            <Link to={ROUTES.profile} className={styles.avatar} aria-label="Профиль">
+              <Avatar size={32} url={session?.avatarUrl} />
+            </Link>
           ) : (
             <Button tone="ghost" onClick={onSignIn} data-testid="header-sign-in">
               Войти

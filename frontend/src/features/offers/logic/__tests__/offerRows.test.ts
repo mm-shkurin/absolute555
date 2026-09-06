@@ -70,4 +70,11 @@ describe('строка оффера', () => {
   it('предложение выше цены не показывает разрыв', () => {
     expect(toOfferRow({ ...wire, amount: 4100000 }, 'incoming', now).gap).toBeNull()
   })
+
+  it('обложка машины доходит до строки предложения', () => {
+    expect(toOfferRow({ ...wire, photo_url: 'https://s3/car.jpg' }, 'incoming', now).photoUrl).toBe(
+      'https://s3/car.jpg',
+    )
+    expect(toOfferRow({ ...wire, photo_url: null }, 'incoming', now).photoUrl).toBeNull()
+  })
 })

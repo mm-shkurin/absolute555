@@ -20,6 +20,7 @@ export interface MyListingWire {
   mileage_km: number | null
   status: ListingStatus
   photos_count: number
+  preview_url: string | null
   measured_panels: number
   total_panels: number
   new_offers: number
@@ -54,6 +55,7 @@ function toMyListing(car: SaleCarWire): MyListingWire {
     mileage_km: car.milleage,
     status: STATUS[car.status],
     photos_count: car.photos.length,
+    preview_url: car.preview_photo_url,
     // Замеров, непрочитанного и шагов черновика сервер не считает: ни карты замеров, ни
     // чатов на нём пока нет, а черновик он не разбивает на шаги.
     measured_panels: 0,

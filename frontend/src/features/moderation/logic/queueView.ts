@@ -10,6 +10,7 @@ export interface QueueRowView {
   listingId: string
   title: string
   meta: string
+  coverUrl: string | null
   flag: string | null
   badge: string
   tone: StatusTone
@@ -27,6 +28,7 @@ export function toQueueRow(wire: QueueItemWire): QueueRowView {
     listingId: wire.listing_id,
     title: `${wire.title} · ${wire.year} · ${formatPrice(wire.price)}`,
     meta: metaLine(wire),
+    coverUrl: wire.cover_url,
     // Жалобы вынесены отдельной строкой, а не спрятаны в подпись: объявление с жалобами
     // модератор обязан открыть раньше очереди, и найти его надо глазами, без чтения.
     flag:

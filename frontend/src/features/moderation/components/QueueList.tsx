@@ -1,4 +1,4 @@
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Cover } from '../../../shared/ui/Cover'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import type { QueueRowView } from '../logic/queueView'
 import styles from '../moderation.module.css'
@@ -22,7 +22,7 @@ export function QueueList({
           className={[styles.item, row.id === current ? styles.current : ''].join(' ')}
           onClick={() => onSelect(row.id)}
         >
-          <Placeholder className={styles.cover}>обложка</Placeholder>
+          <Cover className={styles.cover} url={row.coverUrl} caption="обложка" />
           <span>
             <span className={styles.itemTitle}>{row.title}</span>
             <span className={styles.itemMeta}>{row.meta}</span>

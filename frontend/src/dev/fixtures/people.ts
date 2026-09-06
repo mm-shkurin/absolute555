@@ -34,6 +34,7 @@ export const PROFILE: ProfileWire = {
 
 const baseListing: MyListingWire = {
   id: 'l1',
+  preview_url: null,
   title: 'Lexus LX 570',
   year: 2012,
   price: 4020000,

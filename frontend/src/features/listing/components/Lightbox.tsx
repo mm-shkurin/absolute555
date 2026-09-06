@@ -2,7 +2,7 @@
 // единственные два жеста, которые человек пробует, не глядя на кнопки.
 import { useEffect } from 'react'
 import { Placeholder } from '../../../shared/ui/Placeholder'
-import { Shot } from './Gallery'
+import { Cover } from '../../../shared/ui/Cover'
 import styles from './Gallery.module.css'
 
 interface Props {
@@ -47,7 +47,7 @@ export function Lightbox({ photos, total, current, onCurrent, onClose }: Props) 
           ‹
         </button>
         <Placeholder className={styles.stageShot}>
-          <Shot url={photos[current]} caption={`фотография ${current + 1} из ${total}`} />
+          <Cover url={photos[current]} caption={`фотография ${current + 1} из ${total}`} />
         </Placeholder>
         <button
           type="button"
@@ -66,7 +66,7 @@ export function Lightbox({ photos, total, current, onCurrent, onClose }: Props) 
             className={[styles.stripShot, index === current ? styles.current : ''].join(' ')}
             onClick={() => onCurrent(index)}
           >
-            <Shot url={url} caption={String(index + 1)} />
+            <Cover url={url} caption={String(index + 1)} />
           </button>
         ))}
       </div>

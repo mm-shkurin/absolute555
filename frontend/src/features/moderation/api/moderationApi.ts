@@ -13,6 +13,7 @@ export interface QueueItemWire {
   seller_rating: number | null
   seller_is_new: boolean
   submitted_at: string
+  cover_url: string | null
   photos_count: number
   measured_panels: number
   total_panels: number
@@ -27,6 +28,7 @@ export interface QueueItemWire {
 export interface ComplaintWire {
   id: string
   author_name: string
+  author_avatar: string | null
   created_at: string
   reason: string
   body: string
@@ -39,6 +41,7 @@ export interface ComplaintCaseWire {
   price: number
   seller_name: string
   seller_rating: number | null
+  cover_url: string | null
   published_at: string
   complaints: ComplaintWire[]
 }
@@ -89,6 +92,7 @@ function toQueueItem(item: WireQueueItem): QueueItemWire {
     // говорит: сделка без отзыва оставляет продавца без рейтинга, но не без опыта.
     seller_is_new: (item.seller?.deals_count ?? 0) === 0,
     submitted_at: item.submitted_at ?? '',
+    cover_url: item.preview_photo_url ?? null,
     photos_count: item.preview_photo_url ? 1 : 0,
     measured_panels: 0,
     total_panels: 11,
@@ -128,10 +132,12 @@ function toComplaintCase(group: ComplaintGroupWire): ComplaintCaseWire {
     // содержит. Пустое имя честнее подставленного из соседней выдачи.
     seller_name: '',
     seller_rating: null,
+    cover_url: listing?.preview_photo_url ?? null,
     published_at: listing?.published_at ?? '',
     complaints: group.complaints.map((complaint) => ({
       id: complaint.complaint_id,
       author_name: complaint.author?.name ?? '',
+      author_avatar: complaint.author?.avatar_url ?? null,
       created_at: complaint.created_at,
       reason: complaintReasonText(complaint.reason),
       body: complaint.text ?? '',

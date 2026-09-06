@@ -18,6 +18,7 @@ export interface MyListingRowView {
   tone: StatusTone
   actions: MyListingAction[]
   reason: string | null
+  coverUrl: string | null
   faded: boolean
 }
 
@@ -78,6 +79,7 @@ export function toMyListingRow(wire: MyListingWire): MyListingRowView {
     // Причина отказа показывается текстом прямо в строке, а не за кнопкой: её надо
     // прочитать, чтобы понять, что делать дальше, и прятать её незачем.
     reason: wire.status === 'rejected' ? wire.rejection_reason : null,
+    coverUrl: wire.preview_url,
     faded: wire.status === 'sold',
   }
 }

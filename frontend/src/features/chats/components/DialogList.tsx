@@ -1,5 +1,6 @@
 // Список диалогов. На узком экране скрыт: там переписка занимает экран целиком, а список
 // живёт отдельным адресом.
+import { Avatar } from '../../../shared/ui/Avatar'
 import type { DialogView } from '../logic/conversation'
 import styles from '../chats.module.css'
 
@@ -21,7 +22,7 @@ export function DialogList({
           className={[styles.dialog, dialog.id === current ? styles.current : ''].join(' ')}
           onClick={() => onSelect(dialog.id)}
         >
-          <span className={styles.avatar} />
+          <Avatar size={38} url={dialog.avatarUrl} />
           <span className={styles.dialogBody}>
             <span className={styles.dialogName}>
               {dialog.name}

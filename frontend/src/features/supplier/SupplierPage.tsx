@@ -76,9 +76,7 @@ export function SupplierPage({ signedIn = false }: { signedIn?: boolean }) {
                     {supplier.data.listings.length === 0 ? (
                       <p>Сейчас у поставщика нет опубликованных позиций.</p>
                     ) : (
-                      <div className={styles.cards}>
-                        <ListingGrid listings={supplier.data.listings.map(toListingView)} />
-                      </div>
+                      <ListingGrid listings={supplier.data.listings.map(toListingView)} columns={3} />
                     )}
                   </Panel>
 

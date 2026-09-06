@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Button } from '../../../shared/ui/Button'
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Cover } from '../../../shared/ui/Cover'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { MyListingAction, MyListingRowView } from '../logic/myListingRows'
@@ -21,7 +21,7 @@ export function MyListingList({
           className={[styles.row, row.faded ? styles.faded : ''].filter(Boolean).join(' ')}
           data-testid="my-listing-row"
         >
-          <Placeholder className={styles.cover}>обложка</Placeholder>
+          <Cover className={styles.cover} url={row.coverUrl} caption="обложка" />
           <div>
             <Link to={ROUTES.listing(row.id)} className={styles.title}>
               {row.title}

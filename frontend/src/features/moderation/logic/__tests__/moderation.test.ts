@@ -14,6 +14,7 @@ const item: QueueItemWire = {
   seller_is_new: false,
   submitted_at: new Date(2026, 7, 28, 14, 32).toISOString(),
   photos_count: 7,
+  cover_url: 'https://s3/queue.jpg',
   measured_panels: 11,
   total_panels: 13,
   complaints_count: 0,
@@ -58,12 +59,14 @@ const complaintCase: ComplaintCaseWire = {
   year: 2013,
   price: 2450000,
   seller_name: 'Игорь',
+  cover_url: 'https://s3/x5.jpg',
   seller_rating: 3.9,
   published_at: new Date(2026, 7, 12).toISOString(),
   complaints: [
     {
       id: 'c1',
       author_name: 'Артём',
+      author_avatar: 'https://s3/artem.jpg',
       created_at: new Date(2026, 7, 28, 11, 20).toISOString(),
       reason: 'цена-приманка',
       body: 'В объявлении одна цена, в чате другая.',
@@ -71,6 +74,7 @@ const complaintCase: ComplaintCaseWire = {
     {
       id: 'c2',
       author_name: 'Ольга',
+      author_avatar: null,
       created_at: new Date(2026, 7, 27, 18, 4).toISOString(),
       reason: 'фото не той машины',
       body: 'На снимках разные диски.',
@@ -85,5 +89,20 @@ describe('жалобы', () => {
     expect(view.count).toBe('2 жалобы')
     expect(view.complaints[0].meta).toBe('· сегодня, 11:20 · причина: цена-приманка')
     expect(view.complaints[1].meta).toBe('· вчера, 18:04 · причина: фото не той машины')
+  })
+
+  // Фотография жалобщика приезжает вместе с именем и отбрасывалась на переводе.
+  it('несут обложку объявления и фотографию жалобщика', () => {
+    const view = toComplaintCase(complaintCase, new Date(2026, 7, 28, 20, 0))
+    expect(view.coverUrl).toBe('https://s3/x5.jpg')
+    expect(view.complaints[0].authorAvatar).toBe('https://s3/artem.jpg')
+    expect(view.complaints[1].authorAvatar).toBeNull()
+  })
+})
+
+describe('обложка в очереди', () => {
+  it('строка очереди несёт обложку объявления', () => {
+    expect(toQueueRow(item).coverUrl).toBe('https://s3/queue.jpg')
+    expect(toQueueRow({ ...item, cover_url: null }).coverUrl).toBeNull()
   })
 })

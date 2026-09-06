@@ -33,6 +33,7 @@ export interface ListingDetailView {
   thicknessBadge: string | null
   sellerId: string
   sellerName: string
+  sellerAvatar: string | null
   sellerStars: string
   sellerRating: string
   soldOn: string | null
@@ -124,6 +125,7 @@ export function toListingDetailView(wire: ListingDetailWire): ListingDetailView 
         : null,
     sellerId: wire.seller.id,
     sellerName: wire.seller.name,
+    sellerAvatar: wire.seller.avatar_url,
     sellerStars: stars(wire.seller.rating),
     sellerRating:
       wire.seller.rating === null

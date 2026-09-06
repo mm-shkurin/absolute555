@@ -20,6 +20,7 @@ export interface OfferRowView {
   badge: string
   tone: StatusTone
   actions: OfferAction[]
+  photoUrl: string | null
   faded: boolean
   /** Написанный отзыв: по нему кнопка ведёт в правку, а не в повторное написание,
    *  которое сервер отвергает. */
@@ -68,6 +69,7 @@ export function toOfferRow(
     tone: TONE[status],
     actions: actionsFor(wire, direction),
     reviewId: wire.review_id,
+    photoUrl: wire.photo_url,
     faded: !isLive(status),
   }
 }

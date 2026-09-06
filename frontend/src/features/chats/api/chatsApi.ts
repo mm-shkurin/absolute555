@@ -18,9 +18,11 @@ export type MessageKind = 'text' | 'system'
 export interface ChatWire {
   id: string
   counterparty_name: string
+  counterparty_avatar: string | null
   listing_id: string
   listing_title: string
   listing_price: number
+  listing_photo: string | null
   last_message: string
   last_message_at: string
   unread_count: number
@@ -44,9 +46,11 @@ function toChat(dialog: DialogWire): ChatWire {
     // Имя приходит от провайдера входа собеседника; у кого его нет — пусто, и экран
     // покажет объявление вместо выдуманного имени.
     counterparty_name: dialog.counterpart?.name ?? '',
+    counterparty_avatar: dialog.counterpart?.avatar_url ?? null,
     listing_id: dialog.sale_car_id,
     listing_title: `${listing?.brand ?? ''} ${listing?.model ?? ''}`.trim(),
     listing_price: listing?.price ?? 0,
+    listing_photo: listing?.preview_photo_url ?? null,
     last_message: last?.text ?? '',
     // Диалог без единого сообщения заводится вместе с предложением: времени у него нет,
     // и время создания подставить неоткуда.

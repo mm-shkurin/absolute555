@@ -72,12 +72,6 @@
   color: var(--text-secondary);
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
 .review {
   display: flex;
   gap: 12px;
@@ -153,8 +147,7 @@
   .side {
     position: static;
   }
-  .terms,
-  .cards {
+  .terms {
     grid-template-columns: 1fr;
   }
 }

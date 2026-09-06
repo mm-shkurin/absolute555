@@ -8,6 +8,7 @@ import type { ComplaintCaseWire, ComplaintWire } from '../api/moderationApi'
 export interface ComplaintView {
   id: string
   author: string
+  authorAvatar: string | null
   meta: string
   body: string
 }
@@ -16,6 +17,7 @@ export interface ComplaintCaseView {
   listingId: string
   title: string
   seller: string
+  coverUrl: string | null
   count: string
   complaints: ComplaintView[]
 }
@@ -25,6 +27,7 @@ export function toComplaintCase(wire: ComplaintCaseWire, now: Date): ComplaintCa
   return {
     listingId: wire.listing_id,
     title: `${wire.title} · ${wire.year} · ${formatPrice(wire.price)}`,
+    coverUrl: wire.cover_url,
     seller: `${wire.seller_name} · рейтинг ${ratingValue(wire.seller_rating)} · опубликовано ${dayAndMonth(wire.published_at)}`,
     count: `${wire.complaints.length} ${pluralize(wire.complaints.length, 'жалоба', 'жалобы', 'жалоб')}`,
     complaints: wire.complaints.map((complaint) => toComplaint(complaint, now)),
@@ -48,6 +51,7 @@ function toComplaint(wire: ComplaintWire, now: Date): ComplaintView {
   return {
     id: wire.id,
     author: wire.author_name,
+    authorAvatar: wire.author_avatar,
     // Причина стоит в подписи рядом с автором: она задаёт, что читать в тексте ниже.
     meta: `· ${when} · причина: ${wire.reason}`,
     body: wire.body,

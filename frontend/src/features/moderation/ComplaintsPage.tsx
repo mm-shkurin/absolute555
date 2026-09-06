@@ -9,7 +9,7 @@ import { ModerationNav } from './components/ModerationNav'
 import { Panel } from '../../shared/ui/Panel'
 import { Avatar } from '../../shared/ui/Avatar'
 import { Button, ButtonLink } from '../../shared/ui/Button'
-import { Placeholder } from '../../shared/ui/Placeholder'
+import { Cover } from '../../shared/ui/Cover'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
 import { dismissComplaint, fetchComplaints, unpublishListing } from './api/moderationApi'
@@ -87,7 +87,7 @@ export function ComplaintsPage() {
             {cases.map((item, index) => (
               <Panel key={item.listingId} first={index === 0} testId="complaint-case">
                 <div className={styles.head}>
-                  <Placeholder className={styles.cover}>обложка</Placeholder>
+                  <Cover className={styles.cover} url={item.coverUrl} caption="обложка" />
                   <div className={styles.headBody}>
                     <div className={styles.title}>{item.title}</div>
                     <div className={styles.seller}>{item.seller}</div>
@@ -97,7 +97,7 @@ export function ComplaintsPage() {
                 <div className={styles.complaints}>
                   {item.complaints.map((complaint) => (
                     <div key={complaint.id} className={styles.complaint}>
-                      <Avatar size={36} />
+                      <Avatar size={36} url={complaint.authorAvatar} />
                       <div>
                         <div className={styles.author}>
                           {complaint.author} <span>{complaint.meta}</span>

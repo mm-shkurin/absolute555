@@ -4,7 +4,7 @@
 // границы, а не наоборот. Каждый маршрут ниже ждёт свой срез из
 // `ProductSpecification/frontend-architecture.md`, таблица «Срезы Абсолюта».
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { useSession } from './useSession'
+import { useCurrentSession } from '../shared/session/useCurrentSession'
 import { beginSignIn } from '../shared/session/signIn'
 import { LandingPage } from '../features/landing/LandingPage'
 import { FeedPage } from '../features/feed/FeedPage'
@@ -55,7 +55,7 @@ function Pending({ screen }: { screen: string }) {
 }
 
 export function App() {
-  const session = useSession()
+  const session = useCurrentSession()
   const signedIn = session !== null
   const unread = useUnreadMessages()
 

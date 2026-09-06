@@ -1,7 +1,8 @@
 // Галерея: крупный кадр, лента миниатюр, полноэкранный просмотр по щелчку.
 import { useState } from 'react'
-import { Placeholder } from '../../../shared/ui/Placeholder'
 import { Lightbox } from './Lightbox'
+import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Cover } from '../../../shared/ui/Cover'
 import styles from './Gallery.module.css'
 
 const THUMBS_SHOWN = 6
@@ -16,7 +17,7 @@ export function Gallery({ photos, total }: { photos: string[]; total: number }) 
   return (
     <div data-testid="gallery">
       <button type="button" className={styles.main} onClick={() => setOpen(true)}>
-        <Shot url={photos[current]} caption={`фотография ${current + 1} из ${total}`} />
+        <Cover url={photos[current]} caption={`фотография ${current + 1} из ${total}`} />
       </button>
       <div className={styles.thumbs}>
         {visible.map((url, index) => (
@@ -26,7 +27,7 @@ export function Gallery({ photos, total }: { photos: string[]; total: number }) 
             className={[styles.thumb, index === current ? styles.current : ''].join(' ')}
             onClick={() => setCurrent(index)}
           >
-            <Shot url={url} caption={String(index + 1)} />
+            <Cover url={url} caption={String(index + 1)} />
           </button>
         ))}
         {rest > 0 ? <Placeholder className={styles.thumb}>{`+${rest}`}</Placeholder> : null}
@@ -42,10 +43,4 @@ export function Gallery({ photos, total }: { photos: string[]; total: number }) 
       ) : null}
     </div>
   )
-}
-
-// Кадра может не быть: объявление публикуется и без фотографий, а модерация их не требует.
-export function Shot({ url, caption }: { url?: string; caption: string }) {
-  if (!url) return <Placeholder>{caption}</Placeholder>
-  return <img src={url} alt={caption} />
 }

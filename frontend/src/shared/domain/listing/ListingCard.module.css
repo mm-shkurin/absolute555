@@ -4,6 +4,13 @@
   gap: 16px;
 }
 
+/* Число колонок задаёт вызывающий экран, но только на широком: ниже по ширине правила
+   ленты сильнее, поэтому они тоже названы через атрибут. Иначе профиль продавца показал
+   бы три колонки на телефоне. */
+.cards[data-columns='3'] {
+  grid-template-columns: repeat(3, 1fr);
+}
+
 .card {
   display: block;
   background: var(--bg-card);
@@ -115,19 +122,22 @@
 }
 
 @media (max-width: 1240px) {
-  .cards {
+  .cards,
+  .cards[data-columns] {
     grid-template-columns: repeat(3, 1fr);
   }
 }
 
 @media (max-width: 1023px) {
-  .cards {
+  .cards,
+  .cards[data-columns] {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
 @media (max-width: 520px) {
-  .cards {
+  .cards,
+  .cards[data-columns] {
     grid-template-columns: 1fr;
   }
   .photo {

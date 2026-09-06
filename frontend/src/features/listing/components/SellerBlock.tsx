@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Avatar } from '../../../shared/ui/Avatar'
 import { buttonClass } from '../../../shared/ui/Button'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { ListingDetailView } from '../logic/listingDetail'
@@ -9,7 +10,7 @@ export function SellerBlock({ view }: { view: ListingDetailView }) {
   return (
     <div className={listing.block} data-testid="seller-block">
       <div className={styles.seller}>
-        <div className={styles.avatar} />
+        <Avatar size={44} url={view.sellerAvatar} />
         <div>
           <div className={styles.sellerName}>{view.sellerName}</div>
           <div className={styles.rating}>

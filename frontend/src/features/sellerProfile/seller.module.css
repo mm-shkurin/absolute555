@@ -98,12 +98,6 @@
   color: var(--text-muted);
 }
 
-.cards {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-}
-
 @media (max-width: 1023px) {
   .layout {
     grid-template-columns: 1fr;
@@ -111,8 +105,5 @@
   }
   .side {
     position: static;
-  }
-  .cards {
-    grid-template-columns: 1fr;
   }
 }

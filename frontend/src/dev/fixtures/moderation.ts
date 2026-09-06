@@ -13,6 +13,7 @@ const DAYS = 24 * HOURS
 const queueBase: QueueItemWire = {
   id: 'q1',
   listing_id: 'l3',
+  cover_url: null,
   title: 'Honda Stream',
   year: 2010,
   price: 1020000,
@@ -56,6 +57,7 @@ export const QUEUE: QueueItemWire[] = [
     price: 2450000,
     seller_name: 'Игорь',
     seller_rating: 3.9,
+    cover_url: null,
     photos_count: 11,
     complaints_count: 2,
     complaint_reason: 'цена-приманка',
@@ -82,11 +84,13 @@ export const COMPLAINTS: ComplaintCaseWire[] = [
     price: 2450000,
     seller_name: 'Игорь',
     seller_rating: 3.9,
+    cover_url: null,
     published_at: new Date(Date.now() - 16 * DAYS).toISOString(),
     complaints: [
       {
         id: 'cm1',
         author_name: 'Артём',
+        author_avatar: null,
         created_at: new Date(Date.now() - 5 * HOURS).toISOString(),
         reason: 'цена-приманка',
         body: 'В объявлении 2 450 000, а в чате продавец говорит, что реальная цена 2 900 000 и «это была ошибка». Висит так третью неделю.',
@@ -94,6 +98,7 @@ export const COMPLAINTS: ComplaintCaseWire[] = [
       {
         id: 'cm2',
         author_name: 'Ольга',
+        author_avatar: null,
         created_at: new Date(Date.now() - 28 * HOURS).toISOString(),
         reason: 'фото не той машины',
         body: 'Фотографии из интернета, на трёх снимках разные диски и разный салон.',

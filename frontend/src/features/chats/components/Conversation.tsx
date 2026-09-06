@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, buttonClass } from '../../../shared/ui/Button'
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Cover } from '../../../shared/ui/Cover'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { ConversationHeader, MessageView } from '../logic/conversation'
 import styles from './Conversation.module.css'
@@ -43,7 +43,7 @@ export function Conversation({
             ‹
           </button>
         ) : null}
-        <Placeholder className={styles.thumb}>фото</Placeholder>
+        <Cover className={styles.thumb} url={header.photoUrl} caption="фото" />
         <div className={styles.headText}>
           <div className={styles.who}>{header.name}</div>
           <div className={styles.about}>{header.subtitle}</div>

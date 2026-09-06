@@ -35,7 +35,7 @@ const wire: ListingDetailWire = {
   offers_count: 4,
   measured_panels: 11,
   total_panels: 13,
-  seller: { id: 'u1', name: 'Михаил', rating: 4.8, deals_count: 12 },
+  seller: { id: 'u1', name: 'Михаил', avatar_url: 'https://s3/mihail.jpg', rating: 4.8, deals_count: 12 },
   offers: null,
 }
 
@@ -145,5 +145,9 @@ describe('решение модератора (история 22)', () => {
 
     expect(view.decidedOn).toBeNull()
     expect(view.decidedBy).toBeNull()
+  })
+
+  it('лицо продавца доходит до блока продавца', () => {
+    expect(toListingDetailView(wire).sellerAvatar).toBe('https://s3/mihail.jpg')
   })
 })

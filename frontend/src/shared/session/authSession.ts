@@ -75,6 +75,15 @@ export function renewTokens(accessToken: string, refreshToken: string): void {
   startSession({ ...session, accessToken, refreshToken })
 }
 
+// Имя и фотография меняются в профиле, а шапка читает сессию: без этого лицо в углу
+// отстаёт от профиля до перезагрузки страницы.
+export function updateIdentity(displayName: string, avatarUrl: string | null): void {
+  const session = currentSession()
+  if (!session) return
+  if (session.displayName === displayName && session.avatarUrl === avatarUrl) return
+  startSession({ ...session, displayName, avatarUrl })
+}
+
 export function endSession(): void {
   current = null
   loaded = true

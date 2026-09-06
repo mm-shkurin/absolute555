@@ -57,6 +57,7 @@ export function SellerProfilePage({ signedIn = false }: { signedIn?: boolean }) 
                       name={seller.data.name ?? 'Продавец'}
                       rating={seller.data.rating}
                       line={sellerLine(seller.data)}
+                      avatarUrl={seller.data.avatar_url}
                       action={null}
                     />
                   </Panel>
@@ -73,9 +74,7 @@ export function SellerProfilePage({ signedIn = false }: { signedIn?: boolean }) 
                     {items.length === 0 ? (
                       <p>Сейчас у продавца нет опубликованных объявлений.</p>
                     ) : (
-                      <div className={styles.cards}>
-                        <ListingGrid listings={items.map(toListingView)} />
-                      </div>
+                      <ListingGrid listings={items.map(toListingView)} columns={3} />
                     )}
                   </Panel>
                 </div>

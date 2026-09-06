@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { shortWhen, toDialogs, toMessages } from '../conversation'
+import { shortWhen, toDialogs, toHeader, toMessages } from '../conversation'
 import type { ChatWire, MessageWire } from '../../api/chatsApi'
 
 const now = new Date(2026, 7, 28, 18, 0)
@@ -7,9 +7,11 @@ const now = new Date(2026, 7, 28, 18, 0)
 const chat: ChatWire = {
   id: 'c1',
   counterparty_name: 'Дмитрий',
+  counterparty_avatar: 'https://s3/dmitry.jpg',
   listing_id: 'l1',
   listing_title: 'Lexus LX 570',
   listing_price: 4020000,
+  listing_photo: 'https://s3/lx.jpg',
   last_message: 'А по документам всё чисто?',
   last_message_at: new Date(2026, 7, 28, 14, 58).toISOString(),
   unread_count: 2,
@@ -55,5 +57,12 @@ describe('чаты', () => {
     expect(view.map((item) => item.body)).toEqual(['Вчера', 'вчерашнее', 'Сегодня', 'сегодняшнее'])
     expect(view[3].outgoing).toBe(true)
     expect(view[3].time).toBe('15:04')
+  })
+
+  // Лицо собеседника и машина, о которой речь, — то, по чему диалог узнают в списке.
+  it('диалог несёт аватар собеседника, шапка — обложку машины', () => {
+    expect(toDialogs([chat], now)[0].avatarUrl).toBe('https://s3/dmitry.jpg')
+    expect(toHeader(chat).photoUrl).toBe('https://s3/lx.jpg')
+    expect(toHeader({ ...chat, listing_photo: null }).photoUrl).toBeNull()
   })
 })

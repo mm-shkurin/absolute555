@@ -54,7 +54,7 @@ export async function startSessionFrom(tokens: TokenWire): Promise<void> {
       userId: user.id,
       role: ROLES[user.role ?? ''] ?? 'user',
       displayName: displayName(user),
-      avatarUrl: null,
+      avatarUrl: user.avatar_url,
     })
   } catch {
     // Профиль не ответил — вход всё равно состоялся. Имя и роль подтянутся при следующем

@@ -63,6 +63,7 @@ export function toListingDetailWire(
     seller: {
       id: car.seller?.user_id ?? car.user_id,
       name: car.seller?.name ?? '',
+      avatar_url: car.seller?.avatar_url ?? null,
       // Агрегат едет в блоке продавца — отдельного вызова ради трёх чисел нет.
       rating: car.seller?.rating ?? null,
       deals_count: car.seller?.deals_count ?? 0,

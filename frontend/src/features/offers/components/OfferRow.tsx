@@ -2,7 +2,7 @@
 // `logic/offerRows.ts`, здесь только кнопки по списку.
 import { Link } from 'react-router-dom'
 import { Button } from '../../../shared/ui/Button'
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Cover } from '../../../shared/ui/Cover'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { OfferAction, OfferRowView } from '../logic/offerRows'
@@ -22,7 +22,7 @@ export function OfferRow({
       className={[styles.row, offer.faded ? styles.faded : ''].filter(Boolean).join(' ')}
       data-testid="offer-row"
     >
-      <Placeholder className={styles.photo}>фото</Placeholder>
+      <Cover className={styles.photo} url={offer.photoUrl} caption="фото" />
       <div>
         <Link to={ROUTES.listing(offer.listingId)} className={styles.title}>
           {offer.title}

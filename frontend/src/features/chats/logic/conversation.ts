@@ -6,6 +6,7 @@ import type { ChatWire, MessageWire } from '../api/chatsApi'
 export interface DialogView {
   id: string
   name: string
+  avatarUrl: string | null
   when: string
   listingTitle: string
   preview: string
@@ -22,6 +23,7 @@ export interface MessageView {
 
 export interface ConversationHeader {
   name: string
+  photoUrl: string | null
   listingId: string
   subtitle: string
 }
@@ -42,6 +44,7 @@ export function toDialogs(chats: ChatWire[], now: Date): DialogView[] {
   return chats.map((chat) => ({
     id: chat.id,
     name: chat.counterparty_name,
+    avatarUrl: chat.counterparty_avatar,
     // Диалог заводится вместе с предложением по цене и до первого сообщения пуст: времени
     // у него нет, и `new Date('')` уронил бы форматирование вместе со всем списком.
     when: chat.last_message_at ? shortWhen(new Date(chat.last_message_at), now) : '',
@@ -54,6 +57,7 @@ export function toDialogs(chats: ChatWire[], now: Date): DialogView[] {
 export function toHeader(chat: ChatWire): ConversationHeader {
   return {
     name: chat.counterparty_name,
+    photoUrl: chat.listing_photo,
     listingId: chat.listing_id,
     subtitle: `${chat.listing_title} · ${formatPrice(chat.listing_price)}`,
   }

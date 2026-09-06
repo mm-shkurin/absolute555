@@ -4,9 +4,9 @@
 // и пара «состояние + подписка в эффекте» отдаёт устаревшее значение при первом рендере
 // после навигации — экран успевает моргнуть кнопками гостя вошедшему человеку.
 import { useSyncExternalStore } from 'react'
-import { currentSession, subscribeToSession, type Session } from '../shared/session/authSession'
+import { currentSession, subscribeToSession, type Session } from './authSession'
 
-export function useSession(): Session | null {
+export function useCurrentSession(): Session | null {
   return useSyncExternalStore(subscribeToSession, currentSession, serverSnapshot)
 }
 

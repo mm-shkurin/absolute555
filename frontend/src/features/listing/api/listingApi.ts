@@ -10,6 +10,7 @@ import type { ModerationWire } from '../../../shared/api/backend/saleCarContract
 export interface SellerWire {
   id: string
   name: string
+  avatar_url: string | null
   rating: number | null
   deals_count: number
 }

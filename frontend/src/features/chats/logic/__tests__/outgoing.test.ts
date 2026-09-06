@@ -3,6 +3,8 @@ import { toDialogs } from '../conversation'
 import type { ChatWire } from '../../api/chatsApi'
 
 const chat = (over: Partial<ChatWire> = {}): ChatWire => ({
+  counterparty_avatar: null,
+  listing_photo: null,
   id: 'd1',
   counterparty_name: 'Иван',
   listing_id: 'c1',

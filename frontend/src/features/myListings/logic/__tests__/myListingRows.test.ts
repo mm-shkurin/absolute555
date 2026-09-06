@@ -4,6 +4,7 @@ import type { MyListingWire } from '../../api/myListingsApi'
 
 const base: MyListingWire = {
   id: 'l1',
+  preview_url: null,
   title: 'Lexus LX 570',
   year: 2012,
   price: 4020000,
@@ -96,5 +97,14 @@ describe('снятое и отклонённое', () => {
     ]
     expect(filterByStatus(items, 'draft').map((item) => item.id)).toEqual(['a', 'b'])
     expect(countByStatus(items, 'draft')).toBe(2)
+  })
+
+  // Обложка есть у объявления с фотографией — серая плашка остаётся только там, где
+  // кадров нет вовсе.
+  it('обложка переносится в вид, у объявления без фото — null', () => {
+    expect(toMyListingRow({ ...base, preview_url: 'https://s3/cover.jpg' }).coverUrl).toBe(
+      'https://s3/cover.jpg',
+    )
+    expect(toMyListingRow({ ...base, preview_url: null }).coverUrl).toBeNull()
   })
 })

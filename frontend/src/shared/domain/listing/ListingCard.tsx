@@ -47,9 +47,12 @@ export function ListingCard({ listing }: { listing: ListingView }) {
   )
 }
 
-export function ListingGrid({ listings }: { listings: ListingView[] }) {
+// Число колонок — проп, а не внешняя сетка вокруг: обёртка с собственным
+// `grid-template-columns` делит уже поделённую колонку и сплющивает карточку до
+// нескольких символов. Так уже вышло в профиле продавца и на витрине поставщика.
+export function ListingGrid({ listings, columns }: { listings: ListingView[]; columns?: number }) {
   return (
-    <div className={styles.cards} data-testid="listing-grid">
+    <div className={styles.cards} data-columns={columns} data-testid="listing-grid">
       {listings.map((listing) => (
         <ListingCard key={listing.id} listing={listing} />
       ))}
