@@ -50,13 +50,6 @@
   background: var(--bg-selected);
 }
 
-.avatar {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  background: var(--border-subtle);
-}
-
 .dialogName {
   display: flex;
   gap: 8px;
