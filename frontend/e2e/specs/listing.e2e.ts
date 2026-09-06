@@ -55,6 +55,16 @@ describe('Карточка объявления', () => {
     expect(await listing.currentShotNumber()).toBe(first + 1)
   })
 
+  it('пожаловаться можно словом, а не только значком', async () => {
+    await openListing()
+
+    // Три точки в углу человек не находил: подписи нет, а title не существует на
+    // телефоне. Проверяется именно подписанный вход внизу карточки.
+    await listing.complainFromBottom()
+
+    await listing.assertComplaintSheetShown()
+  })
+
   it('вошедший покупатель видит цену и продавца', async () => {
     await openListing()
     await listing.assertListingShown()

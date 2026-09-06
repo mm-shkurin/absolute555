@@ -8,7 +8,14 @@ import { Gallery } from './Gallery'
 import { ThicknessBadge } from './ThicknessBadge'
 import styles from '../listing.module.css'
 
-export function ListingBody({ listing }: { listing: ListingDetailView }) {
+export function ListingBody({
+  listing,
+  onComplain,
+}: {
+  listing: ListingDetailView
+  /** Не передан — объявление своё: на себя не жалуются. */
+  onComplain?: () => void
+}) {
   return (
     <div>
       <Gallery photos={listing.photos} total={listing.photosTotal} />
@@ -46,6 +53,17 @@ export function ListingBody({ listing }: { listing: ListingDetailView }) {
             Открыть карту целиком
           </Link>
         </div>
+      ) : null}
+
+      {onComplain ? (
+        <button
+          type="button"
+          className={styles.complain}
+          onClick={onComplain}
+          data-testid="listing-complain"
+        >
+          Пожаловаться на объявление
+        </button>
       ) : null}
     </div>
   )

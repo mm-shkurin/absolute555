@@ -1,5 +1,13 @@
-// Выбор марки и модели. Модели грузятся только после выбора марки: их список зависит от
-// неё, и запрашивать все сразу — семьдесят один запрос ради одного нажатия.
+// Выбор марки и модели — шаг за шагом. Марки заменяются моделями, сверху строка
+// возврата.
+//
+// До этого оба списка стояли подряд одним стилем: после выбора марки модели просто
+// дописывались снизу, и на экране это была одна простыня — за «Volkswagen» сразу шли
+// «Amarok», «Arteon», «Beetle». Два столбца отвергнуты: на телефоне они схлопываются в
+// ту же простыню, а мастер продажи уже устроен шагами — приём человеку знаком.
+//
+// Модели грузятся только после выбора марки: их список зависит от неё, и запрашивать все
+// сразу — семьдесят один запрос ради одного нажатия.
 import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Sheet } from '../../../shared/ui/Sheet'
@@ -48,42 +56,51 @@ export function BrandSheet({
         />
       ) : null}
 
-      <div className={styles.brandList}>
-        {(brands.data ?? []).map((option) => (
-          <button
-            key={option.brand_id}
-            type="button"
-            className={styles.brandOption}
-            aria-pressed={brand?.id === option.brand_id}
-            onClick={() => setBrand({ id: option.brand_id, name: option.name_ru })}
-          >
-            {option.name_ru}
-          </button>
-        ))}
-      </div>
-
-      {brand ? (
-        <div className={styles.brandList} data-testid="model-list">
-          {models.isPending ? <ListSkeleton rows={2} /> : null}
-          {(models.data ?? []).map((option) => (
+      {brand === null ? (
+        <div className={styles.brandList}>
+          {(brands.data ?? []).map((option) => (
             <button
-              key={option.model_id}
+              key={option.brand_id}
               type="button"
               className={styles.brandOption}
-              onClick={() =>
-                onPick({
-                  brand: brand.id,
-                  brandName: brand.name,
-                  model: option.model_id,
-                  modelName: option.name,
-                })
-              }
+              onClick={() => setBrand({ id: option.brand_id, name: option.name_ru })}
             >
-              {option.name}
+              {option.name_ru}
             </button>
           ))}
         </div>
-      ) : null}
+      ) : (
+        <>
+          <button
+            type="button"
+            className={styles.brandBack}
+            onClick={() => setBrand(null)}
+            data-testid="brand-back"
+          >
+            ‹ {brand.name}
+          </button>
+          <div className={styles.brandList} data-testid="model-list">
+            {models.isPending ? <ListSkeleton rows={2} /> : null}
+            {(models.data ?? []).map((option) => (
+              <button
+                key={option.model_id}
+                type="button"
+                className={styles.brandOption}
+                onClick={() =>
+                  onPick({
+                    brand: brand.id,
+                    brandName: brand.name,
+                    model: option.model_id,
+                    modelName: option.name,
+                  })
+                }
+              >
+                {option.name}
+              </button>
+            ))}
+          </div>
+        </>
+      )}
 
       <div className={styles.brandActions}>
         <Button

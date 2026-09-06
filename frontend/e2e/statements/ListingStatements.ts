@@ -74,6 +74,15 @@ export class ListingStatements {
     )
   }
 
+  async complainFromBottom(): Promise<void> {
+    const link = await waitForVisible(this.driver, 'listing-complain')
+    await clickElement(this.driver, link)
+  }
+
+  async assertComplaintSheetShown(): Promise<void> {
+    await waitForVisible(this.driver, 'complain-sheet')
+  }
+
   async openGallery(): Promise<void> {
     const gallery = await waitForVisible(this.driver, 'gallery')
     await clickElement(this.driver, await gallery.findElement(By.css('button')))

@@ -145,3 +145,18 @@
   justify-content: center;
   padding: 24px 0 8px;
 }
+
+/* Возврат к маркам. Стрелка и название — как в мастере продажи: человек уже знает, что
+   это шаг назад, а не фильтр. */
+.brandBack {
+  display: block;
+  width: 100%;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: var(--bg-sunken);
+  color: var(--text-secondary);
+  font-size: 14px;
+  text-align: left;
+}

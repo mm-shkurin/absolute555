@@ -117,3 +117,22 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* Вход в жалобу словом, а не значком. Три точки в углу человек не нашёл: подписи у них
+   нет, а `title` виден только под мышью и не существует на телефоне.
+   Стоит внизу: пожаловаться решают, дочитав объявление, а не открыв его. */
+.complain {
+  display: block;
+  margin: 16px auto 0;
+  padding: 8px 14px;
+  border: 0;
+  background: none;
+  color: var(--text-muted);
+  font-size: 13.5px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.complain:hover {
+  color: var(--status-bad-ink);
+}

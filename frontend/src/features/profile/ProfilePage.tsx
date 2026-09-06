@@ -8,8 +8,11 @@ import { PageHeading, PageSection } from '../../shared/ui/PageHeading'
 import { FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
 import { fetchProfile } from './api/profileApi'
+import { fetchMyProfile } from '../../shared/api/backend/supplierApi'
+import { currentRole } from '../../shared/session/authSession'
 import { toProfileView } from './logic/profileView'
 import { ProfileIdentity } from './components/ProfileIdentity'
+import { SupplierStorefront } from './components/SupplierStorefront'
 import { useProfileIdentity } from './useProfileIdentity'
 import { ModerationEntry } from './components/ModerationEntry'
 import { Shortcuts } from './components/Shortcuts'
@@ -20,6 +23,14 @@ export function ProfilePage() {
   const navigate = useNavigate()
   const query = useQuery({ queryKey: ['profile'], queryFn: ({ signal }) => fetchProfile(signal) })
   const identity = useProfileIdentity()
+  // Витрина спрашивается только у того, кому роль уже выдана: остальным сервер отвечает
+  // отказом, и лишний красный запрос в консоли ничего не объясняет.
+  const storefront = useQuery({
+    queryKey: ['my-storefront'],
+    queryFn: ({ signal }) => fetchMyProfile(signal),
+    enabled: currentRole() === 'importer',
+    retry: false,
+  })
   const view = query.data ? toProfileView(query.data) : null
 
   return (
@@ -49,6 +60,12 @@ export function ProfilePage() {
                   actions={identity}
                 />
                 <ModerationEntry />
+                {currentRole() === 'importer' ? (
+                  <SupplierStorefront
+                    status={storefront.data?.status ?? null}
+                    rejectReason={storefront.data?.reject_reason ?? null}
+                  />
+                ) : null}
                 <Shortcuts shortcuts={view.shortcuts} />
                 <SupplierApplication
                   state={view.supplier}

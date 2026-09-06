@@ -30,6 +30,13 @@ describe('Лента объявлений', () => {
     await feed.assertCountLine('объявлен')
   })
 
+  it('модели встают на место марок, а не под ними', async () => {
+    await feed.openApp()
+    await feed.openFeedFromHeader()
+
+    await feed.assertModelsReplaceBrands('Toyota')
+  })
+
   it('фильтр по марке берёт список с сервера', async () => {
     await feed.openApp()
     await feed.openFeedFromHeader()

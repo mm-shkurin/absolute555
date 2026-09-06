@@ -148,6 +148,22 @@ export class FeedStatements {
     expect(await textOf(this.driver, 'filter-brand')).toContain(brand)
   }
 
+  // Марки и модели разведены по шагам: выбрал марку — на её месте список моделей, и
+  // вернуться можно строкой сверху. До этого оба списка стояли подряд одним стилем, и
+  // модели читались продолжением марок.
+  async assertModelsReplaceBrands(brand: string): Promise<void> {
+    await clickElement(this.driver, await waitForVisible(this.driver, 'filter-brand'))
+    const sheet = await waitForVisible(this.driver, 'brand-sheet')
+    await clickElement(this.driver, await waitForButton(this.driver, sheet, brand))
+
+    await waitForVisible(this.driver, 'model-list')
+    // Соседняя марка со списка пропала — значит модели встали на их место, а не под них.
+    expect(await textOf(this.driver, 'brand-sheet')).not.toContain('Mazda')
+
+    await clickElement(this.driver, await waitForVisible(this.driver, 'brand-back'))
+    expect(await textOf(this.driver, 'brand-sheet')).toContain('Mazda')
+  }
+
   // Листание проверяется ростом числа карточек, а не адресом страницы: страницы копятся
   // в одной колонке, и подмена показанного была бы видна именно здесь.
   async loadMoreAndAssertGrows(): Promise<void> {

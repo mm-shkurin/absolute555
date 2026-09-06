@@ -60,7 +60,10 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
           ) : null}
           {listing.view ? (
             <div className={styles.layout}>
-              <ListingBody listing={listing.view} />
+              <ListingBody
+                listing={listing.view}
+                onComplain={listing.mode === 'owner' ? undefined : handlers.onComplain}
+              />
               {listing.mode === 'owner' ? (
                 <OwnerPanel
                   view={listing.view}
