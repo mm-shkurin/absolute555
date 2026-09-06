@@ -1,17 +1,66 @@
+/* Кадр не выше половины экрана: при ширине колонки 1230 пропорция 4/3 давала высоту
+   ≈920 px, и карточка начиналась ниже сгиба. Пропорция сохраняется, но упирается в
+   потолок — как в мокапе. */
+.stage {
+  position: relative;
+}
+
 .main {
   aspect-ratio: 4 / 3;
+  max-height: min(56vh, 620px);
   border-radius: var(--radius-surface);
   width: 100%;
   padding: 0;
   overflow: hidden;
+  /* Жест листания не должен превращаться в выделение картинки. */
+  touch-action: pan-y;
+  user-select: none;
 }
 
-.main img,
+.main img {
+  width: 100%;
+  height: 100%;
+  /* contain, а не cover: вертикальный кадр с телефона при обрезке терял крышу и колёса. */
+  object-fit: contain;
+  background: var(--neutral-900);
+  display: block;
+}
+
 .thumb img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+/* Стрелки — только на широком экране: на телефоне кадр листается пальцем, а две кнопки
+   поверх снимка забирают у него треть ширины. */
+.arrow {
+  position: absolute;
+  top: calc(min(56vh, 620px) / 2 - 22px);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(8, 12, 22, 0.55);
+  color: var(--neutral-000);
+  font-size: 19px;
+  display: grid;
+  place-items: center;
+}
+
+.prev {
+  left: 12px;
+}
+
+.next {
+  right: 12px;
+}
+
+@media (max-width: 767px) {
+  .arrow {
+    display: none;
+  }
 }
 
 .thumbs {
@@ -79,15 +128,18 @@
   gap: 12px;
 }
 
+/* Пропорция не навязывается: вертикальный кадр с телефона при 4/3 и обрезке терял крышу
+   и колёса — на присланном снимке в кадре оставалось небо. Кадр вписывается целиком,
+   тёмный холст остаётся холстом. */
 .stageShot {
-  width: min(900px, 92vw);
-  aspect-ratio: 4 / 3;
+  max-width: 92vw;
+  max-height: 82vh;
   margin: 0 auto;
   border-radius: var(--radius-surface);
   background: var(--neutral-900);
   border-color: transparent;
   color: var(--text-muted);
-  overflow: hidden;
+  object-fit: contain;
   padding: 0;
 }
 

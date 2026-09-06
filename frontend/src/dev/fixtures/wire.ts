@@ -113,7 +113,15 @@ export function saleCar(saleCarId: string): SaleCarWire | null {
     reject_label: null,
     created_at: new Date(Date.now() - 40 * HOURS).toISOString(),
     updated_at: new Date(Date.now() - 30 * HOURS).toISOString(),
-    photos: [],
+    // Три кадра, а не ноль: галерея листается, и сценарий это проверяет. Пустой список
+    // проверял бы только заглушку — то есть случай, когда снимать нечего.
+    photos: [1, 2, 3].map((shot) => ({
+      photo_id: `${saleCarId}-p${shot}`,
+      key: `${saleCarId}/photos/${shot}`,
+      preview_key: `${saleCarId}/previews/${shot}`,
+      url: '/brand/logo.svg',
+      preview_url: '/brand/logo.svg',
+    })),
     // Опубликованное объявление кто-то одобрил: решение и есть то, что вывело его в
     // ленту. Имя решившего заглушка не подставляет — сервер отдаёт его модератору, а
     // не владельцу, и выдуманное здесь имя увело бы экран от правды.

@@ -1,7 +1,6 @@
 // Полноэкранный просмотр. Закрывается по Escape и по клику вне кадра — на телефоне это
 // единственные два жеста, которые человек пробует, не глядя на кнопки.
 import { useEffect } from 'react'
-import { Placeholder } from '../../../shared/ui/Placeholder'
 import { Cover } from '../../../shared/ui/Cover'
 import styles from './Gallery.module.css'
 
@@ -46,9 +45,11 @@ export function Lightbox({ photos, total, current, onCurrent, onClose }: Props) 
         >
           ‹
         </button>
-        <Placeholder className={styles.stageShot}>
-          <Cover url={photos[current]} caption={`фотография ${current + 1} из ${total}`} />
-        </Placeholder>
+        <Cover
+          url={photos[current]}
+          caption={`фотография ${current + 1} из ${total}`}
+          className={styles.stageShot}
+        />
         <button
           type="button"
           className={styles.round}
@@ -63,7 +64,7 @@ export function Lightbox({ photos, total, current, onCurrent, onClose }: Props) 
           <button
             key={url + index}
             type="button"
-            className={[styles.stripShot, index === current ? styles.current : ''].join(' ')}
+            className={[styles.stripShot, index === current ? styles.stripCurrent : ""].join(" ")}
             onClick={() => onCurrent(index)}
           >
             <Cover url={url} caption={String(index + 1)} />

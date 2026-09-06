@@ -1,5 +1,5 @@
 // Карточка объявления и карта замеров — то, ради чего человек и приходит на площадку.
-import { afterAll, beforeAll, describe, it } from 'vitest'
+import { afterAll, beforeAll, describe, expect, it } from 'vitest'
 import type { WebDriver } from 'selenium-webdriver'
 import { BASE_URL, DESKTOP, openBrowser, resize } from '../driver'
 import { FeedStatements } from '../statements/FeedStatements'
@@ -35,6 +35,24 @@ describe('Карточка объявления', () => {
 
     await listing.assertOwnerPanelShown()
     await listing.assertDecidedByModeratorShown()
+  })
+
+  it('кадр листается стрелкой прямо в карточке', async () => {
+    await openListing()
+    const first = await listing.currentShotNumber()
+
+    await listing.nextShotByArrow()
+
+    expect(await listing.currentShotNumber()).toBe(first + 1)
+  })
+
+  it('кадр листается жестом — тем же, что на телефоне', async () => {
+    await openListing()
+    const first = await listing.currentShotNumber()
+
+    await listing.swipeShot(-120)
+
+    expect(await listing.currentShotNumber()).toBe(first + 1)
   })
 
   it('вошедший покупатель видит цену и продавца', async () => {

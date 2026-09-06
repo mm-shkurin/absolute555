@@ -39,6 +39,41 @@ export class ListingStatements {
     expect(await line.getText()).toContain('Проверено модератором')
   }
 
+  // Кадр листается в самой карточке: до этой правки сменить его можно было только
+  // щелчком по миниатюре, а на телефоне — вообще никак.
+  async nextShotByArrow(): Promise<void> {
+    await clickElement(this.driver, await waitForVisible(this.driver, 'gallery-next'))
+  }
+
+  // Подпись читается и с картинки, и с заглушки: в фикстурах у объявления кадров нет,
+  // и главный кадр — серая плашка с тем же текстом «фотография N из M».
+  async currentShotNumber(): Promise<number> {
+    await waitForVisible(this.driver, 'gallery')
+    const caption = String(
+      await this.driver.executeScript(
+        `const main = document.querySelector('[data-testid="gallery"] button')
+         const shot = main.querySelector('img')
+         return shot ? shot.alt : main.textContent`,
+      ),
+    )
+    return Number(caption.match(/\d+/)?.[0] ?? 0)
+  }
+
+  // Жест собирается событиями указателя: настоящий свайп драйвером в собранном
+  // приложении не доходит до обработчиков React так же надёжно, как выбор файла.
+  async swipeShot(deltaX: number): Promise<void> {
+    await waitForVisible(this.driver, 'gallery')
+    await this.driver.executeScript(
+      `const main = document.querySelector('[data-testid="gallery"] button')
+       const send = (type, x) => main.dispatchEvent(
+         new PointerEvent(type, { clientX: x, clientY: 200, bubbles: true }),
+       )
+       send('pointerdown', 400)
+       send('pointerup', 400 + arguments[0])`,
+      deltaX,
+    )
+  }
+
   async openGallery(): Promise<void> {
     const gallery = await waitForVisible(this.driver, 'gallery')
     await clickElement(this.driver, await gallery.findElement(By.css('button')))
