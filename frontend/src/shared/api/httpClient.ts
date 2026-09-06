@@ -8,7 +8,7 @@
 import { readSuccessBody, toHttpError, type ResponseType } from './httpResponse'
 import { REQUEST_TIMEOUT_MS, withTimeout } from './requestTimeout'
 
-export { isHttpError, type HttpError } from './httpResponse'
+export { httpErrorIn, isHttpError, type HttpError } from './httpResponse'
 export { REQUEST_TIMEOUT_MS, RequestTimeoutError, isRequestTimeout } from './requestTimeout'
 
 // Пусто по умолчанию — тогда запросы идут через дев-прокси Vite: /api на бэкенд.

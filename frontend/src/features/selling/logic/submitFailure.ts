@@ -3,7 +3,7 @@
 // Отдельно от общего `failureText`: тот переводит код в одну фразу, а здесь отказ несёт
 // список незаполненных полей — и человек должен прочитать, чего именно не хватает, а не
 // «заполните объявление».
-import { isHttpError } from '../../../shared/api/httpClient'
+import { httpErrorIn } from '../../../shared/api/httpClient'
 import { failureText } from '../../../shared/api/failureText'
 
 const FIELD_LABEL: Record<string, string> = {
@@ -26,8 +26,9 @@ const FIELD_LABEL: Record<string, string> = {
 }
 
 export function submitFailureText(error: unknown): string {
-  if (isHttpError(error) && error.errorCode === 'LISTING_INCOMPLETE') {
-    const missing = error.details?.missing_fields
+  const failure = httpErrorIn(error)
+  if (failure?.errorCode === 'LISTING_INCOMPLETE') {
+    const missing = failure.details?.missing_fields
     const named = Array.isArray(missing)
       ? missing.map((field) => FIELD_LABEL[String(field)] ?? String(field))
       : []

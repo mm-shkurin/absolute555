@@ -2,7 +2,7 @@
 //
 // Правило одно: текст говорит, что произошло и что делать. «Ошибка 500» не сообщает
 // ни того, ни другого — человек всё равно нажмёт ту же кнопку ещё раз.
-import { isHttpError, isRequestTimeout } from './httpClient'
+import { httpErrorIn, isRequestTimeout } from './httpClient'
 
 const BY_CODE: Record<string, string> = {
   LISTING_NOT_FOUND: 'Объявление не найдено — возможно, его сняли с публикации.',
@@ -39,15 +39,16 @@ export function failureText(error: unknown): string {
   if (isRequestTimeout(error)) {
     return 'Сервер не ответил вовремя. Проверьте связь и попробуйте ещё раз.'
   }
-  if (isHttpError(error)) {
-    const byCode = error.errorCode ? BY_CODE[error.errorCode] : undefined
+  const failure = httpErrorIn(error)
+  if (failure) {
+    const byCode = failure.errorCode ? BY_CODE[failure.errorCode] : undefined
     if (byCode) return byCode
-    const byStatus = BY_STATUS[error.status]
+    const byStatus = BY_STATUS[failure.status]
     if (byStatus) return byStatus
     // Пятисотые — это не про пользователя. Просить его что-то исправить бессмысленно,
     // поэтому текст честно говорит, что сломалось на нашей стороне.
-    if (error.status >= 500) return 'Сервис временно недоступен. Мы уже знаем, попробуйте позже.'
-    return error.message
+    if (failure.status >= 500) return 'Сервис временно недоступен. Мы уже знаем, попробуйте позже.'
+    return failure.message
   }
   // Сеть отвалилась до ответа: fetch отклоняется TypeError без статуса.
   return 'Нет связи с сервером. Проверьте интернет и повторите.'

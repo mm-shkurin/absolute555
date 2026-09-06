@@ -16,8 +16,26 @@ export interface HttpError extends Error {
   payload?: unknown
 }
 
+/** Отказ сервера — в том числе завёрнутый.
+ *
+ *  `send` оборачивает ошибку в новую с человеческим текстом, а исходную кладёт в
+ *  `cause`. Пока проверка смотрела только на верхний объект, экраны теряли и статус, и
+ *  код: мастер продажи на честный отказ «не хватает фотографий» показывал «нет связи с
+ *  сервером» — то есть отправлял человека чинить интернет вместо объявления. */
 export function isHttpError(error: unknown): error is HttpError {
-  return error instanceof Error && typeof (error as HttpError).status === 'number'
+  return httpErrorIn(error) !== null
+}
+
+/** Сам отказ, где бы он ни лежал: на объекте или в цепочке `cause`. */
+export function httpErrorIn(error: unknown): HttpError | null {
+  let step: unknown = error
+  // Цепочка `cause` конечна, но глубину ограничиваем: испорченный объект с ссылкой на
+  // себя не должен вешать перевод ошибки в бесконечном цикле.
+  for (let depth = 0; step instanceof Error && depth < 5; depth += 1) {
+    if (typeof (step as HttpError).status === 'number') return step as HttpError
+    step = (step as { cause?: unknown }).cause
+  }
+  return null
 }
 
 // Форма отказа сервера: `{error, message, code, details}` (`errors.yaml`). `detail` и
