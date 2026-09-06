@@ -67,6 +67,14 @@ class SaleCars(Base):
     price = Column(Float, nullable=True)
     milleage = Column(Float, nullable=True)
     phone_number = Column(String, nullable=True)
+
+    # Что продавец открывает покупателю. Телефон и чат открыты по умолчанию — объявление
+    # заводят, чтобы по нему написали; лента предложений закрыта, потому что до появления
+    # этой настройки чужой торг видел только владелец, и включённая по умолчанию она
+    # открыла бы его задним числом по всем живым объявлениям.
+    phone_visible = Column(Boolean, default=True, nullable=False, server_default="true")
+    chat_allowed = Column(Boolean, default=True, nullable=False, server_default="true")
+    offers_visible = Column(Boolean, default=False, nullable=False, server_default="false")
     description = Column(Text, nullable=True)
     status = Column(String, default=SaleCarStatus.DRAFT, nullable=False, index=True)
 

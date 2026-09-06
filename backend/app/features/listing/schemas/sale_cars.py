@@ -41,6 +41,13 @@ class SaleCarUpdate(BaseModel):
     transmission: Optional[str] = None
     engine_power: Optional[int] = None
 
+    # Настройки видимости. Правятся как обычные поля: продавец решает про своё
+    # объявление, и отдельная ручка ради трёх флагов была бы вторым способом сказать
+    # то же самое.
+    phone_visible: Optional[bool] = None
+    chat_allowed: Optional[bool] = None
+    offers_visible: Optional[bool] = None
+
     # Поля привоза правятся так же, как остальные; вид объявления — нет: он выбран при
     # создании, и смена его на живом объявлении означала бы, что покупатель торговался
     # за машину другого канала.
@@ -181,6 +188,9 @@ class SaleCarResponse(BaseModel):
     photos: List[Photo] = []
     autofill: Optional[Autofill] = None
     moderation: Optional[Moderation] = None
+    phone_visible: bool = True
+    chat_allowed: bool = True
+    offers_visible: bool = False
     seller: Optional[Seller] = None
     thickness: Optional[ThicknessSummary] = None
 

@@ -47,6 +47,8 @@ export interface ListingDetailWire {
   has_thickness_map: boolean
   phone_available: boolean
   chat_allowed: boolean
+  /** Открыл ли продавец чужой торг покупателям (правка 19). */
+  offers_visible: boolean
   // Своё объявление показывается тому же адресу, но другой колонкой: владельцу нужны
   // счётчики и управление, а не кнопка «предложить цену» самому себе.
   owned_by_me: boolean

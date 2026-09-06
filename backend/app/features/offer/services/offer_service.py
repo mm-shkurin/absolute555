@@ -5,6 +5,7 @@ from sqlalchemy import select, and_
 
 from app.core.config import OfferSettings
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
+from app.features.offer.services.offer_listing import OfferListingReader
 from app.features.offer.models.offer import LIVE, Offer, OfferStatus
 from app.features.account.models.users import Users
 from app.features.offer.services.offer_notices import OfferNotices
@@ -24,26 +25,9 @@ import uuid
 offer_settings = OfferSettings()
 
 
-class OfferService:
+class OfferService(OfferListingReader):
     def __init__(self, db: AsyncSession):
         self.db = db
-
-    async def _get_sale_car_or_404(self, sale_car_id: str, published_only: bool = False) -> SaleCars:
-        try:
-            car_uuid = uuid.UUID(sale_car_id)
-        except ValueError:
-            raise MalformedIdentifier("sale_car_id")
-        result = await self.db.execute(
-            select(SaleCars).where(SaleCars.sale_car_id == car_uuid)
-        )
-        car = result.scalar_one_or_none()
-        if not car:
-            raise SaleCarNotFound(sale_car_id)
-        if published_only and car.status != SaleCarStatus.PUBLISHED:
-            # Bargaining over what is not in the feed leads nowhere, and saying "it is
-            # not published" would confirm the listing exists to whoever walks ids.
-            raise SaleCarNotFound(sale_car_id)
-        return car
 
     async def create_offer(self, user_id: str, sale_car_id: str, price: float) -> Offer:
         car = await self._get_sale_car_or_404(sale_car_id, published_only=True)

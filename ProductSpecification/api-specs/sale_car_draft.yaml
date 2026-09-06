@@ -116,6 +116,12 @@ components:
       description: Все поля необязательны. Поле status здесь не принимается.
       properties:
         vin: { type: string, nullable: true }
+        # Настройки видимости правятся тем же PATCH, что и остальные поля: продавец
+        # решает про своё объявление, и отдельная ручка ради трёх флагов была бы вторым
+        # способом сказать то же самое.
+        phone_visible: { type: boolean }
+        chat_allowed: { type: boolean }
+        offers_visible: { type: boolean }
         body_number: { type: string, nullable: true, maxLength: 40 }
         phone_number: { type: string, nullable: true }
         price: { type: number, nullable: true }
@@ -248,6 +254,20 @@ components:
           description: |
             Исход распознавания СТС и источник марки и модели. Повторяет то, что
             приезжает по SSE, чтобы перезагрузка страницы не теряла исход.
+        phone_visible:
+          type: boolean
+          description: |
+            Показывать ли телефон покупателю. Включено у нового объявления: его заводят,
+            чтобы по нему позвонили.
+        chat_allowed:
+          type: boolean
+          description: Могут ли писать продавцу. Включено у нового объявления.
+        offers_visible:
+          type: boolean
+          description: |
+            Видят ли покупатели чужие предложения по цене. Выключено по умолчанию:
+            до появления настройки торг видел только владелец (история 10), и открытая
+            по умолчанию она показала бы его задним числом по всем живым объявлениям.
         moderation:
           allOf: [{ $ref: '#/components/schemas/Moderation' }]
           description: |

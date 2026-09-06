@@ -27,6 +27,7 @@ const wire: ListingDetailWire = {
   has_thickness_map: true,
   phone_available: true,
   chat_allowed: true,
+  offers_visible: false,
   owned_by_me: false,
   moderation: null,
   published_at: new Date(2026, 7, 22).toISOString(),

@@ -6,7 +6,7 @@
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { createOffer } from '../../shared/api/backend/offerApi'
-import { changeStatus, revealPhone } from '../../shared/api/backend/saleCarApi'
+import { changeStatus, revealPhone, patchListing } from '../../shared/api/backend/saleCarApi'
 
 export type OwnerAction = 'withdraw' | 'sold' | 'republish'
 
@@ -21,6 +21,15 @@ export interface ListingActions {
   sendOffer: (price: number) => void
   showPhone: () => void
   owner: (action: OwnerAction) => void
+  setting: (patch: ListingSettings) => void
+}
+
+/** Что продавец открывает покупателю. Правится тем же PATCH, что и остальные поля
+ *  объявления: отдельная ручка ради трёх флагов была бы вторым способом сказать то же. */
+export interface ListingSettings {
+  phone_visible?: boolean
+  chat_allowed?: boolean
+  offers_visible?: boolean
 }
 
 export function useListingActions(listingId: string): ListingActions {
@@ -49,11 +58,18 @@ export function useListingActions(listingId: string): ListingActions {
     },
   })
 
-  const failure = (offer.error ?? phone.error ?? owner.error) as Error | null
+  const setting = useMutation({
+    mutationFn: (patch: ListingSettings) => patchListing(listingId, patch),
+    // Карточка перечитывается, а не собирается на клиенте: настройку мог не принять
+    // сервер, и переключатель показал бы состояние, которого нет.
+    onSuccess: () => void client.invalidateQueries({ queryKey: ['listing', listingId] }),
+  })
+
+  const failure = (offer.error ?? phone.error ?? owner.error ?? setting.error) as Error | null
   return {
     phone: phone.data?.phone_number ?? null,
     offering,
-    busy: offer.isPending || phone.isPending || owner.isPending,
+    busy: offer.isPending || phone.isPending || owner.isPending || setting.isPending,
     failure: failure?.message ?? null,
     offerSent: offer.isSuccess,
     openOffer: () => {
@@ -64,5 +80,6 @@ export function useListingActions(listingId: string): ListingActions {
     sendOffer: (price) => offer.mutate(price),
     showPhone: () => phone.mutate(),
     owner: (action) => owner.mutate(action),
+    setting: (patch) => setting.mutate(patch),
   }
 }

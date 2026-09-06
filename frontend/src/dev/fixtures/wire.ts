@@ -125,6 +125,9 @@ export function saleCar(saleCarId: string): SaleCarWire | null {
     // Опубликованное объявление кто-то одобрил: решение и есть то, что вывело его в
     // ленту. Имя решившего заглушка не подставляет — сервер отдаёт его модератору, а
     // не владельцу, и выдуманное здесь имя увело бы экран от правды.
+    phone_visible: true,
+    chat_allowed: true,
+    offers_visible: false,
     moderation: {
       decided_at: new Date(Date.now() - 26 * HOURS).toISOString(),
       decided_by: null,

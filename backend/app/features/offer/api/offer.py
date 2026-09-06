@@ -89,7 +89,13 @@ async def get_offers_for_car(
 ):
     service = OfferService(db)
     if not await can_manage_offer_as_owner(current_user, sale_car_id, db):
-        raise AuthorizationError("Only the car owner may see every offer", code="NOT_CAR_OWNER")
+        # Не владелец видит торг, только если продавец сам его открыл: до появления этой
+        # настройки предложения были закрыты всем, и решение показать их принадлежит
+        # тому, чью машину обсуждают.
+        if not await OfferService(db).offers_shown(sale_car_id):
+            raise AuthorizationError(
+                "Only the car owner may see every offer", code="NOT_CAR_OWNER"
+            )
 
     try:
         return await service.get_offers_by_sale_car(sale_car_id)

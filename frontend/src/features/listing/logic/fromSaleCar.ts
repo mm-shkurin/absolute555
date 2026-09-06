@@ -48,8 +48,11 @@ export function toListingDetailWire(
     has_thickness_map: (car.thickness?.measured_panels ?? 0) > 0,
     // Телефон — отдельный запрос `POST /{id}/reveal-phone`, а не поле карточки: полем
     // телефоны площадки выкачиваются одним проходом. Владельцу сервер отдаёт его сразу.
-    phone_available: owned ? Boolean(car.phone_number) : true,
-    chat_allowed: false,
+    // Настройки приходят с сервера, а не выдумываются здесь: до правки 19 `chat_allowed`
+    // был константой `false`, а переключатели в панели владельца ничего не меняли.
+    phone_available: (owned ? Boolean(car.phone_number) : true) && car.phone_visible,
+    chat_allowed: car.chat_allowed,
+    offers_visible: car.offers_visible,
     owned_by_me: owned,
     published_at: car.published_at,
     moderation: car.moderation ?? null,

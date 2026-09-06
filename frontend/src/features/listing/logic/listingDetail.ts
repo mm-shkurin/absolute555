@@ -39,6 +39,7 @@ export interface ListingDetailView {
   soldOn: string | null
   phoneAvailable: boolean
   chatAllowed: boolean
+  offersVisible: boolean
   publishedOn: string | null
   /** Когда модератор решил по объявлению и, если смотрит модератор, кто именно.
    *  Продавцу сервер имени не отдаёт, поэтому здесь оно просто пусто. */
@@ -134,6 +135,7 @@ export function toListingDetailView(wire: ListingDetailWire): ListingDetailView 
     soldOn: dayAndMonth(wire.sold_at) || null,
     phoneAvailable: wire.phone_available,
     chatAllowed: wire.chat_allowed,
+    offersVisible: wire.offers_visible,
     publishedOn: dayAndMonth(wire.published_at) || null,
     decidedOn: dayAndMonth(wire.moderation?.decided_at) || null,
     decidedBy: wire.moderation?.decided_by?.name ?? null,

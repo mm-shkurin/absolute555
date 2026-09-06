@@ -156,3 +156,36 @@ def test_should_record_when_a_listing_was_published(
 
     assert listing["status"] == "published"
     assert listing["published_at"] is not None
+
+
+class TestVisibilitySettings:
+    """Что продавец открывает покупателю.
+
+    Правка 19 от 2026-09-06: блок «Настройки объявления» был нарисованным макетом —
+    переключатели ничего не переключали, потому что колонок под них не существовало.
+    """
+
+    def test_should_open_a_new_listing_with_phone_and_chat_on(self, client, seller):
+        listing_id = _create(client, seller)
+
+        listing = client.get(f"/api/v1/sale_car/{listing_id}", headers=seller).json()
+
+        assert listing["phone_visible"] is True
+        assert listing["chat_allowed"] is True
+        # Торг закрыт: до этой настройки чужие предложения видел только владелец, и
+        # открытая по умолчанию она показала бы их задним числом.
+        assert listing["offers_visible"] is False
+
+    def test_should_keep_what_the_seller_decided(self, client, seller):
+        listing_id = _create(client, seller)
+
+        saved = client.patch(
+            f"/api/v1/sale_car/{listing_id}",
+            headers=seller,
+            json={"chat_allowed": False, "offers_visible": True},
+        )
+
+        assert saved.status_code == 200, saved.text
+        assert saved.json()["chat_allowed"] is False
+        assert saved.json()["offers_visible"] is True
+        assert saved.json()["phone_visible"] is True

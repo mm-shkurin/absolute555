@@ -101,6 +101,11 @@ export interface SaleCarWire {
   autofill: AutofillWire | null
   /** Решение модератора: когда и, если смотрит модератор, кем. */
   moderation: ModerationWire | null
+  /** Что продавец открыл покупателю. Телефон и чат включены у нового объявления,
+   *  лента предложений — нет: чужой торг видит владелец, пока продавец не откроет его. */
+  phone_visible: boolean
+  chat_allowed: boolean
+  offers_visible: boolean
   seller: SellerWire | null
   /** Сводка карты замеров. `null` у объявления без единого замера. */
   thickness: ThicknessSummaryWire | null
@@ -109,6 +114,9 @@ export interface SaleCarWire {
 /** Любое подмножество полей. Сервер отвергает неизвестные ключи, а не игнорирует их,
  *  поэтому `status` сюда не входит: он меняется только переходами жизненного цикла. */
 export interface SaleCarPatch {
+  phone_visible?: boolean
+  chat_allowed?: boolean
+  offers_visible?: boolean
   vin?: string
   body_number?: string
   phone_number?: string

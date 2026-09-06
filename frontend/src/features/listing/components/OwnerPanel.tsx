@@ -17,6 +17,7 @@ export function OwnerPanel({
   onUnpublish,
   onMarkSold,
   onSetting,
+  onOffersVisible,
 }: {
   view: ListingDetailView
   sold: boolean
@@ -25,6 +26,7 @@ export function OwnerPanel({
   onUnpublish: () => void
   onMarkSold: () => void
   onSetting: (key: 'phone' | 'chat', value: boolean) => void
+  onOffersVisible: (value: boolean) => void
 }) {
   const complete = view.measuredPanels === view.totalPanels
 
@@ -111,6 +113,10 @@ export function OwnerPanel({
         </Switch>
         <Switch checked={view.chatAllowed} onChange={(value) => onSetting('chat', value)}>
           Разрешить чат
+        </Switch>
+        {/* Чужой торг по умолчанию виден только продавцу: открыть его — его решение. */}
+        <Switch checked={view.offersVisible} onChange={onOffersVisible}>
+          Показывать предложения покупателям
         </Switch>
       </div>
     </aside>

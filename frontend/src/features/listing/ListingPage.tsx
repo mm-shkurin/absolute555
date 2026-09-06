@@ -72,7 +72,12 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
                   busy={actions.busy}
                   onUnpublish={() => actions.owner('withdraw')}
                   onMarkSold={() => actions.owner('sold')}
-                  onSetting={() => undefined}
+                  onSetting={(key, value) =>
+                    actions.setting(
+                      key === 'phone' ? { phone_visible: value } : { chat_allowed: value },
+                    )
+                  }
+                  onOffersVisible={(value) => actions.setting({ offers_visible: value })}
                 />
               ) : (
                 <SidePanel
