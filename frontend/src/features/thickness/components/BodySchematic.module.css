@@ -34,6 +34,14 @@
   opacity: 1;
 }
 
+.cutout {
+  fill: var(--bg-card);
+  stroke: var(--border-strong);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
 .line {
   fill: none;
   stroke: var(--border-strong);

@@ -43,6 +43,9 @@ export function BodySchematic({ rows, selected, onSelect }: Props) {
                   <title>{labelOf(zone.code)}</title>
                 </path>
               ))}
+              {projection.cutouts.map((d) => (
+                <path key={d} className={styles.cutout} d={d} />
+              ))}
               {projection.outline.map((d) => (
                 <path key={d} className={styles.line} d={d} />
               ))}
