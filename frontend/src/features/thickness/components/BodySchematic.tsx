@@ -35,6 +35,7 @@ export function BodySchematic({ rows, selected, onSelect }: Props) {
                   className={[styles.zone, zone.code === selected ? styles.selected : ''].join(' ')}
                   d={zone.d}
                   fill={colorOf(zone.code)}
+                  fillRule="evenodd"
                   onClick={() => onSelect(zone.code)}
                   data-panel={zone.code}
                   data-selected={zone.code === selected}
