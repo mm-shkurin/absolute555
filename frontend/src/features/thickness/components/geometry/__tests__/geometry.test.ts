@@ -2,7 +2,7 @@
 // только глазами на одном из тринадцати кликов. Отсюда проверки на полноту.
 import { describe, expect, it } from 'vitest'
 import { PANELS } from '../../../logic/panels'
-import { PROJECTIONS } from '../projections'
+import { PROJECTIONS } from '../index'
 import { mirrorCode } from '../types'
 import { LEFT_SIDE, RIGHT_SIDE } from '../sides'
 

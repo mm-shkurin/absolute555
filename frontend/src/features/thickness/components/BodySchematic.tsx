@@ -13,9 +13,11 @@ interface Props {
 }
 
 export function BodySchematic({ rows, selected, onSelect }: Props) {
-  const colorOf = (code: PanelCode) =>
-    rows.find((row) => row.code === code)?.color ?? 'var(--measure-none)'
-  const labelOf = (code: PanelCode) => rows.find((row) => row.code === code)?.label ?? code
+  // Зон на схеме вчетверо больше, чем панелей: одна панель встречается в нескольких
+  // проекциях. Поиск строкой по каждой зоне — сорок проходов по списку на отрисовку.
+  const byCode = new Map(rows.map((row) => [row.code, row]))
+  const colorOf = (code: PanelCode) => byCode.get(code)?.color ?? 'var(--measure-none)'
+  const labelOf = (code: PanelCode) => byCode.get(code)?.label ?? code
 
   return (
     <div className={styles.sheet} data-testid="body-schematic">
