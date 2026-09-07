@@ -1,6 +1,6 @@
 // Объявление, разобранное на плитки: сетка 4×2 из главной карточки и четырёх фактов.
 // Лендинг не рассказывает про продукт словами, а показывает то, что в нём уже лежит.
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Shot } from './Shot'
 import {
   HERO_LISTING,
   HERO_MEASURE,
@@ -9,7 +9,6 @@ import {
   HERO_SPEC,
   HERO_VIN,
 } from '../content/heroTile'
-import { BodySilhouette } from './BodySilhouette'
 import styles from './HeroBento.module.css'
 
 function PanelBar() {
@@ -27,7 +26,11 @@ export function HeroBento() {
     <div className={styles.bento} data-testid="hero-bento">
       <article className={`${styles.tile} ${styles.main}`}>
         <span className={styles.badge}>{HERO_LISTING.badge}</span>
-        <Placeholder className={styles.shot}>фотография машины</Placeholder>
+        <Shot
+          className={styles.shot}
+          src="/design/landing/hero-camry.jpg"
+          alt="Toyota Camry 2019 в три четверти"
+        />
         <div className={styles.meta}>
           <div>
             <span className={styles.label}>{HERO_LISTING.place}</span>
@@ -56,7 +59,13 @@ export function HeroBento() {
 
       <article className={styles.tile}>
         <span className={styles.label}>Кузов · 11 панелей</span>
-        <BodySilhouette />
+        <img
+          className={styles.bodyMap}
+          src="/design/landing/body-paint-map.png"
+          alt="Кузов сбоку: зелёные панели — заводская краска, оранжевые перекрашены, красная в толстом слое"
+          loading="lazy"
+          decoding="async"
+        />
       </article>
 
       <article className={styles.tile}>

@@ -1,5 +1,5 @@
 import { Container } from '../../../shared/ui/Container'
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Shot } from './Shot'
 import { LISTING_CONTENTS } from '../content/faq'
 import { SectionHead } from './SectionParts'
 import styles from '../landing.module.css'
@@ -27,7 +27,11 @@ export function ListingContents() {
               ))}
             </ul>
           </div>
-          <Placeholder className={own.cardShot}>макет карточки объявления</Placeholder>
+          <Shot
+            className={own.cardShot}
+            src="/design/landing/listing-card.jpg"
+            alt="Карточка объявления с полной картой замеров"
+          />
         </div>
       </Container>
     </section>

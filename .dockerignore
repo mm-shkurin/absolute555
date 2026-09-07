@@ -33,8 +33,11 @@ infra/agent-progress.log
 **/Thumbs.db
 **/desktop.ini
 
-# Test suites are mounted in by `make test`, never baked into the runtime image.
+# Test suites are mounted in by `make test`, never baked into the runtime image. The
+# browser suite is also the context's most volatile corner: it is rewritten between runs,
+# and a file changing mid-transfer fails the build with `invalid file request`.
 backend/tests
+frontend/e2e
 backend/pytest.ini
 backend/requirements-dev.txt
 

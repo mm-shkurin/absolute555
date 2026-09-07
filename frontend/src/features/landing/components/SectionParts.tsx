@@ -1,7 +1,7 @@
 // Мелкие повторяющиеся части секций лендинга. Отдельным файлом, потому что каждую из них
 // использует три-четыре секции, а не одна.
 import type { ReactNode } from 'react'
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Shot } from './Shot'
 import styles from '../landing.module.css'
 import blocks from '../blocks.module.css'
 
@@ -26,7 +26,8 @@ export function SectionHead({
 export interface Step {
   title: string
   text: string
-  shot?: string
+  /** Кадр под текстом шага: путь к снимку и подпись для читалки. */
+  shot?: { src: string; alt: string; fit?: 'cover' | 'contain' }
 }
 
 export function StepList({ steps, numbered }: { steps: Step[]; numbered?: boolean }) {
@@ -37,7 +38,14 @@ export function StepList({ steps, numbered }: { steps: Step[]; numbered?: boolea
           {numbered ? <div className={blocks.number}>{`0${index + 1} —`}</div> : null}
           <h3>{step.title}</h3>
           <p>{step.text}</p>
-          {step.shot ? <Placeholder className={styles.shot}>{step.shot}</Placeholder> : null}
+          {step.shot ? (
+            <Shot
+              className={styles.shot}
+              src={step.shot.src}
+              alt={step.shot.alt}
+              fit={step.shot.fit}
+            />
+          ) : null}
         </div>
       ))}
     </div>

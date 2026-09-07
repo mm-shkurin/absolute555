@@ -1,0 +1,29 @@
+/* Кадр вместо штриховки. Форму — пропорцию, радиус, высоту — по-прежнему задаёт класс
+   слота, тот же, что раньше приходил в Placeholder: снимок обязан занять ровно то место,
+   которое под него было размечено. */
+.shot {
+  display: block;
+  overflow: hidden;
+  background: var(--bg-surface);
+}
+
+.shot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.cover img {
+  object-fit: cover;
+}
+
+/* Снимок телефона и изометрия с прозрачным фоном не терпят обрезки: у первого срежется
+   таб-бар, у второй — сам предмет. Они вписываются целиком, и подложка остаётся видна. */
+.contain {
+  background: transparent;
+  padding: 8px;
+}
+
+.contain img {
+  object-fit: contain;
+}

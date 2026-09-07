@@ -1,5 +1,5 @@
 import { Container } from '../../../shared/ui/Container'
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Shot } from './Shot'
 import { Button, ButtonLink } from '../../../shared/ui/Button'
 import { ROUTES } from '../../../shared/navigation/routes'
 import { SectionHead } from './SectionParts'
@@ -11,7 +11,12 @@ export function MobileApp({ onDownload }: { onDownload?: () => void }) {
     <section className={`${styles.section} ${styles.tight}`} data-testid="landing-app">
       <Container>
         <div className={styles.split}>
-          <Placeholder className={own.appShot}>снимок приложения на телефоне</Placeholder>
+          <Shot
+            className={own.appShot}
+            fit="contain"
+            src="/design/landing/app-shot.png"
+            alt="Лента объявлений на телефоне"
+          />
           <div>
             <SectionHead
               eyebrow="Android"

@@ -34,8 +34,9 @@
   background: var(--accent);
 }
 
+/* Пропорция макета карточки: слот повторяет её, чтобы кадр не обрезало по краям. */
 .cardShot {
-  aspect-ratio: 4 / 5;
+  aspect-ratio: 1211 / 880;
   border-radius: 24px;
 }
 
