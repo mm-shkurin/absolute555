@@ -18,6 +18,9 @@ export interface QueueRowView {
 
 export interface ReviewCardView {
   title: string
+  /** Обложка объявления. Модератор решает по снимку — предпросмотр без него показывал
+   *  штриховку там, где должна быть машина. */
+  coverUrl: string | null
   facts: { label: string; value: string; mono?: boolean }[]
 }
 
@@ -71,6 +74,7 @@ function metaLine(wire: QueueItemWire): string {
 export function toReviewCard(wire: QueueItemWire): ReviewCardView {
   return {
     title: `${wire.title} · ${wire.year}`,
+    coverUrl: wire.cover_url,
     facts: [
       { label: 'VIN', value: wire.vin_masked ?? 'нет — машина под заказ', mono: true },
       {

@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Button, buttonClass } from '../../../shared/ui/Button'
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { Cover } from '../../../shared/ui/Cover'
 import { ROUTES } from '../../../shared/navigation/routes'
 import { ReasonPicker } from '../../../shared/ui/ReasonPicker'
 import { REJECTION_REASONS } from '../../../shared/domain/moderationReasons'
@@ -36,7 +36,7 @@ export function ReviewPanel({
     <aside className={styles.review} data-testid="review-panel">
       <h3>{card.title}</h3>
       <p className={styles.reviewHint}>Карточка показана так, как её увидит покупатель.</p>
-      <Placeholder className={styles.preview}>предпросмотр карточки</Placeholder>
+      <Cover url={card.coverUrl} caption="предпросмотр карточки" className={styles.preview} />
       <Link to={ROUTES.listing(listingId)} className={buttonClass({ tone: 'ghost', block: true })}>
         Открыть целиком
       </Link>
