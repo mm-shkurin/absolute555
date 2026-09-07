@@ -86,17 +86,15 @@
    вертикальный снимок раздвигал бы предпросмотр по своей высоте. */
 .preview {
   aspect-ratio: 16 / 10;
+  /* Обложка с адресом — это сам <img> с этим классом, а не обёртка вокруг него: без
+     ширины снимок берёт натуральную и вылезает за карточку. */
+  display: block;
+  width: 100%;
+  object-fit: cover;
   border-radius: var(--radius-surface);
   margin-bottom: 10px;
   overflow: hidden;
   min-height: 0;
-}
-
-.preview img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
 }
 
 .facts {
