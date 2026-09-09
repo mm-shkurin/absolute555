@@ -34,25 +34,3 @@ VIEWS = {
     'top':   dict(src=(705, 729, 2970, 1629),  rot=0,   box=(248, 292, 524, 236)),
     'rear':  dict(src=(2970, 669, 3636, 1629), rot=90,  box=(806, 300, 190, 220)),
 }
-
-
-# Вид слева нарисован отдельно и крупнее общего чертежа: свои области, свой растр.
-SIDE_PANELS = {
-    'side': {
-        'hood': [19], 'roof': [2], 'trunk_lid': [7, 6, 15],
-        'front_left_fender': [25], 'front_left_door': [29, 4],
-        'rear_left_door': [28, 5], 'rear_left_fender': [26],
-        'front_bumper': [42, 48, 52], 'rear_bumper': [38, 45],
-    },
-}
-
-SIDE_VIEWS = {
-    'side': dict(src=(0, 0, 2940, 900), rot=0, box=(250, 50, 520, 205)),
-}
-
-# Наборы: у общего чертежа номера областей приходят через якоря, у отдельного вида —
-# напрямую из его собственной трассировки.
-SETS = {
-    'blueprint': (PANELS, VIEWS, True),
-    'side': (SIDE_PANELS, SIDE_VIEWS, False),
-}

@@ -2,11 +2,9 @@ import json, sys
 import numpy as np
 sys.path.insert(0, str(__import__('pathlib').Path(__file__).parent))
 import contour
-from layout import SETS
+from layout import PANELS, VIEWS
 
 SP = sys.argv[1]
-PANELS, VIEWS, USE_ANCHORS = SETS[sys.argv[2] if len(sys.argv) > 2 else 'blueprint']
-PANELS, VIEWS, USE_ANCHORS = SETS[sys.argv[2] if len(sys.argv) > 2 else 'blueprint']
 label = np.load(SP + '/labels.npy')
 cells = {c['id']: c for c in json.load(open(SP + '/cells.json'))}
 HERE = __import__('pathlib').Path(__file__).parent
@@ -25,16 +23,15 @@ def _cell_at(x, y):
     return 0
 
 
-ANCHORS = {k: _cell_at(x, y) for k, (x, y) in POINTS.items()} if USE_ANCHORS else {} if USE_ANCHORS else {}
+ANCHORS = {k: _cell_at(x, y) for k, (x, y) in POINTS.items()}
 
 
 def resolve(old_id):
     return ANCHORS[old_id]
 
-if USE_ANCHORS:
-    PANELS = {view: {code: [resolve(i) for i in ids if i in ANCHORS]
-                     for code, ids in group.items()}
-              for view, group in PANELS.items()}
+PANELS = {view: {code: [resolve(i) for i in ids if i in ANCHORS]
+                 for code, ids in group.items()}
+          for view, group in PANELS.items()}
 
 
 
