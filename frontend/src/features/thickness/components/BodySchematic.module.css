@@ -34,10 +34,12 @@
   opacity: 1;
 }
 
+/* Обводка по цвету текста, а не по цвету рамок: колесо — белое пятно на белой
+   карточке, и рамочный серый на светлой теме терял его целиком. */
 .cutout {
   fill: var(--bg-card);
-  stroke: var(--border-strong);
-  stroke-width: 1.4;
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
   stroke-linejoin: round;
   pointer-events: none;
 }
