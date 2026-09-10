@@ -2,6 +2,7 @@
 import { useState } from 'react'
 import { Button } from '../../../shared/ui/Button'
 import { TextInput } from '../../../shared/ui/Form'
+import { Avatar } from '../../../shared/ui/Avatar'
 import type { SupplierProfileWire } from '../../../shared/api/backend/supplierContract'
 import styles from '../roles.module.css'
 
@@ -21,7 +22,11 @@ export function SupplierProfileCard({ profile, busy, onApprove, onReject }: Prop
 
   return (
     <div className={styles.card} data-testid="supplier-queue-card" data-user={profile.user_id}>
-      <h3>{profile.company_name ?? 'Без названия'}</h3>
+      {/* Фото витрины модератор видит тем же кругом, что увидят покупатели. */}
+      <div className={styles.cardHead}>
+        <Avatar size={56} url={profile.cover_url} />
+        <h3>{profile.company_name ?? 'Без названия'}</h3>
+      </div>
       <p className={styles.meta}>
         {profile.countries.join(', ') || 'страны не указаны'} · {profile.brands.join(', ') || 'любые марки'} · {days}
       </p>

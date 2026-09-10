@@ -18,6 +18,8 @@ export interface SupplierProfileHandle {
   submit: () => Promise<void>
   busy: boolean
   error: string | null
+  /** Что получилось последним действием — без этого сохранение выглядело как ничего. */
+  notice: string | null
   isLoading: boolean
   loadError: Error | null
   reload: () => void
@@ -28,6 +30,7 @@ export function useSupplierProfile(): SupplierProfileHandle {
   const query = useQuery({ queryKey: ['supplier-profile'], queryFn: ({ signal }) => fetchMyProfile(signal) })
   const [form, setForm] = useState<ProfileForm>(EMPTY_FORM)
   const [error, setError] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(null)
 
   // Форма наполняется тем, что пришло, один раз на загрузку: дальше ею владеет человек,
   // и перетирать набранное ответом сервера значило бы стирать правку на полуслове.
@@ -43,8 +46,14 @@ export function useSupplierProfile(): SupplierProfileHandle {
 
   const save = useMutation({
     mutationFn: () => saveMyProfile(toUpdate(form)),
-    onSuccess: done,
-    onError: (failure) => setError(profileFailureText(failure)),
+    onSuccess: (profile) => {
+      done(profile)
+      setNotice('Сохранено.')
+    },
+    onError: (failure) => {
+      setNotice(null)
+      setError(profileFailureText(failure))
+    },
   })
 
   const submit = useMutation({
@@ -54,14 +63,24 @@ export function useSupplierProfile(): SupplierProfileHandle {
       await saveMyProfile(toUpdate(form))
       return submitMyProfile()
     },
-    onSuccess: done,
-    onError: (failure) => setError(profileFailureText(failure)),
+    onSuccess: (profile) => {
+      done(profile)
+      setNotice('Отправлено на проверку. Модератор решит, и мы покажем решение здесь.')
+    },
+    onError: (failure) => {
+      setNotice(null)
+      setError(profileFailureText(failure))
+    },
   })
 
   return {
     profile: query.data ?? null,
     form,
-    setField: (key, value) => setForm((previous) => ({ ...previous, [key]: value })),
+    notice,
+    setField: (key, value) => {
+      setNotice(null)
+      setForm((previous) => ({ ...previous, [key]: value }))
+    },
     save: async () => {
       await save.mutateAsync().catch(() => undefined)
     },

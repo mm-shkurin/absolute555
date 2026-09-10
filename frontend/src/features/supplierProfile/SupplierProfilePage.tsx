@@ -64,6 +64,11 @@ export function SupplierProfilePage() {
                     </>
                   }
                 >
+                  {handle.notice ? (
+                    <p className={styles.notice} role="status" data-testid="profile-notice">
+                      {handle.notice}
+                    </p>
+                  ) : null}
                   <div className={styles.status} data-testid="profile-status" data-status={status}>
                     {revising ? `правка: ${STATUS_WORD[status]}` : STATUS_WORD[status]}
                   </div>

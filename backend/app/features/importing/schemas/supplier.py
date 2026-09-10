@@ -40,7 +40,9 @@ class SupplierProfileResponse(BaseModel):
     @computed_field
     @property
     def cover_url(self) -> Optional[str]:
-        return s3_service.make_url(self.cover_key) if self.cover_key else None
+        # Адрес, который открывает браузер, а не внутренний адрес хранилища: с `make_url`
+        # приходило `minio:9000`, и фото не показывалось нигде.
+        return s3_service.get_public_photo_url(self.cover_key) if self.cover_key else None
 
     class Config:
         from_attributes = True

@@ -90,3 +90,9 @@
   font-size: 18px;
   font-weight: 700;
 }
+
+.cardHead {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

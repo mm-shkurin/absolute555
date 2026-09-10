@@ -23,6 +23,19 @@ def test_should_show_the_cover_the_supplier_uploaded(client, importer):
     assert "cover_key" not in mine
 
 
+def test_should_hand_out_the_cover_at_the_address_a_browser_opens(client, importer):
+    """Та же публичная база, что у фото профиля. С внутренней (`minio:9000`) фото не
+    показывалось ни поставщику, ни модератору, ни на витрине."""
+    cover = _upload(client, importer).json()["cover_url"]
+    face = client.put(
+        "/api/v1/user/avatar",
+        headers=importer,
+        files={"file": ("face.png", make_image(), "image/png")},
+    ).json()["avatar_url"]
+
+    assert cover.split("/storefronts/")[0].rsplit("/", 1)[0] == face.split("/avatars/")[0].rsplit("/", 1)[0]
+
+
 def test_should_refuse_a_cover_that_is_not_an_image(client, importer):
     refused = _upload(client, importer, body=b"not a picture at all")
 

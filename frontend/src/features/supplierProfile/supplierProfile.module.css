@@ -78,3 +78,11 @@
   display: flex;
   gap: 8px;
 }
+
+.notice {
+  margin: 0 0 12px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: var(--success-subtle, #e8f6ee);
+  color: var(--success, #1b7f4b);
+}
