@@ -15,11 +15,17 @@ interface Props {
   onSend: (price: number, days: number, comment: string) => void
 }
 
+// Цену пишут так, как её читают, — с пробелами между разрядами, как в подсказке поля.
+// `Number` на «6 690 000» даёт NaN, и кнопка молча не нажималась.
+function amount(raw: string): number {
+  return Number(raw.replace(/[\s\u00a0]/g, '').replace(',', '.'))
+}
+
 export function RespondForm({ existing, busy, error, onSend }: Props) {
   const [price, setPrice] = useState(existing ? String(existing.price) : '')
   const [days, setDays] = useState(existing ? String(existing.delivery_days) : '')
   const [comment, setComment] = useState(existing?.comment ?? '')
-  const numbers = Number(price.trim()) > 0 && Number(days.trim()) > 0
+  const numbers = amount(price) > 0 && amount(days) > 0
 
   return (
     <div data-testid="respond-form">
@@ -46,7 +52,7 @@ export function RespondForm({ existing, busy, error, onSend }: Props) {
       ) : null}
       <Button
         disabled={busy || !numbers}
-        onClick={() => onSend(Number(price.trim()), Number(days.trim()), comment.trim())}
+        onClick={() => onSend(amount(price), Math.round(amount(days)), comment.trim())}
         data-testid="bid-send"
       >
         {existing ? 'Изменить отклик' : 'Откликнуться'}
