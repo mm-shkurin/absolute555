@@ -79,4 +79,17 @@ describe('чаты', () => {
     expect(header.listingId).toBe('')
     expect(header.subtitle).toMatch(/^Заявка: Toyota Camry · до 3/)
   })
+
+  it('имя ведёт на страницу собеседника, кнопку отзыва видит только спрашивавший', () => {
+    const asked = toHeader({ ...chat, counterparty_id: 's1', can_review: true, review_id: null })
+    expect(asked.counterpartHref).toBe('/sellers/s1')
+    expect(asked.reviewLabel).toBe('Оставить отзыв')
+
+    const answered = toHeader({ ...chat, counterparty_id: 's1', can_review: false, review_id: null })
+    expect(answered.reviewLabel).toBeNull()
+
+    const reviewed = toHeader({ ...chat, subject: 'request', counterparty_id: 'u9', review_id: 'r1' })
+    expect(reviewed.counterpartHref).toMatch(/u9/)
+    expect(reviewed.reviewLabel).toBe('Изменить отзыв')
+  })
 })

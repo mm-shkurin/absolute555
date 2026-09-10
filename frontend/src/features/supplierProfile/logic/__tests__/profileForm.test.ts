@@ -15,6 +15,7 @@ const wire: SupplierProfileWire = {
   status: 'draft',
   reject_reason: null,
   updated_at: null,
+  cover_url: null,
 }
 
 describe('форма профиля поставщика', () => {

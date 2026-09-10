@@ -61,6 +61,10 @@ class DialogResponse(BaseModel):
     counterpart: Optional[Seller] = None
     last_message: Optional[MessageResponse] = None
     unread: int = 0
+    # Оценивает спрашивавший: покупатель — продавца, автор заявки — поставщика. Отвечающему
+    # кнопка не нужна, и сервер говорит это сам, а не оставляет экрану угадывать по ролям.
+    can_review: bool = False
+    review_id: Optional[UUID] = None
 
 
 class ReadResult(BaseModel):

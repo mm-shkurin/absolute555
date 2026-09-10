@@ -1,6 +1,7 @@
 // Диалоги и сообщения в том виде, в каком их читают: время коротко, дни разделены, своё
 // и чужое различимо.
 import { formatPrice } from '../../../shared/format/money'
+import { ROUTES } from '../../../shared/navigation/routes'
 import type { ChatWire, MessageWire } from '../api/chatsApi'
 
 export interface DialogView {
@@ -27,6 +28,10 @@ export interface ConversationHeader {
   /** Пусто у переписки по заявке: вести некуда, объявления за спросом ещё нет. */
   listingId: string
   subtitle: string
+  /** Страница собеседника с отзывами: продавца — по объявлению, поставщика — по заявке. */
+  counterpartHref: string | null
+  /** Подпись кнопки отзыва. Пусто у отвечающего: оценивает только спрашивавший. */
+  reviewLabel: string | null
 }
 
 const TIME = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' })
@@ -61,6 +66,12 @@ export function toHeader(chat: ChatWire): ConversationHeader {
     name: chat.counterparty_name,
     photoUrl: chat.listing_photo,
     listingId: chat.listing_id,
+    counterpartHref: chat.counterparty_id
+      ? chat.subject === 'request'
+        ? ROUTES.supplier(chat.counterparty_id)
+        : ROUTES.seller(chat.counterparty_id)
+      : null,
+    reviewLabel: chat.review_id ? 'Изменить отзыв' : chat.can_review ? 'Оставить отзыв' : null,
     subtitle:
       chat.subject === 'request'
         ? `${chat.listing_title}${budget}`

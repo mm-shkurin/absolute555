@@ -3,6 +3,7 @@
 from app.core.exceptions import BusinessRuleError, ResourceNotFoundError, ValidationError
 from app.features.review.services.review_errors import (
     DealNotClosed,
+    DialogNotReviewable,
     EditWindowClosed,
     MalformedIdentifier,
     OfferNotReviewable,
@@ -15,6 +16,9 @@ from app.features.review.services.review_errors import (
 def to_http(error: Exception):
     if isinstance(error, OfferNotReviewable):
         return ResourceNotFoundError(str(error), code="OFFER_NOT_REVIEWABLE")
+
+    if isinstance(error, DialogNotReviewable):
+        return ResourceNotFoundError(str(error), code="DIALOG_NOT_REVIEWABLE")
 
     if isinstance(error, ReviewNotFound):
         return ResourceNotFoundError(str(error), code="REVIEW_NOT_FOUND")

@@ -19,6 +19,16 @@ export function saveMyProfile(update: SupplierProfileUpdate) {
   return send<SupplierProfileWire>(BACKEND.supplier.me, { method: 'PUT', body: update })
 }
 
+export function uploadMyCover(file: File) {
+  const form = new FormData()
+  form.append('file', file)
+  return send<SupplierProfileWire>(BACKEND.supplier.cover, { method: 'PUT', body: form })
+}
+
+export function dropMyCover() {
+  return send<SupplierProfileWire>(BACKEND.supplier.cover, { method: 'DELETE' })
+}
+
 export function submitMyProfile() {
   return send<SupplierProfileWire>(BACKEND.supplier.submit, { method: 'POST' })
 }

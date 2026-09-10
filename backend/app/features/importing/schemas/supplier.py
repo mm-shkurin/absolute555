@@ -4,9 +4,10 @@ from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, computed_field
 
 from app.features.importing.models.supplier import SupplierStatus
+from app.shared.storage.s3_service import s3_service
 
 
 class SupplierProfileUpdate(BaseModel):
@@ -33,6 +34,13 @@ class SupplierProfileResponse(BaseModel):
     status: SupplierStatus
     reject_reason: Optional[str] = None
     updated_at: Optional[datetime] = None
+    # Ключ читается из строки, но на провод не едет: наружу уходит собранный адрес.
+    cover_key: Optional[str] = Field(default=None, exclude=True)
+
+    @computed_field
+    @property
+    def cover_url(self) -> Optional[str]:
+        return s3_service.make_url(self.cover_key) if self.cover_key else None
 
     class Config:
         from_attributes = True

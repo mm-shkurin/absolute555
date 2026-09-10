@@ -15,6 +15,7 @@ const wire: SupplierPageWire = {
     status: 'published',
     reject_reason: null,
     updated_at: null,
+    cover_url: null,
   },
   seller: {
     user_id: 'u9',

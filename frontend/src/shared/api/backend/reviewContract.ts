@@ -10,7 +10,9 @@ export interface ReviewAuthorWire {
 
 export interface ReviewWire {
   review_id: string
-  offer_id: string
+  /** Один из двух: отзыв заработан принятым предложением или перепиской. */
+  offer_id: string | null
+  dialog_id?: string | null
   sale_car_id: string | null
   seller_id: string
   author: ReviewAuthorWire | null

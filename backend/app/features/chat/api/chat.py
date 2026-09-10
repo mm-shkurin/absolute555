@@ -23,6 +23,7 @@ from app.features.chat.schemas.chat import (
 from app.features.chat.services.chat_errors import ChatError
 from app.features.chat.services.chat_reader import ChatReader
 from app.features.chat.services.chat_service import ChatService
+from app.features.review.services.review_dialog import DialogReviewService
 from app.sse.chat_socket import chat_hub, listener_of
 from app.utils.security import get_current_user
 
@@ -41,12 +42,14 @@ async def list_dialogs(
     dialogs = await reader.mine(str(current_user.id))
     last = await reader.last_messages(dialogs)
     unread = await reader.unread_by_dialog(dialogs, str(current_user.id))
+    reviews = await DialogReviewService(db).by_dialog([dialog.dialog_id for dialog in dialogs])
     return [
         dialog_view(
             dialog,
             current_user.id,
             unread.get(dialog.dialog_id, 0),
             last.get(dialog.dialog_id),
+            reviews.get(str(dialog.dialog_id)),
         )
         for dialog in dialogs
     ]

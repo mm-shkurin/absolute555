@@ -30,7 +30,7 @@ def request_card(request) -> dict:
     }
 
 
-def dialog_view(dialog, viewer_id, unread: int, last=None) -> dict:
+def dialog_view(dialog, viewer_id, unread: int, last=None, review=None) -> dict:
     """A dialogue as one of its two people sees it.
 
     The counterpart is whichever of the pair is not asking — a screen showing "you" as
@@ -46,4 +46,6 @@ def dialog_view(dialog, viewer_id, unread: int, last=None) -> dict:
         "counterpart": seller_view(other),
         "last_message": message_view(last) if last is not None else None,
         "unread": unread,
+        "can_review": str(dialog.buyer_id) == str(viewer_id) and review is None,
+        "review_id": review.review_id if review is not None else None,
     }

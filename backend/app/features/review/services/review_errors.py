@@ -51,3 +51,11 @@ class MalformedIdentifier(ReviewError):
     def __init__(self, field: str):
         self.field = field
         super().__init__(f"{field} is not an identifier")
+
+
+class DialogNotReviewable(ReviewError):
+    """Оценивает только спрашивавший в переписке, и только другого её участника."""
+
+    def __init__(self, dialog_id: str):
+        self.dialog_id = dialog_id
+        super().__init__(f"Dialog {dialog_id} gives no right to review")

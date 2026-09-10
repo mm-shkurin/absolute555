@@ -10,6 +10,7 @@ import { PanelNote } from '../../shared/ui/Panel'
 import { FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
 import { ProfileFields } from './components/ProfileFields'
+import { CoverPicker } from './components/CoverPicker'
 import { missingForSubmit } from './logic/profileForm'
 import { STATUS_NOTE, STATUS_WORD, isEditable } from './logic/profileStatus'
 import { useSupplierProfile } from './useSupplierProfile'
@@ -70,6 +71,7 @@ export function SupplierProfilePage() {
                       черновик.
                     </PanelNote>
                   ) : null}
+                  <CoverPicker coverUrl={handle.profile.cover_url ?? null} />
                   <ProfileFields
                     form={handle.form}
                     disabled={!editable}

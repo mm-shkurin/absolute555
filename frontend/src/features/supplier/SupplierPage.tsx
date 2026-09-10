@@ -51,6 +51,14 @@ export function SupplierPage({ signedIn = false }: { signedIn?: boolean }) {
               <div className={styles.layout}>
                 <div>
                   <Panel first>
+                    {supplier.data.profile.cover_url ? (
+                      <img
+                        className={styles.cover}
+                        src={supplier.data.profile.cover_url}
+                        alt={`Витрина ${view.name}`}
+                        data-testid="supplier-cover"
+                      />
+                    ) : null}
                     <div className={styles.head}>
                       <Avatar size={64} />
                       <div className={styles.headBody}>

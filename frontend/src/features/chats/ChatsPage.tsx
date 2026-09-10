@@ -10,6 +10,8 @@ import { DialogList } from './components/DialogList'
 import { Conversation } from './components/Conversation'
 import { PHONE, useMediaQuery } from '../../shared/lib/useMediaQuery'
 import { useChats, useConversation } from './useChats'
+import { useReview } from '../offers/useReview'
+import { ReviewSheet } from '../offers/components/ReviewSheet'
 import styles from './chats.module.css'
 
 export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
@@ -23,6 +25,7 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
   const fallback = phone ? null : (chats.chats[0]?.id ?? null)
   const current = chats.chats.find((chat) => chat.id === (selected ?? fallback)) ?? null
   const conversation = useConversation(current, now)
+  const review = useReview()
 
   return (
     <>
@@ -56,6 +59,11 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
                     messages={conversation.messages}
                     onSend={conversation.send}
                     onBack={phone ? () => setSelected(null) : undefined}
+                    onReview={
+                      current
+                        ? () => review.open({ dialogId: current.id, reviewId: current.review_id ?? null })
+                        : undefined
+                    }
                   />
                 ) : null}
               </div>
@@ -63,6 +71,17 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
           </div>
         </Container>
       </main>
+      {review.target ? (
+        <ReviewSheet
+          title={review.target.reviewId ? 'Изменить отзыв' : 'Отзыв о собеседнике'}
+          initial={{ rating: null, text: '' }}
+          busy={review.busy}
+          failure={review.failure}
+          editable={review.editable}
+          onClose={review.close}
+          onSend={review.send}
+        />
+      ) : null}
     </>
   )
 }

@@ -13,11 +13,13 @@ export function Conversation({
   messages,
   onSend,
   onBack,
+  onReview,
 }: {
   header: ConversationHeader
   messages: MessageView[]
   onSend: (text: string) => void
   onBack?: () => void
+  onReview?: () => void
 }) {
   const [draft, setDraft] = useState('')
   const feed = useRef<HTMLDivElement>(null)
@@ -45,9 +47,22 @@ export function Conversation({
         ) : null}
         <Cover className={styles.thumb} url={header.photoUrl} caption="фото" />
         <div className={styles.headText}>
-          <div className={styles.who}>{header.name}</div>
+          <div className={styles.who}>
+            {header.counterpartHref ? (
+              <Link to={header.counterpartHref} data-testid="counterpart-link">
+                {header.name}
+              </Link>
+            ) : (
+              header.name
+            )}
+          </div>
           <div className={styles.about}>{header.subtitle}</div>
         </div>
+        {header.reviewLabel && onReview ? (
+          <Button tone="ghost" size="small" onClick={onReview} data-testid="chat-review">
+            {header.reviewLabel}
+          </Button>
+        ) : null}
         {/* У переписки по заявке объявления нет: кнопка вела бы на несуществующую карточку. */}
         {header.listingId ? (
           <Link

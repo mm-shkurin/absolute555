@@ -13,6 +13,7 @@ from app.db.database import get_db
 from app.permissions.guests import forbid_guest
 from app.features.review.schemas.review import ReviewCreate, ReviewPatch, ReviewResponse
 from app.features.review.services.review_errors import ReviewError
+from app.features.review.services.review_dialog import DialogReviewService
 from app.features.review.services.review_service import ReviewService
 
 review_router = APIRouter()
@@ -34,6 +35,33 @@ async def create_review(
     try:
         review = await ReviewService(db).create(
             offer_id=offer_id,
+            author_id=str(current_user.id),
+            rating=body.rating,
+            text=body.text,
+        )
+    except ReviewError as error:
+        raise to_http(error)
+
+    review.author = current_user
+    return review_view(review)
+
+
+@review_router.post(
+    "/chat/dialogs/{dialog_id}/review",
+    response_model=ReviewResponse,
+    status_code=status.HTTP_201_CREATED,
+    tags=["review"],
+)
+async def create_dialog_review(
+    dialog_id: str,
+    body: ReviewCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user = Depends(forbid_guest),
+):
+    """Отзыв по переписке: о продавце — по объявлению, о поставщике — по отклику."""
+    try:
+        review = await DialogReviewService(db).create(
+            dialog_id=dialog_id,
             author_id=str(current_user.id),
             rating=body.rating,
             text=body.text,

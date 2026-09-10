@@ -108,6 +108,7 @@ export const BACKEND = {
   },
   review: {
     ofOffer: (offerId: string) => `${V1}/offer/${id(offerId)}/review`,
+    ofDialog: (dialogId: string) => `${V1}/chat/dialogs/${id(dialogId)}/review`,
     one: (reviewId: string) => `${V1}/review/${id(reviewId)}`,
   },
   seller: {
@@ -120,6 +121,7 @@ export const BACKEND = {
     collection: `${V1}/supplier`,
     me: `${V1}/supplier/me`,
     submit: `${V1}/supplier/me/submit`,
+    cover: `${V1}/supplier/me/cover`,
     one: (userId: string) => `${V1}/supplier/${id(userId)}`,
   },
   request: {

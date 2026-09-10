@@ -39,6 +39,9 @@ export interface DialogWire {
   counterpart: SellerWire | null
   last_message: MessageWire | null
   unread: number
+  /** Оценивает спрашивавший в переписке; право называет сервер, а не экран по ролям. */
+  can_review?: boolean
+  review_id?: string | null
 }
 
 export interface MessagePageWire {

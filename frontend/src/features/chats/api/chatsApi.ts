@@ -21,6 +21,11 @@ export interface ChatWire {
   subject: 'listing' | 'request'
   counterparty_name: string
   counterparty_avatar: string | null
+  /** Собеседник — к его странице с отзывами ведёт имя в шапке. */
+  counterparty_id?: string
+  /** Оценивает спрашивавший в переписке; право называет сервер. */
+  can_review?: boolean
+  review_id?: string | null
   listing_id: string
   listing_title: string
   listing_price: number
@@ -55,6 +60,9 @@ function toChat(dialog: DialogWire): ChatWire {
       subject: 'request',
       counterparty_name: dialog.counterpart?.name ?? '',
       counterparty_avatar: dialog.counterpart?.avatar_url ?? null,
+      counterparty_id: dialog.counterpart?.user_id ?? '',
+      can_review: dialog.can_review ?? false,
+      review_id: dialog.review_id ?? null,
       listing_id: '',
       listing_title: requestTitle(request),
       // Бюджет вместо цены: заявка называет потолок, а не то, за сколько продают.
@@ -72,6 +80,9 @@ function toChat(dialog: DialogWire): ChatWire {
     // покажет объявление вместо выдуманного имени.
     counterparty_name: dialog.counterpart?.name ?? '',
     counterparty_avatar: dialog.counterpart?.avatar_url ?? null,
+    counterparty_id: dialog.counterpart?.user_id ?? '',
+    can_review: dialog.can_review ?? false,
+    review_id: dialog.review_id ?? null,
     listing_id: dialog.sale_car_id ?? '',
     listing_title: `${listing?.brand ?? ''} ${listing?.model ?? ''}`.trim(),
     listing_price: listing?.price ?? 0,

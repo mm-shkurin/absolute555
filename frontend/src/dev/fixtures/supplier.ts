@@ -18,6 +18,7 @@ function profile(userId: string, status: SupplierStatus): SupplierProfileWire {
     status,
     reject_reason: status === 'rejected' ? 'Не указаны условия расчётов' : null,
     updated_at: new Date(Date.now() - 3 * 24 * 3600_000).toISOString(),
+    cover_url: null,
   }
 }
 

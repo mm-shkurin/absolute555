@@ -21,11 +21,20 @@ EDIT_WINDOW_HOURS = 24
 
 class Review(Base):
     __tablename__ = "reviews"
-    __table_args__ = (UniqueConstraint("offer_id", name="reviews_one_per_offer"),)
+    __table_args__ = (
+        UniqueConstraint("offer_id", name="reviews_one_per_offer"),
+        UniqueConstraint("dialog_id", name="reviews_one_per_dialog"),
+    )
 
     review_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # Exactly one of the two earns the review: an accepted offer, or a conversation. Most
+    # deals here are agreed in the chat and closed off the platform, so the offer alone
+    # left most buyers with nothing to review by.
     offer_id = Column(
-        UUID(as_uuid=True), ForeignKey("offers.offer_id", ondelete="CASCADE"), nullable=False
+        UUID(as_uuid=True), ForeignKey("offers.offer_id", ondelete="CASCADE"), nullable=True
+    )
+    dialog_id = Column(
+        UUID(as_uuid=True), ForeignKey("dialogs.dialog_id", ondelete="CASCADE"), nullable=True
     )
 
     # Both sides denormalised from the offer: the profile reads reviews by seller, and

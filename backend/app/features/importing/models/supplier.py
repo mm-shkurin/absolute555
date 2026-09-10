@@ -47,6 +47,9 @@ class SupplierProfile(Base):
     delivery_days_max = Column(Integer, nullable=True)
     terms = Column(Text, nullable=True)
     description = Column(Text, nullable=True)
+    # Фото витрины. Ключ в хранилище, а не адрес: адрес собирается при выдаче и не
+    # устаревает, если хранилище переедет.
+    cover_key = Column(String, nullable=True)
 
     status = Column(String, default=SupplierStatus.DRAFT.value, nullable=False, index=True)
     reject_reason = Column(Text, nullable=True)

@@ -19,6 +19,8 @@ export interface SupplierProfileWire {
    *  видел бы «отклонён» рядом с уже исправленным текстом. */
   reject_reason: string | null
   updated_at: string | null
+  /** Фото витрины. Пусто, пока поставщик его не поставил. */
+  cover_url: string | null
 }
 
 /** Любое подмножество полей. Статуса здесь нет: он меняется только отправкой в очередь

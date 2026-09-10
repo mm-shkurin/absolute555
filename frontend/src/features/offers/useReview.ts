@@ -2,11 +2,17 @@
 // человека это одно — «сказать, как прошло».
 import { useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createReview, updateReview } from '../../shared/api/backend/reviewApi'
+import {
+  createDialogReview,
+  createReview,
+  updateReview,
+} from '../../shared/api/backend/reviewApi'
 import { isHttpError } from '../../shared/api/httpClient'
 
+/** Отзыв заработан принятым предложением или перепиской — задан ровно один из двух. */
 export interface ReviewTarget {
-  offerId: string
+  offerId?: string
+  dialogId?: string
   reviewId: string | null
 }
 
@@ -28,9 +34,9 @@ export function useReview(): ReviewResult {
   const write = useMutation({
     mutationFn: ({ rating, text }: { rating: number; text: string }) => {
       const body = text.trim() ? { rating, text: text.trim() } : { rating }
-      return target?.reviewId
-        ? updateReview(target.reviewId, body)
-        : createReview(target?.offerId ?? '', body)
+      if (target?.reviewId) return updateReview(target.reviewId, body)
+      if (target?.dialogId) return createDialogReview(target.dialogId, body)
+      return createReview(target?.offerId ?? '', body)
     },
     onSuccess: () => {
       setTarget(null)
@@ -38,6 +44,9 @@ export function useReview(): ReviewResult {
       // и офферы, и всё, где этот блок нарисован.
       void client.invalidateQueries({ queryKey: ['offers'] })
       void client.invalidateQueries({ queryKey: ['seller'] })
+      void client.invalidateQueries({ queryKey: ['chats'] })
+      void client.invalidateQueries({ queryKey: ['seller-reviews'] })
+      void client.invalidateQueries({ queryKey: ['supplier-reviews'] })
     },
     onError: (error) => {
       const cause = (error as Error).cause
@@ -46,7 +55,7 @@ export function useReview(): ReviewResult {
       // вместо второй попытки, которую он отвергнет так же.
       if (cause.errorCode === 'REVIEW_ALREADY_WRITTEN') {
         const written = cause.details?.review_id
-        if (typeof written === 'string') setTarget({ offerId: target?.offerId ?? '', reviewId: written })
+        if (typeof written === 'string') setTarget({ ...target, reviewId: written })
       }
       if (cause.errorCode === 'REVIEW_EDIT_WINDOW_CLOSED') setEditable(false)
     },

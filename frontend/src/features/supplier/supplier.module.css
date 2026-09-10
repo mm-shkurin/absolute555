@@ -151,3 +151,12 @@
     grid-template-columns: 1fr;
   }
 }
+
+.cover {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 5;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 16px;
+}

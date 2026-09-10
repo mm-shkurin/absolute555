@@ -30,6 +30,12 @@ export function createReview(offerId: string, review: ReviewCreate) {
   return send<ReviewWire>(BACKEND.review.ofOffer(offerId), { method: 'POST', body: review })
 }
 
+/** Отзыв по переписке: продавца оценивает покупатель, поставщика — автор заявки. Право
+ *  называет сервер полем `can_review` у диалога. */
+export function createDialogReview(dialogId: string, review: ReviewCreate) {
+  return send<ReviewWire>(BACKEND.review.ofDialog(dialogId), { method: 'POST', body: review })
+}
+
 /** Окно правки — сутки. Удаления нет: удаляемый отзыв становится предметом торга. */
 export function updateReview(reviewId: string, patch: ReviewPatch) {
   return send<ReviewWire>(BACKEND.review.one(reviewId), { method: 'PATCH', body: patch })

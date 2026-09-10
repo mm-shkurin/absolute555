@@ -10,6 +10,7 @@ def review_view(review) -> dict:
     return {
         "review_id": review.review_id,
         "offer_id": review.offer_id,
+        "dialog_id": review.dialog_id,
         "seller_id": review.seller_id,
         "author": seller_view(getattr(review, "author", None)),
         "rating": review.rating,

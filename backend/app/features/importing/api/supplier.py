@@ -1,9 +1,9 @@
 """Профиль поставщика, по HTTP: свой профиль, публичная страница, очередь модератора."""
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ValidationError
+from app.core.exceptions import PayloadTooLarge, ValidationError
 from app.db.database import get_db
 from app.features.importing.schemas.supplier import (
     SupplierPage,
@@ -13,7 +13,9 @@ from app.features.importing.schemas.supplier import (
     SupplierRejection,
 )
 from app.features.importing.services.supplier_errors import SupplierError
+from app.features.importing.services.supplier_cover import SupplierCoverService
 from app.features.importing.services.supplier_service import SupplierProfileService
+from app.features.listing.services.photo_errors import NotAnImage, PhotoTooLarge
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 
@@ -51,6 +53,31 @@ async def submit_my_profile(db: AsyncSession = Depends(get_db), importer=Depends
         return await SupplierProfileService(db).submit(str(importer.id))
     except SupplierError as error:
         raise to_http(error)
+
+
+@supplier_router.put("/me/cover", response_model=SupplierProfileResponse)
+async def upload_cover(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    importer=Depends(IMPORTER),
+):
+    try:
+        return await SupplierCoverService(db).set(
+            str(importer.id), await file.read(), file.content_type or "image/jpeg"
+        )
+    except PhotoTooLarge as error:
+        raise PayloadTooLarge(
+            str(error),
+            code="PHOTO_TOO_LARGE",
+            details={"limit_bytes": error.limit, "size_bytes": error.size},
+        )
+    except NotAnImage as error:
+        raise ValidationError(str(error), code="NOT_AN_IMAGE", details={"filename": "cover"})
+
+
+@supplier_router.delete("/me/cover", response_model=SupplierProfileResponse)
+async def drop_cover(db: AsyncSession = Depends(get_db), importer=Depends(IMPORTER)):
+    return await SupplierCoverService(db).drop(str(importer.id))
 
 
 @supplier_router.get("", response_model=SupplierPage)

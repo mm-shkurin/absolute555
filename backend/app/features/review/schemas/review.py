@@ -20,7 +20,9 @@ class ReviewPatch(BaseModel):
 
 class ReviewResponse(BaseModel):
     review_id: UUID4
-    offer_id: UUID4
+    # Один из двух: отзыв заработан принятым предложением или перепиской.
+    offer_id: Optional[UUID4] = None
+    dialog_id: Optional[UUID4] = None
     seller_id: UUID4
     author: Optional[Seller] = None
     rating: int
