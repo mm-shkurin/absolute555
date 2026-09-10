@@ -17,6 +17,7 @@ from sqlalchemy.orm import selectinload
 
 from app.features.chat.models.chat import Dialog, Message
 from app.features.importing.models.request import BuyerRequest
+from app.features.importing.models.supplier import SupplierProfile, SupplierStatus
 from app.features.listing.models.sale_car import SaleCars
 
 WITH_LISTING_AND_PEOPLE = (
@@ -132,3 +133,23 @@ class ChatReader:
         )
         return counted.scalar_one()
 
+    async def storefronts(self, dialogs) -> dict:
+        """Витрины, в которые обращаются прямые переписки, — одним запросом на список.
+
+        Только опубликованные: неодобренное название не должно появиться у покупателя в
+        чате раньше, чем на витрине.
+        """
+        suppliers = {
+            dialog.seller_id
+            for dialog in dialogs
+            if dialog.sale_car_id is None and dialog.request_id is None
+        }
+        if not suppliers:
+            return {}
+        found = await self.db.execute(
+            select(SupplierProfile).where(
+                SupplierProfile.user_id.in_(suppliers),
+                SupplierProfile.status == SupplierStatus.PUBLISHED.value,
+            )
+        )
+        return {str(profile.user_id): profile for profile in found.scalars()}

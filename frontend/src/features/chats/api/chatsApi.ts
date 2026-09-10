@@ -55,17 +55,27 @@ function toChat(dialog: DialogWire): ChatWire {
   const request = dialog.request
   const last = dialog.last_message
   if (!request && !listing) {
-    // Прямая переписка — со страницы поставщика: ни объявления, ни заявки за ней нет.
+    // Прямая переписка — обращение в компанию поставщика. Покупатель пишет витрине, а не
+    // человеку: у него в шапке название и фото витрины. Поставщик видит покупателя, а
+    // подпись говорит, в какую витрину обратились.
+    const storefront = dialog.storefront ?? null
+    const toStorefront = storefront !== null && storefront.user_id === dialog.counterpart?.user_id
+    const company = storefront?.company_name ?? ''
     return {
       id: dialog.dialog_id,
       subject: 'direct',
-      counterparty_name: dialog.counterpart?.name ?? '',
-      counterparty_avatar: dialog.counterpart?.avatar_url ?? null,
+      counterparty_name: toStorefront && company ? company : (dialog.counterpart?.name ?? ''),
+      counterparty_avatar:
+        (toStorefront ? storefront?.cover_url : null) ?? dialog.counterpart?.avatar_url ?? null,
       counterparty_id: dialog.counterpart?.user_id ?? '',
       can_review: dialog.can_review ?? false,
       review_id: dialog.review_id ?? null,
       listing_id: '',
-      listing_title: 'Личная переписка',
+      listing_title: toStorefront
+        ? 'Обращение к поставщику'
+        : company
+          ? `Обращение в «${company}»`
+          : 'Обращение к поставщику',
       listing_price: 0,
       listing_photo: null,
       last_message: last?.text ?? '',

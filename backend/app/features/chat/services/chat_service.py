@@ -19,6 +19,7 @@ from sqlalchemy.orm import selectinload
 
 from app.features.chat.models.chat import Dialog, Message, MessageKind
 from app.features.importing.models.request import BuyerRequest
+from app.features.importing.models.supplier import SupplierProfile
 from app.features.listing.models.sale_car import SaleCars
 from app.features.chat.services.chat_errors import DialogNotFound, EmptyMessage
 from app.features.chat.services.chat_reader import unread_for
@@ -95,9 +96,20 @@ class ChatService:
         if dialog is None:
             dialog = Dialog(buyer_id=asker, seller_id=other)
             self.db.add(dialog)
+            await self.db.flush()
+            # Первая строка говорит обоим, о чём разговор: без неё поставщик видит чат с
+            # незнакомым человеком, а покупатель — переписку с человеком вместо компании.
+            await self.say(dialog, await self._direct_opening(other), kind=MessageKind.SYSTEM.value)
             await self.db.commit()
             await self.db.refresh(dialog)
         return dialog
+
+    async def _direct_opening(self, supplier_id) -> str:
+        name = await self.db.scalar(
+            select(SupplierProfile.company_name).where(SupplierProfile.user_id == supplier_id)
+        )
+        company = f" «{name}»" if name else ""
+        return f"Обращение к поставщику{company} по привозу машины."
 
     async def say(self, dialog: Dialog, text: str, author_id=None, kind: str = MessageKind.TEXT.value) -> Message:
         body = (text or "").strip()

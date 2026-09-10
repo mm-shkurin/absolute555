@@ -43,6 +43,7 @@ async def list_dialogs(
     last = await reader.last_messages(dialogs)
     unread = await reader.unread_by_dialog(dialogs, str(current_user.id))
     reviews = await DialogReviewService(db).by_dialog([dialog.dialog_id for dialog in dialogs])
+    storefronts = await reader.storefronts(dialogs)
     return [
         dialog_view(
             dialog,
@@ -50,6 +51,7 @@ async def list_dialogs(
             unread.get(dialog.dialog_id, 0),
             last.get(dialog.dialog_id),
             reviews.get(str(dialog.dialog_id)),
+            storefronts.get(str(dialog.seller_id)),
         )
         for dialog in dialogs
     ]
@@ -67,7 +69,8 @@ async def open_direct(
         dialog = await ChatService(db).dialog_of(str(opened.dialog_id), str(current_user.id))
     except (ChatError, ValueError):
         raise to_http(DialogNotFound(user_id))
-    return dialog_view(dialog, current_user.id, 0)
+    storefronts = await ChatReader(db).storefronts([dialog])
+    return dialog_view(dialog, current_user.id, 0, storefront=storefronts.get(str(dialog.seller_id)))
 
 
 @chat_router.get("/unread", response_model=UnreadCount)

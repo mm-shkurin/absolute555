@@ -29,12 +29,20 @@ export interface RequestCardWire {
   status: string
 }
 
+/** Витрина, в которую обращается прямая переписка. */
+export interface StorefrontCardWire {
+  user_id: string
+  company_name: string | null
+  cover_url: string | null
+}
+
 export interface DialogWire {
   dialog_id: string
   /** Пусто у переписки по заявке — спрос живёт без машины. */
   sale_car_id: string | null
   listing: FeedCardWire | null
   request: RequestCardWire | null
+  storefront?: StorefrontCardWire | null
   /** Собеседник — тот из пары, кто не спрашивает. */
   counterpart: SellerWire | null
   last_message: MessageWire | null

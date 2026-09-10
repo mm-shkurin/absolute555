@@ -41,3 +41,19 @@ def test_should_refuse_a_chat_with_oneself(client, signed_in):
     me = signed_in()
 
     assert _open(client, me, _id(client, me)).status_code == 404
+
+
+def test_should_open_with_a_line_naming_the_storefront(client, signed_in):
+    """Обоим сразу видно, о чём разговор: обращение в компанию по привозу машины."""
+    asker, supplier = signed_in(), signed_in()
+    dialog_id = _open(client, asker, _id(client, supplier)).json()["dialog_id"]
+
+    for side in (asker, supplier):
+        items = client.get(f"/api/v1/chat/dialogs/{dialog_id}/messages", headers=side).json()["items"]
+        assert items[0]["kind"] == "system"
+        assert "Обращение к поставщику" in items[0]["text"]
+
+    # Второе нажатие не пишет строку заново.
+    _open(client, asker, _id(client, supplier))
+    items = client.get(f"/api/v1/chat/dialogs/{dialog_id}/messages", headers=asker).json()["items"]
+    assert [one["kind"] for one in items].count("system") == 1

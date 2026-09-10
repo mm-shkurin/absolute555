@@ -1,6 +1,7 @@
 """One shape for a dialogue and a message."""
 
 from app.features.listing.api.sale_car_view import seller_view, to_card
+from app.shared.storage.s3_service import s3_service
 
 
 def message_view(message) -> dict:
@@ -30,7 +31,15 @@ def request_card(request) -> dict:
     }
 
 
-def dialog_view(dialog, viewer_id, unread: int, last=None, review=None) -> dict:
+def storefront_card(profile) -> dict:
+    return {
+        "user_id": profile.user_id,
+        "company_name": profile.company_name,
+        "cover_url": s3_service.get_public_photo_url(profile.cover_key) if profile.cover_key else None,
+    }
+
+
+def dialog_view(dialog, viewer_id, unread: int, last=None, review=None, storefront=None) -> dict:
     """A dialogue as one of its two people sees it.
 
     The counterpart is whichever of the pair is not asking — a screen showing "you" as
@@ -43,6 +52,7 @@ def dialog_view(dialog, viewer_id, unread: int, last=None, review=None) -> dict:
         "listing": to_card(dialog.listing) if dialog.listing is not None else None,
         # Разговор висит либо на объявлении, либо на заявке: заполнено ровно одно.
         "request": request_card(dialog.request) if dialog.request is not None else None,
+        "storefront": storefront_card(storefront) if storefront is not None else None,
         "counterpart": seller_view(other),
         "last_message": message_view(last) if last is not None else None,
         "unread": unread,

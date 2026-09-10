@@ -52,12 +52,21 @@ class RequestCard(BaseModel):
     status: str
 
 
+class StorefrontCard(BaseModel):
+    """Витрина, в которую обращается прямая переписка: к ней, а не к человеку, пишет покупатель."""
+
+    user_id: UUID
+    company_name: Optional[str] = None
+    cover_url: Optional[str] = None
+
+
 class DialogResponse(BaseModel):
     dialog_id: UUID
     # Пусто у переписки по заявке: спрос — не объявление, машины за ним ещё нет.
     sale_car_id: Optional[UUID] = None
     listing: Optional[FeedCard] = None
     request: Optional[RequestCard] = None
+    storefront: Optional[StorefrontCard] = None
     counterpart: Optional[Seller] = None
     last_message: Optional[MessageResponse] = None
     unread: int = 0
