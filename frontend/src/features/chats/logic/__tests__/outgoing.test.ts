@@ -6,6 +6,7 @@ const chat = (over: Partial<ChatWire> = {}): ChatWire => ({
   counterparty_avatar: null,
   listing_photo: null,
   id: 'd1',
+  subject: 'listing',
   counterparty_name: 'Иван',
   listing_id: 'c1',
   listing_title: 'Toyota Camry',

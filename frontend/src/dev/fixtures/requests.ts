@@ -35,6 +35,7 @@ const responses = new Map<string, SupplierResponseWire[]>([
         delivery_days: 60,
         comment: 'Возьму с аукциона, растаможка моя.',
         updated_at: null,
+        dialog_id: null,
       },
     ],
   ],
@@ -89,6 +90,7 @@ export function putRequestResponse(
     delivery_days: typeof body.delivery_days === 'number' ? body.delivery_days : 0,
     comment: typeof body.comment === 'string' ? body.comment : null,
     updated_at: new Date().toISOString(),
+    dialog_id: null,
   }
   // Повторный отклик правит свой, а не заводит второй — как на сервере.
   const rest = (responses.get(requestId) ?? []).filter((one) => one.supplier_id !== 'u1')

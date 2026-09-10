@@ -56,6 +56,7 @@ export function complaintPage(): ComplaintPageWire {
 export function dialogs(): DialogWire[] {
   return CHATS.map((chat, index) => ({
     dialog_id: chat.id,
+    request: null,
     sale_car_id: chat.listing_id,
     listing: { ...toCard(FEED[index % FEED.length]), sale_car_id: chat.listing_id },
     counterpart: seller(`u${index + 2}`, chat.counterparty_name, 4.9, 21, 24),

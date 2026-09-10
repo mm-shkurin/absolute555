@@ -10,6 +10,7 @@ const DAYS = 24 * HOURS
 export const CHATS: ChatWire[] = [
   {
     id: 'c1',
+    subject: 'listing',
     counterparty_name: 'Дмитрий',
     counterparty_avatar: null,
     listing_id: 'l1',
@@ -22,6 +23,7 @@ export const CHATS: ChatWire[] = [
   },
   {
     id: 'c2',
+    subject: 'listing',
     counterparty_name: 'Артём',
     counterparty_avatar: null,
     listing_id: 'l1',
@@ -34,6 +36,7 @@ export const CHATS: ChatWire[] = [
   },
   {
     id: 'c3',
+    subject: 'listing',
     counterparty_name: 'Ольга',
     counterparty_avatar: null,
     listing_id: 'l4',

@@ -72,7 +72,7 @@ function toChat(dialog: DialogWire): ChatWire {
     // покажет объявление вместо выдуманного имени.
     counterparty_name: dialog.counterpart?.name ?? '',
     counterparty_avatar: dialog.counterpart?.avatar_url ?? null,
-    listing_id: dialog.sale_car_id,
+    listing_id: dialog.sale_car_id ?? '',
     listing_title: `${listing?.brand ?? ''} ${listing?.model ?? ''}`.trim(),
     listing_price: listing?.price ?? 0,
     listing_photo: listing?.preview_photo_url ?? null,

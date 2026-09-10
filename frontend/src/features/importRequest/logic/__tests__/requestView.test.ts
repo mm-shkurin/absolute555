@@ -22,6 +22,7 @@ const response = (over: Partial<SupplierResponseWire>): SupplierResponseWire => 
   response_id: 'rs1',
   request_id: 'r1',
   supplier_id: 'u9',
+  dialog_id: null,
   price: 6690000,
   delivery_days: 60,
   comment: null,
