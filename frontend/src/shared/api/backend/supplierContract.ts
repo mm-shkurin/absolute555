@@ -25,6 +25,8 @@ export interface SupplierProfileWire {
    *  одобрения видят прежние поля. */
   pending_changes?: Partial<SupplierProfileUpdate> | null
   revision_status?: Exclude<SupplierStatus, 'published'> | null
+  /** Фото из правки — до одобрения его видят только владелец и модератор. */
+  pending_cover_url?: string | null
 }
 
 /** Любое подмножество полей. Статуса здесь нет: он меняется только отправкой в очередь

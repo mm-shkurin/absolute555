@@ -83,7 +83,10 @@ export function SupplierProfilePage() {
                       черновик.
                     </PanelNote>
                   ) : null}
-                  <CoverPicker coverUrl={handle.profile.cover_url ?? null} />
+                  <CoverPicker
+                    coverUrl={handle.profile.pending_cover_url ?? handle.profile.cover_url ?? null}
+                    pending={Boolean(handle.profile.pending_cover_url)}
+                  />
                   <ProfileFields
                     form={handle.form}
                     disabled={!editable}

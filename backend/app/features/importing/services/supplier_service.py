@@ -16,6 +16,7 @@ from app.features.importing.models.supplier import (
     SupplierProfile,
     SupplierStatus,
 )
+from app.shared.storage.s3_service import s3_service
 from app.features.importing.services.supplier_errors import (
     ProfileFrozen,
     ProfileIncomplete,
@@ -158,8 +159,12 @@ class SupplierProfileService:
     async def _decide_revision(self, held: SupplierProfile, approved: bool, reason) -> SupplierProfile:
         """Одобрение переносит правку в витрину; отказ оставляет витрину прежней."""
         if approved:
+            replaced = held.cover_key
             for name, value in (held.pending_changes or {}).items():
                 setattr(held, name, value)
+            # Прежнее фото уходит из хранилища только после того, как новое стало витриной.
+            if replaced and replaced != held.cover_key:
+                await s3_service.delete_file(replaced)
             held.pending_changes = None
             held.revision_status = None
             held.reject_reason = None

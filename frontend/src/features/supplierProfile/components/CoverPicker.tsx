@@ -1,5 +1,5 @@
-// Фото витрины: поставить, заменить, убрать. Меняется в любом статусе профиля — это лицо
-// витрины, а не текст, который читает модератор.
+// Фото витрины: поставить, заменить, убрать. У опубликованной витрины новое фото — такая же
+// правка, как текст: покупатели увидят его после одобрения модератора.
 import { useRef } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Button } from '../../../shared/ui/Button'
@@ -7,7 +7,7 @@ import { dropMyCover, uploadMyCover } from '../../../shared/api/backend/supplier
 import type { SupplierProfileWire } from '../../../shared/api/backend/supplierContract'
 import styles from '../supplierProfile.module.css'
 
-export function CoverPicker({ coverUrl }: { coverUrl: string | null }) {
+export function CoverPicker({ coverUrl, pending = false }: { coverUrl: string | null; pending?: boolean }) {
   const client = useQueryClient()
   const input = useRef<HTMLInputElement>(null)
   const saved = (profile: SupplierProfileWire) => {
@@ -48,6 +48,9 @@ export function CoverPicker({ coverUrl }: { coverUrl: string | null }) {
           </Button>
         ) : null}
       </div>
+      {pending ? (
+        <p className={styles.coverNote}>Новое фото увидят покупатели после одобрения модератора.</p>
+      ) : null}
       {failure ? <p className={styles.gaps}>{failure.message}</p> : null}
     </div>
   )

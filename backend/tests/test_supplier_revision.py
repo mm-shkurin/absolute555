@@ -68,3 +68,37 @@ class TestPublishedRevision:
 
         assert frozen.status_code == 409, frozen.text
         assert frozen.json()["code"] == "PROFILE_FROZEN"
+
+
+class TestPublishedCover:
+    """Фото опубликованной витрины — такая же правка, как текст."""
+
+    def _publish(self, client, importer, moderator):
+        assert send_to_queue(client, importer).status_code == 200
+        assert decide(client, moderator, importer, "approve").status_code == 200
+
+    def _upload(self, client, importer):
+        from tests.conftest import make_image
+
+        return client.put(
+            "/api/v1/supplier/me/cover",
+            headers=importer,
+            files={"file": ("cover.png", make_image(), "image/png")},
+        )
+
+    def test_should_hold_a_new_cover_until_the_moderator_approves(self, client, importer, moderator):
+        self._publish(client, importer, moderator)
+
+        uploaded = self._upload(client, importer)
+
+        assert uploaded.status_code == 200, uploaded.text
+        assert uploaded.json()["pending_cover_url"]
+        assert uploaded.json()["revision_status"] == "draft"
+        public = client.get(f"/api/v1/supplier/{_id_of(importer)}").json()
+        assert public["cover_url"] is None
+
+        assert client.post("/api/v1/supplier/me/submit", headers=importer).status_code == 200
+        assert decide(client, moderator, importer, "approve").status_code == 200
+
+        public = client.get(f"/api/v1/supplier/{_id_of(importer)}").json()
+        assert public["cover_url"] == uploaded.json()["pending_cover_url"]

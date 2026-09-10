@@ -58,6 +58,13 @@ class SupplierOwnProfileResponse(SupplierProfileResponse):
     pending_changes: Optional[Dict[str, Any]] = None
     revision_status: Optional[SupplierStatus] = None
 
+    @computed_field
+    @property
+    def pending_cover_url(self) -> Optional[str]:
+        """Фото из правки — его видят владелец и модератор до решения."""
+        key = (self.pending_changes or {}).get("cover_key")
+        return s3_service.get_public_photo_url(key) if key else None
+
 
 class SupplierPage(BaseModel):
     items: List[SupplierProfileResponse]

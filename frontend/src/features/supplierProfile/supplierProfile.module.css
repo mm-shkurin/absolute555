@@ -86,3 +86,9 @@
   background: var(--success-subtle, #e8f6ee);
   color: var(--success, #1b7f4b);
 }
+
+.coverNote {
+  margin: 0;
+  font-size: 13px;
+  color: var(--muted, #6b7280);
+}

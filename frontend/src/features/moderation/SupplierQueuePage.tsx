@@ -66,7 +66,11 @@ export function SupplierQueuePage() {
             {/* Правку опубликованной витрины модератор читает поверх прежних полей: решает
                 он о том, что увидят покупатели. */}
             {items
-              .map((one) => ({ ...one, ...(one.pending_changes ?? {}) }))
+              .map((one) => ({
+                ...one,
+                ...(one.pending_changes ?? {}),
+                cover_url: one.pending_cover_url ?? one.cover_url,
+              }))
               .map((profile) => (
               <SupplierProfileCard
                 key={profile.user_id}
