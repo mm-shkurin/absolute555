@@ -8,7 +8,7 @@ export function SupplierCard({ supplier }: { supplier: SupplierCardView }) {
   return (
     <div className={styles.card} data-testid="supplier-card">
       <div className={styles.supplierTop}>
-        <Avatar size={48} />
+        <Avatar size={48} url={supplier.coverUrl} />
         <div>
           <div className={styles.supplierName}>{supplier.name}</div>
           <Rating rating={supplier.rating}>{supplier.ratingLine}</Rating>

@@ -28,6 +28,7 @@ function toSupplier(wire: SupplierProfileWire): SupplierWire {
         ? `${wire.delivery_days_min}–${wire.delivery_days_max} дней`
         : 'срок не указан',
     prepayment_percent: 0,
+    cover_url: wire.cover_url ?? null,
   }
 }
 
@@ -40,6 +41,8 @@ export interface SupplierWire {
   brands: string[]
   delivery_days: string
   prepayment_percent: number
+  /** Фото витрины — то же, что на странице поставщика. */
+  cover_url?: string | null
 }
 
 export interface ImportFeedWire {

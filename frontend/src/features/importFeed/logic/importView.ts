@@ -11,6 +11,7 @@ export interface SupplierCardView {
   ratingLine: string
   scope: string
   terms: string
+  coverUrl: string | null
 }
 
 export interface RequestCardView {
@@ -39,6 +40,7 @@ export function toSupplierCard(wire: SupplierWire): SupplierCardView {
     id: wire.id,
     name: wire.name,
     rating: wire.rating,
+    coverUrl: wire.cover_url ?? null,
     ratingLine: `${ratingValue(wire.rating)} · ${wire.deliveries_count} ${pluralize(
       wire.deliveries_count,
       'поставка',
