@@ -22,7 +22,11 @@ export function openChatSocket(handlers: ChatSocketHandlers): () => void {
 
   socket.addEventListener('message', (event) => {
     try {
-      handlers.onMessage(JSON.parse(event.data) as MessageWire)
+      // Сервер шлёт конверт `{type, message}`: развёрнутое сообщение пришло бы без
+      // `dialog_id`, и обновился бы только список диалогов, но не открытая переписка.
+      const frame = JSON.parse(event.data) as { type?: string; message?: MessageWire }
+      if (frame.type !== 'message' || !frame.message) return
+      handlers.onMessage(frame.message)
     } catch {
       // Одно испорченное сообщение не повод рвать поток: остальные придут следом.
     }
