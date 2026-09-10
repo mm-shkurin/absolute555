@@ -21,6 +21,10 @@ export interface SupplierProfileWire {
   updated_at: string | null
   /** Фото витрины. Пусто, пока поставщик его не поставил. */
   cover_url: string | null
+  /** Правка опубликованной витрины — только владельцу и модератору. Покупатели до
+   *  одобрения видят прежние поля. */
+  pending_changes?: Partial<SupplierProfileUpdate> | null
+  revision_status?: Exclude<SupplierStatus, 'published'> | null
 }
 
 /** Любое подмножество полей. Статуса здесь нет: он меняется только отправкой в очередь

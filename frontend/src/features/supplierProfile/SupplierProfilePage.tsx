@@ -12,13 +12,15 @@ import { ROUTES } from '../../shared/navigation/routes'
 import { ProfileFields } from './components/ProfileFields'
 import { CoverPicker } from './components/CoverPicker'
 import { missingForSubmit } from './logic/profileForm'
-import { STATUS_NOTE, STATUS_WORD, isEditable } from './logic/profileStatus'
+import { STATUS_NOTE, STATUS_WORD, isEditable, shownStatus } from './logic/profileStatus'
 import { useSupplierProfile } from './useSupplierProfile'
 import styles from './supplierProfile.module.css'
 
 export function SupplierProfilePage() {
   const handle = useSupplierProfile()
-  const status = handle.profile?.status ?? 'draft'
+  const status = shownStatus(handle.profile)
+  // Правка опубликованной витрины: покупатели видят прежнюю версию, пока модератор не решит.
+  const revising = handle.profile?.status === 'published' && status !== 'published'
   const editable = isEditable(status)
   const gaps = missingForSubmit(handle.form)
 
@@ -63,8 +65,13 @@ export function SupplierProfilePage() {
                   }
                 >
                   <div className={styles.status} data-testid="profile-status" data-status={status}>
-                    {STATUS_WORD[status]}
+                    {revising ? `правка: ${STATUS_WORD[status]}` : STATUS_WORD[status]}
                   </div>
+                  {revising ? (
+                    <PanelNote>
+                      Покупатели видят прежнюю версию витрины, пока модератор не одобрит правку.
+                    </PanelNote>
+                  ) : null}
                   {status === 'rejected' && handle.profile.reject_reason ? (
                     <PanelNote>
                       Причина отказа: {handle.profile.reject_reason}. Правка вернёт профиль в

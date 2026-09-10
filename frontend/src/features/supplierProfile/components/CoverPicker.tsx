@@ -24,7 +24,7 @@ export function CoverPicker({ coverUrl }: { coverUrl: string | null }) {
       {coverUrl ? (
         <img className={styles.coverImage} src={coverUrl} alt="Фото витрины" />
       ) : (
-        <div className={styles.coverEmpty}>Фото витрины не загружено</div>
+        <div className={styles.coverEmpty}>Нет фото</div>
       )}
       <div className={styles.coverActions}>
         <input

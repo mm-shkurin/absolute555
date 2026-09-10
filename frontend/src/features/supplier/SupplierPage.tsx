@@ -51,16 +51,10 @@ export function SupplierPage({ signedIn = false }: { signedIn?: boolean }) {
               <div className={styles.layout}>
                 <div>
                   <Panel first>
-                    {supplier.data.profile.cover_url ? (
-                      <img
-                        className={styles.cover}
-                        src={supplier.data.profile.cover_url}
-                        alt={`Витрина ${view.name}`}
-                        data-testid="supplier-cover"
-                      />
-                    ) : null}
                     <div className={styles.head}>
-                      <Avatar size={64} />
+                      {/* Фото витрины — квадратное, как фото профиля: лицо поставщика в
+                          том же круге, что у продавца, а не баннер. */}
+                      <Avatar size={64} url={supplier.data.profile.cover_url} />
                       <div className={styles.headBody}>
                         <div className={styles.name}>{view.name}</div>
                         <Rating rating={view.rating}>{view.line}</Rating>

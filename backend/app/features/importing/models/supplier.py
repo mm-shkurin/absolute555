@@ -52,6 +52,12 @@ class SupplierProfile(Base):
     cover_key = Column(String, nullable=True)
 
     status = Column(String, default=SupplierStatus.DRAFT.value, nullable=False, index=True)
+    # Правка опубликованной витрины. Покупатели до решения модератора видят прежнюю
+    # версию: снять витрину на время проверки значит оставить поставщика без заявок из-за
+    # запятой в условиях. Поля правки лежат здесь, а не в колонках, и переносятся туда
+    # только одобрением.
+    pending_changes = Column(JSONB, nullable=True)
+    revision_status = Column(String, nullable=True, index=True)
     reject_reason = Column(Text, nullable=True)
     submitted_at = Column(DateTime, nullable=True)
     moderated_at = Column(DateTime, nullable=True)

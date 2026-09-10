@@ -76,3 +76,21 @@ describe('отказы профиля', () => {
     expect(profileFailureText(refusal('PROFILE_FROZEN'))).toContain('дождитесь решения')
   })
 })
+
+describe('правка опубликованной витрины', () => {
+  it('форма показывает правку поверх опубликованного, статус — по правке', async () => {
+    const { toForm } = await import('../profileForm')
+    const { shownStatus } = await import('../profileStatus')
+    const published = {
+      ...wire,
+      status: 'published' as const,
+      terms: 'Старые условия',
+      pending_changes: { terms: 'Новые условия' },
+      revision_status: 'pending' as const,
+    }
+    expect(toForm(published).terms).toBe('Новые условия')
+    expect(shownStatus(published)).toBe('pending')
+    expect(shownStatus({ ...published, pending_changes: null, revision_status: null })).toBe('published')
+  })
+})
+

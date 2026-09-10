@@ -8,7 +8,7 @@
 from datetime import datetime
 from typing import List, Optional, Tuple
 
-from sqlalchemy import desc, func, select
+from sqlalchemy import desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.importing.models.supplier import (
@@ -24,6 +24,8 @@ from app.features.importing.services.supplier_errors import (
 )
 
 EDITABLE_IN = frozenset({SupplierStatus.DRAFT.value, SupplierStatus.REJECTED.value})
+PENDING = SupplierStatus.PENDING.value
+PUBLISHED = SupplierStatus.PUBLISHED.value
 
 
 class SupplierProfileService:
@@ -49,6 +51,8 @@ class SupplierProfileService:
 
     async def edit(self, user_id: str, fields: dict) -> SupplierProfile:
         held = await self.mine(user_id)
+        if held.status == PUBLISHED:
+            return await self._revise(held, fields)
         if held.status not in EDITABLE_IN:
             raise ProfileFrozen(held.status)
 
@@ -63,6 +67,8 @@ class SupplierProfileService:
 
     async def submit(self, user_id: str) -> SupplierProfile:
         held = await self.mine(user_id)
+        if held.status == PUBLISHED:
+            return await self._submit_revision(held)
         missing = [name for name in REQUIRED_TO_SUBMIT if not getattr(held, name)]
         if missing:
             raise ProfileIncomplete(missing)
@@ -96,7 +102,12 @@ class SupplierProfileService:
     async def queue(self) -> List[SupplierProfile]:
         found = await self.db.execute(
             select(SupplierProfile)
-            .where(SupplierProfile.status == SupplierStatus.PENDING.value)
+            .where(
+                or_(
+                    SupplierProfile.status == PENDING,
+                    SupplierProfile.revision_status == PENDING,
+                )
+            )
             .order_by(SupplierProfile.submitted_at)
         )
         return list(found.scalars().all())
@@ -111,11 +122,50 @@ class SupplierProfileService:
 
     async def _decide(self, user_id: str, status: str, reason) -> SupplierProfile:
         held = await self._find(user_id)
-        if held is None or held.status != SupplierStatus.PENDING.value:
+        if held is not None and held.revision_status == PENDING:
+            return await self._decide_revision(held, status == PUBLISHED, reason)
+        if held is None or held.status != PENDING:
             raise SupplierNotFound(user_id)
 
         held.status = status
         held.reject_reason = reason
+        held.moderated_at = datetime.utcnow()
+        await self._save(held)
+        return held
+
+    async def _revise(self, held: SupplierProfile, fields: dict) -> SupplierProfile:
+        if held.revision_status == PENDING:
+            raise ProfileFrozen(PENDING)
+        # Новый словарь, а не правка на месте: JSONB не замечает изменений внутри.
+        held.pending_changes = {**(held.pending_changes or {}), **fields}
+        held.revision_status = SupplierStatus.DRAFT.value
+        held.reject_reason = None
+        await self._save(held)
+        return held
+
+    async def _submit_revision(self, held: SupplierProfile) -> SupplierProfile:
+        if not held.pending_changes or held.revision_status == PENDING:
+            raise ProfileFrozen(held.revision_status or PUBLISHED)
+        merged = {**{name: getattr(held, name) for name in REQUIRED_TO_SUBMIT}, **held.pending_changes}
+        missing = [name for name in REQUIRED_TO_SUBMIT if not merged.get(name)]
+        if missing:
+            raise ProfileIncomplete(missing)
+        held.revision_status = PENDING
+        held.submitted_at = datetime.utcnow()
+        await self._save(held)
+        return held
+
+    async def _decide_revision(self, held: SupplierProfile, approved: bool, reason) -> SupplierProfile:
+        """Одобрение переносит правку в витрину; отказ оставляет витрину прежней."""
+        if approved:
+            for name, value in (held.pending_changes or {}).items():
+                setattr(held, name, value)
+            held.pending_changes = None
+            held.revision_status = None
+            held.reject_reason = None
+        else:
+            held.revision_status = SupplierStatus.REJECTED.value
+            held.reject_reason = reason
         held.moderated_at = datetime.utcnow()
         await self._save(held)
         return held

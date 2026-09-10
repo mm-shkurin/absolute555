@@ -6,6 +6,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import PayloadTooLarge, ValidationError
 from app.db.database import get_db
 from app.features.importing.schemas.supplier import (
+    SupplierOwnProfileResponse,
     SupplierPage,
     SupplierProfileResponse,
     SupplierProfileUpdate,
@@ -27,12 +28,12 @@ IMPORTER = require_permission(Permission.MANAGE_SUPPLIER_PROFILE)
 MODERATOR = require_permission(Permission.EDIT_ANY_SALE_CAR)
 
 
-@supplier_router.get("/me", response_model=SupplierProfileResponse)
+@supplier_router.get("/me", response_model=SupplierOwnProfileResponse)
 async def read_my_profile(db: AsyncSession = Depends(get_db), importer=Depends(IMPORTER)):
     return await SupplierProfileService(db).mine(str(importer.id))
 
 
-@supplier_router.put("/me", response_model=SupplierProfileResponse)
+@supplier_router.put("/me", response_model=SupplierOwnProfileResponse)
 async def edit_my_profile(
     update: SupplierProfileUpdate,
     db: AsyncSession = Depends(get_db),
@@ -47,7 +48,7 @@ async def edit_my_profile(
         raise to_http(error)
 
 
-@supplier_router.post("/me/submit", response_model=SupplierProfileResponse)
+@supplier_router.post("/me/submit", response_model=SupplierOwnProfileResponse)
 async def submit_my_profile(db: AsyncSession = Depends(get_db), importer=Depends(IMPORTER)):
     try:
         return await SupplierProfileService(db).submit(str(importer.id))
@@ -55,7 +56,7 @@ async def submit_my_profile(db: AsyncSession = Depends(get_db), importer=Depends
         raise to_http(error)
 
 
-@supplier_router.put("/me/cover", response_model=SupplierProfileResponse)
+@supplier_router.put("/me/cover", response_model=SupplierOwnProfileResponse)
 async def upload_cover(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
@@ -75,7 +76,7 @@ async def upload_cover(
         raise ValidationError(str(error), code="NOT_AN_IMAGE", details={"filename": "cover"})
 
 
-@supplier_router.delete("/me/cover", response_model=SupplierProfileResponse)
+@supplier_router.delete("/me/cover", response_model=SupplierOwnProfileResponse)
 async def drop_cover(db: AsyncSession = Depends(get_db), importer=Depends(IMPORTER)):
     return await SupplierCoverService(db).drop(str(importer.id))
 
@@ -115,7 +116,7 @@ async def read_queue(db: AsyncSession = Depends(get_db), moderator=Depends(MODER
 
 
 @moderation_supplier_router.post(
-    "/suppliers/{user_id}/approve", response_model=SupplierProfileResponse
+    "/suppliers/{user_id}/approve", response_model=SupplierOwnProfileResponse
 )
 async def approve(user_id: str, db: AsyncSession = Depends(get_db), moderator=Depends(MODERATOR)):
     try:
@@ -125,7 +126,7 @@ async def approve(user_id: str, db: AsyncSession = Depends(get_db), moderator=De
 
 
 @moderation_supplier_router.post(
-    "/suppliers/{user_id}/reject", response_model=SupplierProfileResponse
+    "/suppliers/{user_id}/reject", response_model=SupplierOwnProfileResponse
 )
 async def reject(
     user_id: str,

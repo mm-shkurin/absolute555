@@ -1,7 +1,10 @@
 // Что означает статус профиля и что в нём можно делать.
-import { isHttpError } from '../../../shared/api/httpClient'
+import { httpErrorIn } from '../../../shared/api/httpClient'
 import { failureText } from '../../../shared/api/failureText'
-import type { SupplierStatus } from '../../../shared/api/backend/supplierContract'
+import type {
+  SupplierProfileWire,
+  SupplierStatus,
+} from '../../../shared/api/backend/supplierContract'
 
 export const STATUS_WORD: Record<SupplierStatus, string> = {
   draft: 'черновик',
@@ -15,6 +18,11 @@ export const STATUS_NOTE: Record<SupplierStatus, string> = {
   pending: 'Профиль у модератора. Пока он в очереди, править его нельзя.',
   published: 'Профиль виден покупателям. Правка снова отправит его на проверку.',
   rejected: 'Модератор вернул профиль. Исправьте названное и отправьте снова.',
+}
+
+/** Статус, по которому читается экран: у опубликованной витрины с правкой — статус правки. */
+export function shownStatus(profile: SupplierProfileWire | null): SupplierStatus {
+  return profile?.revision_status ?? profile?.status ?? 'draft'
 }
 
 /** В очереди профиль заморожен. Экран это показывает сам, а не отправляет запрос
@@ -34,14 +42,16 @@ const FIELD_LABEL: Record<string, string> = {
 }
 
 export function profileFailureText(error: unknown): string {
-  if (isHttpError(error) && error.errorCode === 'PROFILE_INCOMPLETE') {
-    const missing = error.details?.missing_fields
+  // Отказ лежит в `cause`: `send` заворачивает его, и верхний объект кода не несёт.
+  const failure = httpErrorIn(error)
+  if (failure?.errorCode === 'PROFILE_INCOMPLETE') {
+    const missing = failure.details?.missing_fields
     const named = Array.isArray(missing)
       ? missing.map((field) => FIELD_LABEL[String(field)] ?? String(field))
       : []
     if (named.length > 0) return `Не хватает: ${named.join(', ')}.`
   }
-  if (isHttpError(error) && error.errorCode === 'PROFILE_FROZEN') {
+  if (failure?.errorCode === 'PROFILE_FROZEN') {
     return 'Профиль уже в очереди — дождитесь решения модератора.'
   }
   return failureText(error)

@@ -1,7 +1,7 @@
 """Провод профиля поставщика."""
 
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, computed_field
@@ -46,6 +46,17 @@ class SupplierProfileResponse(BaseModel):
         from_attributes = True
 
 
+class SupplierOwnProfileResponse(SupplierProfileResponse):
+    """Профиль глазами владельца и модератора: с правкой, которая ждёт проверки.
+
+    Отдельная схема, а не поля в общей: публичная витрина не должна показывать текст,
+    который модератор ещё не одобрил.
+    """
+
+    pending_changes: Optional[Dict[str, Any]] = None
+    revision_status: Optional[SupplierStatus] = None
+
+
 class SupplierPage(BaseModel):
     items: List[SupplierProfileResponse]
     total: int
@@ -54,7 +65,7 @@ class SupplierPage(BaseModel):
 
 
 class SupplierQueue(BaseModel):
-    items: List[SupplierProfileResponse]
+    items: List[SupplierOwnProfileResponse]
     total: int
 
 

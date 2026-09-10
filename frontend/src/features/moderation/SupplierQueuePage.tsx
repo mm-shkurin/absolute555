@@ -63,7 +63,11 @@ export function SupplierQueuePage() {
                 это разные шаги, и решение по одному не меняет другой.
               </EmptyNotice>
             ) : null}
-            {items.map((profile) => (
+            {/* Правку опубликованной витрины модератор читает поверх прежних полей: решает
+                он о том, что увидят покупатели. */}
+            {items
+              .map((one) => ({ ...one, ...(one.pending_changes ?? {}) }))
+              .map((profile) => (
               <SupplierProfileCard
                 key={profile.user_id}
                 profile={profile}
