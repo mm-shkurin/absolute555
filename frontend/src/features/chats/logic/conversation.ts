@@ -64,7 +64,9 @@ export function toHeader(chat: ChatWire): ConversationHeader {
   const budget = chat.listing_price > 0 ? ` · до ${formatPrice(chat.listing_price)}` : ''
   return {
     name: chat.counterparty_name,
-    photoUrl: chat.listing_photo,
+    // У переписки не по объявлению фото машины нет: в шапке — лицо собеседника, у
+    // покупателя в прямой переписке это фото витрины.
+    photoUrl: chat.subject === 'listing' ? chat.listing_photo : chat.counterparty_avatar,
     listingId: chat.listing_id,
     counterpartHref: chat.counterparty_id
       ? chat.subject !== 'listing'

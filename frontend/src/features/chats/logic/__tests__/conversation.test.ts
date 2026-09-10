@@ -92,4 +92,9 @@ describe('чаты', () => {
     expect(reviewed.counterpartHref).toMatch(/u9/)
     expect(reviewed.reviewLabel).toBe('Изменить отзыв')
   })
+
+  it('в прямой переписке в шапке — фото витрины, а не пустое место под машину', () => {
+    const header = toHeader({ ...chat, subject: 'direct', listing_photo: null, counterparty_avatar: 'https://s3/cover.jpg' })
+    expect(header.photoUrl).toBe('https://s3/cover.jpg')
+  })
 })
