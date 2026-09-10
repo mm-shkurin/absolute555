@@ -4,6 +4,8 @@ import { ratingLine, reviewsLabel } from '../../../shared/format/rating'
 import type { ReviewWire, SellerProfileWire } from '../api/sellerApi'
 
 export interface ReviewView {
+  /** Фото автора отзыва — то же, что у него в профиле. */
+  avatarUrl: string | null
   id: string
   author: string
   rating: number
@@ -29,6 +31,7 @@ export function toReviewView(wire: ReviewWire): ReviewView {
   return {
     id: wire.review_id,
     author: wire.author?.name ?? 'Покупатель',
+    avatarUrl: wire.author?.avatar_url ?? null,
     rating: wire.rating,
     // Машины, по которой написан отзыв, в выдаче нет — только её идентификатор. Дата
     // одна честнее выдуманного заголовка.

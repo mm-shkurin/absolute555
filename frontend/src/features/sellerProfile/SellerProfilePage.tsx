@@ -65,7 +65,7 @@ export function SellerProfilePage({ signedIn = false }: { signedIn?: boolean }) 
                   <Panel title={reviewsTitle(seller.data.reviews_count)} testId="seller-reviews">
                     <ReviewList reviews={(reviews.data?.items ?? []).map(toReviewView)} />
                     <PanelNote>
-                      Отзыв можно оставить только по принятому предложению. Поэтому их мало — и
+                      Отзыв оставляет только тот, кто переписывался с продавцом или купил у него. Поэтому их мало — и
                       поэтому им можно верить.
                     </PanelNote>
                   </Panel>

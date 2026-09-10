@@ -11,7 +11,7 @@ export function ReviewList({ reviews }: { reviews: ReviewView[] }) {
     <div data-testid="review-list">
       {reviews.map((review) => (
         <div key={review.id} className={styles.review}>
-          <Avatar size={40} />
+          <Avatar size={40} url={review.avatarUrl} />
           <div>
             <div className={styles.reviewHead}>
               {review.author} <span className={styles.reviewStars}>{stars(review.rating)}</span>{' '}

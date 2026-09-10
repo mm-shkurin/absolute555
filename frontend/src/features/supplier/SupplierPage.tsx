@@ -88,7 +88,7 @@ export function SupplierPage({ signedIn = false }: { signedIn?: boolean }) {
                     ) : (
                       (reviews.data?.items ?? []).map((review) => (
                         <div key={review.review_id} className={styles.review}>
-                          <Avatar size={40} />
+                          <Avatar size={40} url={review.author?.avatar_url} />
                           <div>
                             <div className={styles.reviewName}>
                               {review.author?.name ?? 'Покупатель'}{' '}
