@@ -39,6 +39,10 @@ from app.features.listing.services.listing_autofill import ListingAutofillServic
 from app.features.recognition.services.webhook_service import WebhookService
 
 EDITABLE_IN = frozenset({SaleCarStatus.DRAFT, SaleCarStatus.REJECTED})
+# What the seller opens to a buyer, as opposed to what the listing says. A moderator
+# reads the text, never these, so freezing them would leave the seller of a published
+# listing unable to close a phone number or a chat.
+VISIBILITY_FIELDS = frozenset({"phone_visible", "chat_allowed", "offers_visible"})
 MIN_PHOTOS_TO_SUBMIT = PhotoSettings().min_photos_to_submit
 
 
@@ -82,7 +86,7 @@ class ListingLifecycleService:
 
     async def edit(self, listing_id: str, fields: dict) -> SaleCars:
         listing = await self.get(listing_id)
-        if listing.status not in EDITABLE_IN:
+        if listing.status not in EDITABLE_IN and set(fields) - VISIBILITY_FIELDS:
             # A listing under review is frozen: otherwise a moderator reads one text and
             # a different one is published.
             raise ListingFrozen(listing.status)

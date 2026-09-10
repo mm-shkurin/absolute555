@@ -189,3 +189,23 @@ class TestVisibilitySettings:
         assert saved.json()["chat_allowed"] is False
         assert saved.json()["offers_visible"] is True
         assert saved.json()["phone_visible"] is True
+
+    def test_should_close_the_chat_on_a_listing_under_review(
+        self, client, seller, catalogue, attach_photo
+    ):
+        """Заморозка держит текст, а не видимость: продавец опубликованного объявления
+        должен уметь закрыть телефон или переписку, не снимая его с публикации."""
+        listing_id = _create(client, seller)
+        _fill(client, seller, listing_id, *catalogue, attach_photo)
+        client.post(f"/api/v1/sale_car/{listing_id}/submit", headers=seller)
+
+        saved = client.patch(
+            f"/api/v1/sale_car/{listing_id}", headers=seller, json={"chat_allowed": False}
+        )
+
+        assert saved.status_code == 200, saved.text
+        assert saved.json()["chat_allowed"] is False
+        frozen = client.patch(
+            f"/api/v1/sale_car/{listing_id}", headers=seller, json={"price": 1.0}
+        )
+        assert frozen.status_code == 409, frozen.text
