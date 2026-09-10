@@ -84,3 +84,6 @@ _project_audit/
 # cannot be run or tested here; kept out of the repository rather than half-wired.
 backend/app/api/auth_vk.py
 backend/app/utils/vk_auth.py
+
+# Дампы базы: личные данные пользователей, в репозиторий не кладутся.
+infra/backups/
