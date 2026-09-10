@@ -30,6 +30,8 @@ export interface ImportRequestView {
 }
 
 export interface ProfileView {
+  /** Нужен ссылке «Отзывы обо мне» — она ведёт на свою публичную страницу. */
+  id: string
   name: string
   avatarUrl: string | null
   rating: number | null
@@ -42,6 +44,7 @@ export interface ProfileView {
 
 export function toProfileView(wire: ProfileWire): ProfileView {
   return {
+    id: wire.id,
     name: wire.name,
     avatarUrl: wire.avatar_url,
     rating: wire.rating,

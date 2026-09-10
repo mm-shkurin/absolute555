@@ -40,11 +40,11 @@ export function toProfileWire(
     id: user.id,
     name: nameOf(user),
     avatar_url: user.avatar_url,
-    // Рейтинг и сделки появятся с отзывами: `null` показывается как «пока без оценок»,
-    // а ноль читался бы как «оценили на ноль».
-    rating: null,
-    deals_count: 0,
-    reviews_count: 0,
+    // Сервер считает их вместе с отзывами. `null` у рейтинга — «пока без оценок»: ноль
+    // читался бы как «оценили на ноль».
+    rating: user.rating ?? null,
+    deals_count: user.deals_count ?? 0,
+    reviews_count: user.reviews_count ?? 0,
     member_since: monthAndYear(user.created_at),
     listings_count: listings.total,
     rejected_listings: listings.rejected,

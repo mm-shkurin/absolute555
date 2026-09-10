@@ -66,7 +66,7 @@ export function ProfilePage() {
                     rejectReason={storefront.data?.reject_reason ?? null}
                   />
                 ) : null}
-                <Shortcuts shortcuts={view.shortcuts} />
+                <Shortcuts shortcuts={view.shortcuts} userId={view.id} />
                 <SupplierApplication
                   state={view.supplier}
                   onApply={() => navigate(ROUTES.supplierApplication)}
