@@ -6,6 +6,7 @@ const now = new Date(2026, 7, 28, 18, 0)
 
 const chat: ChatWire = {
   id: 'c1',
+  subject: 'listing',
   counterparty_name: 'Дмитрий',
   counterparty_avatar: 'https://s3/dmitry.jpg',
   listing_id: 'l1',
@@ -64,5 +65,18 @@ describe('чаты', () => {
     expect(toDialogs([chat], now)[0].avatarUrl).toBe('https://s3/dmitry.jpg')
     expect(toHeader(chat).photoUrl).toBe('https://s3/lx.jpg')
     expect(toHeader({ ...chat, listing_photo: null }).photoUrl).toBeNull()
+  })
+
+  it('переписка по заявке называет заявку с бюджетом и не ведёт к объявлению', () => {
+    const header = toHeader({
+      ...chat,
+      subject: 'request',
+      listing_id: '',
+      listing_title: 'Заявка: Toyota Camry',
+      listing_price: 3000000,
+      listing_photo: null,
+    })
+    expect(header.listingId).toBe('')
+    expect(header.subtitle).toMatch(/^Заявка: Toyota Camry · до 3/)
   })
 })

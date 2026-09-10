@@ -1,6 +1,6 @@
 // Заявка на привоз глазами её автора и глазами поставщика. Разница — в блоке действий:
 // автор закрывает заявку, поставщик откликается.
-import { Link, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
@@ -23,6 +23,7 @@ import page from '../../shared/ui/PageHeading.module.css'
 export function ImportRequestPage({ signedIn = false }: { signedIn?: boolean }) {
   const { requestId = '' } = useParams()
   const client = useQueryClient()
+  const navigate = useNavigate()
   const { request, responses } = useRequest(requestId)
   const refresh = () => {
     void client.invalidateQueries({ queryKey: ['import-request', requestId] })
@@ -32,7 +33,13 @@ export function ImportRequestPage({ signedIn = false }: { signedIn?: boolean }) 
   const respond = useMutation({
     mutationFn: (body: { price: number; delivery_days: number; comment?: string }) =>
       putResponse(requestId, body),
-    onSuccess: refresh,
+    // Отклик — начало разговора, а не запись в списке: поставщика уводят в переписку,
+    // где его цена и срок уже стоят первой строкой.
+    onSuccess: (answered) => {
+      refresh()
+      void client.invalidateQueries({ queryKey: ['chats'] })
+      if (answered.dialog_id) navigate(ROUTES.chat(answered.dialog_id))
+    },
   })
   const close = useMutation({ mutationFn: () => closeRequest(requestId), onSuccess: refresh })
 

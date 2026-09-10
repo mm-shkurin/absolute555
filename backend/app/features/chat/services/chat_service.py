@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.features.chat.models.chat import Dialog, Message, MessageKind
+from app.features.importing.models.request import BuyerRequest
 from app.features.listing.models.sale_car import SaleCars
 from app.features.chat.services.chat_errors import DialogNotFound, EmptyMessage
 from app.features.chat.services.chat_reader import unread_for
@@ -45,6 +46,29 @@ class ChatService:
 
         dialog = Dialog(
             sale_car_id=listing.sale_car_id, buyer_id=buyer, seller_id=listing.user_id
+        )
+        self.db.add(dialog)
+        await self.db.flush()
+        return dialog
+
+    async def open_for_request(self, request: BuyerRequest, supplier_id) -> Dialog:
+        """Переписка, которую заводит отклик поставщика на заявку.
+
+        Пара здесь другая, чем у объявления: спрашивает автор заявки, отвечает поставщик,
+        и правка отклика возвращается в тот же разговор, а не открывает второй.
+        """
+        supplier = uuid.UUID(str(supplier_id))
+        found = await self.db.execute(
+            select(Dialog).where(
+                Dialog.request_id == request.request_id, Dialog.seller_id == supplier
+            )
+        )
+        dialog = found.scalar_one_or_none()
+        if dialog is not None:
+            return dialog
+
+        dialog = Dialog(
+            request_id=request.request_id, buyer_id=request.user_id, seller_id=supplier
         )
         self.db.add(dialog)
         await self.db.flush()
@@ -78,6 +102,8 @@ class ChatService:
             .options(
                 selectinload(Dialog.listing).selectinload(SaleCars.brand),
                 selectinload(Dialog.listing).selectinload(SaleCars.model),
+                selectinload(Dialog.request).selectinload(BuyerRequest.brand),
+                selectinload(Dialog.request).selectinload(BuyerRequest.model),
                 selectinload(Dialog.buyer),
                 selectinload(Dialog.seller),
             )

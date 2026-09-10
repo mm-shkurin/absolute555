@@ -42,6 +42,8 @@ export interface SupplierResponseWire {
   delivery_days: number
   comment: string | null
   updated_at: string | null
+  /** Переписка, которую открыл отклик: сервер заводит её вместе с ним. */
+  dialog_id: string | null
 }
 
 export interface SupplierResponseCreate {

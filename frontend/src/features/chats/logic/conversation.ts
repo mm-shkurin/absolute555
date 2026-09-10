@@ -24,6 +24,7 @@ export interface MessageView {
 export interface ConversationHeader {
   name: string
   photoUrl: string | null
+  /** Пусто у переписки по заявке: вести некуда, объявления за спросом ещё нет. */
   listingId: string
   subtitle: string
 }
@@ -55,11 +56,15 @@ export function toDialogs(chats: ChatWire[], now: Date): DialogView[] {
 }
 
 export function toHeader(chat: ChatWire): ConversationHeader {
+  const budget = chat.listing_price > 0 ? ` · до ${formatPrice(chat.listing_price)}` : ''
   return {
     name: chat.counterparty_name,
     photoUrl: chat.listing_photo,
     listingId: chat.listing_id,
-    subtitle: `${chat.listing_title} · ${formatPrice(chat.listing_price)}`,
+    subtitle:
+      chat.subject === 'request'
+        ? `${chat.listing_title}${budget}`
+        : `${chat.listing_title} · ${formatPrice(chat.listing_price)}`,
   }
 }
 

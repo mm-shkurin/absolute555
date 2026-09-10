@@ -16,11 +16,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.features.chat.models.chat import Dialog, Message
+from app.features.importing.models.request import BuyerRequest
 from app.features.listing.models.sale_car import SaleCars
 
 WITH_LISTING_AND_PEOPLE = (
     selectinload(Dialog.listing).selectinload(SaleCars.brand),
     selectinload(Dialog.listing).selectinload(SaleCars.model),
+    selectinload(Dialog.request).selectinload(BuyerRequest.brand),
+    selectinload(Dialog.request).selectinload(BuyerRequest.model),
     selectinload(Dialog.buyer),
     selectinload(Dialog.seller),
 )

@@ -17,6 +17,8 @@ export type MessageKind = 'text' | 'system'
 
 export interface ChatWire {
   id: string
+  /** Разговор по объявлению или по заявке: у второго нет карточки, к которой вести. */
+  subject: 'listing' | 'request'
   counterparty_name: string
   counterparty_avatar: string | null
   listing_id: string
@@ -38,11 +40,34 @@ export interface MessageWire {
   read_at: string | null
 }
 
+function requestTitle(request: NonNullable<DialogWire['request']>): string {
+  const car = [request.brand ?? '', request.model ?? ''].join(' ').trim()
+  return `Заявка: ${car || 'без марки'}`
+}
+
 function toChat(dialog: DialogWire): ChatWire {
   const listing = dialog.listing
+  const request = dialog.request
   const last = dialog.last_message
+  if (request) {
+    return {
+      id: dialog.dialog_id,
+      subject: 'request',
+      counterparty_name: dialog.counterpart?.name ?? '',
+      counterparty_avatar: dialog.counterpart?.avatar_url ?? null,
+      listing_id: '',
+      listing_title: requestTitle(request),
+      // Бюджет вместо цены: заявка называет потолок, а не то, за сколько продают.
+      listing_price: request.budget_max ?? 0,
+      listing_photo: null,
+      last_message: last?.text ?? '',
+      last_message_at: last?.created_at ?? '',
+      unread_count: dialog.unread,
+    }
+  }
   return {
     id: dialog.dialog_id,
+    subject: 'listing',
     // Имя приходит от провайдера входа собеседника; у кого его нет — пусто, и экран
     // покажет объявление вместо выдуманного имени.
     counterparty_name: dialog.counterpart?.name ?? '',

@@ -41,10 +41,23 @@ class MessagePage(BaseModel):
     size: int
 
 
+class RequestCard(BaseModel):
+    """Заявка, на которую откликнулся поставщик, — шапка такой переписки."""
+
+    request_id: UUID
+    brand: Optional[str] = None
+    model: Optional[str] = None
+    year_from: Optional[int] = None
+    budget_max: Optional[float] = None
+    status: str
+
+
 class DialogResponse(BaseModel):
     dialog_id: UUID
-    sale_car_id: UUID
+    # Пусто у переписки по заявке: спрос — не объявление, машины за ним ещё нет.
+    sale_car_id: Optional[UUID] = None
     listing: Optional[FeedCard] = None
+    request: Optional[RequestCard] = None
     counterpart: Optional[Seller] = None
     last_message: Optional[MessageResponse] = None
     unread: int = 0

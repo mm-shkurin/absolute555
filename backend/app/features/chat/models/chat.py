@@ -24,13 +24,23 @@ class Dialog(Base):
     __tablename__ = "dialogs"
     __table_args__ = (
         UniqueConstraint("sale_car_id", "buyer_id", name="dialogs_one_per_pair_and_listing"),
+        UniqueConstraint("request_id", "seller_id", name="dialogs_one_per_request_and_supplier"),
     )
 
     dialog_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    # One of the two is set. A dialogue hangs either off a listing (an offer on a car)
+    # or off a buyer's request (a supplier answering demand); a request has no car, so
+    # filling the listing with anything would be inventing one.
     sale_car_id = Column(
         UUID(as_uuid=True),
         ForeignKey("sale_cars.sale_car_id", ondelete="CASCADE"),
-        nullable=False,
+        nullable=True,
+        index=True,
+    )
+    request_id = Column(
+        UUID(as_uuid=True),
+        ForeignKey("buyer_requests.request_id", ondelete="CASCADE"),
+        nullable=True,
         index=True,
     )
     buyer_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
@@ -46,6 +56,7 @@ class Dialog(Base):
     created_at = Column(DateTime, server_default=func.now(), nullable=False)
 
     listing = relationship("SaleCars")
+    request = relationship("BuyerRequest")
     buyer = relationship("Users", foreign_keys=[buyer_id])
     seller = relationship("Users", foreign_keys=[seller_id])
     messages = relationship("Message", back_populates="dialog", cascade="all, delete-orphan")

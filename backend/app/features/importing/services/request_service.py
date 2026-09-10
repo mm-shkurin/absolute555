@@ -13,6 +13,9 @@ from app.features.importing.models.request import (
     RequestStatus,
     SupplierResponse,
 )
+from app.features.chat.models.chat import Dialog, Message, MessageKind
+from app.features.chat.services.chat_service import ChatService
+from app.features.importing.services.response_line import response_line
 from app.features.importing.services.request_errors import (
     RequestClosed,
     RequestLimitReached,
@@ -83,7 +86,16 @@ class BuyerRequestService:
         await self.db.commit()
         return await self.get(request_id)
 
-    async def respond(self, supplier_id: str, request_id: str, fields: dict) -> SupplierResponse:
+    async def respond(
+        self, supplier_id: str, request_id: str, fields: dict
+    ) -> Tuple[SupplierResponse, Dialog, Message]:
+        """Отклик и переписка, которую он открывает.
+
+        Разговор заводится здесь же, а не отдельной кнопкой: покупателю отвечают ценой и
+        сроком, и место, где это обсуждают, должно существовать до первого вопроса. Сам
+        отклик уходит в переписку первой строкой — иначе она открывается пустой, и о чём
+        она, не помнит никто.
+        """
         request = await self.get(request_id)
         if request.status != RequestStatus.OPEN.value:
             raise RequestClosed(request_id)
@@ -98,9 +110,16 @@ class BuyerRequestService:
             for name, value in fields.items():
                 setattr(held, name, value)
 
+        chat = ChatService(self.db)
+        dialog = await chat.open_for_request(request, supplier_id)
+        said = await chat.say(
+            dialog, response_line(held), kind=MessageKind.SYSTEM.value
+        )
         await self.db.commit()
         await self.db.refresh(held)
-        return held
+        await self.db.refresh(dialog)
+        await self.db.refresh(said)
+        return held, dialog, said
 
     async def responses_for(self, reader_id: str, request_id: str) -> List[SupplierResponse]:
         """Автору заявки — все отклики, поставщику — только свой."""

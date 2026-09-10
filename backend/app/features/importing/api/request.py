@@ -13,10 +13,13 @@ from app.features.importing.schemas.request import (
     SupplierResponseCreate,
     SupplierResponseView,
 )
+from app.features.chat.api.chat_view import message_view
+from app.features.chat.schemas.chat import MessageResponse
 from app.features.importing.services.request_service import BuyerRequestService
 from app.features.importing.services.supplier_errors import SupplierError
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
+from app.sse.chat_socket import chat_hub
 from app.utils.security import get_current_user
 
 from .request_http import to_http
@@ -83,12 +86,19 @@ async def respond(
 ):
     """Идемпотентно: один отклик на поставщика, повторный вызов правит свой."""
     try:
-        answered = await BuyerRequestService(db).respond(
+        answered, dialog, said = await BuyerRequestService(db).respond(
             str(importer.id), request_id, body.model_dump()
         )
     except SupplierError as error:
         raise to_http(error)
-    return answered
+
+    # Автор заявки читает отклик в переписке, а не в списке заявок: если он смотрит на
+    # чаты прямо сейчас, строка должна прийти без перезагрузки.
+    live = MessageResponse(**message_view(said)).model_dump(mode="json")
+    await chat_hub.deliver(
+        [str(dialog.buyer_id), str(dialog.seller_id)], {"type": "message", "message": live}
+    )
+    return {**SupplierResponseView.model_validate(answered).model_dump(), "dialog_id": dialog.dialog_id}
 
 
 @request_router.get("/{request_id}/responses", response_model=List[SupplierResponseView])

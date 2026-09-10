@@ -19,10 +19,22 @@ export interface MessageWire {
   created_at: string
 }
 
+/** Заявка покупателя, на которую откликнулся поставщик: у такой переписки объявления нет. */
+export interface RequestCardWire {
+  request_id: string
+  brand: string | null
+  model: string | null
+  year_from: number | null
+  budget_max: number | null
+  status: string
+}
+
 export interface DialogWire {
   dialog_id: string
-  sale_car_id: string
+  /** Пусто у переписки по заявке — спрос живёт без машины. */
+  sale_car_id: string | null
   listing: FeedCardWire | null
+  request: RequestCardWire | null
   /** Собеседник — тот из пары, кто не спрашивает. */
   counterpart: SellerWire | null
   last_message: MessageWire | null

@@ -48,12 +48,15 @@ export function Conversation({
           <div className={styles.who}>{header.name}</div>
           <div className={styles.about}>{header.subtitle}</div>
         </div>
-        <Link
-          to={ROUTES.listing(header.listingId)}
-          className={buttonClass({ tone: 'ghost', size: 'small' })}
-        >
-          К объявлению
-        </Link>
+        {/* У переписки по заявке объявления нет: кнопка вела бы на несуществующую карточку. */}
+        {header.listingId ? (
+          <Link
+            to={ROUTES.listing(header.listingId)}
+            className={buttonClass({ tone: 'ghost', size: 'small' })}
+          >
+            К объявлению
+          </Link>
+        ) : null}
       </div>
       <div className={styles.body} ref={feed}>
         {messages.map((message) =>

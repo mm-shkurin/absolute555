@@ -55,6 +55,8 @@ class SupplierResponseView(BaseModel):
     delivery_days: int
     comment: Optional[str] = None
     updated_at: Optional[datetime] = None
+    # Переписка, которую открыл отклик: поставщика уводят в неё сразу после отправки.
+    dialog_id: Optional[UUID] = None
 
     class Config:
         from_attributes = True
