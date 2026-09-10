@@ -34,3 +34,21 @@ def test_should_answer_nothing_for_a_frame_without_digits(client, owner, draft):
 
 def test_should_not_read_for_someone_elses_listing(client, signed_in, draft):
     assert _read(client, draft, signed_in(), gauge_photo(180)).status_code == 404
+
+
+def test_should_mark_a_confirmed_reading_as_read_from_the_gauge(client, owner, draft):
+    """Продавец подтвердил подсказку без правки — источник «прибор», а не «вписано»."""
+    body = gauge_photo(180)
+    suggested = _read(client, draft, owner, body).json()["value_um"]
+
+    saved = client.put(
+        f"/api/v1/sale_car/{draft}/thickness/hood",
+        headers=owner,
+        data={"value_um": suggested},
+        files={"photo": ("gauge.png", body, "image/png")},
+    )
+
+    measured = saved.json()["measurements"][0]
+    assert measured["value_um"] == 180
+    assert measured["source"] == "ocr"
+

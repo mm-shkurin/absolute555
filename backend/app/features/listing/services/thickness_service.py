@@ -53,7 +53,10 @@ class ThicknessMapService:
         else:
             if not _within(value_um):
                 raise ValueOutOfRange(value_um)
-            source = ValueSource.SELLER
+            # Форма присылает число всегда — прочитанное со снимка подставляется в поле
+            # для сверки. Подтверждённое без правки — это чтение прибора, а не ручной ввод:
+            # покупатель должен видеть, что число снято с экрана.
+            source = ValueSource.OCR if value_um == read else ValueSource.SELLER
 
         key = await self._store(listing, photo)
         held = await self._panel_of(listing, panel)
