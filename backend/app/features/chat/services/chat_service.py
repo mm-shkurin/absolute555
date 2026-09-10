@@ -74,6 +74,31 @@ class ChatService:
         await self.db.flush()
         return dialog
 
+    async def open_direct(self, asker_id, other_id) -> Dialog:
+        """Переписка без объявления и заявки — «Написать» на странице поставщика.
+
+        Спрашивающий — `buyer_id`, как и в остальных переписках: отзыв по разговору
+        оставляет тот, кто начал, о том, кому писали.
+        """
+        asker, other = uuid.UUID(str(asker_id)), uuid.UUID(str(other_id))
+        if asker == other:
+            raise DialogNotFound(str(other_id))
+        found = await self.db.execute(
+            select(Dialog).where(
+                Dialog.buyer_id == asker,
+                Dialog.seller_id == other,
+                Dialog.sale_car_id.is_(None),
+                Dialog.request_id.is_(None),
+            )
+        )
+        dialog = found.scalar_one_or_none()
+        if dialog is None:
+            dialog = Dialog(buyer_id=asker, seller_id=other)
+            self.db.add(dialog)
+            await self.db.commit()
+            await self.db.refresh(dialog)
+        return dialog
+
     async def say(self, dialog: Dialog, text: str, author_id=None, kind: str = MessageKind.TEXT.value) -> Message:
         body = (text or "").strip()
         if not body:

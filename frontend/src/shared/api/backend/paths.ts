@@ -76,6 +76,7 @@ export const BACKEND = {
     withdraw: (offerId: string) => `${V1}/offer/${id(offerId)}/withdraw`,
   },
   chat: {
+    direct: (userId: string) => `${V1}/chat/dialogs/direct/${id(userId)}`,
     dialogs: `${V1}/chat/dialogs`,
     messages: (dialogId: string) => `${V1}/chat/dialogs/${id(dialogId)}/messages`,
     read: (dialogId: string) => `${V1}/chat/dialogs/${id(dialogId)}/read`,

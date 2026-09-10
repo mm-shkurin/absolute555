@@ -20,7 +20,7 @@ from app.features.chat.schemas.chat import (
     ReadResult,
     UnreadCount,
 )
-from app.features.chat.services.chat_errors import ChatError
+from app.features.chat.services.chat_errors import ChatError, DialogNotFound
 from app.features.chat.services.chat_reader import ChatReader
 from app.features.chat.services.chat_service import ChatService
 from app.features.review.services.review_dialog import DialogReviewService
@@ -53,6 +53,21 @@ async def list_dialogs(
         )
         for dialog in dialogs
     ]
+
+
+@chat_router.post("/dialogs/direct/{user_id}", response_model=DialogResponse)
+async def open_direct(
+    user_id: str,
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """Открыть или найти прямую переписку с человеком — со страницы поставщика."""
+    try:
+        opened = await ChatService(db).open_direct(current_user.id, user_id)
+        dialog = await ChatService(db).dialog_of(str(opened.dialog_id), str(current_user.id))
+    except (ChatError, ValueError):
+        raise to_http(DialogNotFound(user_id))
+    return dialog_view(dialog, current_user.id, 0)
 
 
 @chat_router.get("/unread", response_model=UnreadCount)

@@ -67,13 +67,15 @@ export function toHeader(chat: ChatWire): ConversationHeader {
     photoUrl: chat.listing_photo,
     listingId: chat.listing_id,
     counterpartHref: chat.counterparty_id
-      ? chat.subject === 'request'
+      ? chat.subject !== 'listing'
         ? ROUTES.supplier(chat.counterparty_id)
         : ROUTES.seller(chat.counterparty_id)
       : null,
     reviewLabel: chat.review_id ? 'Изменить отзыв' : chat.can_review ? 'Оставить отзыв' : null,
     subtitle:
-      chat.subject === 'request'
+      chat.subject === 'direct'
+        ? chat.listing_title
+        : chat.subject === 'request'
         ? `${chat.listing_title}${budget}`
         : `${chat.listing_title} · ${formatPrice(chat.listing_price)}`,
   }

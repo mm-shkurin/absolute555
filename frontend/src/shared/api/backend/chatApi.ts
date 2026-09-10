@@ -46,3 +46,9 @@ export function markRead(dialogId: string, messageIds: string[]) {
 export function fetchUnread(signal?: AbortSignal) {
   return send<UnreadCountWire>(BACKEND.chat.unread, { signal })
 }
+
+/** Прямая переписка без объявления и заявки — «Написать» на странице поставщика.
+ *  Повторный вызов возвращает ту же переписку: сервер держит одну на пару. */
+export function openDirectChat(userId: string) {
+  return send<DialogWire>(BACKEND.chat.direct(userId), { method: 'POST' })
+}

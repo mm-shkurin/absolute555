@@ -18,7 +18,7 @@ export type MessageKind = 'text' | 'system'
 export interface ChatWire {
   id: string
   /** Разговор по объявлению или по заявке: у второго нет карточки, к которой вести. */
-  subject: 'listing' | 'request'
+  subject: 'listing' | 'request' | 'direct'
   counterparty_name: string
   counterparty_avatar: string | null
   /** Собеседник — к его странице с отзывами ведёт имя в шапке. */
@@ -54,6 +54,25 @@ function toChat(dialog: DialogWire): ChatWire {
   const listing = dialog.listing
   const request = dialog.request
   const last = dialog.last_message
+  if (!request && !listing) {
+    // Прямая переписка — со страницы поставщика: ни объявления, ни заявки за ней нет.
+    return {
+      id: dialog.dialog_id,
+      subject: 'direct',
+      counterparty_name: dialog.counterpart?.name ?? '',
+      counterparty_avatar: dialog.counterpart?.avatar_url ?? null,
+      counterparty_id: dialog.counterpart?.user_id ?? '',
+      can_review: dialog.can_review ?? false,
+      review_id: dialog.review_id ?? null,
+      listing_id: '',
+      listing_title: 'Личная переписка',
+      listing_price: 0,
+      listing_photo: null,
+      last_message: last?.text ?? '',
+      last_message_at: last?.created_at ?? '',
+      unread_count: dialog.unread,
+    }
+  }
   if (request) {
     return {
       id: dialog.dialog_id,
