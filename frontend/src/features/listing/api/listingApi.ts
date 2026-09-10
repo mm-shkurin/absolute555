@@ -65,12 +65,16 @@ export interface ListingDetailWire {
   offers: OfferWire[] | null
 }
 
-/** Предложения по машине сервер отдаёт только её владельцу, поэтому гость и покупатель
- *  за ними не ходят: отказ в правах — не то, чем должна кончаться загрузка карточки. */
+/** Предложения по машине сервер отдаёт владельцу всегда, а постороннему — только если
+ *  продавец открыл торг настройкой. Гость за ними не ходит вовсе: отказ в правах — не
+ *  то, чем должна кончаться загрузка карточки. */
 export async function fetchListing(id: string, signal?: AbortSignal): Promise<ListingDetailWire> {
   const car = await fetchSaleCar(id, signal)
   const viewerId = currentSession()?.userId ?? null
   const owned = viewerId !== null && viewerId === car.user_id
-  const offers = owned ? await fetchOffersForCar(id, signal) : null
+  const maySee = owned || (viewerId !== null && car.offers_visible)
+  // Настройку могли закрыть между чтением карточки и этим запросом: закрытый торг
+  // показывается как закрытый, а не как поломка карточки.
+  const offers = maySee ? await fetchOffersForCar(id, signal).catch(() => null) : null
   return toListingDetailWire(car, { viewerId, offers })
 }
