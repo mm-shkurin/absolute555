@@ -33,6 +33,17 @@ export function putMeasurement(
   })
 }
 
+/** Прочитать снимок экрана прибора, ничего не сохраняя. Число — подсказка для сверки:
+ *  распознавание ошибается на бликах, и молча записанная ошибка красит панель в чужой цвет. */
+export function readGauge(saleCarId: string, photo: File) {
+  const form = new FormData()
+  form.append('photo', photo)
+  return send<{ value_um: number | null }>(BACKEND.thickness.read(saleCarId), {
+    method: 'POST',
+    body: form,
+  })
+}
+
 /** Убирается одна панель: «стереть всю карту» — кнопка, которой нет ни в макете,
  *  ни в контракте. */
 export function deleteMeasurement(saleCarId: string, panel: BodyPanel) {

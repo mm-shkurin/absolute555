@@ -62,6 +62,7 @@ export const BACKEND = {
   },
   thickness: {
     map: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/thickness`,
+    read: (saleCarId: string) => `${V1}/sale_car/${id(saleCarId)}/thickness/read`,
     // Панель — часть адреса, а не тело: отсюда идемпотентность PUT и уникальность
     // «один замер на панель».
     panel: (saleCarId: string, panel: string) =>

@@ -32,3 +32,9 @@ class ThicknessMap(BaseModel):
     measured_panels: int
     total_panels: int
     is_complete: bool
+
+
+class GaugeReading(BaseModel):
+    """Число со снимка прибора — подсказка продавцу, а не замер: сохраняет его «Сохранить»."""
+
+    value_um: Optional[int] = None

@@ -27,8 +27,9 @@ describe('форма замера', () => {
     expect(checkMeasurement('3000', photo())).toMatchObject({ ok: true, valueUm: 3000 })
   })
 
-  it('дробное и подписанное число отвергает: прибор показывает целое', () => {
-    expect(checkMeasurement('96.5', photo())).toMatchObject({ ok: false })
+  it('десятые с экрана прибора округляет до целых мкм, подписанное число отвергает', () => {
+    expect(checkMeasurement('97.3', photo())).toMatchObject({ ok: true, valueUm: 97 })
+    expect(checkMeasurement('57,5', photo())).toMatchObject({ ok: true, valueUm: 58 })
     expect(checkMeasurement('-96', photo())).toMatchObject({ ok: false })
   })
 })

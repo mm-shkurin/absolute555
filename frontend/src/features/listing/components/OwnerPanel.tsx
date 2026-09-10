@@ -99,7 +99,9 @@ export function OwnerPanel({
             : `Не замерено панелей: ${view.totalPanels - view.measuredPanels} — бейджа «полная карта» нет, объявление не поднимается в выдаче.`}
         </p>
         <Link
-          to={ROUTES.thicknessMap(view.id)}
+          // Домерить — это редактор, а он живёт на экране продавца: карта объявления
+          // только показывает замеры, и владелец попадал туда, где записать нечего.
+          to={complete ? ROUTES.thicknessMap(view.id) : ROUTES.sellingThickness(view.id)}
           className={buttonClass({ tone: 'ghost', block: true, className: styles.mapLink })}
         >
           {complete ? 'Посмотреть карту' : 'Домерить'}

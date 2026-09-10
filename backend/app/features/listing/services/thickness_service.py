@@ -20,7 +20,7 @@ from app.features.listing.services.thickness_errors import (
     MeasurementNotFound,
     ValueOutOfRange,
 )
-from app.ml.gauge_ocr import read_gauge
+from app.ml.gauge_reader import read_panel_photo
 from app.shared.storage.s3_service import s3_service
 
 
@@ -42,7 +42,7 @@ class ThicknessMapService:
         прибора нечем отличить от подрисованного замера.
         """
         require_image(photo[0], photo[2])
-        read = read_gauge(photo[2])
+        read = await read_panel_photo(photo[2])
         if not _within(read):
             read = None
 

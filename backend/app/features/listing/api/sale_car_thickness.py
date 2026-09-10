@@ -12,10 +12,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.exceptions import ResourceNotFoundError
 from app.db.database import get_db
 from app.features.listing.panels import BodyPanel
-from app.features.listing.schemas.thickness import ThicknessMap
+from app.features.listing.schemas.thickness import GaugeReading, ThicknessMap
 from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_lifecycle import ListingLifecycleService
+from app.features.listing.services.photo_image import require_image
 from app.features.listing.services.thickness_service import ThicknessMapService
+from app.ml.gauge_reader import read_panel_photo
 from app.permissions.ownership import can_manage_sale_car
 from app.utils.security import get_current_user, get_current_user_or_none
 
@@ -45,6 +47,28 @@ async def read_map(
             raise ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
 
     return to_thickness_map(listing, await ThicknessMapService(db).map_of(listing))
+
+
+@thickness_router.post("/{sale_car_id}/thickness/read", response_model=GaugeReading)
+async def read_gauge_photo(
+    sale_car_id: str,
+    photo: UploadFile = File(...),
+    db: AsyncSession = Depends(get_db),
+    current_user=Depends(get_current_user),
+):
+    """Прочитать снимок экрана прибора, ничего не сохраняя.
+
+    Число — подсказка: продавец сверяет его со снимком и сохраняет сам. Распознавание
+    ошибается на бликах и срезанных краях экрана, и молча записанная ошибка окрасила бы
+    панель у покупателя в чужой цвет. Тот же снимок при сохранении читается из кэша.
+    """
+    try:
+        await listing_of(ListingLifecycleService(db), sale_car_id, current_user)
+    except ListingError as error:
+        raise to_http(error)
+    body = await photo.read()
+    require_image(photo.filename, body)
+    return {"value_um": await read_panel_photo(body)}
 
 
 @thickness_router.put("/{sale_car_id}/thickness/{panel}", response_model=ThicknessMap)

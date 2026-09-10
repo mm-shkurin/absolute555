@@ -1,12 +1,14 @@
 // Запись и снятие замера. Отдельно от чтения (`useThicknessMap`): читает карту любой,
 // кому видно объявление, а пишет только владелец, и права у этих двух разные.
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { deleteMeasurement, putMeasurement } from './api/thicknessApi'
+import { deleteMeasurement, putMeasurement, readGauge } from './api/thicknessApi'
 import type { PanelCode } from './logic/panels'
 
 export interface ThicknessEditor {
   save: (panel: PanelCode, valueUm: number | null, photo: File) => Promise<void>
   remove: (panel: PanelCode) => Promise<void>
+  /** Число со снимка — подсказка, пусто, если не разобрали или сервис не ответил. */
+  read: (photo: File) => Promise<number | null>
   busy: boolean
   error: string | null
 }
@@ -45,6 +47,7 @@ export function useThicknessEditor(saleCarId: string): ThicknessEditor {
     remove: async (panel) => {
       await erase.mutateAsync(panel)
     },
+    read: (photo) => readGauge(saleCarId, photo).then((answer) => answer.value_um, () => null),
     busy: write.isPending || erase.isPending,
     error: failure?.message ?? null,
   }

@@ -151,3 +151,17 @@ def attach_photo(client):
         return response.json()["photos"]
 
     return _attach
+
+
+@pytest.fixture(autouse=True)
+def offline_gauge_vision(monkeypatch):
+    """Экран толщиномера в тестах читает tesseract, а не GigaChat.
+
+    Тесты не ходят во внешний сервис: синтетический кадр с чистыми цифрами tesseract
+    читает надёжно, а качество распознавания настоящих снимков меряет
+    `scripts/gauge_eval.py`, а не набор тестов.
+    """
+    from app.ml import gauge_reader
+    from app.ml.gauge_ocr import read_gauge
+
+    monkeypatch.setattr(gauge_reader, "read_gauge_vision", read_gauge)

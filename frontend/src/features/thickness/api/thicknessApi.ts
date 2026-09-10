@@ -6,6 +6,7 @@ export {
   deleteMeasurement,
   fetchThicknessMap,
   putMeasurement,
+  readGauge,
 } from '../../../shared/api/backend/thicknessApi'
 export type {
   BodyPanel,

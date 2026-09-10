@@ -14,9 +14,10 @@ export function checkMeasurement(value: string, photo: File | null): FormCheck {
   // Пустое поле — законный случай: число тогда читает сервер со снимка прибора, и
   // отказ приходит кодом OCR_UNREADABLE, а не молчанием.
   if (trimmed === '') return { ok: true, valueUm: null, photo }
-  // Дробное значение прибор не показывает, а `Number` принял бы «96.5» молча.
-  if (!/^\d+$/.test(trimmed)) return { ok: false, reason: 'Число целое, без знаков и точки.' }
-  const valueUm = Number(trimmed)
+  // Приборы показывают десятые (97.3): число принимается с точкой или запятой и
+  // округляется до целых мкм — так его хранит карта.
+  if (!/^\d+([.,]\d{1,2})?$/.test(trimmed)) return { ok: false, reason: 'Только число, без знаков.' }
+  const valueUm = Math.round(Number(trimmed.replace(',', '.')))
   if (valueUm < VALUE_UM_MIN || valueUm > VALUE_UM_MAX) {
     return { ok: false, reason: `Прибор показывает от ${VALUE_UM_MIN} до ${VALUE_UM_MAX} мкм.` }
   }

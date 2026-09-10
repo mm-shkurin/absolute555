@@ -14,12 +14,15 @@ interface Props {
   error: string | null
   onSave: (valueUm: number | null, photo: File) => void
   onRemove: () => void
+  /** Прочитать снимок — число встаёт в поле для сверки, а не сохраняется молча. */
+  onRead?: (photo: File) => Promise<number | null>
 }
 
-export function PanelEditor({ detail, busy, error, onSave, onRemove }: Props) {
+export function PanelEditor({ detail, busy, error, onSave, onRemove, onRead }: Props) {
   const [value, setValue] = useState('')
   const [photo, setPhoto] = useState<File | null>(null)
   const [refused, setRefused] = useState<string | null>(null)
+  const [reading, setReading] = useState<'idle' | 'busy' | 'read' | 'unread'>('idle')
   const file = useRef<HTMLInputElement>(null)
 
   // Смена панели очищает форму: иначе число от капота уедет на крышу — и уедет молча,
@@ -28,6 +31,7 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove }: Props) {
     setValue(detail.valueUm === null ? '' : String(detail.valueUm))
     setPhoto(null)
     setRefused(null)
+    setReading('idle')
     if (file.current) file.current.value = ''
   }, [detail.code, detail.valueUm])
 
@@ -53,24 +57,43 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove }: Props) {
         accept="image/*"
         className={styles.file}
         data-testid="panel-photo"
-        onChange={(event) => setPhoto(event.target.files?.[0] ?? null)}
+        onChange={(event) => {
+          const chosen = event.target.files?.[0] ?? null
+          setPhoto(chosen)
+          if (!chosen || !onRead) return
+          setReading('busy')
+          void onRead(chosen).then((value) => {
+            if (value === null) return setReading('unread')
+            setValue(String(value))
+            setReading('read')
+          })
+        }}
       />
       <input
         type="text"
         inputMode="numeric"
         className={styles.field}
-        placeholder="число с экрана прибора — или оставьте пустым"
+        placeholder="число с экрана прибора"
         data-testid="panel-value"
         value={value}
         onChange={(event) => setValue(event.target.value)}
       />
+      {reading !== 'idle' ? (
+        <p className={styles.note} data-testid="panel-reading">
+          {reading === 'busy'
+            ? 'Читаем число со снимка…'
+            : reading === 'read'
+              ? 'Число прочитано со снимка — сверьте его с экраном прибора перед сохранением.'
+              : 'Не разобрали число на снимке — впишите его сами.'}
+        </p>
+      ) : null}
       {refused || error ? (
         <p className={styles.refused} role="alert" data-testid="panel-refused">
           {refused ?? error}
         </p>
       ) : null}
       <div className={styles.editorActions}>
-        <Button onClick={submit} disabled={busy} data-testid="panel-save">
+        <Button onClick={submit} disabled={busy || reading === 'busy'} data-testid="panel-save">
           Сохранить замер
         </Button>
         {detail.measured ? (

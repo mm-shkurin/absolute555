@@ -28,7 +28,7 @@ export function ThicknessSellerPage({ signedIn }: { signedIn: boolean }) {
       <main data-testid="thickness-seller">
         <Container>
           <div className={styles.crumbs}>
-            <Link to={ROUTES.sellingDraft(saleCarId)}>Объявление</Link> › Заполнение карты
+            <Link to={ROUTES.listing(saleCarId)}>Объявление</Link> › Заполнение карты
           </div>
           {map.isLoading ? <ThicknessSkeleton /> : null}
           {!map.isLoading && map.error ? (
@@ -53,6 +53,7 @@ export function ThicknessSellerPage({ signedIn }: { signedIn: boolean }) {
                     busy={editor.busy}
                     error={editor.error}
                     onSave={(valueUm, photo) => void editor.save(detail.code, valueUm, photo)}
+                    onRead={editor.read}
                     onRemove={() => void editor.remove(detail.code)}
                   />
                 ) : (
