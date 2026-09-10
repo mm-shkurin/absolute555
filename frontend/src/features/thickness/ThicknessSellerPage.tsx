@@ -28,6 +28,7 @@ export function ThicknessSellerPage({ signedIn }: { signedIn: boolean }) {
       <main data-testid="thickness-seller">
         <Container>
           <div className={styles.crumbs}>
+            <Link to={ROUTES.sellingDraft(saleCarId)}>Мастер</Link> ·{' '}
             <Link to={ROUTES.listing(saleCarId)}>Объявление</Link> › Заполнение карты
           </div>
           {map.isLoading ? <ThicknessSkeleton /> : null}

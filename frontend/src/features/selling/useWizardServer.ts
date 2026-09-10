@@ -58,10 +58,16 @@ export function useWizardServer(
       wizard.applyDraft(loaded)
       wizard.goStep(resumeStep(loaded))
     })
-    void gallery.refresh()
     // Загрузка делается один раз на открытие: дальше состоянием владеет мастер.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingId])
+
+  // Галерея — отдельно и после того, как id черновика дошёл до неё: в первом заходе он ещё
+  // не выставлен, запрос молча не уходил, и «Отправка» показывала «0 из 15» при шести фото.
+  useEffect(() => {
+    if (existingId && sync.saleCarId) void gallery.refresh()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingId, sync.saleCarId])
 
   useEffect(() => {
     if (!recognition.outcome) return

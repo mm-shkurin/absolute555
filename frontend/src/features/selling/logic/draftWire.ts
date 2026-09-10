@@ -40,6 +40,10 @@ export function toDraft(car: SaleCarWire): Draft {
     phone: text(car.phone_number),
     description: text(car.description),
     photosCount: car.photos.length,
+    // Замеры пишутся с отдельной страницы карты, и без сводки черновик после возврата
+    // показывал «0 из 13» при полной карте.
+    measuredPanels: car.thickness?.measured_panels ?? 0,
+    totalPanels: car.thickness?.total_panels ?? 13,
     kind: car.listing_kind,
     importCountry: text(car.import_country),
     deliveryDays: text(car.delivery_days),

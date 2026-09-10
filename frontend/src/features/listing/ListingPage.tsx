@@ -68,7 +68,8 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
                 <OwnerPanel
                   view={listing.view}
                   sold={listing.sold}
-                  onEdit={() => navigate(ROUTES.selling)}
+                  // В мастер этого объявления, а не в новое: `/sell` заводил бы новый черновик.
+                  onEdit={() => navigate(ROUTES.sellingDraft(listing.view?.id ?? ''))}
                   busy={actions.busy}
                   onUnpublish={() => actions.owner('withdraw')}
                   onMarkSold={() => actions.owner('sold')}
