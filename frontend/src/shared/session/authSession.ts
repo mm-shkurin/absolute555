@@ -75,13 +75,36 @@ export function renewTokens(accessToken: string, refreshToken: string): void {
   startSession({ ...session, accessToken, refreshToken })
 }
 
-// Имя и фотография меняются в профиле, а шапка читает сессию: без этого лицо в углу
-// отстаёт от профиля до перезагрузки страницы.
-export function updateIdentity(displayName: string, avatarUrl: string | null): void {
+// Роли сервера и роли экрана совпадают не полностью: гость на сервере — это учётная
+// запись, тогда как на экране гость означает «сессии нет». Незнакомая роль читается как
+// обычный пользователь: скрыть лишнюю кнопку безопаснее, чем показать чужую.
+const ROLES: Record<string, Role> = {
+  user: 'user',
+  admin: 'admin',
+  manager: 'manager',
+  importer: 'importer',
+  guest: 'user',
+}
+
+export function roleFrom(serverRole: string | null | undefined): Role {
+  return ROLES[serverRole ?? ''] ?? 'user'
+}
+
+// Имя, фотография и роль меняются вне сессии — в профиле и в разборе заявки на роль, — а
+// шапка и экраны читают сессию: без этого одобренный поставщик оставался покупателем до
+// следующего входа.
+export function updateIdentity(displayName: string, avatarUrl: string | null, role?: Role): void {
   const session = currentSession()
   if (!session) return
-  if (session.displayName === displayName && session.avatarUrl === avatarUrl) return
-  startSession({ ...session, displayName, avatarUrl })
+  const nextRole = role ?? session.role
+  if (
+    session.displayName === displayName &&
+    session.avatarUrl === avatarUrl &&
+    session.role === nextRole
+  ) {
+    return
+  }
+  startSession({ ...session, displayName, avatarUrl, role: nextRole })
 }
 
 export function endSession(): void {

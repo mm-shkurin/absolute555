@@ -5,7 +5,7 @@
 import { request } from '../httpClient'
 import { send } from '../send'
 import { BACKEND } from './paths'
-import { updateIdentity } from '../../session/authSession'
+import { roleFrom, updateIdentity } from '../../session/authSession'
 import type {
   ProfilePatchWire,
   RoleRequestCreate,
@@ -29,11 +29,11 @@ export function guestLogin(deviceId: string) {
   })
 }
 
-/** Профиль — единственное место, где приезжают своё имя и своя фотография, поэтому
- *  сессия обновляется здесь: иначе каждый её читатель обновлял бы её у себя. */
+/** Профиль — единственное место, где приезжают своё имя, фотография и текущая роль,
+ *  поэтому сессия обновляется здесь: иначе каждый её читатель обновлял бы её у себя. */
 export async function fetchProfile(signal?: AbortSignal) {
   const user = await send<UserWire>(BACKEND.user.profile, { signal })
-  updateIdentity(user.name ?? '', user.avatar_url)
+  updateIdentity(user.name ?? '', user.avatar_url, roleFrom(user.role))
   return user
 }
 

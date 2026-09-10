@@ -7,23 +7,12 @@ import { request } from '../../../shared/api/httpClient'
 import { BACKEND } from '../../../shared/api/backend/paths'
 import { fetchProfile } from '../../../shared/api/backend/accountApi'
 import type { TokenWire, UserWire } from '../../../shared/api/backend/accountContract'
-import { startSession, type Role } from '../../../shared/session/authSession'
+import { roleFrom, startSession } from '../../../shared/session/authSession'
 
 /** Мимо `send`: токена ещё нет, прикладывать к запросу нечего, а истёкшая сессия здесь
  *  не событие — её и не было. */
 export function exchangeCode(code: string): Promise<TokenWire> {
   return request<TokenWire>(BACKEND.auth.oauthExchange, { method: 'POST', body: { code } })
-}
-
-// Роли сервера и роли экрана совпадают не полностью: `importer` появится вместе с каналом
-// «под заказ», а гость на сервере — это учётная запись, тогда как на экране гость означает
-// «сессии нет». Незнакомая роль читается как обычный пользователь: скрыть лишнюю кнопку
-// безопаснее, чем показать чужую.
-const ROLES: Record<string, Role> = {
-  user: 'user',
-  admin: 'admin',
-  manager: 'manager',
-  guest: 'user',
 }
 
 function displayName(user: UserWire): string {
@@ -52,7 +41,7 @@ export async function startSessionFrom(tokens: TokenWire): Promise<void> {
       accessToken: tokens.access_token,
       refreshToken: tokens.refresh_token,
       userId: user.id,
-      role: ROLES[user.role ?? ''] ?? 'user',
+      role: roleFrom(user.role),
       displayName: displayName(user),
       avatarUrl: user.avatar_url,
     })
