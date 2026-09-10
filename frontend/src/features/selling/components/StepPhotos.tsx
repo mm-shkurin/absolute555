@@ -14,6 +14,7 @@ export function StepPhotos({
   error,
   onAdd,
   onRemove,
+  onReorder,
   onBack,
   onNext,
 }: {
@@ -23,11 +24,22 @@ export function StepPhotos({
   error: string | null
   onAdd: (files: File[]) => void
   onRemove: (photoId: string) => void
+  /** Новый порядок целиком: первое фото — обложка, отдельного поля обложки нет. */
+  onReorder: (photoIds: string[]) => void
   onBack: () => void
   onNext: () => void
 }) {
   const picker = useRef<HTMLInputElement>(null)
   const count = photos.length
+  const ids = photos.map((photo) => photo.photo_id)
+  // Перестановка — это новый список целиком: сервер хранит порядок, а не позиции по одной.
+  const move = (from: number, to: number) => {
+    if (to < 0 || to >= count || busy) return
+    const next = [...ids]
+    const [taken] = next.splice(from, 1)
+    next.splice(to, 0, taken)
+    onReorder(next)
+  }
   const take = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = [...(event.target.files ?? [])]
     event.target.value = ''
@@ -37,7 +49,7 @@ export function StepPhotos({
     <WizardCard
       testId="step-photos"
       title="Фотографии автомобиля"
-      sub={`До ${limit} снимков. Первый становится обложкой.`}
+      sub={`До ${limit} снимков. Первый — обложка: её видят в ленте. Порядок меняется стрелками.`}
       nav={
         <>
           <Button tone="ghost" onClick={onBack}>
@@ -71,6 +83,35 @@ export function StepPhotos({
             className={[styles.slot, index === 0 ? styles.cover : ''].join(' ')}
           >
             <img src={photo.preview_url} alt="" />
+            <div className={styles.tools}>
+              <button
+                type="button"
+                onClick={() => move(index, index - 1)}
+                disabled={busy || index === 0}
+                aria-label={`Сдвинуть фото ${index + 1} влево`}
+              >
+                ←
+              </button>
+              {index > 0 ? (
+                <button
+                  type="button"
+                  className={styles.makeCover}
+                  onClick={() => move(index, 0)}
+                  disabled={busy}
+                  data-testid="photo-make-cover"
+                >
+                  обложка
+                </button>
+              ) : null}
+              <button
+                type="button"
+                onClick={() => move(index, index + 1)}
+                disabled={busy || index === count - 1}
+                aria-label={`Сдвинуть фото ${index + 1} вправо`}
+              >
+                →
+              </button>
+            </div>
             <button
               type="button"
               className={styles.drop}

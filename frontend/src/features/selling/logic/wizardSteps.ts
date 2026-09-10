@@ -43,3 +43,24 @@ export function previousStep(step: StepId): StepId {
 export function isPassed(step: StepId, current: StepId): boolean {
   return stepIndex(step) < stepIndex(current)
 }
+
+/** Шаг, с которого продолжать начатый черновик: первый, где ещё пусто.
+ *
+ *  Без этого «Продолжить» открывало фото СТС, хотя марка, год и цена уже подтянуты с
+ *  сервера, — и казалось, что мастер всё забыл. */
+export function resumeStep(draft: {
+  brand: { value: string }
+  model: { value: string }
+  year: { value: string }
+  price: string
+  mileage: string
+  photosCount: number
+}): StepId {
+  const named = [draft.brand, draft.model, draft.year].filter((field) => field.value.trim())
+  if (named.length === 0) return 'document'
+  if (named.length < 3 || !draft.mileage.trim()) return 'specs'
+  if (!draft.price.trim()) return 'pricing'
+  if (draft.photosCount === 0) return 'photos'
+  return 'thickness'
+}
+

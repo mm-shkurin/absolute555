@@ -32,6 +32,17 @@ export interface DraftSync {
   reload: () => Promise<Draft | null>
 }
 
+/** Адрес мастера получает id только что заведённого черновика. Без этого `/sell` оставался
+ *  `/sell`: обновление страницы или возврат заводили новый пустой черновик, а начатый
+ *  терялся среди них. Адрес меняется мимо роутера намеренно: навигация перезапустила бы
+ *  загрузку черновика с сервера и затёрла бы то, что человек уже ввёл на экране. */
+function rememberInAddress(saleCarId: string) {
+  if (typeof window === 'undefined') return
+  const path = window.location.pathname.replace(/\/+$/, '')
+  if (path !== '/sell') return
+  window.history.replaceState(window.history.state, '', `/sell/${saleCarId}`)
+}
+
 /** `existingId` — черновик, начатый раньше: мастер открыт по ссылке из «Моих объявлений»,
  *  и заводить второй черновик на ту же машину нельзя. */
 export function useDraftSync(enabled: boolean, existingId?: string, kind?: ListingKind): DraftSync {
@@ -65,6 +76,7 @@ export function useDraftSync(enabled: boolean, existingId?: string, kind?: Listi
       .then((car) => {
         idRef.current = car.sale_car_id
         setSaleCarId(car.sale_car_id)
+        rememberInAddress(car.sale_car_id)
         return car.sale_car_id
       })
       // Гость и оборванная сеть выглядят здесь одинаково: черновик остаётся только на

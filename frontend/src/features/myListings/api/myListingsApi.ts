@@ -3,6 +3,7 @@
 // переключение мгновенное и не гоняет сеть.
 import { fetchMyListings as fetchMySaleCars } from '../../../shared/api/backend/saleCarApi'
 import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
+import { resumeStep, stepIndex, STEPS } from '../../selling/logic/wizardSteps'
 
 export type ListingStatus =
   | 'draft'
@@ -46,6 +47,18 @@ const STATUS: Record<SaleCarWire['status'], ListingStatus> = {
   sold: 'sold',
 }
 
+function stepFields(car: SaleCarWire) {
+  const text = (value: unknown) => ({ value: value == null ? '' : String(value) })
+  return {
+    brand: text(car.brand ?? car.mark_raw),
+    model: text(car.model ?? car.model_raw),
+    year: text(car.year),
+    price: car.price == null ? '' : String(car.price),
+    mileage: car.milleage == null ? '' : String(car.milleage),
+    photosCount: car.photos.length,
+  }
+}
+
 function toMyListing(car: SaleCarWire): MyListingWire {
   return {
     id: car.sale_car_id,
@@ -56,14 +69,15 @@ function toMyListing(car: SaleCarWire): MyListingWire {
     status: STATUS[car.status],
     photos_count: car.photos.length,
     preview_url: car.preview_photo_url,
-    // Замеров, непрочитанного и шагов черновика сервер не считает: ни карты замеров, ни
-    // чатов на нём пока нет, а черновик он не разбивает на шаги.
-    measured_panels: 0,
-    total_panels: 11,
+    measured_panels: car.thickness?.measured_panels ?? 0,
+    total_panels: car.thickness?.total_panels ?? 13,
+    // Непрочитанного и новых офферов в этой выдаче сервер не отдаёт.
     new_offers: 0,
     unread_messages: 0,
-    draft_step: null,
-    total_steps: null,
+    // Пройдено шагов — ровно столько, сколько до того, с которого «Продолжить» откроет
+    // мастер: список и мастер считают одним правилом и не расходятся.
+    draft_step: car.status === 'draft' ? stepIndex(resumeStep(stepFields(car))) : null,
+    total_steps: STEPS.length,
     updated_at: car.updated_at ?? car.created_at ?? '',
     rejection_reason: car.reject_reason,
     sold_at: car.status === 'sold' ? car.updated_at : null,

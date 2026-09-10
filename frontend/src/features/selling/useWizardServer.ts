@@ -13,7 +13,7 @@ import type { ListingKind } from '../../shared/api/backend/saleCarContract'
 import { useDraftSync } from './useDraftSync'
 import { useGallery, type Gallery } from './useGallery'
 import { useStsRecognition } from './useStsRecognition'
-import type { DocumentStage, StepId } from './logic/wizardSteps'
+import { resumeStep, type DocumentStage, type StepId } from './logic/wizardSteps'
 
 interface WizardHandle {
   draft: Draft
@@ -54,7 +54,9 @@ export function useWizardServer(
   useEffect(() => {
     if (!existingId) return
     void sync.reload().then((loaded) => {
-      if (loaded) wizard.applyDraft(loaded)
+      if (!loaded) return
+      wizard.applyDraft(loaded)
+      wizard.goStep(resumeStep(loaded))
     })
     void gallery.refresh()
     // Загрузка делается один раз на открытие: дальше состоянием владеет мастер.

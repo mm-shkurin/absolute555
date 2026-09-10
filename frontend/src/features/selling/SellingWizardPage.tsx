@@ -108,6 +108,7 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
                   busy={server.gallery.busy}
                   error={server.gallery.error}
                   onAdd={(files) => void server.gallery.add(files)}
+                  onReorder={(photoIds) => void server.gallery.reorder(photoIds)}
                   onRemove={(photoId) => void server.gallery.remove(photoId)}
                   onBack={wizard.goBack}
                   onNext={goNext}
