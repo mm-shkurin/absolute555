@@ -117,11 +117,12 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
                 <StepThickness
                   onBack={wizard.goBack}
                   onSkip={goNext}
-                  // Заполнять нечего, пока черновик не заведён на сервере: замер
-                  // кладётся по адресу объявления, и без него шаг просто идёт дальше.
-                  onFill={() =>
-                    saleCarId ? navigate(ROUTES.sellingThickness(saleCarId)) : goNext()
-                  }
+                  // Черновик, начатый с `/sell`, заводится сервером, и его id в адресе
+                  // нет — берём его у сервера. Без этого кнопка молча шла на следующий шаг.
+                  onFill={() => {
+                    const draftId = saleCarId ?? server.saleCarId
+                    return draftId ? navigate(ROUTES.sellingThickness(draftId)) : goNext()
+                  }}
                 />
               ) : null}
               {state.step === 'review' ? (
