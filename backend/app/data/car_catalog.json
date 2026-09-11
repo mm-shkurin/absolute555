@@ -116,7 +116,7 @@
       "aliases": ["ЛЕКСУС"],
       "models": [
         "IS", "IS 200", "IS 250", "IS 300", "IS 350", "IS F", "ES", "GS", "GS 300", "GS 350",
-        "GS 450h", "LS", "LS 400", "LS 430", "LS 460", "LS 600h", "CT", "RC", "LC",
+        "GS 430", "GS 450h", "GS 460", "LS", "LS 400", "LS 430", "LS 460", "LS 600h", "CT", "RC", "LC",
         "RX", "RX 300", "RX 330", "RX 350", "RX 450h", "NX", "UX", "GX", "GX 460",
         "LX", "LX 470", "LX 570", "LX 600", "LM", "SC", "HS"
       ]

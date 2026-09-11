@@ -6,11 +6,12 @@ promises a number on its button, and an estimate makes that promise false.
 
 from typing import List, Tuple
 
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.features.account.models.users import Users
+from app.features.catalog.models.catalog import CarModel
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
 from app.features.listing.models.thickness import ThicknessMeasurement
 from app.features.listing.panels import TOTAL_PANELS
@@ -58,7 +59,7 @@ class ListingFeedService:
         if query.brand_id is not None:
             found = found.where(SaleCars.brand_id == query.brand_id)
         if query.model_id is not None:
-            found = found.where(SaleCars.model_id == query.model_id)
+            found = found.where(SaleCars.model_id.in_(_family_of(query.model_id)))
 
         # Both ends inclusive: a reader asking for 2010 to 2015 means a car of 2015 too.
         for column, low, high in (
@@ -108,3 +109,19 @@ class ListingFeedService:
             SaleCars.created_at.desc(),
             SaleCars.sale_car_id.asc(),
         )
+
+
+def _family_of(model_id):
+    """Модель и её исполнения: выбранная «GS» находит и GS 300, и GS 430.
+
+    Справочник хранит исполнения отдельными строками, а покупатель, выбравший «GS»,
+    ищет машину, а не строку справочника. Исполнение — модель той же марки, чьё имя
+    начинается с выбранного и пробела: «GS 430», но не «GSX».
+    """
+    chosen = select(CarModel.brand_id, CarModel.name).where(CarModel.model_id == model_id).subquery()
+    return (
+        select(CarModel.model_id)
+        .join(chosen, CarModel.brand_id == chosen.c.brand_id)
+        .where(or_(CarModel.name == chosen.c.name, CarModel.name.like(chosen.c.name + " %")))
+    )
+

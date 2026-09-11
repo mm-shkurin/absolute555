@@ -164,8 +164,10 @@ def to_card(listing) -> dict:
     photos = [_photo_view(photo) for photo in (listing.photos or [])]
     return {
         "sale_car_id": listing.sale_car_id,
-        "brand": listing.brand.name_ru if listing.brand else None,
-        "model": listing.model.name if listing.model else None,
+        # Без строки справочника — то, что прочитано с СТС: «Lexus» без модели на карточке
+        # выглядит как недозаполненное объявление, а «GS430» — как машина.
+        "brand": listing.brand.name_ru if listing.brand else listing.mark_raw,
+        "model": listing.model.name if listing.model else listing.model_raw,
         "year": listing.year,
         "price": listing.price,
         "milleage": listing.milleage,
