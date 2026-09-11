@@ -162,3 +162,16 @@
   font-size: 13px;
   color: var(--text-secondary);
 }
+
+/* Полоска окрасов: тринадцать отрезков по панелям, цветами схемы кузова. */
+.paintStrip {
+  display: flex;
+  gap: 3px;
+  margin-top: 10px;
+}
+
+.paintStrip i {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+}

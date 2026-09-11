@@ -130,6 +130,8 @@ def test_should_carry_the_summary_on_the_listing_card(client, owner, publish):
         "measured_panels": 1,
         "total_panels": 13,
         "is_complete": False,
+        # Капот — первая панель; остальные двенадцать не замерены.
+        "panels": ["factory"] + [None] * 12,
     }
 
 

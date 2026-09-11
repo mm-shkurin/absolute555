@@ -15,6 +15,8 @@ export interface ListingWire {
   city: string | null
   photo_url: string | null
   has_thickness_map: boolean
+  /** Статусы панелей для полоски окрасов; пусто — замеров нет. */
+  thickness_panels?: (string | null)[]
   vin_verified: boolean
   /** Канал поставки приходит полем, а не выводится из срока доставки: объявление под
    *  привоз без проставленного срока иначе выглядело бы машиной в наличии. */

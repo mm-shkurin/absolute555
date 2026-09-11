@@ -42,6 +42,13 @@ export function ListingCard({ listing }: { listing: ListingView }) {
           <span>{listing.isImport && listing.importFrom ? listing.importFrom : listing.city}</span>
           <span>{listing.vinNote}</span>
         </div>
+        {listing.paintStrip.length > 0 ? (
+          <div className={styles.paintStrip} data-testid="paint-strip" aria-label="Карта окрасов">
+            {listing.paintStrip.map((color, index) => (
+              <i key={index} style={{ background: color }} />
+            ))}
+          </div>
+        ) : null}
       </div>
     </Link>
   )

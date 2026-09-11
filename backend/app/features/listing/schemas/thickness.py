@@ -19,11 +19,13 @@ class Measurement(BaseModel):
 
 
 class ThicknessSummary(BaseModel):
-    """Сводка в карточке и детальной выдаче: отдельного вызова ради двух чисел нет."""
+    """Сводка в карточке и детальной выдаче: отдельного вызова ради неё нет."""
 
     measured_panels: int
     total_panels: int
     is_complete: bool
+    # Статус каждой панели в порядке BodyPanel; пусто — панель не замерена.
+    panels: List[Optional[PanelStatus]] = []
 
 
 class ThicknessMap(BaseModel):

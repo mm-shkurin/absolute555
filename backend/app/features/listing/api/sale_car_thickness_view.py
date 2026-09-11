@@ -5,7 +5,7 @@
 понадобился, когда файл выдачи упёрся в лимит в 200 строк.
 """
 
-from app.features.listing.panels import TOTAL_PANELS, status_of
+from app.features.listing.panels import TOTAL_PANELS, BodyPanel, status_of
 from app.shared.storage.s3_service import s3_service
 
 
@@ -31,10 +31,16 @@ def to_thickness_map(listing, measurements) -> dict:
 
 
 def thickness_summary(measurements) -> dict:
-    """Сколько панелей измерено и полна ли карта. Полная — это все тринадцать."""
-    measured = len(list(measurements))
+    """Сколько панелей измерено, полна ли карта и статус каждой панели.
+
+    `panels` — тринадцать статусов в порядке `BodyPanel`, пустой у незамеренной: по ним
+    карточка в ленте рисует полоску окрасов, не запрашивая карту целиком.
+    """
+    held = list(measurements)
+    by_panel = {one.panel: status_of(one.value_um) for one in held}
     return {
-        "measured_panels": measured,
+        "measured_panels": len(held),
         "total_panels": TOTAL_PANELS,
-        "is_complete": measured >= TOTAL_PANELS,
+        "is_complete": len(held) >= TOTAL_PANELS,
+        "panels": [by_panel.get(panel.value) for panel in BodyPanel],
     }

@@ -14,6 +14,8 @@ export interface ListingView {
   vinNote: string
   photoUrl: string | null
   hasThicknessMap: boolean
+  /** Цвет каждой панели по порядку; пусто — полоску не рисовать. */
+  paintStrip: string[]
   isImport: boolean
   /** Откуда везут — пустая строка у машины в наличии. */
   importFrom: string
@@ -44,6 +46,7 @@ export function toListingView(listing: ListingWire): ListingView {
     vinNote: isImport ? 'без VIN' : listing.vin_verified ? 'VIN проверен' : 'VIN не проверен',
     photoUrl: listing.photo_url,
     hasThicknessMap: listing.has_thickness_map,
+    paintStrip: paintStrip(listing.thickness_panels ?? []),
     isImport,
     importFrom: isImport ? (listing.import_country ?? '') : '',
     // Цена под ключ показывается только у привоза и только когда сервер её назвал: ноль
@@ -58,3 +61,18 @@ export function toListingView(listing: ListingWire): ListingView {
 export function countLabel(total: number): string {
   return `${formatAmount(total)} ${pluralize(total, 'объявление', 'объявления', 'объявлений')}`
 }
+
+// Те же переменные, что красят схему кузова: полоска и карта не должны расходиться в цвете.
+const PAINT: Record<string, string> = {
+  factory: 'var(--measure-ok)',
+  repaint: 'var(--measure-warn)',
+  filler: 'var(--measure-bad)',
+}
+
+/** Полоска рисуется, только если замерена хоть одна панель: тринадцать серых отрезков
+ *  сказали бы «проверено и пусто», а это «не проверяли». */
+function paintStrip(panels: (string | null)[]): string[] {
+  if (!panels.some(Boolean)) return []
+  return panels.map((status) => (status ? PAINT[status] ?? 'var(--measure-none)' : 'var(--measure-none)'))
+}
+

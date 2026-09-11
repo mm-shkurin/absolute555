@@ -18,6 +18,7 @@ export function fromFeedCard(card: FeedCardWire): ListingWire {
     // Бейдж обещает полную карту, поэтому и считается по `is_complete`, а не по факту
     // хотя бы одного замера: частичная карта под это обещание не подходит.
     has_thickness_map: card.thickness?.is_complete ?? false,
+    thickness_panels: card.thickness?.panels ?? [],
     vin_verified: false,
     is_import: card.listing_kind === 'import',
     import_country: card.import_country,

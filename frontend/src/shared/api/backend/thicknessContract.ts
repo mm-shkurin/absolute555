@@ -56,6 +56,8 @@ export interface ThicknessSummaryWire {
   measured_panels: number
   total_panels: number
   is_complete: boolean
+  /** Статус каждой из тринадцати панелей; `null` — не замерена. Для полоски в карточке. */
+  panels?: (PanelStatus | null)[]
 }
 
 /** Границы значения из спеки: за ними сервер отвечает 422. Форма проверяет их до
