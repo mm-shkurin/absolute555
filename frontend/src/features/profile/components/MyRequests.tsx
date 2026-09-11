@@ -2,7 +2,7 @@
 // отличается от заявки, о которой забыли, кроме этого счётчика.
 import { Link } from 'react-router-dom'
 import { Panel } from '../../../shared/ui/Panel'
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { IconTile } from '../../../shared/ui/Icon'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { ButtonLink } from '../../../shared/ui/Button'
 import { ROUTES } from '../../../shared/navigation/routes'
@@ -25,7 +25,7 @@ export function MyRequests({ requests }: { requests: ImportRequestView[] }) {
       ) : null}
       {requests.map((request) => (
         <div key={request.id} className={styles.request}>
-          <Placeholder className={styles.requestPhoto}>заявка</Placeholder>
+          <IconTile name="document" className={styles.requestPhoto} />
           <div>
             <Link to={ROUTES.importRequest(request.id)} className={styles.requestTitle}>
               {request.title}

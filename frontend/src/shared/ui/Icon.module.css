@@ -1,0 +1,25 @@
+.icon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Размер плитки задаёт место, куда её ставят (className), — здесь только вид. */
+.tile {
+  display: grid;
+  place-items: center;
+  flex: none;
+  background: var(--accent-subtle, #e8f0fe);
+  color: var(--text-accent, var(--accent));
+}
+
+.tile .icon {
+  width: 45%;
+  height: 45%;
+  min-width: 20px;
+  min-height: 20px;
+}

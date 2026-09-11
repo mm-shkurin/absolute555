@@ -1,6 +1,6 @@
 // Левая колонка карточки: галерея, характеристики, описание, вход в карту замеров.
 import { Link } from 'react-router-dom'
-import { Placeholder } from '../../../shared/ui/Placeholder'
+import { MapTeaser } from './MapTeaser'
 import { buttonClass } from '../../../shared/ui/Button'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { ListingDetailView } from '../logic/listingDetail'
@@ -45,7 +45,7 @@ export function ListingBody({
             <h3>Карта замеров</h3>
             <ThicknessBadge label={listing.thicknessBadge} />
           </div>
-          <Placeholder className={styles.mapTeaser}>схема кузова с замерами</Placeholder>
+          <MapTeaser listingId={listing.id} />
           <Link
             to={ROUTES.thicknessMap(listing.id)}
             className={buttonClass({ tone: 'ghost', block: true })}

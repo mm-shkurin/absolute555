@@ -6,7 +6,14 @@ import type { DocumentHandlers } from './StepDocument'
 import { WizardCard, NavSpacer } from './WizardCard'
 import styles from './StepDocument.module.css'
 
-export function RecognitionProgress({ handlers }: { handlers: DocumentHandlers }) {
+export function RecognitionProgress({
+  handlers,
+  shotUrl = null,
+}: {
+  handlers: DocumentHandlers
+  /** Сам выбранный снимок: человек видит, что распознаётся именно его документ. */
+  shotUrl?: string | null
+}) {
   return (
     <WizardCard
       testId="step-document-recognizing"
@@ -23,7 +30,11 @@ export function RecognitionProgress({ handlers }: { handlers: DocumentHandlers }
       }
     >
       <div className={styles.recognizing}>
-        <Placeholder className={styles.shot}>снимок СТС</Placeholder>
+        {shotUrl ? (
+          <img className={styles.shot} src={shotUrl} alt="Снимок СТС" />
+        ) : (
+          <Placeholder className={styles.shot}>снимок СТС</Placeholder>
+        )}
         <div>
           <div className={styles.working}>
             <span className={styles.spinner} /> Читаем текст и разбираем VIN

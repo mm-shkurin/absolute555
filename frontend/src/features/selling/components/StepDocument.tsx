@@ -1,12 +1,12 @@
 // Первый шаг: снимок СТС и всё, чем он может закончиться. Пять состояний одного шага —
 // ожидание файла, фоновая обработка, два вида отказа и ручной ввод.
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { Button } from '../../../shared/ui/Button'
-import { Placeholder } from '../../../shared/ui/Placeholder'
 import type { DocumentStage } from '../logic/wizardSteps'
 import { Alert } from './Alert'
 import { WizardCard, NavSpacer } from './WizardCard'
 import { RecognitionProgress } from './RecognitionProgress'
+import { StsSample } from './StsSample'
 import { VinPrompt } from './VinPrompt'
 import styles from './StepDocument.module.css'
 
@@ -33,6 +33,8 @@ export function StepDocument({
   handlers: DocumentHandlers
 }) {
   const picker = useRef<HTMLInputElement>(null)
+  // Снимок показывается на экране распознавания: человек видит, что читается его документ.
+  const [shotUrl, setShotUrl] = useState<string | null>(null)
   // `capture` не ставим: на телефоне это заперло бы выбор на камере, а снимок документа
   // часто уже лежит в галерее.
   const choose = () => picker.current?.click()
@@ -40,9 +42,12 @@ export function StepDocument({
     const file = event.target.files?.[0]
     // Значение сбрасывается, чтобы повторный выбор того же файла снова дал событие.
     event.target.value = ''
-    if (file) handlers.onPick(file)
+    if (file) {
+      setShotUrl(URL.createObjectURL(file))
+      handlers.onPick(file)
+    }
   }
-  if (stage === 'recognizing') return <RecognitionProgress handlers={handlers} />
+  if (stage === 'recognizing') return <RecognitionProgress handlers={handlers} shotUrl={shotUrl} />
 
   if (stage === 'unreadable') {
     return (
@@ -64,8 +69,8 @@ export function StepDocument({
           поверхность, снимайте при дневном свете, следите, чтобы все четыре угла попали в кадр.
         </Alert>
         <div className={styles.samples}>
-          <Placeholder className={styles.sample}>так не надо: блик и обрез</Placeholder>
-          <Placeholder className={styles.sample}>так надо: ровно и целиком</Placeholder>
+          <StsSample good={false} />
+          <StsSample good />
         </div>
       </WizardCard>
     )

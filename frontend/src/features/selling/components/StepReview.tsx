@@ -8,6 +8,8 @@ import styles from './StepReview.module.css'
 
 interface Props {
   draft: Draft
+  /** Первое фото галереи — обложка, какой её увидят в ленте. */
+  coverUrl?: string | null
   /** Отказ сервера при отправке. Ошибку показывает сводка, а не отдельный экран: правки
    *  делаются здесь же. */
   error?: string | null
@@ -19,6 +21,7 @@ interface Props {
 
 export function StepReview({
   draft,
+  coverUrl = null,
   error,
   onBack,
   onSaveDraft,
@@ -49,7 +52,11 @@ export function StepReview({
       }
     >
       <div className={styles.review}>
-        <Placeholder className={styles.cover}>обложка</Placeholder>
+        {coverUrl ? (
+          <img className={styles.cover} src={coverUrl} alt="Обложка объявления" />
+        ) : (
+          <Placeholder className={styles.cover}>обложка</Placeholder>
+        )}
         <div className={styles.summary}>
           {summaryRows(draft).map((row) => (
             <div key={row.label}>

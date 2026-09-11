@@ -40,6 +40,8 @@
 .shot {
   aspect-ratio: 4 / 3;
   border-radius: var(--radius-surface);
+  width: 100%;
+  object-fit: cover;
 }
 
 .working {
@@ -89,8 +91,21 @@
 }
 
 .sample {
+  margin: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.sample svg {
+  width: 100%;
   aspect-ratio: 4 / 3;
   border-radius: 12px;
+  display: block;
+}
+
+.sample figcaption {
+  font-size: 13px;
+  color: var(--text-muted, #6b7280);
 }
 
 @media (max-width: 1023px) {

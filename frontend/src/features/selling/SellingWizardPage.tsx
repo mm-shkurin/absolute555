@@ -129,6 +129,7 @@ export function SellingWizardPage({ onSignIn }: { onSignIn?: () => void }) {
               {state.step === 'review' ? (
                 <StepReview
                   draft={review}
+                  coverUrl={server.gallery.photos[0]?.preview_url ?? null}
                   error={server.submitError}
                   onBack={wizard.goBack}
                   onSaveDraft={() => navigate(ROUTES.myListings)}

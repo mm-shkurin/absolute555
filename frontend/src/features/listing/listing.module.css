@@ -136,3 +136,8 @@
 .complain:hover {
   color: var(--status-bad-ink);
 }
+
+/* Живая схема вместо заглушки: ширина — блока, высоту держит сама схема. */
+.mapTeaserLive {
+  margin: 4px 0 12px;
+}
