@@ -24,6 +24,12 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove, onRead }: P
   const [refused, setRefused] = useState<string | null>(null)
   const [reading, setReading] = useState<'idle' | 'busy' | 'read' | 'unread'>('idle')
   const file = useRef<HTMLInputElement>(null)
+  // Что в поле прямо сейчас — для ответа распознавания, который приходит позже. Стейт
+  // в замыкании промиса застыл на моменте отправки снимка.
+  const typed = useRef('')
+  typed.current = value
+  // Замер уже отправлен — подсказке, пришедшей после, в поле делать нечего.
+  const sent = useRef(false)
 
   // Смена панели очищает форму: иначе число от капота уедет на крышу — и уедет молча,
   // потому что поле выглядит заполненным законно.
@@ -42,6 +48,7 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove, onRead }: P
       return
     }
     setRefused(null)
+    sent.current = true
     onSave(checked.valueUm, checked.photo)
   }
 
@@ -62,8 +69,14 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove, onRead }: P
           setPhoto(chosen)
           if (!chosen || !onRead) return
           setReading('busy')
+          const beforeRead = typed.current
+          sent.current = false
           void onRead(chosen).then((read) => {
             if (read === null) return setReading('unread')
+            // Пока читался снимок, продавец мог вписать число сам. Подсказка его не
+            // затирает: она приходит через секунды, человек этого не ждёт, и увидел бы
+            // он подмену уже в сохранённом замере.
+            if (sent.current || typed.current !== beforeRead) return setReading('read')
             setValue(String(read))
             setReading('read')
           })
@@ -93,7 +106,11 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove, onRead }: P
         </p>
       ) : null}
       <div className={styles.editorActions}>
-        <Button onClick={submit} disabled={busy || reading === 'busy'} data-testid="panel-save">
+        {/* Чтение снимка кнопку не запирает: оно идёт секундами, и запертая кнопка
+            означает нажатие, на которое ничего не происходит, — продавец решает, что
+            сломалось приложение. Своё число он уже вписал, подсказка ему не нужна;
+            пришедшая позже, она в поле не встаёт. */}
+        <Button onClick={submit} disabled={busy} data-testid="panel-save">
           Сохранить замер
         </Button>
         {detail.measured ? (
