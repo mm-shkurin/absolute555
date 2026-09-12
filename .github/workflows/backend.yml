@@ -7,7 +7,7 @@ name: backend
 
 on:
   push:
-    branches: [dev, main]
+    branches: [dev, main, 'features/**']
     paths:
       - 'backend/**'
       - 'infra/.env.example'

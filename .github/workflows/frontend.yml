@@ -6,7 +6,7 @@ name: frontend
 
 on:
   push:
-    branches: [dev, main]
+    branches: [dev, main, 'features/**']
     paths:
       - 'frontend/**'
       - 'infra/docker/frontend.Dockerfile'
