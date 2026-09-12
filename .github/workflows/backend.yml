@@ -63,23 +63,24 @@ jobs:
           --health-timeout 5s
           --health-retries 10
 
-      # quay.io, а не Docker Hub: minio/minio и minio/mc оттуда удалены — pull отдаёт
-      # «repository does not exist». Вариант -cicd запускает сервер сам, без команды:
-      # service-контейнер в Actions команду задать не даёт.
-      minio:
-        image: quay.io/minio/minio:latest-cicd
-        env:
-          MINIO_ROOT_USER: minioadmin
-          MINIO_ROOT_PASSWORD: minioadmin
-        ports:
-          - 9000:9000
-        options: >-
-          --health-cmd "curl -f http://localhost:9000/minio/health/live"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
 
     steps:
+      # MinIO поднимается шагом, а не service-контейнером. Service-контейнеру нельзя
+      # задать команду, поэтому раньше брался особый образ minio, который стартует сервер
+      # сам; его удалили с Docker Hub вместе с остальными. Обычный образ требует
+      # `server /data`, а его проверку здоровья делает хост своим curl — не полагаясь на
+      # то, что curl есть внутри образа.
+      - name: MinIO
+        run: |
+          docker run -d --name minio -p 9000:9000             -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin             quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z server /data
+          for attempt in $(seq 1 30); do
+            curl -fsS http://localhost:9000/minio/health/live && exit 0
+            sleep 2
+          done
+          echo "MinIO не поднялся" >&2
+          docker logs minio >&2
+          exit 1
+
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         # Вся история: покрытие меряется по строкам, добавленным относительно dev, а
         # поверхностный клон не знает, где эта ветка от dev отошла.
