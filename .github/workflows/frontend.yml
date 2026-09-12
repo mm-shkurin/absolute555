@@ -34,6 +34,9 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        # Вся история: покрытие меряется по строкам, добавленным относительно dev.
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
@@ -58,6 +61,15 @@ jobs:
       # спросит — то есть никогда.
       - name: Юнит-тесты и покрытие
         run: npx vitest run --coverage
+
+      # Тот же порог, что у бэкенда, и по той же причине: требуется не общий уровень,
+      # а тесты у нового кода. Читает lcov, который пишет vitest.
+      - name: Покрытие изменений
+        if: github.ref_name != 'main'
+        run: |
+          pip install diff-cover==9.2.0
+          git fetch --no-tags --depth=1 origin dev || true
+          diff-cover coverage/lcov.info --compare-branch=origin/dev --fail-under=60             --src-roots . --markdown-report "$GITHUB_STEP_SUMMARY"
 
       - name: Сборка
         run: npm run build
