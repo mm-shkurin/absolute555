@@ -11,7 +11,7 @@ GitHub, сервер) и кодом закрыт быть не может.
 | S1 | compose публикует на хост порты Postgres, Redis, MinIO — на проде это открытая наружу база | Порты только у frontend/backend; остальное — в `docker-compose.override.yml` для разработки | ✅ |
 | S2 | `DEPLOY_KEY` даёт полный shell на проде любому, кто прошёл в `main` | Отдельный пользователь, `command=` + `no-pty` в `authorized_keys`, защита ветки | ❌ manual |
 | S3 | `release.yml` пишет приватный ключ в файл и не удаляет | `rm -f key` в `if: always()` | ✅ |
-| S4 | Actions приколоты по подвижному мажорному тегу | Пин по sha + Dependabot на обновление | ❌ |
+| S4 | Actions приколоты по подвижному мажорному тегу | Пин по sha + Dependabot на обновление | ✅ |
 | S5 | `permissions` заданы только в `release.yml` | `permissions: contents: read` во всех прогонах | ✅ |
 | S6 | Релиз не зависит от проверок — красный `main` задеплоится | `workflow_run` по backend/frontend/stack с проверкой `success` | ✅ |
 | S7 | Нет секрет-сканера | gitleaks в `rules` | ❌ |
