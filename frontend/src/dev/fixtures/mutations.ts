@@ -44,7 +44,7 @@ export function mutation(path: string): unknown {
   return { ok: true }
 }
 
-function review(reviewId: string, offerId: string) {
+export function review(reviewId: string, offerId: string) {
   const now = new Date()
   return {
     review_id: reviewId,

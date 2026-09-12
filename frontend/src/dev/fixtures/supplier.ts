@@ -36,6 +36,18 @@ export function editMyProfile(update: Partial<SupplierProfileWire>): SupplierPro
   return mine
 }
 
+// Обложка отвечает профилем, а не общим успехом: экран рисует то, что пришло, и на
+// `{ok:true}` показал бы прежний серый квадрат как сохранённую картинку.
+export function setMyCover(): SupplierProfileWire {
+  mine = { ...mine, cover_url: 'https://placehold.co/600x600/png' }
+  return mine
+}
+
+export function dropMyCover(): SupplierProfileWire {
+  mine = { ...mine, cover_url: null }
+  return mine
+}
+
 export function submitMyProfile(): SupplierProfileWire {
   mine = { ...mine, status: 'pending' }
   return mine

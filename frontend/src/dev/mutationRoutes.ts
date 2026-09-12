@@ -5,10 +5,17 @@
 // профиля разошёлся бы с кнопками.
 import { accessChanged } from './fixtures/admin'
 import { dropUserPhoto, renameUser, setUserPhoto } from './fixtures/identity'
-import { mutation } from './fixtures/mutations'
-import { editMyProfile, publicProfile, submitMyProfile } from './fixtures/supplier'
+import { mutation, review } from './fixtures/mutations'
+import {
+  dropMyCover,
+  editMyProfile,
+  publicProfile,
+  setMyCover,
+  submitMyProfile,
+} from './fixtures/supplier'
 import { addRequest, closeRequest, putRequestResponse } from './fixtures/requests'
 import { eraseMeasurement, thicknessMap, writeMeasurement } from './fixtures/thickness'
+import { dialogs } from './fixtures/wireChat'
 import type { BodyPanel } from '../shared/api/backend/thicknessContract'
 
 export function mutate(path: string, method: string, payload?: BodyInit | null): unknown {
@@ -40,6 +47,21 @@ export function mutate(path: string, method: string, payload?: BodyInit | null):
   if (blocked) return accessChanged(blocked[1], true, reasonOf(payload))
   const unblocked = /^\/role\/users\/([^/]+)\/unblock$/.exec(path)
   if (unblocked) return accessChanged(unblocked[1], false, reasonOf(payload))
+
+  if (path === '/supplier/me/cover') return method === 'DELETE' ? dropMyCover() : setMyCover()
+
+  // Прямая переписка отвечает диалогом: экран уходит в него по dialog_id из ответа, и на
+  // `{ok:true}` остался бы на месте, показав отправку как неудачу.
+  const direct = /^\/chat\/dialogs\/direct\/([^/]+)$/.exec(path)
+  if (direct) return { ...dialogs()[0], counterpart: { ...dialogs()[0].counterpart, user_id: direct[1] } }
+
+  const dialogReview = /^\/chat\/dialogs\/([^/]+)\/review$/.exec(path)
+  if (dialogReview) return review(`rv-${dialogReview[1]}`, dialogReview[1])
+
+  // Раньше этого адреса: панельный шаблон ниже принял бы `read` за имя панели и записал
+  // бы замер вместо чтения снимка.
+  const gauge = /^\/sale_car\/([^/]+)\/thickness\/read$/.exec(path)
+  if (gauge) return { value_um: 180 }
 
   const panelPath = /^\/sale_car\/([^/]+)\/thickness\/([^/]+)$/.exec(path)
   if (panelPath) {
