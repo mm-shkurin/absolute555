@@ -47,8 +47,9 @@ const STATUS: Record<SaleCarWire['status'], ListingStatus> = {
   sold: 'sold',
 }
 
+const text = (value: unknown) => ({ value: value == null ? '' : String(value) })
+
 function stepFields(car: SaleCarWire) {
-  const text = (value: unknown) => ({ value: value == null ? '' : String(value) })
   return {
     brand: text(car.brand ?? car.mark_raw),
     model: text(car.model ?? car.model_raw),

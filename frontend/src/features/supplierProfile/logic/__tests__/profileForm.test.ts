@@ -79,7 +79,6 @@ describe('отказы профиля', () => {
 
 describe('правка опубликованной витрины', () => {
   it('форма показывает правку поверх опубликованного, статус — по правке', async () => {
-    const { toForm } = await import('../profileForm')
     const { shownStatus } = await import('../profileStatus')
     const published = {
       ...wire,

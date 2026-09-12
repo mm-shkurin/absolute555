@@ -62,9 +62,9 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove, onRead }: P
           setPhoto(chosen)
           if (!chosen || !onRead) return
           setReading('busy')
-          void onRead(chosen).then((value) => {
-            if (value === null) return setReading('unread')
-            setValue(String(value))
+          void onRead(chosen).then((read) => {
+            if (read === null) return setReading('unread')
+            setValue(String(read))
             setReading('read')
           })
         }}

@@ -15,6 +15,14 @@ import { SupplierProfileCard } from './components/SupplierProfileCard'
 
 type Decision = { kind: 'approve'; userId: string } | { kind: 'reject'; userId: string; reason: string }
 
+// Правку опубликованной витрины модератор читает поверх прежних полей: решает он о том,
+// что увидят покупатели, а не о том, что лежало раньше.
+type QueueItem = Parameters<typeof SupplierProfileCard>[0]['profile']
+
+function withPendingOnTop(one: QueueItem): QueueItem {
+  return { ...one, ...one.pending_changes, cover_url: one.pending_cover_url ?? one.cover_url }
+}
+
 export function SupplierQueuePage() {
   const client = useQueryClient()
   const query = useQuery({
@@ -63,15 +71,7 @@ export function SupplierQueuePage() {
                 это разные шаги, и решение по одному не меняет другой.
               </EmptyNotice>
             ) : null}
-            {/* Правку опубликованной витрины модератор читает поверх прежних полей: решает
-                он о том, что увидят покупатели. */}
-            {items
-              .map((one) => ({
-                ...one,
-                ...(one.pending_changes ?? {}),
-                cover_url: one.pending_cover_url ?? one.cover_url,
-              }))
-              .map((profile) => (
+            {items.map(withPendingOnTop).map((profile) => (
               <SupplierProfileCard
                 key={profile.user_id}
                 profile={profile}

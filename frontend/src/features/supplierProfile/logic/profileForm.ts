@@ -35,7 +35,7 @@ const list = (value: string): string[] =>
 export function toForm(profile: SupplierProfileWire): ProfileForm {
   // Правка опубликованной витрины лежит отдельно: форма показывает её поверх опубликованного,
   // иначе поставщик видел бы старый текст и правил его заново.
-  const wire = { ...profile, ...(profile.pending_changes ?? {}) }
+  const wire = { ...profile, ...profile.pending_changes }
   return {
     companyName: wire.company_name ?? '',
     countries: wire.countries.join(', '),
