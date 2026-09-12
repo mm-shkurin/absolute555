@@ -45,8 +45,11 @@ services:
       timeout: 3s
       retries: 10
 
+  # quay.io и приколотый выпуск. Образы MinIO удалены с Docker Hub, и подвижный latest
+  # ровно это и скрывал: пока он тянулся из кэша, всё работало, а на чистой машине стек
+  # переставал подниматься по причине, не связанной с кодом.
   minio:
-    image: minio/minio:latest
+    image: quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z
     restart: unless-stopped
     command: server --console-address ":9001" /data
     environment:
@@ -69,7 +72,7 @@ services:
   # fails against a bucket that was never created — MinIO has no
   # MINIO_DEFAULT_BUCKETS, that variable only works in the bitnami image.
   minio-init:
-    image: minio/mc:latest
+    image: quay.io/minio/mc:RELEASE.2025-08-13T08-35-41Z
     depends_on:
       minio:
         condition: service_healthy

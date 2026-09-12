@@ -63,8 +63,11 @@ jobs:
           --health-timeout 5s
           --health-retries 10
 
+      # quay.io, а не Docker Hub: minio/minio и minio/mc оттуда удалены — pull отдаёт
+      # «repository does not exist». Вариант -cicd запускает сервер сам, без команды:
+      # service-контейнер в Actions команду задать не даёт.
       minio:
-        image: minio/minio:edge-cicd
+        image: quay.io/minio/minio:latest-cicd
         env:
           MINIO_ROOT_USER: minioadmin
           MINIO_ROOT_PASSWORD: minioadmin
