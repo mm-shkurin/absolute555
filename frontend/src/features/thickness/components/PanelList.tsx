@@ -1,7 +1,7 @@
 // Список панелей рядом со схемой: то же содержимое, другой способ читать. По схеме ищут
 // глазами «где красное», по списку — конкретную панель.
-import type { PanelCode } from '../logic/panels'
-import type { PanelRow } from '../logic/thicknessMap'
+import type { PanelCode } from '../../../shared/thicknessMap/panels'
+import type { PanelRow } from '../../../shared/thicknessMap/thicknessMap'
 import styles from './PanelList.module.css'
 
 export function PanelList({

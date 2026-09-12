@@ -1,8 +1,8 @@
 // Запись и снятие замера. Отдельно от чтения (`useThicknessMap`): читает карту любой,
 // кому видно объявление, а пишет только владелец, и права у этих двух разные.
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { deleteMeasurement, putMeasurement, readGauge } from './api/thicknessApi'
-import type { PanelCode } from './logic/panels'
+import { deleteMeasurement, putMeasurement, readGauge } from '../../shared/thicknessMap/thicknessApi'
+import type { PanelCode } from '../../shared/thicknessMap/panels'
 
 export interface ThicknessEditor {
   save: (panel: PanelCode, valueUm: number | null, photo: File) => Promise<void>

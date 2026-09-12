@@ -8,7 +8,7 @@ import {
   previousStep,
   type DocumentStage,
   type StepId,
-} from './logic/wizardSteps'
+} from '../../shared/domain/wizardSteps'
 
 export function useDraftState() {
   const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT)

@@ -1,9 +1,9 @@
 // Отзыв о состоявшейся сделке: оценка и текст. Оценка обязательна, текст — нет: звёзды
 // сравнимы между продавцами, а слова читает один покупатель.
 import { useState } from 'react'
-import { Sheet } from '../../../shared/ui/Sheet'
-import { Button } from '../../../shared/ui/Button'
-import styles from '../offers.module.css'
+import { Sheet } from '../ui/Sheet'
+import { Button } from '../ui/Button'
+import styles from './ReviewSheet.module.css'
 
 const RATINGS = [1, 2, 3, 4, 5]
 

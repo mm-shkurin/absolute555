@@ -10,8 +10,8 @@ import { DialogList } from './components/DialogList'
 import { Conversation } from './components/Conversation'
 import { PHONE, useMediaQuery } from '../../shared/lib/useMediaQuery'
 import { useChats, useConversation } from './useChats'
-import { useReview } from '../offers/useReview'
-import { ReviewSheet } from '../offers/components/ReviewSheet'
+import { useReview } from '../../shared/review/useReview'
+import { ReviewSheet } from '../../shared/review/ReviewSheet'
 import styles from './chats.module.css'
 
 export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {

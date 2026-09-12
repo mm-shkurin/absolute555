@@ -2,7 +2,7 @@
 import type {
   ThicknessMapWire,
   ThicknessMeasurementWire,
-} from '../../../shared/api/backend/thicknessContract'
+} from '../api/backend/thicknessContract'
 import { GRADE_COLOR, GRADE_WORD, PANELS, type Grade, type PanelCode } from './panels'
 
 export interface PanelRow {

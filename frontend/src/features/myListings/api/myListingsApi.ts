@@ -3,7 +3,7 @@
 // переключение мгновенное и не гоняет сеть.
 import { fetchMyListings as fetchMySaleCars } from '../../../shared/api/backend/saleCarApi'
 import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
-import { resumeStep, stepIndex, STEPS } from '../../selling/logic/wizardSteps'
+import { resumeStep, stepIndex, STEPS } from '../../../shared/domain/wizardSteps'
 
 export type ListingStatus =
   | 'draft'

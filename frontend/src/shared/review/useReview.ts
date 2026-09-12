@@ -6,8 +6,8 @@ import {
   createDialogReview,
   createReview,
   updateReview,
-} from '../../shared/api/backend/reviewApi'
-import { isHttpError } from '../../shared/api/httpClient'
+} from '../api/backend/reviewApi'
+import { isHttpError } from '../api/httpClient'
 
 /** Отзыв заработан принятым предложением или перепиской — задан ровно один из двух. */
 export interface ReviewTarget {

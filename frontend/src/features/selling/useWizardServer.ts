@@ -13,7 +13,7 @@ import type { ListingKind } from '../../shared/api/backend/saleCarContract'
 import { useDraftSync } from './useDraftSync'
 import { useGallery, type Gallery } from './useGallery'
 import { useStsRecognition } from './useStsRecognition'
-import { resumeStep, type DocumentStage, type StepId } from './logic/wizardSteps'
+import { resumeStep, type DocumentStage, type StepId } from '../../shared/domain/wizardSteps'
 
 interface WizardHandle {
   draft: Draft

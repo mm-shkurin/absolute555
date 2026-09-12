@@ -1,6 +1,6 @@
 // Лестница шагов. Кликабельна назад и вперёд: черновик сохраняется на каждом шаге, и
 // запрет прыгать вперёд заставлял бы проходить мастер заново ради одной правки.
-import { STEPS, isPassed, stepIndex, type StepId } from '../logic/wizardSteps'
+import { STEPS, isPassed, stepIndex, type StepId } from '../../../shared/domain/wizardSteps'
 import styles from '../selling.module.css'
 
 export function StepNav({ current, onGo }: { current: StepId; onGo: (step: StepId) => void }) {

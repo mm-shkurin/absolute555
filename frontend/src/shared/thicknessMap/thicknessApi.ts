@@ -7,10 +7,10 @@ export {
   fetchThicknessMap,
   putMeasurement,
   readGauge,
-} from '../../../shared/api/backend/thicknessApi'
+} from '../api/backend/thicknessApi'
 export type {
   BodyPanel,
   PanelStatus,
   ThicknessMapWire,
   ThicknessMeasurementWire,
-} from '../../../shared/api/backend/thicknessContract'
+} from '../api/backend/thicknessContract'

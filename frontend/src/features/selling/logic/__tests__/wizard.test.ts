@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EMPTY_DRAFT, missingForSubmit, summaryRows } from '../draft'
-import { isPassed, nextStep, previousStep } from '../wizardSteps'
+import { isPassed, nextStep, previousStep } from '../../../../shared/domain/wizardSteps'
 
 const filled = {
   ...EMPTY_DRAFT,

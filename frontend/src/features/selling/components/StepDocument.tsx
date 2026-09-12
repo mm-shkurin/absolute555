@@ -2,7 +2,7 @@
 // ожидание файла, фоновая обработка, два вида отказа и ручной ввод.
 import { useRef, useState } from 'react'
 import { Button } from '../../../shared/ui/Button'
-import type { DocumentStage } from '../logic/wizardSteps'
+import type { DocumentStage } from '../../../shared/domain/wizardSteps'
 import { Alert } from './Alert'
 import { WizardCard, NavSpacer } from './WizardCard'
 import { RecognitionProgress } from './RecognitionProgress'

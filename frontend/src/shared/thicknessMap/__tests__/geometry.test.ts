@@ -1,10 +1,10 @@
 // Схема врёт молча: панель без зоны просто не подсвечивается, и заметить это можно
 // только глазами на одном из тринадцати кликов. Отсюда проверки на полноту.
 import { describe, expect, it } from 'vitest'
-import { PANELS } from '../../../logic/panels'
-import { PROJECTIONS } from '../index'
-import { mirrorCode } from '../types'
-import { LEFT_SIDE, RIGHT_SIDE } from '../sides'
+import { PANELS } from '../panels'
+import { PROJECTIONS } from '../geometry'
+import { mirrorCode } from '../geometry/types'
+import { LEFT_SIDE, RIGHT_SIDE } from '../geometry/sides'
 
 const codesOf = (label: string) =>
   PROJECTIONS.find((projection) => projection.label === label)!.zones.map((zone) => zone.code)

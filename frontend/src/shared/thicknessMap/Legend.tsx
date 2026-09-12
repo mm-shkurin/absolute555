@@ -1,6 +1,6 @@
 // Легенда шкалы. Пороги подписаны числами: цвет без числа — это мнение, а с числом — замер.
-// Границы принадлежат серверу — здесь они подпись, а не правило (`logic/panels.ts`).
-import { GRADE_COLOR, GRADE_RANGE, GRADE_WORD, type Grade } from '../logic/panels'
+// Границы принадлежат серверу — здесь они подпись, а не правило (`panels.ts`).
+import { GRADE_COLOR, GRADE_RANGE, GRADE_WORD, type Grade } from './panels'
 import styles from './BodySchematic.module.css'
 
 const ITEMS: Grade[] = ['factory', 'repaint', 'filler', 'none']

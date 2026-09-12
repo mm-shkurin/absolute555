@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { ThicknessMapWire } from '../../../../shared/api/backend/thicknessContract'
+import type { ThicknessMapWire } from '../../api/backend/thicknessContract'
 import { toPanelDetail, toThicknessView } from '../thicknessMap'
 
 const wire: ThicknessMapWire = {

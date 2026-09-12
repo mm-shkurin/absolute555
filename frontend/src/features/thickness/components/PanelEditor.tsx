@@ -5,7 +5,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { Button } from '../../../shared/ui/Button'
 import { checkMeasurement } from '../logic/measurementForm'
-import type { PanelDetail } from '../logic/thicknessMap'
+import type { PanelDetail } from '../../../shared/thicknessMap/thicknessMap'
 import styles from '../thickness.module.css'
 
 interface Props {

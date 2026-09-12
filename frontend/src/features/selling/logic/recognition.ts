@@ -3,7 +3,7 @@
 // закрыли, связь оборвалась, — и тогда исход читается из объявления при возврате.
 import type { AutofillState } from '../../../shared/api/backend/saleCarContract'
 import type { TaskStatus } from '../../../shared/api/backend/listingStream'
-import type { DocumentStage } from './wizardSteps'
+import type { DocumentStage } from '../../../shared/domain/wizardSteps'
 
 // Два отказа разведены намеренно: «не разобрали снимок» лечится новой фотографией,
 // «VIN прочитан, но машина не нашлась» — только ручным вводом. Общее «ошибка» отправило бы
