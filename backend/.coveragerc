@@ -1,0 +1,15 @@
+# SQLAlchemy в асинхронном режиме исполняет код внутри greenlet'ов, а coverage по
+# умолчанию следит только за потоками. Без этой строки строки сервисов, которые идут
+# после первого `await db.execute`, считаются невыполненными — при живых зелёных тестах,
+# которые их выполняют. Цифра занижается на десятки процентов и указывает не туда.
+[run]
+concurrency = greenlet,thread
+source = app
+omit =
+    app/data/car_catalog.json
+    */__pycache__/*
+
+[report]
+exclude_also =
+    if TYPE_CHECKING:
+    raise NotImplementedError
