@@ -96,6 +96,13 @@ jobs:
             backend/requirements.txt
             backend/requirements-dev.txt
 
+      # tesseract — тот же, что в образе. Прогон гоняет тесты на раннере, а не в образе,
+      # и без бинарника pytesseract бросает TesseractNotFoundError; read_gauge это
+      # исключение глотает и честно возвращает «не прочитал» — тест падает на отсутствии
+      # OCR, а не на распознавании.
+      - name: OCR
+        run: sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr tesseract-ocr-rus
+
       - name: Зависимости
         run: pip install -r requirements-dev.txt
 
