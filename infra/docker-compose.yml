@@ -83,6 +83,10 @@ services:
              echo 'bucket ready'"
 
   backend:
+    # Тег по умолчанию — latest, чтобы локальная сборка работала как раньше. На сервере
+    # APP_TAG — это sha коммита: развёртывание тянет ровно тот образ, который собрал и
+    # проверил прогон, а не пересобирает похожий.
+    image: ghcr.io/mm-shkurin/absolute555/backend:${APP_TAG:-latest}
     build:
       context: ..
       dockerfile: infra/docker/backend.Dockerfile
@@ -131,6 +135,7 @@ services:
   # Same image as backend, different command. Migrations are not re-run here —
   # the backend service owns them.
   worker:
+    image: ghcr.io/mm-shkurin/absolute555/backend:${APP_TAG:-latest}
     build:
       context: ..
       dockerfile: infra/docker/backend.Dockerfile
@@ -154,6 +159,7 @@ services:
         condition: service_healthy
 
   frontend:
+    image: ghcr.io/mm-shkurin/absolute555/frontend:${APP_TAG:-latest}
     build:
       context: ..
       dockerfile: infra/docker/frontend.Dockerfile

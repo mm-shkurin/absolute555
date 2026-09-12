@@ -10,6 +10,8 @@
 set -euo pipefail
 
 REF="${1:-origin/main}"
+# Образы тянутся по sha развёрнутого коммита; GHCR_USER/GHCR_TOKEN (из .env) нужны
+# только приватному реестру.
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cd "$HERE"
 
@@ -28,8 +30,21 @@ git -C .. fetch --all --tags --prune
 git -C .. checkout --detach "$REF"
 echo "Новая версия: $(git -C .. rev-parse HEAD)"
 
-echo "== Сборка образов =="
-docker compose build
+echo "== Получение образов =="
+# Тянем, а не собираем. Сборка на сервере даёт другой образ, чем тот, что прошёл прогон:
+# подвижный базовый тег, другой момент времени, другое состояние кэша. Отлаживать потом
+# приходится не тот артефакт, который лежит в реестре зелёным. Плюс сервер перестаёт
+# тратить десятки минут на пересборку opencv при каждом развёртывании.
+APP_TAG="$(git -C .. rev-parse HEAD)"
+export APP_TAG
+if [[ -n "${GHCR_USER:-}" && -n "${GHCR_TOKEN:-}" ]]; then
+  echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
+fi
+if ! docker compose pull backend worker frontend; then
+  echo "Образы для $APP_TAG не найдены в реестре." >&2
+  echo "Прогон release кладёт их туда по sha коммита — проверьте, что он прошёл." >&2
+  exit 1
+fi
 
 echo "== Миграции =="
 # Отдельным разовым контейнером, а не внутри работающего приложения: миграции должны
@@ -50,7 +65,7 @@ for attempt in $(seq 1 30); do
   sleep 3
 done
 
-echo "Бэкенд не ответил за 90 секунд. Откат:" >&2
-echo "  git -C .. checkout --detach $PREVIOUS && ./deploy.sh $PREVIOUS" >&2
+echo "Бэкенд не ответил за 90 секунд. Откатываюсь на $PREVIOUS." >&2
 docker compose logs --no-color --tail=100 backend >&2
+./rollback.sh "$PREVIOUS"
 exit 1
