@@ -9,7 +9,7 @@ GitHub, сервер) и кодом закрыт быть не может.
 | # | Проблема | Решение | Готово |
 |---|---|---|---|
 | S1 | compose публикует на хост порты Postgres, Redis, MinIO — на проде это открытая наружу база | Порты только у frontend/backend; остальное — в `docker-compose.override.yml` для разработки | ✅ |
-| S2 | `DEPLOY_KEY` даёт полный shell на проде любому, кто прошёл в `main` | Отдельный пользователь, `command=` + `no-pty` в `authorized_keys`, защита ветки | ❌ manual |
+| S2 | `DEPLOY_KEY` даёт полный shell на проде любому, кто прошёл в `main` | Отдельный пользователь, `command=` + `no-pty` в `authorized_keys`, защита ветки | ✅ manual |
 | S3 | `release.yml` пишет приватный ключ в файл и не удаляет | `rm -f key` в `if: always()` | ✅ |
 | S4 | Actions приколоты по подвижному мажорному тегу | Пин по sha + Dependabot на обновление | ✅ |
 | S5 | `permissions` заданы только в `release.yml` | `permissions: contents: read` во всех прогонах | ✅ |
@@ -37,7 +37,7 @@ GitHub, сервер) и кодом закрыт быть не может.
 | G2 | `deploy` заблокирован `workflow_dispatch` — на пуш в `main` не срабатывает | Снять `if` с job, оставить проверку секретов | ✅ |
 | G3 | Нет тегов — «что в проде» не имеет имени | Тег и Release на успешное развёртывание | ✅ |
 | G4 | Одиннадцать слитых веток живы локально и на origin | Удалить после сверки | ❌ manual |
-| G5 | `main` не защищена | Branch protection: запрет force-push и удаления | ❌ manual |
+| G5 | `main` не защищена | Branch protection: запрет force-push и удаления | ✅ manual |
 | G6 | Мусорные каталоги `backend/app;C`, `tests;C`, `pytest.ini;C` | Удалить | ✅ |
 
 ## Устойчивость
