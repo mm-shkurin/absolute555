@@ -53,8 +53,11 @@ jobs:
       - name: Правила и границы
         run: npm run lint
 
-      - name: Юнит-тесты
-        run: npx vitest run
+      # С замером: цифра нужна не на каждом круге разработчика, но на общем прогоне она
+      # стоит секунды, а без неё покрытие узнаётся только тогда, когда кто-то специально
+      # спросит — то есть никогда.
+      - name: Юнит-тесты и покрытие
+        run: npx vitest run --coverage
 
       - name: Сборка
         run: npm run build
@@ -65,6 +68,13 @@ jobs:
         with:
           name: frontend-dist
           path: frontend/dist
+          retention-days: 7
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: frontend-coverage
+          path: frontend/coverage
           retention-days: 7
 
   image:

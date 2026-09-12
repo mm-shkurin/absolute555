@@ -144,8 +144,24 @@ jobs:
       - name: Справочник
         run: python -m app.data.seed_catalog
 
-      - name: Тесты
-        run: python -m pytest
+      - name: Тесты и покрытие
+        run: >-
+          python -m pytest
+          --cov=app
+          --cov-report=term-missing:skip-covered
+          --cov-report=xml:coverage.xml
+          --cov-report=html:htmlcov
+
+      # Отчёт артефактом, а не только строкой в логе: строка отвечает «сколько», а
+      # разбирается вопрос «где» — по файлу и номеру.
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backend-coverage
+          path: |
+            backend/coverage.xml
+            backend/htmlcov
+          retention-days: 7
 
   image:
     name: сборка образа
