@@ -231,21 +231,41 @@
 `listing_stream`, `status_updater`.
 
 
-## Найденные баги (тесты красные намеренно)
 
-Каждый помечен `xfail(strict=True)`: когда код починят, `xfail` станет `XPASS` и
-прогон потребует снять маркер — забыть про починку нельзя.
+### Читалки и обвязка — второй заход
+
+| Файл | Что закрывает |
+|---|---|
+| `test_sts_image.py` | подготовка кадра СТС: ужать снимок с телефона, растянуть миниатюру, EXIF-поворот, RGBA/L/P в RGB, три кандидата в пределах потолка |
+| `test_sts_number.py` | сведение двух чтений номера: согласие, спор, кириллические двойники, номер кузова, явное «ОТСУТСТВУЕТ» |
+| `test_cache_take.py` | `take` как «один раз значит один раз», TTL, батч, кэш без Redis |
+| `test_listing_stream.py` | поток статусов: кривой id, первый кадр, чужое сообщение, отписка |
+| `test_queue_jobs.py` | обе задачи очереди по последовательностям статусов |
+| `test_webhook_announce.py` | три вебхука и то, что недоступный канал не роняет публикацию |
+| `test_ownership.py` | владение объявлением и предложением, три формы `require_*` |
+
+Настоящие снимки СТС не понадобились: `prepare_candidates` не понимает, что на кадре, —
+она приводит любой кадр к тому, что переваривает распознавание, и это проверяется
+синтетикой. Живые документы нужны только для качества чтения, а его меряет
+`scripts/gauge_eval.py`, а не набор тестов.
+
+## Найденные баги — починены
+
+Тесты были красными под `xfail(strict=True)`, пока баги стояли. Код исправлен,
+маркеры сняты, тесты держат правило дальше.
 
 | # | Где | Что не так | Тест |
 |---|---|---|---|
-| B1 | `chat_service.open_direct` | Собеседник не проверяется на существование: внешний ключ падает `IntegrityError`, наружу уходит 500 вместо 404 | `test_chat_unread.py::test_should_refuse_a_direct_dialogue_with_nobody` |
-| B2 | `security.refresh_access_token` | Проверяется подпись, но не человек: refresh удалённой (и вообще несуществующей) учётной записи выдаёт свежие токены | `test_token_expiry.py::test_should_refuse_a_refresh_token_of_a_user_who_never_existed` |
-| B3 | `PeopleService._conditions` | Поиск идёт по `yandex_json` и `vk_json`, а своё имя лежит в колонке `profile_name` — переименовавшегося консоль не находит. Комментарий в коде («имя живёт внутри профиля провайдера») устарел вместе с появлением колонки | `test_admin_users_page.py::test_should_find_a_person_by_name` |
+| B1 ✅ | `chat_service.open_direct` | Собеседник не проверялся: внешний ключ падал `IntegrityError`, наружу уходило 500. Теперь строка человека читается до вставки | `test_chat_unread.py::test_should_refuse_a_direct_dialogue_with_nobody` |
+| B2 ✅ | `security.refresh_access_token` | Проверялась подпись, но не человек: ушедшая запись обновляла токены бесконечно. Добавлена `_still_allowed` — нет, удалён или закрыт получает отказ | `test_token_expiry.py::test_should_refuse_a_refresh_token_of_a_user_who_never_existed` |
+| B3 ✅ | `PeopleService._conditions` | Поиск шёл по `yandex_json` и `vk_json` мимо колонки `profile_name` — переименовавшегося консоль не находила. Ищет по трём местам | `test_admin_users_page.py::test_should_find_a_person_by_name` |
+
+Мёртвый код удалён: `create_sale_car`, `get_all_sale_cars` и `update_vin` в
+`sale_cars_service` не вызывал никто (файл со 123 строк до 80), закомментированные
+тройными кавычками `DELETE /offer/{id}` и `/{id}/with-details` убраны из роутера —
+он читался так, будто ручки есть.
 
 Наблюдения без теста:
-
-- `offer.py:155-192` — `DELETE /offer/{id}` и `/{id}/with-details` закомментированы тройными
-  кавычками. Роутер читается так, будто ручки есть.
 - Снять одобренную витрину поставщика нечем: `reject` работает только по ожидающему
   профилю, для опубликованного отвечает `SUPPLIER_NOT_FOUND`. У объявлений для этого есть
   `/moderation/listings/{id}/unpublish`, у витрин — ничего.

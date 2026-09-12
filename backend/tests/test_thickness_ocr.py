@@ -9,18 +9,37 @@
 import io
 
 import pytest
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 
 from tests.seller_rating_fixtures import publish, verify  # noqa: F401 -- фикстуры по имени
 from tests.test_listing_lifecycle import _create
 from tests.test_thickness_map import measure, read_map
 
 
+def _digits_font(size: int):
+    """Настоящий шрифт, а не встроенный в PIL.
+
+    Встроенный — растровый, около одиннадцати пикселей в высоту, и tesseract читает его
+    от версии к версии по-разному: тест на нём проверял не пайплайн, а везение сборки.
+    Экран прибора в жизни — крупные цифры, и кадр должен быть таким же.
+    """
+    for path in (
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "C:/Windows/Fonts/arialbd.ttf",
+    ):
+        try:
+            return ImageFont.truetype(path, size)
+        except OSError:
+            continue
+    return ImageFont.load_default()
+
+
 def gauge_photo(value: int) -> bytes:
     """Кадр экрана прибора: крупные цифры на светлом фоне, как их видит камера."""
-    image = Image.new("RGB", (320, 160), (245, 245, 245))
+    image = Image.new("RGB", (480, 240), (245, 245, 245))
     draw = ImageDraw.Draw(image)
-    draw.text((40, 50), str(value), fill=(10, 10, 10))
+    draw.text((60, 60), str(value), fill=(10, 10, 10), font=_digits_font(120))
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
     return buffer.getvalue()

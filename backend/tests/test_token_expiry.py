@@ -84,11 +84,6 @@ def test_should_answer_the_same_way_to_a_logout_of_an_expired_token(client, sign
     assert logged_out.status_code == 204, logged_out.text
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="БАГ: refresh_access_token проверяет подпись и не проверяет, что человек "
-    "существует и не удалён — ушедшая учётная запись обновляет токены бесконечно",
-)
 def test_should_refuse_a_refresh_token_of_a_user_who_never_existed(client):
     future = datetime.now(timezone.utc) + timedelta(minutes=5)
     token = _forge(

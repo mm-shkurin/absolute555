@@ -10,7 +10,6 @@ from app.features.offer.schemas.offer import (
     OfferCreate,
     OfferResponse,
     OfferStatusUpdate,
-    OfferWithCarResponse
 )
 from app.core.exceptions import AuthorizationError, ResourceNotFoundError
 from app.features.offer.services.offer_errors import OfferError
@@ -152,42 +151,3 @@ async def update_offer_status(
         return updated_offer
     except OfferError as error:
         raise to_http(error)
-"""
-@router.delete("/{offer_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_offer(
-    offer_id: str,
-    db: AsyncSession = Depends(get_db),
-    current_user=Depends(get_current_user)
-):
-    service = OfferService(db)
-    offer = await service.get_offer_by_id(offer_id)
-    if not offer:
-        raise ResourceNotFoundError("Offer not found", code="OFFER_NOT_FOUND")
-    if str(offer.user_id) != str(current_user.id):
-        raise AuthorizationError("Only the author may delete this offer", code="NOT_OFFER_AUTHOR")
-
-    try:
-        await service.delete_offer(offer_id)
-        return None
-
-
-@router.get("/{offer_id}/with-details", response_model=OfferWithCarResponse)
-async def get_offer_with_car_details(
-    offer_id: str,
-    db: AsyncSession = Depends(get_db),
-    current_user=Depends(get_current_user)
-):
-    service = OfferService(db)
-    offer = await service.get_offer_by_id(offer_id)
-    if not offer:
-        raise ResourceNotFoundError("Offer not found", code="OFFER_NOT_FOUND")
-
-    if not await can_manage_offer(current_user, offer, db):
-        raise AuthorizationError("Access denied", code="NOT_OFFER_PARTY")
-
-    car_data = {}  
-    return {
-        **offer.__dict__,
-        "car": car_data
-    }
-"""

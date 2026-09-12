@@ -51,7 +51,7 @@ async def verify_token(token:str, secret_key:str, algorithm:str):
     except jwt.InvalidTokenError:
         raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
-async def refresh_access_token(refresh_token: str):
+async def refresh_access_token(refresh_token: str, db: AsyncSession | None = None):
     from app.features.auth.services.token_revocation import is_revoked
 
     if await is_revoked(refresh_token):
@@ -60,23 +60,44 @@ async def refresh_access_token(refresh_token: str):
 
     try:
         refresh_token_payload = await verify_token(
-            refresh_token, 
-            jwt_settings.refresh_token_secret_key, 
+            refresh_token,
+            jwt_settings.refresh_token_secret_key,
             jwt_settings.algorithm
         )
         if refresh_token_payload.get("type") != "refresh":
             raise AuthenticationError("Invalid token type", code="TOKEN_WRONG_TYPE")
+
+        # Подписи мало: она говорит, что токен наш, и молчит о том, жив ли человек.
+        # Без этой проверки ушедшая запись обновлялась бесконечно — вход был закрыт
+        # только для access-токена, а рядом стоял механизм выдачи новых.
+        if db is not None:
+            await _still_allowed(db, refresh_token_payload.get("id"))
+
         access_token_payload = {
-            "id": refresh_token_payload.get("id"),  
+            "id": refresh_token_payload.get("id"),
         }
-        
+
         new_access_token = await create_access_token(access_token_payload)
         return new_access_token
-        
+
     except AuthenticationError:
         raise
     except Exception:
         raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
+
+async def _still_allowed(db: AsyncSession, user_id) -> None:
+    """Человек за токеном: существует, не ушёл и не закрыт."""
+    found = await db.execute(select(Users).where(Users.id == user_id))
+    user = found.scalar_one_or_none()
+
+    if user is None or user.deleted_at is not None:
+        raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
+
+    if user.is_blocked:
+        # Тот же ответ, что и на обычном запросе: 403, потому что токен подлинный, а
+        # закрыта учётная запись. 401 отправил бы клиента обновлять токен по кругу.
+        raise AuthorizationError(user.blocked_reason or "Доступ закрыт", code="USER_BLOCKED")
+
 
 async def _is_revoked(token: str) -> bool:
     # Импорт внутри: отзыв живёт в фиче авторизации, а она читает эти же утилиты.

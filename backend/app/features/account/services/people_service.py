@@ -80,12 +80,14 @@ class PeopleService:
             column = Users.deleted_at
             conditions.append(column.is_not(None) if deleted else column.is_(None))
         if query:
-            # Имя живёт внутри профиля провайдера, а не отдельной колонкой, поэтому
-            # ищется по тексту профиля. Кандидат на отдельную колонку, когда список
-            # людей станет горячим — записано в BACKLOG.
+            # Три места, потому что имя живёт в трёх: своё в profile_name, остальные —
+            # внутри профиля провайдера. Поиск только по провайдерам не находил того,
+            # кто переименовал себя сам, — а это ровно тот человек, которого ищут
+            # руками. Кандидат на индексируемую колонку, когда список станет горячим.
             like = f"%{query.lower()}%"
             conditions.append(
                 or_(
+                    func.lower(Users.profile_name).like(like),
                     func.lower(Users.yandex_json.cast(Text)).like(like),
                     func.lower(Users.vk_json.cast(Text)).like(like),
                 )

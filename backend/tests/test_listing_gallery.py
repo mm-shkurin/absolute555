@@ -94,9 +94,19 @@ def test_should_hold_no_more_than_fifteen_photographs(client, seller, attach_pho
     assert _upload(client, seller, listing_id).status_code == 409
 
 
-def test_should_refuse_a_photograph_over_ten_megabytes(client, seller):
+def test_should_refuse_a_photograph_over_the_limit(client, seller, monkeypatch):
+    """Правило — «тяжелее лимита», а не «тяжелее одиннадцати мегабайт».
+
+    Лимит опускается на время теста, и файл выходит на килобайт больше него. Прежняя
+    версия гоняла через разбор запроса настоящие одиннадцать мегабайт: под замером
+    покрытия это переставало укладываться в минуты и вешало весь прогон, не проверяя
+    при этом ничего сверх того же самого правила.
+    """
+    from app.features.listing.services import photo_image
+
+    monkeypatch.setattr(photo_image.photo_settings, "max_photo_bytes", 64 * 1024)
     listing_id = _create(client, seller)
-    oversized = b"\x89PNG\r\n\x1a\n" + b"0" * (11 * 1024 * 1024)
+    oversized = b"\x89PNG\r\n\x1a\n" + b"0" * (65 * 1024)
 
     response = _upload(client, seller, listing_id, body=oversized)
 

@@ -134,6 +134,10 @@ services:
       - ../backend/app:/app/app
       - ../backend/tests:/app/tests
       - ../backend/pytest.ini:/app/pytest.ini
+      # Без этого файла замер покрытия врёт вдвое: приложение работает в отдельном
+      # потоке TestClient и внутри greenlet'ов SQLAlchemy, и coverage без настройки
+      # concurrency их не видит — сервис с зелёными тестами показывал 39 процентов.
+      - ../backend/.coveragerc:/app/.coveragerc
 
   # Same image as backend, different command. Migrations are not re-run here —
   # the backend service owns them.

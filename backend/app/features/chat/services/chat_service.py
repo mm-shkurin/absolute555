@@ -17,6 +17,7 @@ from sqlalchemy import or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.features.account.models.users import Users
 from app.features.chat.models.chat import Dialog, Message, MessageKind
 from app.features.importing.models.request import BuyerRequest
 from app.features.importing.models.supplier import SupplierProfile
@@ -83,6 +84,11 @@ class ChatService:
         """
         asker, other = uuid.UUID(str(asker_id)), uuid.UUID(str(other_id))
         if asker == other:
+            raise DialogNotFound(str(other_id))
+        # Собеседник проверяется до вставки: без этого внешний ключ падает
+        # IntegrityError уже внутри транзакции, и «такого человека нет» приезжает
+        # пятисоткой — то есть выглядит как поломка сервиса, а не как ответ.
+        if not await self.db.scalar(select(Users.id).where(Users.id == other)):
             raise DialogNotFound(str(other_id))
         found = await self.db.execute(
             select(Dialog).where(

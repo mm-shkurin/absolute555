@@ -2,7 +2,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
-from app.features.listing.schemas.sale_cars import SaleCarCreate, SaleCarUpdate
 
 from typing import List, Optional
 from app.features.recognition.services.webhook_service import WebhookService
@@ -16,27 +15,6 @@ class SaleCarService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def create_sale_car(
-        self,
-        user_id: str,
-        payload: SaleCarCreate,
-    ) -> SaleCars:
-        sale_car = SaleCars(
-            sale_car_id=uuid.uuid4(),
-            user_id=uuid.UUID(user_id),
-            vin=payload.vin,
-            phone_number=payload.phone_number,
-            price=payload.price,
-            milleage=payload.milleage,
-            description=payload.description,
-            status=SaleCarStatus.DRAFT,
-            task_status="PENDING",
-        )
-        self.db.add(sale_car)
-        await self.db.commit()
-        await self.db.refresh(sale_car)
-        return sale_car
-
     async def get_sale_car_by_id(self, sale_car_id: str) -> Optional[SaleCars]:
         res = await self.db.execute(
             select(SaleCars)
@@ -49,18 +27,6 @@ class SaleCarService:
         )
         return res.scalar_one_or_none()
 
-
-    async def get_all_sale_cars(self, status: Optional[SaleCarStatus] = None) -> List[SaleCars]:
-        query = select(SaleCars).options(
-            selectinload(SaleCars.brand),
-            selectinload(SaleCars.model),
-            selectinload(SaleCars.owner),
-        )
-        if status:
-            query = query.where(SaleCars.status == status.value)
-        query = query.order_by(SaleCars.created_at.desc())
-        res = await self.db.execute(query)
-        return list(res.scalars().all())
 
     async def get_sale_cars_by_user(self, user_id: str, status: Optional[SaleCarStatus] = None) -> List[SaleCars]:
         query = (
@@ -77,16 +43,6 @@ class SaleCarService:
         query = query.order_by(SaleCars.created_at.desc())
         res = await self.db.execute(query)
         return list(res.scalars().all())
-
-    async def update_vin(self, sale_car_id: str, vin: str) -> SaleCars:
-        sale_car = await self.get_sale_car_by_id(sale_car_id)
-        if not sale_car:
-            raise ValueError("Sale car not found")
-        sale_car.vin = vin
-        sale_car.task_status = "SUCCESS"
-        await self.db.commit()
-        await self.db.refresh(sale_car)
-        return sale_car
 
     @staticmethod
     async def _forget_document(sale_car: SaleCars) -> None:

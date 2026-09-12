@@ -135,11 +135,6 @@ def test_should_reuse_the_same_direct_dialogue(client, signed_in):
     assert first.json()["dialog_id"] == second.json()["dialog_id"]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="БАГ: open_direct не проверяет, что собеседник существует — внешний ключ "
-    "падает IntegrityError и наружу уходит 500 вместо 404",
-)
 def test_should_refuse_a_direct_dialogue_with_nobody(client, signed_in):
     opened = client.post(
         f"/api/v1/chat/dialogs/direct/{uuid.uuid4()}", headers=_verify(signed_in())

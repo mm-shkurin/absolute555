@@ -58,11 +58,6 @@ def test_should_filter_the_blocked_apart_from_the_rest(client, admin, signed_in)
     assert victim_id not in [person["id"] for person in open_ones["items"]]
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="БАГ: поиск в PeopleService идёт только по yandex_json и vk_json, а своё имя "
-    "лежит в колонке profile_name — переименовавшегося человека консоль не находит",
-)
 def test_should_find_a_person_by_name(client, manager, signed_in):
     person = signed_in()
     name = f"Фильтруемый {uuid.uuid4().hex[:6]}"

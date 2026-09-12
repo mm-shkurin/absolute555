@@ -6,6 +6,10 @@
 рассказывал бы, какие объявления существуют.
 """
 
+import uuid
+
+from tests.conftest import run_sql
+
 PHONE = "+79995553311"
 
 COMPLETE = {"price": 1200000.0, "milleage": 90000.0, "phone_number": PHONE, "year": 2014}
@@ -65,10 +69,13 @@ def test_should_answer_404_when_the_listing_carries_no_number(
     client, seller, moderator, catalogue, attach_photo, signed_in
 ):
     listing_id = _publish(client, seller, moderator, catalogue, attach_photo)
-    dropped = client.patch(
-        f"/api/v1/sale_car/{listing_id}", headers=seller, json={"phone_number": None}
+    # Номер снимается прямо в базе: опубликованное объявление заморожено, и через API
+    # до этой ветки не дойти. Ветка всё равно защитная — строка без номера может
+    # приехать из импорта или пережить смену правил заполнения.
+    run_sql(
+        "UPDATE sale_cars SET phone_number = NULL WHERE sale_car_id = :id",
+        {"id": uuid.UUID(listing_id)},
     )
-    assert dropped.status_code == 200, dropped.text
 
     revealed = client.post(f"/api/v1/sale_car/{listing_id}/reveal-phone", headers=signed_in())
 

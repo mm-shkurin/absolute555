@@ -37,7 +37,7 @@ auth_router = APIRouter()
 
 @auth_router.post("/refresh", response_model=Token)
 async def refresh(refresh_token: str = Body(..., embed=True), db: AsyncSession = Depends(get_db)):
-    new_access_token = await refresh_access_token(refresh_token)
+    new_access_token = await refresh_access_token(refresh_token, db)
     
     return Token(
         access_token=new_access_token,
