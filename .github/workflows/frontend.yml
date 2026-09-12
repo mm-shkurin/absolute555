@@ -67,7 +67,7 @@ jobs:
       - name: Покрытие изменений
         if: github.ref_name != 'main'
         run: |
-          pip install diff-cover==9.2.0
+          python3 -m pip install --quiet diff-cover==9.2.0
           git fetch --no-tags --depth=1 origin dev || true
           diff-cover coverage/lcov.info --compare-branch=origin/dev --fail-under=60             --src-roots . --markdown-report "$GITHUB_STEP_SUMMARY"
 
