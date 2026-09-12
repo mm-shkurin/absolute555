@@ -41,6 +41,21 @@ jobs:
       - name: Правила репозитория
         run: python scripts/check_repo_rules.py
 
+      # Секрет, вписанный в код, не ловится ничем другим: тесты на него зелёные, ревью
+      # его пропускает, а обнаруживается он уже наружу. Проверка сидит здесь, потому что
+      # этот прогон и так читает исходники и укладывается в минуту.
+      #
+      # По дереву, а не по истории: история проверяется один раз руками, а на каждый пуш
+      # важно, что нового не добавили. Версия приколота — самораспаковывающийся скрипт
+      # с подвижного адреса в прогоне с правами это ровно то, от чего мы тут защищаемся.
+      - name: Секреты в исходниках
+        env:
+          GITLEAKS_VERSION: 8.21.2
+        run: |
+          curl -sSfL -o gitleaks.tar.gz             "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz"
+          tar -xzf gitleaks.tar.gz gitleaks
+          ./gitleaks dir . -c .gitleaks.toml --no-banner --redact --exit-code 1
+
       # Что зовёт фронтенд против того, что описано в ProductSpecification/api-specs.
       # Главный риск проекта прямо сейчас: две стороны расходятся молча.
       - name: Контракт API
