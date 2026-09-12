@@ -106,7 +106,12 @@ export default defineConfig(({ command, mode }) => {
       setupFiles: ['./src/test/setup.ts'],
       coverage: {
         provider: 'v8',
-        reporter: ['text', 'html', 'json-summary'],
+        // Без `all` в отчёт попадают только файлы, которые тест импортировал: 62 из 280,
+        // и цифра получается про покрытую часть покрытой части. Непокрытый файл должен
+        // быть виден нулём, а не отсутствием строки.
+        all: true,
+        include: ['src/**/*.{ts,tsx}'],
+        reporter: ['text-summary', 'json-summary', 'lcov'],
         exclude: ['src/main.tsx', 'src/test/**', '**/*.d.ts', '**/__tests__/**'],
       },
     },
