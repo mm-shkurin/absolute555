@@ -8,7 +8,7 @@ GitHub, сервер) и кодом закрыт быть не может.
 
 | # | Проблема | Решение | Готово |
 |---|---|---|---|
-| S1 | compose публикует на хост порты Postgres, Redis, MinIO — на проде это открытая наружу база | Порты только у frontend/backend; остальное — в `docker-compose.override.yml` для разработки | ❌ |
+| S1 | compose публикует на хост порты Postgres, Redis, MinIO — на проде это открытая наружу база | Порты только у frontend/backend; остальное — в `docker-compose.override.yml` для разработки | ✅ |
 | S2 | `DEPLOY_KEY` даёт полный shell на проде любому, кто прошёл в `main` | Отдельный пользователь, `command=` + `no-pty` в `authorized_keys`, защита ветки | ❌ manual |
 | S3 | `release.yml` пишет приватный ключ в файл и не удаляет | `rm -f key` в `if: always()` | ❌ |
 | S4 | Actions приколоты по подвижному мажорному тегу | Пин по sha + Dependabot на обновление | ❌ |

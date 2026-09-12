@@ -7,6 +7,13 @@
 # All ports and credentials come from infra/.env (gitignored; copy from
 # infra/.env.example). No literals below, and no container_name, so several
 # checkouts can run side by side on one host.
+#
+# Наружу смотрят только фронтенд и API объектного хранилища. Postgres, Redis и консоль
+# MinIO хост-портов не имеют: в сети compose они доступны друг другу по именам сервисов,
+# а опубликованный порт на сервере — это открытая в интернет база, если между ней и
+# интернетом не встал firewall, о котором никто не вспомнил. Для разработки порты
+# возвращает docker-compose.override.yml — compose подхватывает его сам, он в .gitignore,
+# и на сервере его просто нет.
 
 name: absolute
 
@@ -20,8 +27,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    ports:
-      - "${POSTGRES_HOST_PORT}:5432"
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 5s
@@ -34,8 +39,6 @@ services:
     command: redis-server --appendonly yes --appendfsync everysec
     volumes:
       - redis_data:/data
-    ports:
-      - "${REDIS_HOST_PORT}:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 5s
@@ -51,9 +54,11 @@ services:
       MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
     volumes:
       - minio_data:/data
+    # Только API. Он публичен по назначению: браузер забирает по этому адресу фотографии
+    # из открытого бакета (PUBLIC_PHOTO_BASE_URL). Консоль на 9001 — панель управления
+    # хранилищем, ей наружу делать нечего; она поднимается локальным override.
     ports:
       - "${MINIO_HOST_PORT}:9000"
-      - "${MINIO_CONSOLE_HOST_PORT}:9001"
     healthcheck:
       test: ["CMD", "mc", "ready", "local"]
       interval: 10s
@@ -86,8 +91,11 @@ services:
     # process environment first, so no backend/.env file is needed in the image.
     env_file:
       - .env
+    # На петлю, а не на все адреса: снаружи бэкенд доступен через nginx фронтенда,
+    # который проксирует /api. Опубликованный наружу порт обходил бы его вместе со
+    # всем, что на нём настроено.
     ports:
-      - "${BACKEND_HOST_PORT}:8000"
+      - "127.0.0.1:${BACKEND_HOST_PORT}:8000"
     depends_on:
       postgres:
         condition: service_healthy

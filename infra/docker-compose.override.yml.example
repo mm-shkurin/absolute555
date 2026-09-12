@@ -1,0 +1,28 @@
+# Локальная разработка. Скопируйте в docker-compose.override.yml — compose подхватывает
+# его сам, без флагов, и он в .gitignore. На сервере этого файла нет, и порты остаются
+# закрытыми.
+#
+#   cd infra && cp docker-compose.override.yml.example docker-compose.override.yml
+#
+# Базовый compose не публикует Postgres, Redis и консоль MinIO наружу намеренно: на
+# сервере опубликованный порт — это доступ к базе из интернета. Здесь они нужны, чтобы
+# ходить psql'ем, смотреть ключи в Redis и открывать панель хранилища.
+
+services:
+  postgres:
+    ports:
+      - "127.0.0.1:${POSTGRES_HOST_PORT}:5432"
+
+  redis:
+    ports:
+      - "127.0.0.1:${REDIS_HOST_PORT}:6379"
+
+  minio:
+    ports:
+      - "127.0.0.1:${MINIO_CONSOLE_HOST_PORT}:9001"
+
+  # Тот же адрес, но со всех интерфейсов: с телефона в той же сети приложение открывается
+  # по адресу машины, а не по localhost. Раскомментируйте, когда это нужно.
+  # backend:
+  #   ports:
+  #     - "${BACKEND_HOST_PORT}:8000"
