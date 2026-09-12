@@ -12,7 +12,7 @@ name: rules
 permissions:
   contents: read
 
-
+on:
   push:
     branches: [dev, main, 'features/**']
   workflow_dispatch:

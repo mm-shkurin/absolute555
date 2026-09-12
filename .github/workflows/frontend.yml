@@ -10,7 +10,7 @@ name: frontend
 permissions:
   contents: read
 
-
+on:
   push:
     branches: [dev, main, 'features/**']
     paths:

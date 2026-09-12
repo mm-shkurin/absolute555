@@ -11,7 +11,7 @@ name: backend
 permissions:
   contents: read
 
-
+on:
   push:
     branches: [dev, main, 'features/**']
     paths:

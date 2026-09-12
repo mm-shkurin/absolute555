@@ -1,11 +1,8 @@
 # Публикация образов и развёртывание.
 #
-# Образы собираются на каждый main и кладутся в GHCR под тегом коммита. Смысл не в
-# экономии времени на сервере, а в том, что развёрнутая версия становится named: «что
-# сейчас в проде» — это тег, а не «то, что было в main в четверг».
-#
-# Само развёртывание — ручное и появится, когда появится сервер. Пока секретов нет, шаг
-# честно сообщает об этом и завершается, а не притворяется успешным.
+# Образы кладутся в GHCR под тегом коммита: «что сейчас в проде» — это имя, а не «то,
+# что было в main в четверг». Развёртывание идёт следом, само, на каждый main — но
+# только после того, как остальные прогоны по этому же коммиту закончились зелёными.
 name: release
 
 # Токен прогона: только чтение исходников. Дефолт репозитория может быть шире, и тогда
@@ -14,7 +11,7 @@ name: release
 permissions:
   contents: read
 
-
+on:
   push:
     branches: [main]
   workflow_dispatch:
@@ -29,8 +26,44 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Развёртывание не должно обгонять проверки. Прогоны по одному коммиту стартуют
+  # одновременно, и без этого шага release успевал бы разложить по серверу код, который
+  # через десять минут покраснеет у backend.
+  #
+  # Ждём именно по sha, а не «последний прогон ветки»: пока идёт релиз, в main может
+  # прилететь следующий коммит. Прогон, которого для этого коммита нет (backend не
+  # запускается на правку одного фронтенда), не ждётся — на регистрацию отведены
+  # полторы минуты, после которых отсутствие считается отсутствием, а не задержкой.
+  gate:
+    name: дождаться проверок
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - name: Проверки по этому коммиту
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.sha }}
+          REPO: ${{ github.repository }}
+        run: .github/scripts/wait-for-checks.sh
+
+  # Уязвимости в зависимостях блокируют выкладку, а не ждут понедельничного отчёта.
+  # Тот же прогон, что по расписанию, — вызовом, чтобы пороги не разошлись.
+  audit:
+    name: уязвимости зависимостей
+    if: github.event_name == 'push'
+    uses: ./.github/workflows/audit.yml
+
   publish:
     name: образы в реестр
+    needs: [gate, audit]
+    # Ручной запуск проходит мимо обоих: он разворачивает уже проверенный тег, и
+    # заставлять его ждать прогонов задним числом значило бы запретить откат.
+    if: always() && !contains(needs.*.result, 'failure') && !cancelled()
     runs-on: ubuntu-latest
     timeout-minutes: 45
     permissions:
@@ -73,46 +106,72 @@ jobs:
   deploy:
     name: развернуть на сервере
     needs: publish
-    if: github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    permissions:
+      contents: write
     steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Проверить, что сервер настроен
         id: check
+        env:
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
         run: |
-          if [ -z "${{ secrets.DEPLOY_HOST }}" ]; then
+          if [ -z "$DEPLOY_HOST" ]; then
             echo "ready=false" >> "$GITHUB_OUTPUT"
           else
             echo "ready=true" >> "$GITHUB_OUTPUT"
           fi
 
-      # Сервера ещё нет. Шаг сообщает об этом и завершается зелёным намеренно: красный
-      # прогон означает «что-то сломалось», а здесь ничего не сломалось — просто некуда
-      # разворачивать. Когда секреты появятся, эта ветка перестанет выполняться сама, без
-      # правок: следующий шаг включается тем же условием, вывернутым наизнанку.
+      # Сервера может ещё не быть. Шаг сообщает об этом и завершается зелёным намеренно:
+      # красный прогон означает «что-то сломалось», а здесь ничего не сломалось — просто
+      # некуда разворачивать. Появятся секреты — ветка перестанет выполняться сама.
       - name: Развёртывание пропущено — сервера нет
         if: steps.check.outputs.ready != 'true'
         run: |
           {
             echo "### Развёртывание пропущено"
             echo ""
-            echo "Секреты не заданы, сервера ещё нет. Образы собраны и лежат в GHCR"
-            echo "под тегом \`${{ github.sha }}\` — развернуть их можно вручную."
+            echo "Секреты не заданы. Образы собраны и лежат в GHCR под тегом"
+            echo "\`${{ github.sha }}\` — развернуть можно вручную."
             echo ""
-            echo "Чтобы шаг заработал, нужны секреты репозитория:"
-            echo "\`DEPLOY_HOST\`, \`DEPLOY_USER\`, \`DEPLOY_KEY\`, \`DEPLOY_PATH\`."
+            echo "Нужны секреты: \`DEPLOY_HOST\`, \`DEPLOY_USER\`, \`DEPLOY_KEY\`, \`DEPLOY_PATH\`."
           } >> "$GITHUB_STEP_SUMMARY"
-          echo "Секреты развёртывания не заданы — шаг пропущен, прогон зелёный."
 
       # Развёртывание — это infra/deploy.sh на сервере: тот же порядок, что руками, но
-      # записанный. Здесь только запуск по SSH, чтобы не держать логику в двух местах.
+      # записанный. Здесь только запуск по SSH, чтобы логика не жила в двух местах.
+      # Разворачивается sha, а не main: пока идёт прогон, в main может прилететь
+      # следующий коммит, и «свежий main» на сервере окажется не тем, что проверено.
       - name: Развернуть
+        id: deploy
         if: steps.check.outputs.ready == 'true'
         env:
-          REF: ${{ inputs.ref || 'main' }}
+          REF: ${{ inputs.ref || github.sha }}
+          DEPLOY_KEY: ${{ secrets.DEPLOY_KEY }}
+          DEPLOY_USER: ${{ secrets.DEPLOY_USER }}
+          DEPLOY_HOST: ${{ secrets.DEPLOY_HOST }}
+          DEPLOY_PATH: ${{ secrets.DEPLOY_PATH }}
         run: |
           install -m 600 /dev/null key
-          echo "${{ secrets.DEPLOY_KEY }}" > key
+          printf '%s\n' "$DEPLOY_KEY" > key
           ssh -i key -o StrictHostKeyChecking=accept-new \
-            "${{ secrets.DEPLOY_USER }}@${{ secrets.DEPLOY_HOST }}" \
-            "cd ${{ secrets.DEPLOY_PATH }}/infra && ./deploy.sh origin/$REF"
+            "$DEPLOY_USER@$DEPLOY_HOST" \
+            "cd $DEPLOY_PATH/infra && ./deploy.sh $REF"
+
+      # Ключ живёт ровно на время шага. Раннер эфемерный, но до его конца файл доступен
+      # любому следующему шагу — включая сторонний action, который сюда однажды добавят.
+      - name: Убрать ключ
+        if: always()
+        run: rm -f key
+
+      # Тег на то, что реально встало. Без него «предыдущая версия» восстанавливается
+      # раскопками в логах — в тот момент, когда прод лежит и время дорого.
+      - name: Отметить развёрнутую версию
+        if: steps.deploy.outcome == 'success'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SHA: ${{ github.sha }}
+        run: .github/scripts/tag-deploy.sh
