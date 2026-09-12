@@ -145,10 +145,10 @@
 .mobileBar {
   display: none;
   position: sticky;
-  bottom: 0;
+  bottom: var(--tabbar-height);
   z-index: 25;
   gap: 8px;
-  padding: 10px 14px 22px;
+  padding: 10px 14px;
   background: color-mix(in srgb, var(--bg-header) 96%, transparent);
   backdrop-filter: blur(14px);
   border-top: 1px solid var(--border-subtle);

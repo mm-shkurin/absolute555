@@ -1,8 +1,9 @@
 // Полноэкранный просмотр. Закрывается по Escape и по клику вне кадра — на телефоне это
 // единственные два жеста, которые человек пробует, не глядя на кнопки.
-import { useEffect } from 'react'
+import { useEffect, useRef } from 'react'
 import { Cover } from '../../../shared/ui/Cover'
-import styles from './Gallery.module.css'
+import { swipeStep } from '../logic/gallerySwipe'
+import styles from './Lightbox.module.css'
 
 interface Props {
   photos: string[]
@@ -14,6 +15,7 @@ interface Props {
 
 export function Lightbox({ photos, total, current, onCurrent, onClose }: Props) {
   const step = (delta: number) => onCurrent((current + delta + photos.length) % photos.length)
+  const from = useRef<{ x: number; y: number } | null>(null)
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -36,7 +38,22 @@ export function Lightbox({ photos, total, current, onCurrent, onClose }: Props) 
           ✕
         </button>
       </div>
-      <div className={styles.stage}>
+      <div
+        className={styles.stage}
+        onPointerDown={(event) => {
+          from.current = { x: event.clientX, y: event.clientY }
+        }}
+        onPointerUp={(event) => {
+          const start = from.current
+          from.current = null
+          if (!start) return
+          const by = swipeStep(event.clientX - start.x, event.clientY - start.y)
+          if (by !== 0) step(by)
+        }}
+        onPointerCancel={() => {
+          from.current = null
+        }}
+      >
         <button
           type="button"
           className={styles.round}

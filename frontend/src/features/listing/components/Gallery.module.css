@@ -2,9 +2,8 @@
    Сначала потолок поставили в 56vh — и при окне 748 кадр выходил 419 px, то есть цена и
    кнопки всё равно уходили под сгиб. 16/10 вместо 4/3 взято оттуда же, откуда у карточки
    ленты: снимок машины шире, чем выше, и лишняя четверть высоты уходила в небо и асфальт. */
-/* Имя не `stage`: так называется холст полноэкранного просмотра ниже в этом же файле,
-   и кадр молча попадал в его грид-колонку `auto` — ширина схлопывалась до содержимого,
-   а справа оставалась пустая полоса до блока с ценой. */
+/* Имя не `stage`: так называется холст полноэкранного просмотра в Lightbox.module.css —
+   одно имя на два разных блока уже схлопывало кадр до ширины содержимого. */
 .frame {
   position: relative;
 }
@@ -88,99 +87,4 @@
 .thumb.current {
   outline: 2px solid var(--accent);
   outline-offset: -2px;
-}
-
-/* Полноэкранный просмотр всегда тёмный, в обеих темах: фотография кузова читается на
-   тёмном фоне, а светлая подложка подмешивает собственный оттенок в цвет краски. */
-.lightbox {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding: 16px;
-  background: rgba(8, 12, 22, 0.94);
-  color: var(--neutral-000);
-}
-
-.lightboxTop {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  font-weight: 600;
-}
-
-.spacer {
-  flex: 1;
-}
-
-.round {
-  width: 44px;
-  height: 44px;
-  border-radius: 50%;
-  border: 0;
-  background: rgba(255, 255, 255, 0.12);
-  color: var(--neutral-000);
-  font-size: 19px;
-}
-
-.stage {
-  flex: 1;
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  align-items: center;
-  gap: 12px;
-}
-
-/* Пропорция не навязывается: вертикальный кадр с телефона при 4/3 и обрезке терял крышу
-   и колёса — на присланном снимке в кадре оставалось небо. Кадр вписывается целиком,
-   тёмный холст остаётся холстом. */
-.stageShot {
-  max-width: 92vw;
-  max-height: 82vh;
-  margin: 0 auto;
-  border-radius: var(--radius-surface);
-  background: var(--neutral-900);
-  border-color: transparent;
-  color: var(--text-muted);
-  object-fit: contain;
-  padding: 0;
-}
-
-/* На тёмном холсте кадры сливались в одну ленту: промежутка 8 px мало, а границы у
-   миниатюр нет. Текущий берёт рамку, остальные притушены — граница видна между любыми
-   двумя соседями, а не только у выбранного. */
-.strip {
-  display: flex;
-  gap: 12px;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-/* Снимок в миниатюре кадрируется, а не растягивается: без этого вертикальное фото
-   сплющивалось в косую картинку. */
-.stripShot img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.stripShot {
-  width: 78px;
-  height: 58px;
-  border-radius: 8px;
-  background: var(--neutral-900);
-  border-color: transparent;
-  padding: 0;
-  overflow: hidden;
-  opacity: 0.55;
-}
-
-.stripShot.current {
-  outline: 2px solid var(--accent);
-  outline-offset: -2px;
-  opacity: 1;
 }

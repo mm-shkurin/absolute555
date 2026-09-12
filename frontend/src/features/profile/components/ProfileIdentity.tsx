@@ -8,7 +8,7 @@ import { Panel } from '../../../shared/ui/Panel'
 import { PersonHead } from '../../../shared/ui/Avatar'
 import { Button } from '../../../shared/ui/Button'
 import { Field, TextInput } from '../../../shared/ui/Form'
-import styles from '../profile.module.css'
+import styles from '../identity.module.css'
 
 export interface IdentityActions {
   onRename: (name: string) => void

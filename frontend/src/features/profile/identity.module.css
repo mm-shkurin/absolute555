@@ -1,0 +1,43 @@
+/* Форма имени и кнопки под шапкой профиля. Кнопки в строку и переносятся на узком
+   экране: их три, и на телефоне они иначе выпадают за край. */
+.identityForm {
+  margin-top: 16px;
+}
+
+.identityActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+/* Телефон: переносом кнопки ложились лесенкой разной ширины. Две ровные колонки. */
+@media (max-width: 520px) {
+  .identityActions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .identityActions > * {
+    width: 100%;
+  }
+}
+
+.identityError {
+  margin: 12px 0 0;
+  color: var(--status-bad-ink);
+  font-size: 14px;
+}
+
+/* Поле выбора файла спрятано, а не убрано: браузер открывает выбор только по клику
+   по настоящему input, поэтому кнопка нажимает на него, а он остаётся в разметке. */
+.picker {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  opacity: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+

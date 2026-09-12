@@ -1,0 +1,146 @@
+/* Полноэкранный просмотр всегда тёмный, в обеих темах: фотография кузова читается на
+   тёмном фоне, а светлая подложка подмешивает собственный оттенок в цвет краски. */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 70;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  background: rgba(8, 12, 22, 0.94);
+  color: var(--neutral-000);
+}
+
+.lightboxTop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.round {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 0;
+  background: rgba(255, 255, 255, 0.12);
+  color: var(--neutral-000);
+  font-size: 19px;
+}
+
+.stage {
+  flex: 1;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  /* Жест листания отдаётся странице, а не браузеру: иначе палец тянул снимок как картинку
+     и pointerup не приходил. */
+  touch-action: none;
+  user-select: none;
+}
+
+/* Пропорция не навязывается: вертикальный кадр с телефона при 4/3 и обрезке терял крышу
+   и колёса — на присланном снимке в кадре оставалось небо. Кадр вписывается целиком,
+   тёмный холст остаётся холстом. */
+.stageShot {
+  max-width: 92vw;
+  max-height: 82vh;
+  margin: 0 auto;
+  border-radius: var(--radius-surface);
+  background: var(--neutral-900);
+  border-color: transparent;
+  color: var(--text-muted);
+  object-fit: contain;
+  padding: 0;
+}
+
+/* На тёмном холсте кадры сливались в одну ленту: промежутка 8 px мало, а границы у
+   миниатюр нет. Текущий берёт рамку, остальные притушены — граница видна между любыми
+   двумя соседями, а не только у выбранного. */
+.strip {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Снимок в миниатюре кадрируется, а не растягивается: без этого вертикальное фото
+   сплющивалось в косую картинку. */
+.stripShot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.stripShot {
+  width: 78px;
+  height: 58px;
+  border-radius: 8px;
+  background: var(--neutral-900);
+  border-color: transparent;
+  padding: 0;
+  overflow: hidden;
+  opacity: 0.55;
+}
+
+.current {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+  opacity: 1;
+}
+
+/* Телефон: кнопки листания ложатся поверх кадра, а не колонками рядом — иначе снимок
+   шириной 92vw плюс две кнопки не влезали и кадр уезжал вправо за край. Лента миниатюр
+   одной прокручиваемой строкой: переносом она съедала полэкрана под снимком. */
+@media (max-width: 767px) {
+  .lightbox {
+    padding: 12px 0;
+  }
+  .lightboxTop {
+    padding: 0 12px;
+  }
+  .stage {
+    position: relative;
+    grid-template-columns: minmax(0, 1fr);
+    min-height: 0;
+  }
+  .stage > .round {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 1;
+    background: rgba(8, 12, 22, 0.55);
+  }
+  .stage > .round:first-child {
+    left: 8px;
+  }
+  .stage > .round:last-child {
+    right: 8px;
+  }
+  .stageShot {
+    width: 100%;
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+  .strip {
+    flex-wrap: nowrap;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding: 2px 12px;
+    scrollbar-width: none;
+  }
+  .stripShot {
+    flex: none;
+    width: 64px;
+    height: 48px;
+  }
+}

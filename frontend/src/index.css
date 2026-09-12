@@ -42,6 +42,21 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
+/* Высота нижней панели (TabBar), которая на телефоне стоит fixed: без запаса последний
+   блок страницы уходил под неё. */
+:root {
+  --tabbar-height: 0px;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --tabbar-height: calc(82px + env(safe-area-inset-bottom, 0px));
+  }
+  body {
+    padding-bottom: var(--tabbar-height);
+  }
+}
+
 /* Заголовкам и абзацам — перенос по смыслу, а не по краю. Это та типографская мелочь,
    которую никто не замечает, пока её нет: одинокое слово в последней строке заголовка. */
 h1,
