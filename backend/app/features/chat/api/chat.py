@@ -8,6 +8,7 @@ purpose.
 from typing import List
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
+from app.shared.http.paging import page_size as page_size_query
 from app.features.chat.deps import get_chat_service
 from app.features.review.deps import get_dialog_review_service
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -90,7 +91,7 @@ async def unread_badge(
 async def read_messages(
     dialog_id: str,
     page: int = Query(default=1, ge=1),
-    size: int = Query(default=50, ge=1, le=100),
+    size: int = Depends(page_size_query(default=50, most=100)),
     db: AsyncSession = Depends(get_db),
     chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),

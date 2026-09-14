@@ -1,6 +1,7 @@
 """Профиль поставщика, по HTTP: свой профиль, публичная страница, очередь модератора."""
 
 from fastapi import APIRouter, Depends, File, Query, UploadFile
+from app.shared.http.paging import page_size as page_size_query
 from app.features.importing.deps import get_supplier_cover_service
 from app.features.importing.deps import get_supplier_profile_service
 
@@ -75,7 +76,7 @@ async def drop_cover(supplier_cover_service: SupplierCoverService = Depends(get_
 @supplier_router.get("", response_model=SupplierPage)
 async def list_storefronts(
     page: int = Query(default=1, ge=1),
-    size: int = Query(default=20, ge=1, le=60),
+    size: int = Depends(page_size_query()),
     supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service),
 ):
     """Витрины одобренных поставщиков. Открыты всем, включая гостя.

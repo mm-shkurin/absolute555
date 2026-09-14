@@ -3,6 +3,7 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, Query, status
+from app.shared.http.paging import page_size as page_size_query
 from app.features.importing.services.request_service import BuyerRequestService
 
 from app.features.importing.deps import get_buyer_request_service
@@ -54,7 +55,7 @@ async def read_my_requests(
 @request_router.get("", response_model=BuyerRequestPage)
 async def read_open_requests(
     page: int = Query(default=1, ge=1),
-    size: int = Query(default=20, ge=1, le=60),
+    size: int = Depends(page_size_query()),
     buyer_request_service: BuyerRequestService = Depends(get_buyer_request_service),
     importer=Depends(IMPORTER),
 ):

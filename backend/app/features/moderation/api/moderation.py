@@ -6,6 +6,7 @@ wants to know.
 """
 
 from fastapi import APIRouter, Depends, Query
+from app.shared.http.paging import page_size as page_size_query
 from app.features.listing.services.listing_review import ListingReviewService
 from app.features.moderation.deps import get_complaint_service
 from app.features.moderation.deps import get_moderation_service
@@ -39,7 +40,7 @@ MODERATOR = require_permission(Permission.EDIT_ANY_SALE_CAR)
 async def read_queue(
     tab: str = Query(default="waiting", pattern="^(waiting|complained|handled_today)$"),
     page: int = Query(default=1, ge=1),
-    size: int = Query(default=20, ge=1, le=60),
+    size: int = Depends(page_size_query()),
     moderation_service: ModerationService = Depends(get_moderation_service),
     moderator=Depends(MODERATOR),
 ):
@@ -65,7 +66,7 @@ async def read_counts(
 async def read_complaints(
     status: str = Query(default="open", pattern="^(open|handled)$"),
     page: int = Query(default=1, ge=1),
-    size: int = Query(default=20, ge=1, le=60),
+    size: int = Depends(page_size_query()),
     complaint_service: ComplaintService = Depends(get_complaint_service),
     moderator=Depends(MODERATOR),
 ):

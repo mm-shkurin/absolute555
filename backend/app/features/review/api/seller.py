@@ -1,6 +1,7 @@
 """The public profile of a seller. Open to a visitor who has not signed in."""
 
 from fastapi import APIRouter, Depends, Query
+from app.shared.http.paging import page_size as page_size_query
 from app.features.review.deps import get_seller_profile_service
 
 from app.features.review.api.review_http import to_http
@@ -31,7 +32,7 @@ async def get_seller(user_id: str, seller_profile_service: SellerProfileService 
 async def get_seller_reviews(
     user_id: str,
     page: int = Query(default=1, ge=1),
-    size: int = Query(default=20, ge=1, le=50),
+    size: int = Depends(page_size_query(most=50)),
     seller_profile_service: SellerProfileService = Depends(get_seller_profile_service),
 ):
     try:
@@ -50,7 +51,7 @@ async def get_seller_reviews(
 async def get_seller_listings(
     user_id: str,
     page: int = Query(default=1, ge=1),
-    size: int = Query(default=20, ge=1, le=50),
+    size: int = Depends(page_size_query(most=50)),
     seller_profile_service: SellerProfileService = Depends(get_seller_profile_service),
 ):
     """Published only: a draft or a rejected listing belongs to its owner's screens."""
