@@ -19,3 +19,6 @@ export const RECOGNITION_STREAM_TIMEOUT_MS = positiveNumber(
 // Сколько фотографий разрешено в объявлении. Правило продуктовое, но проверяет его и клиент,
 // чтобы не отправлять заведомо отказной запрос.
 export const MAX_LISTING_PHOTOS = positiveNumber(import.meta.env.VITE_MAX_LISTING_PHOTOS, 15)
+
+// Одноразовый код провайдера длиннее этого — не код, а мусор в адресной строке.
+export const MAX_OAUTH_CODE_LENGTH = positiveNumber(import.meta.env.VITE_MAX_OAUTH_CODE_LENGTH, 512)

@@ -1,14 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import {
-  acceptOffer,
-  fetchOffers,
-  rejectOffer,
-  withdrawOffer,
-  type OfferDirection,
-} from './api/offersApi'
+import { useQuery } from '@tanstack/react-query'
+import { fetchOffers, type OfferDirection } from './api/offersApi'
 import { toOfferRow, type OfferRowView } from './logic/offerRows'
+import { useOfferDecision, type OfferDecision } from './useOfferDecision'
 
-export type OfferDecision = 'accept' | 'reject' | 'withdraw'
+export type { OfferDecision } from './useOfferDecision'
 
 export interface OffersResult {
   rows: OfferRowView[]
@@ -22,26 +17,11 @@ export interface OffersResult {
 }
 
 export function useOffers(direction: OfferDirection, now: Date): OffersResult {
-  const client = useQueryClient()
   const result = useQuery({
     queryKey: ['offers', direction],
     queryFn: ({ signal }) => fetchOffers(direction, signal),
   })
-
-  const answer = useMutation({
-    mutationFn: ({ decision, offerId }: { decision: OfferDecision; offerId: string }) =>
-      decision === 'accept'
-        ? acceptOffer(offerId)
-        : decision === 'reject'
-          ? rejectOffer(offerId)
-          : withdrawOffer(offerId),
-    // Принятое предложение меняет и остальные офферы машины, и саму карточку: правило
-    // принадлежит серверу, поэтому экран перечитывает списки, а не пересчитывает их сам.
-    onSuccess: () => {
-      void client.invalidateQueries({ queryKey: ['offers'] })
-      void client.invalidateQueries({ queryKey: ['my-listings'] })
-    },
-  })
+  const { answer, decide } = useOfferDecision()
 
   return {
     rows: (result.data?.items ?? []).map((item) => toOfferRow(item, direction, now)),
@@ -53,7 +33,7 @@ export function useOffers(direction: OfferDirection, now: Date): OffersResult {
       answer.reset()
       void result.refetch()
     },
-    decide: (decision, offerId) => answer.mutate({ decision, offerId }),
+    decide,
     deciding: answer.isPending,
   }
 }

@@ -1,32 +1,16 @@
 // Чаты. Переписка привязана к объявлению, а не к человеку: один и тот же покупатель может
 // торговаться за две машины, и это два разных разговора.
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { PageHeading } from '../../shared/ui/PageHeading'
-import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
-import { DialogList } from './components/DialogList'
-import { Conversation } from './components/Conversation'
-import { PHONE, useMediaQuery } from '../../shared/lib/useMediaQuery'
-import { useChats, useConversation } from './useChats'
-import { useReview } from '../../shared/review/useReview'
 import { ReviewSheetFor } from '../../shared/review/ReviewSheetFor'
+import { ChatsBoard } from './components/ChatsBoard'
+import { ChatsStatus } from './components/ChatsStatus'
+import { useChatsScreen } from './useChatsScreen'
 import styles from './chats.module.css'
 
 export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
-  const now = new Date()
-  const { chatId } = useParams()
-  const chats = useChats(now)
-  const [selected, setSelected] = useState<string | null>(chatId ?? null)
-  // На телефоне список и переписка — два экрана, а не две колонки: переписка занимает
-  // экран целиком, и вернуться к списку надо кнопкой, а не прокруткой в сторону.
-  const phone = useMediaQuery(PHONE)
-  const fallback = phone ? null : (chats.chats[0]?.id ?? null)
-  const current = chats.chats.find((chat) => chat.id === (selected ?? fallback)) ?? null
-  const conversation = useConversation(current, now)
-  const review = useReview()
-
+  const { chats, current, phone, conversation, review, select } = useChatsScreen()
   return (
     <>
       <SiteHeader signedIn onSignIn={onSignIn} />
@@ -37,40 +21,16 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
               title="Чаты"
               sub="Переписка привязана к объявлению. Телефон в чат не подставляется — продавец даёт его сам, если хочет."
             />
-            {chats.isLoading ? <ListSkeleton /> : null}
-            {!chats.isLoading && chats.error ? (
-              <FailureNotice message={chats.error.message} onRetry={chats.retry} />
-            ) : null}
-            {!chats.isLoading && !chats.error && chats.dialogs.length === 0 ? (
-              <EmptyNotice title="Переписок пока нет">
-                Чат заводится с карточки объявления — кнопкой «Написать».
-              </EmptyNotice>
-            ) : null}
+            <ChatsStatus chats={chats} />
             {chats.dialogs.length > 0 ? (
-              <div className={styles.chat} data-view={phone && current ? 'conversation' : 'list'}>
-                <DialogList
-                  dialogs={chats.dialogs}
-                  current={current?.id ?? null}
-                  onSelect={setSelected}
-                />
-                {conversation.header ? (
-                  <Conversation
-                    header={conversation.header}
-                    messages={conversation.messages}
-                    onSend={conversation.send}
-                    onBack={phone ? () => setSelected(null) : undefined}
-                    onReview={
-                      current
-                        ? () =>
-                            review.open({
-                              dialogId: current.id,
-                              reviewId: current.review_id ?? null,
-                            })
-                        : undefined
-                    }
-                  />
-                ) : null}
-              </div>
+              <ChatsBoard
+                dialogs={chats.dialogs}
+                current={current}
+                phone={phone}
+                conversation={conversation}
+                review={review}
+                onSelect={select}
+              />
             ) : null}
           </div>
         </Container>

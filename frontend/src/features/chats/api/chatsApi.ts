@@ -50,61 +50,11 @@ function requestTitle(request: NonNullable<DialogWire['request']>): string {
   return `Заявка: ${car || 'без марки'}`
 }
 
-function toChat(dialog: DialogWire): ChatWire {
-  const listing = dialog.listing
-  const request = dialog.request
-  const last = dialog.last_message
-  if (!request && !listing) {
-    // Прямая переписка — обращение в компанию поставщика. Покупатель пишет витрине, а не
-    // человеку: у него в шапке название и фото витрины. Поставщик видит покупателя, а
-    // подпись говорит, в какую витрину обратились.
-    const storefront = dialog.storefront ?? null
-    const toStorefront = storefront !== null && storefront.user_id === dialog.counterpart?.user_id
-    const company = storefront?.company_name ?? ''
-    return {
-      id: dialog.dialog_id,
-      subject: 'direct',
-      counterparty_name: toStorefront && company ? company : (dialog.counterpart?.name ?? ''),
-      counterparty_avatar:
-        (toStorefront ? storefront?.cover_url : null) ?? dialog.counterpart?.avatar_url ?? null,
-      counterparty_id: dialog.counterpart?.user_id ?? '',
-      can_review: dialog.can_review ?? false,
-      review_id: dialog.review_id ?? null,
-      listing_id: '',
-      listing_title: toStorefront
-        ? 'Обращение к поставщику'
-        : company
-          ? `Обращение в «${company}»`
-          : 'Обращение к поставщику',
-      listing_price: 0,
-      listing_photo: null,
-      last_message: last?.text ?? '',
-      last_message_at: last?.created_at ?? '',
-      unread_count: dialog.unread,
-    }
-  }
-  if (request) {
-    return {
-      id: dialog.dialog_id,
-      subject: 'request',
-      counterparty_name: dialog.counterpart?.name ?? '',
-      counterparty_avatar: dialog.counterpart?.avatar_url ?? null,
-      counterparty_id: dialog.counterpart?.user_id ?? '',
-      can_review: dialog.can_review ?? false,
-      review_id: dialog.review_id ?? null,
-      listing_id: '',
-      listing_title: requestTitle(request),
-      // Бюджет вместо цены: заявка называет потолок, а не то, за сколько продают.
-      listing_price: request.budget_max ?? 0,
-      listing_photo: null,
-      last_message: last?.text ?? '',
-      last_message_at: last?.created_at ?? '',
-      unread_count: dialog.unread,
-    }
-  }
+type ChatBase = Omit<ChatWire, 'subject' | 'listing_title'>
+
+function baseChat(dialog: DialogWire): ChatBase {
   return {
     id: dialog.dialog_id,
-    subject: 'listing',
     // Имя приходит от провайдера входа собеседника; у кого его нет — пусто, и экран
     // покажет объявление вместо выдуманного имени.
     counterparty_name: dialog.counterpart?.name ?? '',
@@ -112,16 +62,61 @@ function toChat(dialog: DialogWire): ChatWire {
     counterparty_id: dialog.counterpart?.user_id ?? '',
     can_review: dialog.can_review ?? false,
     review_id: dialog.review_id ?? null,
+    listing_id: '',
+    listing_price: 0,
+    listing_photo: null,
+    last_message: dialog.last_message?.text ?? '',
+    // Диалог без единого сообщения заводится вместе с предложением: времени у него нет,
+    // и время создания подставить неоткуда.
+    last_message_at: dialog.last_message?.created_at ?? '',
+    unread_count: dialog.unread,
+  }
+}
+
+// Прямая переписка — обращение в компанию поставщика. Покупатель пишет витрине, а не
+// человеку: у него в шапке название и фото витрины. Поставщик видит покупателя, а
+// подпись говорит, в какую витрину обратились.
+function toDirectChat(dialog: DialogWire): ChatWire {
+  const base = baseChat(dialog)
+  const storefront = dialog.storefront ?? null
+  const toStorefront = storefront !== null && storefront.user_id === dialog.counterpart?.user_id
+  const company = storefront?.company_name ?? ''
+  const addressed = company ? `Обращение в «${company}»` : 'Обращение к поставщику'
+  return {
+    ...base,
+    subject: 'direct',
+    counterparty_name: toStorefront && company ? company : base.counterparty_name,
+    counterparty_avatar: (toStorefront ? storefront?.cover_url : null) ?? base.counterparty_avatar,
+    listing_title: toStorefront ? 'Обращение к поставщику' : addressed,
+  }
+}
+
+function toRequestChat(dialog: DialogWire, request: NonNullable<DialogWire['request']>): ChatWire {
+  return {
+    ...baseChat(dialog),
+    subject: 'request',
+    listing_title: requestTitle(request),
+    // Бюджет вместо цены: заявка называет потолок, а не то, за сколько продают.
+    listing_price: request.budget_max ?? 0,
+  }
+}
+
+function toListingChat(dialog: DialogWire): ChatWire {
+  const listing = dialog.listing
+  return {
+    ...baseChat(dialog),
+    subject: 'listing',
     listing_id: dialog.sale_car_id ?? '',
     listing_title: `${listing?.brand ?? ''} ${listing?.model ?? ''}`.trim(),
     listing_price: listing?.price ?? 0,
     listing_photo: listing?.preview_photo_url ?? null,
-    last_message: last?.text ?? '',
-    // Диалог без единого сообщения заводится вместе с предложением: времени у него нет,
-    // и время создания подставить неоткуда.
-    last_message_at: last?.created_at ?? '',
-    unread_count: dialog.unread,
   }
+}
+
+function toChat(dialog: DialogWire): ChatWire {
+  if (dialog.request) return toRequestChat(dialog, dialog.request)
+  if (dialog.listing) return toListingChat(dialog)
+  return toDirectChat(dialog)
 }
 
 // Своё сообщение отличается автором, а не флагом с сервера: провод отдаёт `author_id`,

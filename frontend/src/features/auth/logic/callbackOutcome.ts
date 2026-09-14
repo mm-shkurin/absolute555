@@ -1,5 +1,7 @@
 // Что означает адрес возврата от провайдера. Чистая функция, потому что развилка здесь
 // решает судьбу входа, а проверять её через рендер экрана — дороже и хуже видно.
+import { MAX_OAUTH_CODE_LENGTH } from '../../../shared/config/runtime'
+
 export type CallbackOutcome =
   { kind: 'exchange'; code: string } | { kind: 'refused'; reason: string } | { kind: 'malformed' }
 
@@ -14,8 +16,6 @@ const REASONS: Record<string, string> = {
 const DEFAULT_REASON =
   'Провайдер не подтвердил вход — возможно, вы закрыли окно или отклонили доступ.'
 
-const MAX_CODE_LENGTH = 512
-
 /** Порядок проверок важен: при отказе кода нет, и обмен не должен запускаться вовсе. */
 export function callbackOutcome(params: URLSearchParams): CallbackOutcome {
   const error = params.get('error')
@@ -24,6 +24,6 @@ export function callbackOutcome(params: URLSearchParams): CallbackOutcome {
   const code = params.get('code')?.trim() ?? ''
   // Пустой и неправдоподобно длинный код не тратим: это не выданный нам одноразовый код,
   // а мусор в адресной строке.
-  if (!code || code.length > MAX_CODE_LENGTH) return { kind: 'malformed' }
+  if (!code || code.length > MAX_OAUTH_CODE_LENGTH) return { kind: 'malformed' }
   return { kind: 'exchange', code }
 }

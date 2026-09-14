@@ -1,22 +1,21 @@
 // Строка списка офферов. Действия зависят от состояния и стороны — их считает
 // `logic/offerRows.ts`, здесь только кнопки по списку.
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
-import { Button } from '../../../shared/ui/Button'
 import { Cover } from '../../../shared/ui/Cover'
 import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { OfferAction, OfferRowView } from '../logic/offerRows'
+import { OfferActions } from './OfferActions'
 import styles from './OfferRow.module.css'
 
-export function OfferRow({
-  offer,
-  busy,
-  onAction,
-}: {
+interface OfferRowProps {
   offer: OfferRowView
   busy?: boolean
-  onAction: (action: OfferAction['id'], offer: OfferRowView) => void
-}) {
+  onAction: (action: OfferAction['id'], offerId: string) => void
+}
+
+export const OfferRow = memo(function OfferRow({ offer, busy, onAction }: OfferRowProps) {
   return (
     <div
       className={[styles.row, offer.faded ? styles.faded : ''].filter(Boolean).join(' ')}
@@ -28,21 +27,7 @@ export function OfferRow({
           {offer.title}
         </Link>
         <div className={styles.meta}>{offer.meta}</div>
-        {offer.actions.length > 0 ? (
-          <div className={styles.actions}>
-            {offer.actions.map((action) => (
-              <Button
-                key={action.id}
-                size="small"
-                tone={action.primary ? 'solid' : 'ghost'}
-                disabled={busy}
-                onClick={() => onAction(action.id, offer)}
-              >
-                {action.label}
-              </Button>
-            ))}
-          </div>
-        ) : null}
+        <OfferActions offer={offer} busy={busy} onAction={onAction} />
       </div>
       <div className={styles.right}>
         <div className={styles.amount}>{offer.amount}</div>
@@ -53,4 +38,4 @@ export function OfferRow({
       </div>
     </div>
   )
-}
+})
