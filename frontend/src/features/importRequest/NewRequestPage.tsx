@@ -1,30 +1,25 @@
 // Форма заявки «хочу такую». Обратный аукцион начинается здесь: покупатель описывает
 // машину, которой в ленте нет, и поставщики отвечают ценой под ключ.
 import { Link } from 'react-router-dom'
-import { Container } from '../../shared/ui/Container'
-import { SiteHeader } from '../../shared/ui/SiteHeader'
-import { PageSection } from '../../shared/ui/PageHeading'
-import { NarrowPage } from '../../shared/ui/FormCard'
+import { NarrowFormPage } from '../../shared/ui/NarrowFormPage'
 import { ROUTES } from '../../shared/navigation/routes'
 import { NewRequestCard } from './components/NewRequestCard'
 import styles from './request.module.css'
 
 export function NewRequestPage({ signedIn = true }: { signedIn?: boolean }) {
-  return (
+  const crumbs = (
     <>
-      <SiteHeader signedIn={signedIn} />
-      <main data-testid="new-import-request">
-        <Container>
-          <NarrowPage>
-            <div className={styles.crumbs}>
-              <Link to={ROUTES.importFeed}>Под заказ</Link> › Новая заявка
-            </div>
-            <PageSection>
-              <NewRequestCard />
-            </PageSection>
-          </NarrowPage>
-        </Container>
-      </main>
+      <Link to={ROUTES.importFeed}>Под заказ</Link> › Новая заявка
     </>
+  )
+  return (
+    <NarrowFormPage
+      signedIn={signedIn}
+      testId="new-import-request"
+      crumbs={crumbs}
+      crumbsClassName={styles.crumbs}
+    >
+      <NewRequestCard />
+    </NarrowFormPage>
   )
 }

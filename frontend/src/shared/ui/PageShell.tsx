@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { Container } from './Container'
+import { NarrowPage } from './FormCard'
 import { SiteHeader } from './SiteHeader'
 
 interface Props {
@@ -10,6 +11,7 @@ interface Props {
   crumbsClassName: string
   children: ReactNode
   outside?: ReactNode
+  narrow?: boolean
 }
 
 export function PageShell({
@@ -20,15 +22,19 @@ export function PageShell({
   crumbsClassName,
   children,
   outside,
+  narrow = false,
 }: Props) {
+  const body = (
+    <>
+      <div className={crumbsClassName}>{crumbs}</div>
+      {children}
+    </>
+  )
   return (
     <>
       <SiteHeader signedIn={signedIn} onSignIn={onSignIn} />
       <main data-testid={testId}>
-        <Container>
-          <div className={crumbsClassName}>{crumbs}</div>
-          {children}
-        </Container>
+        <Container>{narrow ? <NarrowPage>{body}</NarrowPage> : body}</Container>
       </main>
       {outside}
     </>
