@@ -4,9 +4,8 @@ A dialogue is reached only by the two people in it. Everyone else is told it doe
 exist rather than that it is forbidden — a refusal would confirm the conversation is
 there, and with it that somebody is bargaining over that car.
 
-Reading for the screens — the list, the messages, the counts — is `chat_reader.py`.
-Split when this file passed the 200-line limit, along the line that was already there:
-one side changes conversations, the other only asks about them.
+Reading for the screens — the list, the messages, the counts — is `chat_reader.py`:
+this side changes conversations, that one only asks about them.
 """
 
 import uuid

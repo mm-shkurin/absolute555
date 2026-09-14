@@ -1,7 +1,6 @@
 """Reading conversations for the screens: the list, the messages, the counts.
 
-Split from `chat_service` when that file passed the 200-line limit, along the line
-already in it: that one changes conversations, this one only asks about them.
+`chat_service` changes conversations; this module only asks about them.
 
 Every count here asks the same question — messages this person has not read and did not
 write — and asks it in one query per screen rather than one per row. Twenty conversations

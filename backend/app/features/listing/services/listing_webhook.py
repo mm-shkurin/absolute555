@@ -1,7 +1,6 @@
 """The payload the Telegram channel receives about a listing.
 
-Lifted out of SaleCarService when that file passed the 200-line limit. Its only caller
-is the announcement path; nothing in the request cycle depends on it.
+Its only caller is the announcement path; nothing in the request cycle depends on it.
 """
 
 from loguru import logger

@@ -1,8 +1,7 @@
 """What an offer says in the conversation it belongs to.
 
 Kept apart from the offer service so that the rules of bargaining and the words shown to
-a buyer do not share a file -- and so that offer_service stays inside the 200-line limit
-it had just reached.
+a buyer do not share a file.
 
 The lines are written by the server with no human author: a client able to send one could
 sign "the offer was accepted" as the seller.
