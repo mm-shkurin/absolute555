@@ -13,6 +13,7 @@ listed in .gitignore so a local copy does not drift back in.
 from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, status
+from app.features.account.deps import get_user_service
 
 from app.core.exceptions import BaseErrorApp, ExternalServiceError
 from loguru import logger
@@ -73,10 +74,9 @@ async def _revoke(token: str, secret: str) -> None:
 @auth_router.post("/guest/login", response_model=Token)
 async def guest_login(
     device_id: str = Body(..., embed=True),
-    db: AsyncSession = Depends(get_db)
+    user_service: UserService = Depends(get_user_service)
 ):
     try:
-        user_service = UserService(db)
         user_id = await user_service.create_or_get_guest_user(device_id=device_id)
         
         if not user_id:

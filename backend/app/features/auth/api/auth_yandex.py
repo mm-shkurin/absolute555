@@ -12,14 +12,13 @@ they control.
 
 
 from fastapi import APIRouter, Body, Depends
+from app.features.account.deps import get_user_service
 from fastapi.responses import RedirectResponse
 from loguru import logger
-from sqlalchemy.ext.asyncio import AsyncSession
 from urllib.parse import urlencode
 
 from app.core.config_getters import get_oauth_settings
 from app.core.exceptions import AuthenticationError
-from app.db.database import get_db
 from app.features.auth.schemas.token import Token
 from app.features.auth.services.oauth_provider import OAuthFailed, provider_for
 from app.features.auth.services.oauth_store import OAuthStore
@@ -38,7 +37,7 @@ async def start_yandex_sign_in():
 
 @yandex_router.get("/oauth/yandex/callback")
 async def finish_yandex_sign_in(
-    code: str = "", state: str = "", db: AsyncSession = Depends(get_db)
+    code: str = "", state: str = "", user_service: UserService = Depends(get_user_service)
 ):
     """Where Yandex sends the browser back.
 
@@ -62,7 +61,7 @@ async def finish_yandex_sign_in(
     # Ответ провайдера кладётся объектом, а не строкой: колонка JSONB, и `json.dumps`
     # превращал её содержимое в строку внутри JSONB. Всё, что потом читало профиль
     # словарём — имя в консоли модератора, — молча получало пустоту.
-    user_id = await UserService(db).create_or_get_yandex_user(
+    user_id = await user_service.create_or_get_yandex_user(
         yandex_id=identity.subject, yandex_json=identity.raw
     )
     handoff = await OAuthStore().mint_handoff(str(user_id))

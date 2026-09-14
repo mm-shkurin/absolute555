@@ -5,10 +5,10 @@
 """
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.account.deps import get_profile_service
+from app.features.account.services.profile_service import ProfileService
 
 from app.core.exceptions import ValidationError
-from app.db.database import get_db
 from app.features.account.schemas.profile import Profile, ProfilePatch
 from app.features.account.services.profile_service import NameNotAllowed, ProfileService
 from app.shared.http.image_upload import image_upload
@@ -24,11 +24,11 @@ profile_router = APIRouter()
 async def rename(
     body: ProfilePatch,
     current_user: CurrentUser,
-    db: AsyncSession = Depends(get_db),
+    profile_service: ProfileService = Depends(get_profile_service),
 ):
     """Своё имя перекрывает имя провайдера; пустая строка возвращает провайдерское."""
     try:
-        renamed = await ProfileService(db).rename(current_user, body.name)
+        renamed = await profile_service.rename(current_user, body.name)
     except NameNotAllowed as error:
         raise ValidationError(str(error), code="NAME_NOT_ALLOWED")
     return profile_view(renamed)
@@ -38,22 +38,22 @@ async def rename(
 async def upload_avatar(
     current_user: CurrentUser,
     file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
+    profile_service: ProfileService = Depends(get_profile_service),
 ):
     with image_upload("avatar"):
-        updated = await ProfileService(db).set_avatar(current_user, await read_limited(file))
+        updated = await profile_service.set_avatar(current_user, await read_limited(file))
     return profile_view(updated)
 
 
 @profile_router.delete("/avatar", response_model=Profile)
-async def drop_avatar(current_user: CurrentUser, db: AsyncSession = Depends(get_db)):
-    return profile_view(await ProfileService(db).drop_avatar(current_user))
+async def drop_avatar(current_user: CurrentUser, profile_service: ProfileService = Depends(get_profile_service)):
+    return profile_view(await profile_service.drop_avatar(current_user))
 
 
 @profile_router.delete("", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_account(current_user: CurrentUser, db: AsyncSession = Depends(get_db)):
+async def delete_account(current_user: CurrentUser, profile_service: ProfileService = Depends(get_profile_service)):
     """Вход закрывается немедленно и неотличимо от несуществующей записи.
 
     Объявления, офферы, отзывы и диалоги остаются — почему, сказано в сервисе.
     """
-    await ProfileService(db).delete_account(current_user)
+    await profile_service.delete_account(current_user)

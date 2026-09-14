@@ -6,9 +6,10 @@ wants to know.
 """
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.listing.services.listing_review import ListingReviewService
+from app.features.moderation.deps import get_complaint_service
+from app.features.moderation.deps import get_moderation_service
 
-from app.db.database import get_db
 from app.features.listing.deps import get_listing_review_service
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
@@ -39,12 +40,11 @@ async def read_queue(
     tab: str = Query(default="waiting", pattern="^(waiting|complained|handled_today)$"),
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=60),
-    db: AsyncSession = Depends(get_db),
+    moderation_service: ModerationService = Depends(get_moderation_service),
     moderator=Depends(MODERATOR),
 ):
-    service = ModerationService(db)
-    listings, total = await service.queue(tab, page, size, str(moderator.id))
-    complaints = await service.open_complaint_counts([listing.sale_car_id for listing in listings])
+    listings, total = await moderation_service.queue(tab, page, size, str(moderator.id))
+    complaints = await moderation_service.open_complaint_counts([listing.sale_car_id for listing in listings])
     return {
         "items": [queue_item(listing, complaints.get(listing.sale_car_id, 0)) for listing in listings],
         "total": total,
@@ -55,10 +55,10 @@ async def read_queue(
 
 @moderation_router.get("/counts", response_model=QueueCounts)
 async def read_counts(
-    db: AsyncSession = Depends(get_db),
+    moderation_service: ModerationService = Depends(get_moderation_service),
     moderator=Depends(MODERATOR),
 ):
-    return await ModerationService(db).counts(str(moderator.id))
+    return await moderation_service.counts(str(moderator.id))
 
 
 @moderation_router.get("/complaints", response_model=ComplaintPage)
@@ -66,10 +66,10 @@ async def read_complaints(
     status: str = Query(default="open", pattern="^(open|handled)$"),
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=60),
-    db: AsyncSession = Depends(get_db),
+    complaint_service: ComplaintService = Depends(get_complaint_service),
     moderator=Depends(MODERATOR),
 ):
-    groups, total = await ComplaintService(db).grouped(status, page, size)
+    groups, total = await complaint_service.grouped(status, page, size)
     return {
         "items": [group_view(listing_id, complaints) for listing_id, complaints in groups],
         "total": total,
@@ -81,11 +81,11 @@ async def read_complaints(
 @moderation_router.post("/complaints/{complaint_id}/dismiss", response_model=ComplaintResponse)
 async def dismiss_complaint(
     complaint_id: str,
-    db: AsyncSession = Depends(get_db),
+    complaint_service: ComplaintService = Depends(get_complaint_service),
     moderator=Depends(MODERATOR),
 ):
     try:
-        settled = await ComplaintService(db).dismiss(complaint_id, str(moderator.id))
+        settled = await complaint_service.dismiss(complaint_id, str(moderator.id))
     except ComplaintError as error:
         raise complaint_to_http(error)
     return complaint_view(settled)
@@ -95,12 +95,12 @@ async def dismiss_complaint(
 async def unpublish_listing(
     sale_car_id: str,
     reason: RejectionReason,
-    db: AsyncSession = Depends(get_db),
+    listing_review_service: ListingReviewService = Depends(get_listing_review_service),
     moderator=Depends(MODERATOR),
 ):
     """Take a published listing down and settle its complaints in the same decision."""
     try:
-        listing = await get_listing_review_service(db).take_down(
+        listing = await listing_review_service.take_down(
             sale_car_id, reason.label.value, reason.comment, str(moderator.id)
         )
     except ListingError as error:

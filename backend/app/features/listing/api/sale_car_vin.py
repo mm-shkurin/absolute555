@@ -6,9 +6,9 @@
 """
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.listing.deps import get_listing_autofill_service
+from app.features.listing.services.listing_lifecycle import ListingLifecycleService
 
-from app.db.database import get_db
 from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.schemas.sale_cars import StsAccepted, VinDecodeRequest
 from app.features.listing.services.listing_autofill import ListingAutofillService
@@ -29,13 +29,14 @@ vin_router = APIRouter()
 async def decode_vin(
     sale_car_id: str,
     body: VinDecodeRequest,
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
+    listing_autofill_service: ListingAutofillService = Depends(get_listing_autofill_service),
     current_user=Depends(get_current_user),
 ):
     """Accepted, not done: the reading runs on the queue and reports back separately."""
     try:
-        listing = await listing_of(get_listing_lifecycle_service(db), sale_car_id, current_user)
-        updated = await ListingAutofillService(db).decode_from_vin(listing, body.vin)
+        listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
+        updated = await listing_autofill_service.decode_from_vin(listing, body.vin)
     except ListingError as error:
         raise to_http(error)
     return {"sale_car_id": updated.sale_car_id, "autofill": autofill_view(updated)}

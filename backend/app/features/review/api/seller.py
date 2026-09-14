@@ -1,12 +1,11 @@
 """The public profile of a seller. Open to a visitor who has not signed in."""
 
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.review.deps import get_seller_profile_service
 
 from app.features.review.api.review_http import to_http
 from app.shared.http.review_view import profile_view, review_view
 from app.shared.http.sale_car_view import to_card
-from app.db.database import get_db
 from app.features.review.schemas.review import (
     ReviewPage,
     SellerListingPage,
@@ -19,10 +18,10 @@ seller_router = APIRouter()
 
 
 @seller_router.get("/{user_id}", response_model=SellerProfileResponse)
-async def get_seller(user_id: str, db: AsyncSession = Depends(get_db)):
+async def get_seller(user_id: str, seller_profile_service: SellerProfileService = Depends(get_seller_profile_service)):
     """The aggregate and how much is on sale. No phone number: that stays on the card."""
     try:
-        seller, listings_count = await SellerProfileService(db).profile(user_id)
+        seller, listings_count = await seller_profile_service.profile(user_id)
     except ReviewError as error:
         raise to_http(error)
     return profile_view(seller, listings_count)
@@ -33,10 +32,10 @@ async def get_seller_reviews(
     user_id: str,
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=50),
-    db: AsyncSession = Depends(get_db),
+    seller_profile_service: SellerProfileService = Depends(get_seller_profile_service),
 ):
     try:
-        reviews, total = await SellerProfileService(db).reviews(user_id, page, size)
+        reviews, total = await seller_profile_service.reviews(user_id, page, size)
     except ReviewError as error:
         raise to_http(error)
     return {
@@ -52,11 +51,11 @@ async def get_seller_listings(
     user_id: str,
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=50),
-    db: AsyncSession = Depends(get_db),
+    seller_profile_service: SellerProfileService = Depends(get_seller_profile_service),
 ):
     """Published only: a draft or a rejected listing belongs to its owner's screens."""
     try:
-        listings, total = await SellerProfileService(db).listings(user_id, page, size)
+        listings, total = await seller_profile_service.listings(user_id, page, size)
     except ReviewError as error:
         raise to_http(error)
     return {

@@ -1,4 +1,4 @@
-"""Where the offer services get their collaborators from other features."""
+"""Service providers of the offer feature: where its routers get services, wired with their collaborators."""
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession

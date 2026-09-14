@@ -5,9 +5,11 @@ value walks straight past the transition table.
 """
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.listing.services.listing_lifecycle import ListingLifecycleService
+from app.features.listing.deps import get_listing_review_service
+from app.features.listing.services.listing_review import ListingReviewService
+from app.features.moderation.deps import get_complaint_service
 
-from app.db.database import get_db
 from app.features.listing.deps import get_listing_lifecycle_service, get_listing_review_service
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
@@ -32,8 +34,7 @@ def _changed(listing) -> SaleCarStatusChanged:
     )
 
 
-async def _own_action(action, sale_car_id: str, db: AsyncSession, user):
-    service = get_listing_lifecycle_service(db)
+async def _own_action(action, sale_car_id: str, service, user):
     try:
         await listing_of(service, sale_car_id, user)
         return _changed(await getattr(service, action)(sale_car_id))
@@ -44,56 +45,56 @@ async def _own_action(action, sale_car_id: str, db: AsyncSession, user):
 @lifecycle_router.post("/{sale_car_id}/submit", response_model=SaleCarStatusChanged)
 async def submit(
     sale_car_id: str,
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
     current_user=Depends(get_current_user),
 ):
-    return await _own_action("submit", sale_car_id, db, current_user)
+    return await _own_action("submit", sale_car_id, listing_lifecycle_service, current_user)
 
 
 @lifecycle_router.post("/{sale_car_id}/withdraw", response_model=SaleCarStatusChanged)
 async def withdraw(
     sale_car_id: str,
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
     current_user=Depends(get_current_user),
 ):
-    return await _own_action("withdraw", sale_car_id, db, current_user)
+    return await _own_action("withdraw", sale_car_id, listing_lifecycle_service, current_user)
 
 
 @lifecycle_router.post("/{sale_car_id}/sold", response_model=SaleCarStatusChanged)
 async def mark_sold(
     sale_car_id: str,
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
     current_user=Depends(get_current_user),
 ):
-    return await _own_action("mark_sold", sale_car_id, db, current_user)
+    return await _own_action("mark_sold", sale_car_id, listing_lifecycle_service, current_user)
 
 
 @lifecycle_router.post("/{sale_car_id}/republish", response_model=SaleCarStatusChanged)
 async def republish(
     sale_car_id: str,
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
     current_user=Depends(get_current_user),
 ):
-    return await _own_action("republish", sale_car_id, db, current_user)
+    return await _own_action("republish", sale_car_id, listing_lifecycle_service, current_user)
 
 
 @lifecycle_router.post("/{sale_car_id}/revise", response_model=SaleCarStatusChanged)
 async def revise(
     sale_car_id: str,
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
     current_user=Depends(get_current_user),
 ):
-    return await _own_action("revise", sale_car_id, db, current_user)
+    return await _own_action("revise", sale_car_id, listing_lifecycle_service, current_user)
 
 
 @lifecycle_router.post("/{sale_car_id}/approve", response_model=SaleCarStatusChanged)
 async def approve(
     sale_car_id: str,
-    db: AsyncSession = Depends(get_db),
+    listing_review_service: ListingReviewService = Depends(get_listing_review_service),
     moderator=Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
 ):
     try:
-        return _changed(await get_listing_review_service(db).approve(sale_car_id, str(moderator.id)))
+        return _changed(await listing_review_service.approve(sale_car_id, str(moderator.id)))
     except ListingError as error:
         raise to_http(error)
 
@@ -102,12 +103,12 @@ async def approve(
 async def reject(
     sale_car_id: str,
     reason: RejectionReason,
-    db: AsyncSession = Depends(get_db),
+    listing_review_service: ListingReviewService = Depends(get_listing_review_service),
     moderator=Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
 ):
     """Turn a listing back. The label is required; the comment the seller reads is not."""
     try:
-        turned_back = await get_listing_review_service(db).reject(
+        turned_back = await listing_review_service.reject(
             sale_car_id, reason.label.value, reason.comment, str(moderator.id)
         )
         return _changed(turned_back)
@@ -121,12 +122,12 @@ async def reject(
 async def complain(
     sale_car_id: str,
     complaint: ComplaintCreate,
-    db: AsyncSession = Depends(get_db),
+    complaint_service: ComplaintService = Depends(get_complaint_service),
     current_user=Depends(get_current_user),
 ):
     """Anyone signed in, once per listing. Only about a listing that is published."""
     try:
-        recorded = await ComplaintService(db).complain(
+        recorded = await complaint_service.complain(
             sale_car_id, str(current_user.id), complaint.reason.value, complaint.text
         )
     except ListingError as error:

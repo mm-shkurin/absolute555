@@ -1,9 +1,10 @@
 from typing import Optional
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.account.deps import get_account_access_service
+from app.features.account.deps import get_people_service
+from app.features.account.deps import get_role_service
 
-from app.db.database import get_db
 from app.features.account.api.admin_view import page_of
 from app.features.account.schemas.admin import UserPage
 from app.features.account.schemas.role import (
@@ -30,7 +31,7 @@ async def get_all_users(
     page: int = Query(1, ge=1),
     page_size: int = Query(20, ge=1, le=100),
     current_user=Depends(require_permission(Permission.VIEW_USERS)),
-    db: AsyncSession = Depends(get_db),
+    people_service: PeopleService = Depends(get_people_service),
 ):
     """Страница списка.
 
@@ -38,7 +39,7 @@ async def get_all_users(
     плановых тысячах учётных записей это ответ на всю базу ради одного экрана.
     """
     role = role_filter.value if role_filter else None
-    return page_of(*await PeopleService(db).page(query, role, blocked, deleted, page, page_size))
+    return page_of(*await people_service.page(query, role, blocked, deleted, page, page_size))
 
 
 @role_router.put("/users/{user_id}/role", response_model=dict)
@@ -46,22 +47,22 @@ async def update_user_role(
     user_id: UUID,
     role_data: UserRoleUpdate,
     current_user=Depends(require_permission(Permission.MANAGE_ALL_USERS)),
-    db: AsyncSession = Depends(get_db)
+    role_service: RoleService = Depends(get_role_service),
+    account_access_service: AccountAccessService = Depends(get_account_access_service)
 ):
 
-    service = RoleService(db)
-    was = await service.get_user_by_id(user_id)
+    was = await role_service.get_user_by_id(user_id)
     if not was:
         raise ResourceNotFoundError("Пользователь не найден", code="USER_NOT_FOUND")
     previous_role = was.role
 
-    user = await service.update_user_role(user_id, role_data.new_role)
+    user = await role_service.update_user_role(user_id, role_data.new_role)
     if not user:
         raise ResourceNotFoundError("Пользователь не найден", code="USER_NOT_FOUND")
 
     # Причина принималась и уходила в лог контейнера, где жила до перезапуска. Теперь
     # она в журнале — там, где её ищут, когда спрашивают «на каком основании».
-    await AccountAccessService(db).record_role_change(
+    await account_access_service.record_role_change(
         user, current_user, role_data.reason, previous_role, role_data.new_role.value
     )
     
@@ -77,10 +78,9 @@ async def update_user_role(
 async def get_user_role_info(
     user_id: UUID,
     current_user=Depends(require_permission(Permission.VIEW_USERS)),
-    db: AsyncSession = Depends(get_db)
+    role_service: RoleService = Depends(get_role_service)
 ):
-    service = RoleService(db)
-    user = await service.get_user_by_id(user_id)
+    user = await role_service.get_user_by_id(user_id)
     
     if not user:
         raise ResourceNotFoundError("Пользователь не найден", code="USER_NOT_FOUND")
@@ -94,10 +94,9 @@ async def get_user_role_info(
 @role_router.get("/stats", response_model=RoleStats)
 async def get_role_stats(
     current_user=Depends(require_permission(Permission.VIEW_ANALYTICS)),
-    db: AsyncSession = Depends(get_db)
+    role_service: RoleService = Depends(get_role_service)
 ):
-    service = RoleService(db)
-    stats = await service.get_role_stats()
+    stats = await role_service.get_role_stats()
     
     return RoleStats(
         total_users=stats["total_users"],

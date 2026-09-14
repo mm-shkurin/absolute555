@@ -1,10 +1,10 @@
 """Профиль поставщика, по HTTP: свой профиль, публичная страница, очередь модератора."""
 
 from fastapi import APIRouter, Depends, File, Query, UploadFile
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.importing.deps import get_supplier_cover_service
+from app.features.importing.deps import get_supplier_profile_service
 
 from app.core.exceptions import ValidationError
-from app.db.database import get_db
 from app.features.importing.schemas.supplier import (
     SupplierOwnProfileResponse,
     SupplierPage,
@@ -30,29 +30,29 @@ MODERATOR = require_permission(Permission.EDIT_ANY_SALE_CAR)
 
 
 @supplier_router.get("/me", response_model=SupplierOwnProfileResponse)
-async def read_my_profile(db: AsyncSession = Depends(get_db), importer=Depends(IMPORTER)):
-    return await SupplierProfileService(db).mine(str(importer.id))
+async def read_my_profile(supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service), importer=Depends(IMPORTER)):
+    return await supplier_profile_service.mine(str(importer.id))
 
 
 @supplier_router.put("/me", response_model=SupplierOwnProfileResponse)
 async def edit_my_profile(
     update: SupplierProfileUpdate,
-    db: AsyncSession = Depends(get_db),
+    supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service),
     importer=Depends(IMPORTER),
 ):
     fields = update.model_dump(exclude_unset=True)
     if not fields:
         raise ValidationError("No data to update", code="EMPTY_PATCH")
     try:
-        return await SupplierProfileService(db).edit(str(importer.id), fields)
+        return await supplier_profile_service.edit(str(importer.id), fields)
     except SupplierError as error:
         raise to_http(error)
 
 
 @supplier_router.post("/me/submit", response_model=SupplierOwnProfileResponse)
-async def submit_my_profile(db: AsyncSession = Depends(get_db), importer=Depends(IMPORTER)):
+async def submit_my_profile(supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service), importer=Depends(IMPORTER)):
     try:
-        return await SupplierProfileService(db).submit(str(importer.id))
+        return await supplier_profile_service.submit(str(importer.id))
     except SupplierError as error:
         raise to_http(error)
 
@@ -60,23 +60,23 @@ async def submit_my_profile(db: AsyncSession = Depends(get_db), importer=Depends
 @supplier_router.put("/me/cover", response_model=SupplierOwnProfileResponse)
 async def upload_cover(
     file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
+    supplier_cover_service: SupplierCoverService = Depends(get_supplier_cover_service),
     importer=Depends(IMPORTER),
 ):
     with image_upload("cover"):
-        return await SupplierCoverService(db).set(str(importer.id), await read_limited(file))
+        return await supplier_cover_service.set(str(importer.id), await read_limited(file))
 
 
 @supplier_router.delete("/me/cover", response_model=SupplierOwnProfileResponse)
-async def drop_cover(db: AsyncSession = Depends(get_db), importer=Depends(IMPORTER)):
-    return await SupplierCoverService(db).drop(str(importer.id))
+async def drop_cover(supplier_cover_service: SupplierCoverService = Depends(get_supplier_cover_service), importer=Depends(IMPORTER)):
+    return await supplier_cover_service.drop(str(importer.id))
 
 
 @supplier_router.get("", response_model=SupplierPage)
 async def list_storefronts(
     page: int = Query(default=1, ge=1),
     size: int = Query(default=20, ge=1, le=60),
-    db: AsyncSession = Depends(get_db),
+    supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service),
 ):
     """Витрины одобренных поставщиков. Открыты всем, включая гостя.
 
@@ -84,15 +84,15 @@ async def list_storefronts(
     привоз, значит прятать сам выбор. Стоит выше `/{user_id}`, иначе пустой путь ушёл бы
     в него параметром.
     """
-    found, total = await SupplierProfileService(db).storefronts(page, size)
+    found, total = await supplier_profile_service.storefronts(page, size)
     return {"items": found, "total": total, "page": page, "size": size}
 
 
 @supplier_router.get("/{user_id}", response_model=SupplierProfileResponse)
-async def read_public_profile(user_id: str, db: AsyncSession = Depends(get_db)):
+async def read_public_profile(user_id: str, supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service)):
     """Публичная витрина: гость читает опубликованный профиль, остальные — 404."""
     try:
-        return await SupplierProfileService(db).published(user_id)
+        return await supplier_profile_service.published(user_id)
     except SupplierError as error:
         raise to_http(error)
 
@@ -101,17 +101,17 @@ moderation_supplier_router = APIRouter()
 
 
 @moderation_supplier_router.get("/suppliers", response_model=SupplierQueue)
-async def read_queue(db: AsyncSession = Depends(get_db), moderator=Depends(MODERATOR)):
-    waiting = await SupplierProfileService(db).queue()
+async def read_queue(supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service), moderator=Depends(MODERATOR)):
+    waiting = await supplier_profile_service.queue()
     return {"items": waiting, "total": len(waiting)}
 
 
 @moderation_supplier_router.post(
     "/suppliers/{user_id}/approve", response_model=SupplierOwnProfileResponse
 )
-async def approve(user_id: str, db: AsyncSession = Depends(get_db), moderator=Depends(MODERATOR)):
+async def approve(user_id: str, supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service), moderator=Depends(MODERATOR)):
     try:
-        return await SupplierProfileService(db).approve(user_id)
+        return await supplier_profile_service.approve(user_id)
     except SupplierError as error:
         raise to_http(error)
 
@@ -122,10 +122,10 @@ async def approve(user_id: str, db: AsyncSession = Depends(get_db), moderator=De
 async def reject(
     user_id: str,
     rejection: SupplierRejection,
-    db: AsyncSession = Depends(get_db),
+    supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service),
     moderator=Depends(MODERATOR),
 ):
     try:
-        return await SupplierProfileService(db).reject(user_id, rejection.reason)
+        return await supplier_profile_service.reject(user_id, rejection.reason)
     except SupplierError as error:
         raise to_http(error)

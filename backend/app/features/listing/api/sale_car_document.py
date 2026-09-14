@@ -6,9 +6,10 @@ photograph and created the listing itself, which is a screen that does not exist
 """
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.listing.deps import get_listing_autofill_service
+from app.features.listing.deps import get_listing_document_service
+from app.features.listing.services.listing_lifecycle import ListingLifecycleService
 
-from app.db.database import get_db
 from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.schemas.sale_cars import DocumentLink, StsAccepted
 from app.features.listing.services.listing_errors import ListingError
@@ -26,7 +27,8 @@ document_router = APIRouter()
 @document_router.get("/{sale_car_id}/sts", response_model=DocumentLink)
 async def get_document_link(
     sale_car_id: str,
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
+    listing_document_service: ListingDocumentService = Depends(get_listing_document_service),
     current_user=Depends(get_current_user),
 ):
     """Owner and moderator only. Everyone else is told it is not there.
@@ -35,8 +37,8 @@ async def get_document_link(
     the three cases are indistinguishable from outside on purpose.
     """
     try:
-        listing = await listing_of(get_listing_lifecycle_service(db), sale_car_id, current_user)
-        return await ListingDocumentService(db).signed_link(listing)
+        listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
+        return await listing_document_service.signed_link(listing)
     except ListingError as error:
         raise to_http(error)
 
@@ -49,7 +51,8 @@ async def get_document_link(
 async def attach_document(
     sale_car_id: str,
     file: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
+    listing_autofill_service: ListingAutofillService = Depends(get_listing_autofill_service),
     current_user=Depends(get_current_user),
 ):
     """Accepted, not done: the reading runs on the queue and reports back separately.
@@ -58,10 +61,10 @@ async def attach_document(
     endpoint above does.
     """
     try:
-        listing = await listing_of(get_listing_lifecycle_service(db), sale_car_id, current_user)
+        listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
         body = await read_limited(file)
         detected = require_image(file.filename, body)
-        updated = await ListingAutofillService(db).attach_scan(listing, body, detected)
+        updated = await listing_autofill_service.attach_scan(listing, body, detected)
     except ListingError as error:
         raise to_http(error)
     return {"sale_car_id": updated.sale_car_id, "autofill": autofill_view(updated)}

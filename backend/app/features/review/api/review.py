@@ -5,11 +5,11 @@ that is the whole defence against a rating anyone could raise without a deal.
 """
 
 from fastapi import APIRouter, Depends, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.review.deps import get_dialog_review_service
+from app.features.review.deps import get_review_service
 
 from app.features.review.api.review_http import to_http
 from app.shared.http.review_view import review_view
-from app.db.database import get_db
 from app.permissions.guests import forbid_guest
 from app.features.review.schemas.review import ReviewCreate, ReviewPatch, ReviewResponse
 from app.features.review.services.review_errors import ReviewError
@@ -28,12 +28,12 @@ review_router = APIRouter()
 async def create_review(
     offer_id: str,
     body: ReviewCreate,
-    db: AsyncSession = Depends(get_db),
+    review_service: ReviewService = Depends(get_review_service),
     current_user = Depends(forbid_guest),
 ):
     """A guest leaves no review: a guest does not bargain, so a guest has no deal."""
     try:
-        review = await ReviewService(db).create(
+        review = await review_service.create(
             offer_id=offer_id,
             author_id=str(current_user.id),
             rating=body.rating,
@@ -55,12 +55,12 @@ async def create_review(
 async def create_dialog_review(
     dialog_id: str,
     body: ReviewCreate,
-    db: AsyncSession = Depends(get_db),
+    dialog_review_service: DialogReviewService = Depends(get_dialog_review_service),
     current_user = Depends(forbid_guest),
 ):
     """Отзыв по переписке: о продавце — по объявлению, о поставщике — по отклику."""
     try:
-        review = await DialogReviewService(db).create(
+        review = await dialog_review_service.create(
             dialog_id=dialog_id,
             author_id=str(current_user.id),
             rating=body.rating,
@@ -77,12 +77,12 @@ async def create_dialog_review(
 async def update_review(
     review_id: str,
     body: ReviewPatch,
-    db: AsyncSession = Depends(get_db),
+    review_service: ReviewService = Depends(get_review_service),
     current_user = Depends(forbid_guest),
 ):
     """Within a day of writing it. After that the review settles and the rating stands."""
     try:
-        review = await ReviewService(db).update(
+        review = await review_service.update(
             review_id=review_id,
             author_id=str(current_user.id),
             changes=body.model_dump(exclude_unset=True),

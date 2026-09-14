@@ -12,10 +12,11 @@ from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.account.deps import get_account_access_service
+from app.features.account.deps import get_people_service
+from app.features.account.services.account_access_service import AccountAccessService
 
 from app.core.exceptions import AuthorizationError, ConflictError, ResourceNotFoundError
-from app.db.database import get_db
 from app.features.account.api.admin_view import access_of, audit_of, card_of
 from app.features.account.schemas.admin import (
     AccessChange,
@@ -40,9 +41,9 @@ admin_router = APIRouter()
 async def read_user_card(
     user_id: UUID,
     _=Depends(require_permission(Permission.VIEW_USERS)),
-    db: AsyncSession = Depends(get_db),
+    people_service: PeopleService = Depends(get_people_service),
 ):
-    found = await PeopleService(db).card(user_id)
+    found = await people_service.card(user_id)
     if found is None:
         raise ResourceNotFoundError("Пользователь не найден", code="USER_NOT_FOUND")
     return card_of(*found)
@@ -52,10 +53,10 @@ async def read_user_card(
 async def read_user_audit(
     user_id: UUID,
     _=Depends(require_permission(Permission.VIEW_ACCOUNT_AUDIT)),
-    db: AsyncSession = Depends(get_db),
+    account_access_service: AccountAccessService = Depends(get_account_access_service),
 ):
     """Журнал только читается: запись, которую можно подчистить, ничего не доказывает."""
-    return audit_of(await AccountAccessService(db).journal(user_id))
+    return audit_of(await account_access_service.journal(user_id))
 
 
 @admin_router.post("/users/{user_id}/block", response_model=UserAccess)
@@ -63,9 +64,9 @@ async def block_user(
     user_id: UUID,
     change: AccessChange,
     actor=Depends(require_permission(Permission.BLOCK_USERS)),
-    db: AsyncSession = Depends(get_db),
+    account_access_service: AccountAccessService = Depends(get_account_access_service),
 ):
-    return access_of(await _apply(AccountAccessService(db).block, user_id, actor, change))
+    return access_of(await _apply(account_access_service.block, user_id, actor, change))
 
 
 @admin_router.post("/users/{user_id}/unblock", response_model=UserAccess)
@@ -73,9 +74,9 @@ async def unblock_user(
     user_id: UUID,
     change: AccessChange,
     actor=Depends(require_permission(Permission.BLOCK_USERS)),
-    db: AsyncSession = Depends(get_db),
+    account_access_service: AccountAccessService = Depends(get_account_access_service),
 ):
-    return access_of(await _apply(AccountAccessService(db).unblock, user_id, actor, change))
+    return access_of(await _apply(account_access_service.unblock, user_id, actor, change))
 
 
 async def _apply(action, user_id: UUID, actor, change: AccessChange):

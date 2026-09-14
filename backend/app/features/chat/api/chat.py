@@ -8,6 +8,8 @@ purpose.
 from typing import List
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
+from app.features.chat.deps import get_chat_service
+from app.features.review.deps import get_dialog_review_service
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
@@ -36,13 +38,14 @@ chat_router = APIRouter()
 @chat_router.get("/dialogs", response_model=List[DialogResponse])
 async def list_dialogs(
     db: AsyncSession = Depends(get_db),
+    dialog_review_service: DialogReviewService = Depends(get_dialog_review_service),
     current_user=Depends(get_current_user),
 ):
     reader = ChatReader(db)
     dialogs = await reader.mine(str(current_user.id))
     last = await reader.last_messages(dialogs)
     unread = await reader.unread_by_dialog(dialogs, str(current_user.id))
-    reviews = await DialogReviewService(db).by_dialog([dialog.dialog_id for dialog in dialogs])
+    reviews = await dialog_review_service.by_dialog([dialog.dialog_id for dialog in dialogs])
     storefronts = await reader.storefronts(dialogs)
     return [
         dialog_view(
@@ -61,12 +64,13 @@ async def list_dialogs(
 async def open_direct(
     user_id: str,
     db: AsyncSession = Depends(get_db),
+    chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
     """Открыть или найти прямую переписку с человеком — со страницы поставщика."""
     try:
-        opened = await ChatService(db).open_direct(current_user.id, user_id)
-        dialog = await ChatService(db).dialog_of(str(opened.dialog_id), str(current_user.id))
+        opened = await chat_service.open_direct(current_user.id, user_id)
+        dialog = await chat_service.dialog_of(str(opened.dialog_id), str(current_user.id))
     except (ChatError, ValueError):
         raise to_http(DialogNotFound(user_id))
     storefronts = await ChatReader(db).storefronts([dialog])
@@ -88,11 +92,11 @@ async def read_messages(
     page: int = Query(default=1, ge=1),
     size: int = Query(default=50, ge=1, le=100),
     db: AsyncSession = Depends(get_db),
+    chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
-    service = ChatService(db)
     try:
-        dialog = await service.dialog_of(dialog_id, str(current_user.id))
+        dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
     except ChatError as error:
         raise to_http(error)
 
@@ -110,13 +114,13 @@ async def write_message(
     dialog_id: str,
     body: MessageWrite,
     db: AsyncSession = Depends(get_db),
+    chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
     """The kind is not a field a client may set: a system line has no human author."""
-    service = ChatService(db)
     try:
-        dialog = await service.dialog_of(dialog_id, str(current_user.id))
-        message = await service.say(dialog, body.text, author_id=current_user.id)
+        dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
+        message = await chat_service.say(dialog, body.text, author_id=current_user.id)
     except ChatError as error:
         raise to_http(error)
 
@@ -137,15 +141,15 @@ async def mark_read(
     dialog_id: str,
     body: ReadRequest,
     db: AsyncSession = Depends(get_db),
+    chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
-    service = ChatService(db)
     try:
-        dialog = await service.dialog_of(dialog_id, str(current_user.id))
+        dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
     except ChatError as error:
         raise to_http(error)
 
-    marked = await service.mark_read(dialog, str(current_user.id), body.message_ids)
+    marked = await chat_service.mark_read(dialog, str(current_user.id), body.message_ids)
     return {
         "marked": marked,
         "unread": await ChatReader(db).unread_in(dialog, str(current_user.id)),

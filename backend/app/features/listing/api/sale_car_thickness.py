@@ -7,9 +7,9 @@
 from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.listing.deps import get_thickness_map_service
+from app.features.listing.services.listing_lifecycle import ListingLifecycleService
 
-from app.db.database import get_db
 from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.panels import BodyPanel
 from app.features.listing.schemas.thickness import GaugeReading, ThicknessMap
@@ -29,19 +29,20 @@ thickness_router = APIRouter()
 @thickness_router.get("/{sale_car_id}/thickness", response_model=ThicknessMap)
 async def read_map(
     sale_car_id: str,
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
+    thickness_map_service: ThicknessMapService = Depends(get_thickness_map_service),
     current_user=Depends(get_current_user_or_none),
 ):
     """Карта видна тем же, кому видно объявление."""
-    listing = await visible_listing(get_listing_lifecycle_service(db), sale_car_id, current_user)
-    return to_thickness_map(listing, await ThicknessMapService(db).map_of(listing))
+    listing = await visible_listing(listing_lifecycle_service, sale_car_id, current_user)
+    return to_thickness_map(listing, await thickness_map_service.map_of(listing))
 
 
 @thickness_router.post("/{sale_car_id}/thickness/read", response_model=GaugeReading)
 async def read_gauge_photo(
     sale_car_id: str,
     photo: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
     current_user=Depends(get_current_user),
 ):
     """Прочитать снимок экрана прибора, ничего не сохраняя.
@@ -50,7 +51,7 @@ async def read_gauge_photo(
     ошибается на бликах и срезанных краях экрана, и молча записанная ошибка окрасила бы
     панель у покупателя в чужой цвет. Тот же снимок при сохранении читается из кэша.
     """
-    await owned_listing(get_listing_lifecycle_service(db), sale_car_id, current_user)
+    await owned_listing(listing_lifecycle_service, sale_car_id, current_user)
     with image_upload(photo.filename):
         body = await read_limited(photo)
         require_image(photo.filename, body)
@@ -63,13 +64,14 @@ async def record_measurement(
     panel: BodyPanel,
     value_um: Optional[int] = Form(default=None),
     photo: UploadFile = File(...),
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
+    thickness_map_service: ThicknessMapService = Depends(get_thickness_map_service),
     current_user=Depends(get_current_user),
 ):
     try:
-        listing = await listing_of(get_listing_lifecycle_service(db), sale_car_id, current_user)
+        listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
         payload = (photo.filename, photo.content_type, await read_limited(photo))
-        measured = await ThicknessMapService(db).record(listing, panel, value_um, payload)
+        measured = await thickness_map_service.record(listing, panel, value_um, payload)
     except ListingError as error:
         raise to_http(error)
     return to_thickness_map(listing, measured)
@@ -79,12 +81,13 @@ async def record_measurement(
 async def remove_measurement(
     sale_car_id: str,
     panel: BodyPanel,
-    db: AsyncSession = Depends(get_db),
+    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
+    thickness_map_service: ThicknessMapService = Depends(get_thickness_map_service),
     current_user=Depends(get_current_user),
 ):
     try:
-        listing = await listing_of(get_listing_lifecycle_service(db), sale_car_id, current_user)
-        left = await ThicknessMapService(db).remove(listing, panel)
+        listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
+        left = await thickness_map_service.remove(listing, panel)
     except ListingError as error:
         raise to_http(error)
     return to_thickness_map(listing, left)

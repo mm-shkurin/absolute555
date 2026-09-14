@@ -8,9 +8,9 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
+from app.features.account.deps import get_role_request_service
+from app.features.account.services.role_request_service import RoleRequestService
 
-from app.db.database import get_db
 from app.features.account.api.role_http import to_http
 from app.features.account.schemas.role import (
     RoleRequestCreate,
@@ -38,11 +38,11 @@ role_request_router = APIRouter()
 async def create_role_request(
     request_data: RoleRequestCreate,
     current_user=Depends(forbid_guest),
-    db: AsyncSession = Depends(get_db),
+    role_request_service: RoleRequestService = Depends(get_role_request_service),
 ):
     """Гость заявок не подаёт: у него нет ни профиля, ни того, что роль открывает."""
     try:
-        role_request = await RoleRequestService(db).create_role_request(
+        role_request = await role_request_service.create_role_request(
             current_user.id, request_data
         )
     except RoleRequestError as error:
@@ -53,9 +53,9 @@ async def create_role_request(
 @role_request_router.get("/my-role-requests", response_model=List[RoleRequestResponse])
 async def get_my_role_requests(
     current_user=Depends(get_current_user),
-    db: AsyncSession = Depends(get_db),
+    role_request_service: RoleRequestService = Depends(get_role_request_service),
 ):
-    requests = await RoleRequestService(db).get_user_role_requests(current_user.id)
+    requests = await role_request_service.get_user_role_requests(current_user.id)
     return [RoleRequestResponse.from_orm(request) for request in requests]
 
 
@@ -63,15 +63,14 @@ async def get_my_role_requests(
 async def get_all_role_requests(
     status: Optional[RoleRequestStatus] = Query(None),
     current_user=Depends(require_permission(Permission.VIEW_ROLE_REQUESTS)),
-    db: AsyncSession = Depends(get_db),
+    role_request_service: RoleRequestService = Depends(get_role_request_service),
 ):
-    service = RoleRequestService(db)
-    requests = await service.get_all_role_requests(status)
+    requests = await role_request_service.get_all_role_requests(status)
     return [
         RoleRequestListResponse(
             id=request.id,
             user_id=request.user_id,
-            user_name=service.name_of(request.user),
+            user_name=role_request_service.name_of(request.user),
             requested_role=UserRole(request.requested_role),
             reason=request.reason,
             status=request.status,
@@ -86,11 +85,11 @@ async def decide_role_request(
     request_id: UUID,
     update_data: RoleRequestUpdate,
     current_user=Depends(require_permission(Permission.MANAGE_ROLE_REQUESTS)),
-    db: AsyncSession = Depends(get_db),
+    role_request_service: RoleRequestService = Depends(get_role_request_service),
 ):
     """Одобрение выдаёт роль в той же транзакции, что меняет статус заявки."""
     try:
-        role_request = await RoleRequestService(db).decide(request_id, current_user, update_data)
+        role_request = await role_request_service.decide(request_id, current_user, update_data)
     except RoleRequestError as error:
         raise to_http(error)
     return RoleRequestResponse.from_orm(role_request)
