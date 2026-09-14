@@ -1,17 +1,15 @@
 // Заявки на роль поставщика. Одобряет только владелец площадки: роль даёт право публиковать
 // позиции без модерации, и раздавать её автоматом нельзя.
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { Container } from '../../shared/ui/Container'
-import { SiteHeader } from '../../shared/ui/SiteHeader'
-import { PageHeading, PageSection } from '../../shared/ui/PageHeading'
-import { ModerationNav } from './components/ModerationNav'
-import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
+import { EmptyNotice } from '../../shared/ui/ListStates'
 import { PillTabs } from '../../shared/ui/PillTabs'
+import { MutationFailure, QueryStates } from '../../shared/ui/QueryStates'
 import { answerRoleApplication, fetchRoleApplications, type RoleTab } from './api/moderationApi'
 import type { RoleRequestDecision } from '../../shared/api/backend/accountContract'
-import { toRoleApplication } from './logic/roleView'
+import { toRoleApplication, type RoleApplicationView } from './logic/roleView'
 import { canReviewRoleRequests } from '../../shared/session/authSession'
+import { ModerationPage } from './components/ModerationPage'
 import { RoleApplicationCard } from './components/RoleApplicationCard'
 
 // Пустая вкладка называет себя: «заявок нет» на трёх вкладках значит три разные вещи.
@@ -21,13 +19,16 @@ const EMPTY: Record<RoleTab, string> = {
   rejected: 'Отклонённых заявок нет',
 }
 
-interface Answer {
-  id: string
-  decision: RoleRequestDecision
-}
+const TABS: { id: RoleTab; label: string }[] = [
+  { id: 'pending', label: 'Ждут решения' },
+  { id: 'approved', label: 'Одобренные' },
+  { id: 'rejected', label: 'Отклонённые' },
+]
+
+const SUB =
+  'Одобряет только владелец площадки. Одобренный получает роль и уже потом отправляет витрину на проверку — в соседний раздел.'
 
 export function RoleApplicationsPage() {
-  const client = useQueryClient()
   const [tab, setTab] = useState<RoleTab>('pending')
   const query = useQuery({
     queryKey: ['role-applications', tab],
@@ -37,70 +38,66 @@ export function RoleApplicationsPage() {
   // Роль здесь для показа, а не для запрета: право проверяет сервер. Кнопка у того, кто
   // решать не может, стоила бы человеку нажатия и отказа.
   const mayDecide = canReviewRoleRequests()
-
-  const answer = useMutation({
-    mutationFn: ({ id, decision }: Answer) => answerRoleApplication(id, decision),
-    onSuccess: () => void client.invalidateQueries({ queryKey: ['role-applications'] }),
-  })
+  const answer = useRoleAnswer()
 
   return (
+    <ModerationPage testId="role-applications" title="Заявки в поставщики" sub={SUB}>
+      <PillTabs current={tab} onSelect={setTab} tabs={TABS} />
+      <MutationFailure error={answer.error} onReset={answer.reset} />
+      <QueryStates
+        query={query}
+        isEmpty={applications.length === 0}
+        empty={<EmptyApplications tab={tab} />}
+        skeletonRows={2}
+      />
+      <RoleApplicationList
+        applications={applications}
+        busy={answer.isPending || !mayDecide}
+        onAnswer={answer.submit}
+      />
+    </ModerationPage>
+  )
+}
+
+function EmptyApplications({ tab }: { tab: RoleTab }) {
+  return (
+    <EmptyNotice title={EMPTY[tab]}>Форма заявки открыта в профиле любого вошедшего.</EmptyNotice>
+  )
+}
+
+interface RoleApplicationListProps {
+  applications: RoleApplicationView[]
+  busy: boolean
+  onAnswer: (id: string, decision: RoleRequestDecision) => void
+}
+
+function RoleApplicationList({ applications, busy, onAnswer }: RoleApplicationListProps) {
+  return (
     <>
-      <SiteHeader signedIn />
-      <main data-testid="role-applications">
-        <Container>
-          <ModerationNav />
-          <PageSection>
-            <PageHeading
-              title="Заявки в поставщики"
-              sub="Одобряет только владелец площадки. Одобренный получает роль и уже потом отправляет витрину на проверку — в соседний раздел."
-            />
-            <PillTabs
-              current={tab}
-              onSelect={setTab}
-              tabs={[
-                { id: 'pending', label: 'Ждут решения' },
-                { id: 'approved', label: 'Одобренные' },
-                { id: 'rejected', label: 'Отклонённые' },
-              ]}
-            />
-            {answer.error ? (
-              <FailureNotice
-                message={(answer.error as Error).message}
-                onRetry={() => answer.reset()}
-              />
-            ) : null}
-            {query.isPending ? <ListSkeleton rows={2} /> : null}
-            {!query.isPending && query.error ? (
-              <FailureNotice
-                message={(query.error as Error).message}
-                onRetry={() => void query.refetch()}
-              />
-            ) : null}
-            {!query.isPending && !query.error && applications.length === 0 ? (
-              <EmptyNotice title={EMPTY[tab]}>
-                Форма заявки открыта в профиле любого вошедшего.
-              </EmptyNotice>
-            ) : null}
-            {applications.map((application, index) => (
-              <RoleApplicationCard
-                key={application.id}
-                application={application}
-                first={index === 0}
-                busy={answer.isPending || !mayDecide}
-                onApprove={() =>
-                  answer.mutate({ id: application.id, decision: { status: 'approved' } })
-                }
-                onReject={(reason) =>
-                  answer.mutate({
-                    id: application.id,
-                    decision: { status: 'rejected', review_comment: reason },
-                  })
-                }
-              />
-            ))}
-          </PageSection>
-        </Container>
-      </main>
+      {applications.map((application, index) => (
+        <RoleApplicationCard
+          key={application.id}
+          application={application}
+          first={index === 0}
+          busy={busy}
+          onAnswer={onAnswer}
+        />
+      ))}
     </>
   )
+}
+
+function useRoleAnswer() {
+  const client = useQueryClient()
+  const answer = useMutation({
+    mutationFn: ({ id, decision }: { id: string; decision: RoleRequestDecision }) =>
+      answerRoleApplication(id, decision),
+    onSuccess: () => void client.invalidateQueries({ queryKey: ['role-applications'] }),
+  })
+  const { mutate } = answer
+  const submit = useCallback(
+    (id: string, decision: RoleRequestDecision) => mutate({ id, decision }),
+    [mutate],
+  )
+  return { ...answer, submit }
 }

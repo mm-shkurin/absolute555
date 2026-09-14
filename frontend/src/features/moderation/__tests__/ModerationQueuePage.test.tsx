@@ -23,8 +23,14 @@ const item = (id: string, brand: string) => ({
 let server: FakeServer
 
 function queue(...items: ReturnType<typeof item>[]) {
-  server.on('GET', BACKEND.moderation.queue, { status: 200, body: { items, total: items.length, page: 1, size: 20 } })
-  server.on('GET', BACKEND.moderation.counts, { status: 200, body: { waiting: items.length, complained: 0, handled_today: 0 } })
+  server.on('GET', BACKEND.moderation.queue, {
+    status: 200,
+    body: { items, total: items.length, page: 1, size: 20 },
+  })
+  server.on('GET', BACKEND.moderation.counts, {
+    status: 200,
+    body: { waiting: items.length, complained: 0, handled_today: 0 },
+  })
 }
 
 beforeEach(() => {
@@ -52,17 +58,24 @@ describe('страница очереди модерации', () => {
 
     fireEvent.click((await screen.findAllByTestId('queue-row'))[1])
 
-    expect(within(screen.getByTestId('review-panel')).getByRole('heading').textContent).toBe('Toyota GS · 2012')
+    expect(within(screen.getByTestId('review-panel')).getByRole('heading').textContent).toBe(
+      'Toyota GS · 2012',
+    )
   })
 
   it('Scenario: модератор публикует объявление — запрос уходит по выбранной машине', async () => {
     queue(item('car1', 'Lexus'))
-    server.on('POST', BACKEND.saleCar.approve('car1'), { status: 200, body: { status: 'published' } })
+    server.on('POST', BACKEND.saleCar.approve('car1'), {
+      status: 200,
+      body: { status: 'published' },
+    })
     renderPage(<ModerationQueuePage />)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Опубликовать' }))
 
-    await waitFor(() => expect(server.callsTo('POST', BACKEND.saleCar.approve('car1'))).toHaveLength(1))
+    await waitFor(() =>
+      expect(server.callsTo('POST', BACKEND.saleCar.approve('car1'))).toHaveLength(1),
+    )
   })
 
   it('Scenario: отклонить без причины нельзя — кнопка отправки неактивна до выбора причины', async () => {
@@ -77,7 +90,9 @@ describe('страница очереди модерации', () => {
     fireEvent.click(send)
 
     await waitFor(() =>
-      expect(server.callsTo('POST', BACKEND.saleCar.reject('car1'))[0]?.body).toEqual({ label: 'too_few_photos' }),
+      expect(server.callsTo('POST', BACKEND.saleCar.reject('car1'))[0]?.body).toEqual({
+        label: 'too_few_photos',
+      }),
     )
   })
 
@@ -90,11 +105,16 @@ describe('страница очереди модерации', () => {
 
   it('Scenario: решение не принято сервером — модератор видит причину', async () => {
     queue(item('car1', 'Lexus'))
-    server.on('POST', BACKEND.saleCar.approve('car1'), { status: 409, body: { code: 'X', message: 'уже решено' } })
+    server.on('POST', BACKEND.saleCar.approve('car1'), {
+      status: 409,
+      body: { code: 'X', message: 'уже решено' },
+    })
     renderPage(<ModerationQueuePage />)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Опубликовать' }))
 
-    expect(await screen.findByText('Данные успели измениться. Обновите страницу и попробуйте снова.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Данные успели измениться. Обновите страницу и попробуйте снова.'),
+    ).toBeInTheDocument()
   })
 })

@@ -32,12 +32,18 @@ let server: FakeServer
 beforeEach(() => {
   server = fakeServer()
   signedIn('m1', 'manager')
-  server.on('GET', BACKEND.moderation.counts, { status: 200, body: { waiting: 1, complained: 0, handled_today: 4 } })
+  server.on('GET', BACKEND.moderation.counts, {
+    status: 200,
+    body: { waiting: 1, complained: 0, handled_today: 4 },
+  })
 })
 afterEach(resetServer)
 
 function queueWith(...items: ReturnType<typeof item>[]) {
-  server.on('GET', BACKEND.moderation.queue, { status: 200, body: { items, total: items.length, page: 1, size: 20 } })
+  server.on('GET', BACKEND.moderation.queue, {
+    status: 200,
+    body: { items, total: items.length, page: 1, size: 20 },
+  })
 }
 
 // Feature: Очередь модерации
@@ -49,7 +55,9 @@ describe('очередь модерации на проводе сервера',
     const { items } = await fetchQueue('pending')
     // Then в строке и в карточке проверки карта 13 из 13, а не «не заполнена»
     expect(toQueueRow(items[0]).meta).toContain('карта 13 из 13')
-    expect(toReviewCard(items[0]).facts.find((fact) => fact.label === 'Карта замеров')?.value).toBe('13 из 13')
+    expect(toReviewCard(items[0]).facts.find((fact) => fact.label === 'Карта замеров')?.value).toBe(
+      '13 из 13',
+    )
   })
 
   it('Scenario: объявление без замеров помечено «без карты»', async () => {
@@ -74,11 +82,17 @@ describe('очередь модерации на проводе сервера',
     const queue = await fetchQueue('done')
 
     expect(queue).toMatchObject({ pending: 1, flagged: 0, done_today: 4 })
-    expect(server.calls.find((call) => call.path.startsWith(BACKEND.moderation.queue))?.path).toContain('handled_today')
+    expect(
+      server.calls.find((call) => call.path.startsWith(BACKEND.moderation.queue))?.path,
+    ).toContain('handled_today')
   })
 
   it('Scenario: продавец без закрытых сделок назван новым', async () => {
-    queueWith(item({ seller: { user_id: 'u9', name: 'Олег', avatar_url: null, rating: null, deals_count: 0 } }))
+    queueWith(
+      item({
+        seller: { user_id: 'u9', name: 'Олег', avatar_url: null, rating: null, deals_count: 0 },
+      }),
+    )
 
     const { items } = await fetchQueue('pending')
 

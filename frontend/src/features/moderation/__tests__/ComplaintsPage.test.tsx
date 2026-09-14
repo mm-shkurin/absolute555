@@ -18,14 +18,28 @@ const complaint = (id: string, reason: string, text: string) => ({
 
 const group = {
   sale_car_id: 'car1',
-  listing: { sale_car_id: 'car1', brand: 'Lexus', model: 'GS', year: 2012, price: 1900000, preview_photo_url: null, published_at: '2026-09-01T08:00:00' },
-  complaints: [complaint('c1', 'bait_price', 'Цена вдвое ниже рынка'), complaint('c2', 'sold_already', 'Продана вчера')],
+  listing: {
+    sale_car_id: 'car1',
+    brand: 'Lexus',
+    model: 'GS',
+    year: 2012,
+    price: 1900000,
+    preview_photo_url: null,
+    published_at: '2026-09-01T08:00:00',
+  },
+  complaints: [
+    complaint('c1', 'bait_price', 'Цена вдвое ниже рынка'),
+    complaint('c2', 'sold_already', 'Продана вчера'),
+  ],
 }
 
 let server: FakeServer
 
 function complaints(...items: (typeof group)[]) {
-  server.on('GET', BACKEND.moderation.complaints, { status: 200, body: { items, total: items.length, page: 1, size: 20 } })
+  server.on('GET', BACKEND.moderation.complaints, {
+    status: 200,
+    body: { items, total: items.length, page: 1, size: 20 },
+  })
 }
 
 beforeEach(() => {
@@ -64,7 +78,10 @@ describe('страница жалоб', () => {
 
   it('Scenario: снятие с публикации начинается с выбора причины для продавца', async () => {
     complaints(group)
-    server.on('POST', BACKEND.moderation.unpublish('car1'), { status: 200, body: { status: 'rejected' } })
+    server.on('POST', BACKEND.moderation.unpublish('car1'), {
+      status: 200,
+      body: { status: 'rejected' },
+    })
     renderPage(<ComplaintsPage />)
 
     fireEvent.click(await screen.findByRole('button', { name: 'Снять с публикации' }))
@@ -72,7 +89,9 @@ describe('страница жалоб', () => {
     fireEvent.click(screen.getByText('Цена-приманка'))
 
     await waitFor(() =>
-      expect(server.callsTo('POST', BACKEND.moderation.unpublish('car1'))[0]?.body).toEqual({ label: 'bait_price' }),
+      expect(server.callsTo('POST', BACKEND.moderation.unpublish('car1'))[0]?.body).toEqual({
+        label: 'bait_price',
+      }),
     )
   })
 
@@ -87,6 +106,8 @@ describe('страница жалоб', () => {
     server.on('GET', BACKEND.moderation.complaints, { status: 503, body: {} })
     renderPage(<ComplaintsPage />)
 
-    expect(await screen.findByText('Сервис временно недоступен. Мы уже знаем, попробуйте позже.')).toBeInTheDocument()
+    expect(
+      await screen.findByText('Сервис временно недоступен. Мы уже знаем, попробуйте позже.'),
+    ).toBeInTheDocument()
   })
 })

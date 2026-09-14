@@ -54,7 +54,9 @@ describe('карточка человека', () => {
     fireEvent.click(await screen.findByTestId('access-open'))
     fireEvent.click(screen.getByTestId('access-confirm'))
 
-    expect(screen.getByTestId('access-reason-error').textContent).toBe('Без причины нельзя: её увидит тот, кого это касается.')
+    expect(screen.getByTestId('access-reason-error').textContent).toBe(
+      'Без причины нельзя: её увидит тот, кого это касается.',
+    )
     expect(server.callsTo('POST', BACKEND.admin.blockUser('u5'))).toEqual([])
   })
 
@@ -64,16 +66,23 @@ describe('карточка человека', () => {
     open()
 
     fireEvent.click(await screen.findByTestId('access-open'))
-    fireEvent.change(screen.getByTestId('access-reason'), { target: { value: '  Мошенничество с ценой ' } })
+    fireEvent.change(screen.getByTestId('access-reason'), {
+      target: { value: '  Мошенничество с ценой ' },
+    })
     fireEvent.click(screen.getByTestId('access-confirm'))
 
     await waitFor(() =>
-      expect(server.callsTo('POST', BACKEND.admin.blockUser('u5'))[0]?.body).toEqual({ reason: 'Мошенничество с ценой' }),
+      expect(server.callsTo('POST', BACKEND.admin.blockUser('u5'))[0]?.body).toEqual({
+        reason: 'Мошенничество с ценой',
+      }),
     )
   })
 
   it('Scenario: у закрытого доступа видна причина и кнопка «Вернуть доступ»', async () => {
-    server.on('GET', BACKEND.admin.user('u5'), { status: 200, body: card({ is_blocked: true, blocked_reason: 'Спам' }) })
+    server.on('GET', BACKEND.admin.user('u5'), {
+      status: 200,
+      body: card({ is_blocked: true, blocked_reason: 'Спам' }),
+    })
     open()
 
     expect((await screen.findByTestId('person-blocked')).textContent).toBe('Доступ закрыт: Спам')
@@ -82,7 +91,10 @@ describe('карточка человека', () => {
 
   it('Scenario: сервер отказал в действии — модератор видит, что запись не в его власти', async () => {
     server.on('GET', BACKEND.admin.user('u5'), { status: 200, body: card() })
-    server.on('POST', BACKEND.admin.blockUser('u5'), { status: 403, body: { code: 'ROLE_ABOVE_REVIEWER' } })
+    server.on('POST', BACKEND.admin.blockUser('u5'), {
+      status: 403,
+      body: { code: 'ROLE_ABOVE_REVIEWER' },
+    })
     open('manager')
 
     fireEvent.click(await screen.findByTestId('access-open'))
@@ -96,7 +108,16 @@ describe('карточка человека', () => {
     server.on('GET', BACKEND.admin.user('u5'), { status: 200, body: card() })
     server.on('GET', BACKEND.admin.userAudit('u5'), {
       status: 200,
-      body: [{ id: 'e1', action: 'blocked', actor_name: 'Админ', reason: 'Спам', details: null, created_at: '2026-09-01T10:00:00' }],
+      body: [
+        {
+          id: 'e1',
+          action: 'blocked',
+          actor_name: 'Админ',
+          reason: 'Спам',
+          details: null,
+          created_at: '2026-09-01T10:00:00',
+        },
+      ],
     })
     open()
 
@@ -113,7 +134,10 @@ describe('карточка человека', () => {
   })
 
   it('Scenario: ушедший человек помечен, закрывать нечего', async () => {
-    server.on('GET', BACKEND.admin.user('u5'), { status: 200, body: card({ deleted_at: '2026-09-01T00:00:00' }) })
+    server.on('GET', BACKEND.admin.user('u5'), {
+      status: 200,
+      body: card({ deleted_at: '2026-09-01T00:00:00' }),
+    })
     open()
 
     expect(await screen.findByTestId('person-departed')).toBeInTheDocument()

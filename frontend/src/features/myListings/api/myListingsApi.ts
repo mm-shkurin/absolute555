@@ -5,13 +5,7 @@ import { fetchMyListings as fetchMySaleCars } from '../../../shared/api/backend/
 import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
 import { resumeStep, stepIndex, STEPS } from '../../../shared/domain/wizardSteps'
 
-export type ListingStatus =
-  | 'draft'
-  | 'moderation'
-  | 'published'
-  | 'rejected'
-  | 'withdrawn'
-  | 'sold'
+export type ListingStatus = 'draft' | 'moderation' | 'published' | 'rejected' | 'withdrawn' | 'sold'
 
 export interface MyListingWire {
   id: string

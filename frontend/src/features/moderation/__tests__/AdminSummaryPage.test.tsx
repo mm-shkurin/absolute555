@@ -22,8 +22,14 @@ function tile(label: string) {
 describe('сводка модерации', () => {
   it('Scenario: плитки называют числа сервера и ведут в раздел', async () => {
     // Given 7 объявлений ждут, на 2 жалуются, 5 разобрано, одна заявка на роль
-    server.on('GET', BACKEND.moderation.counts, { status: 200, body: { waiting: 7, complained: 2, handled_today: 5 } })
-    server.on('GET', BACKEND.role.requests, { status: 200, body: [{ id: 'r1', status: 'pending' }] })
+    server.on('GET', BACKEND.moderation.counts, {
+      status: 200,
+      body: { waiting: 7, complained: 2, handled_today: 5 },
+    })
+    server.on('GET', BACKEND.role.requests, {
+      status: 200,
+      body: [{ id: 'r1', status: 'pending' }],
+    })
     // When модератор открывает кабинет
     renderPage(<AdminSummaryPage />)
     // Then каждое число — ссылка в свой раздел

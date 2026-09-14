@@ -7,21 +7,16 @@ import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { ButtonLink } from '../../shared/ui/Button'
 import { ChannelTabs } from '../../shared/ui/ChannelTabs'
-import { PanelNote } from '../../shared/ui/Panel'
-import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
-import { ListingGrid } from '../../shared/domain/listing/ListingCard'
-import { toListingView } from '../../shared/domain/listing/listingView'
+import { QueryStates } from '../../shared/ui/QueryStates'
 import { ROUTES } from '../../shared/navigation/routes'
-import { fetchImportFeed, type ImportKind } from './api/importApi'
-import { importCountLine, toRequestCard, toSupplierCard } from './logic/importView'
-import { SupplierCard } from './components/SupplierCard'
-import { RequestCard } from './components/RequestCard'
+import { fetchImportFeed, type ImportFeedWire, type ImportKind } from './api/importApi'
+import { importCountLine } from './logic/importView'
 import { KindSwitch } from './components/KindSwitch'
+import { ImportFeedContent } from './components/ImportFeedContent'
 import styles from './importFeed.module.css'
 
 export function ImportFeedPage({ signedIn = false }: { signedIn?: boolean }) {
   const [kind, setKind] = useState<ImportKind>('cars')
-  const now = new Date()
   const query = useQuery({
     queryKey: ['import-feed'],
     queryFn: ({ signal }) => fetchImportFeed(signal),
@@ -34,82 +29,29 @@ export function ImportFeedPage({ signedIn = false }: { signedIn?: boolean }) {
       <main data-testid="import-feed">
         <Container>
           <div className={styles.top}>
-            <div className={styles.head}>
-              <ChannelTabs current="import" />
-              <span className={styles.count}>{data ? importCountLine(data) : 'загружаем…'}</span>
-              <span className={styles.spacer} />
-              <ButtonLink to={ROUTES.newImportRequest} size="small">
-                Оставить заявку
-              </ButtonLink>
-            </div>
-
+            <ImportFeedHead data={data} />
             <KindSwitch current={kind} onSelect={setKind} />
-
-            {kind === 'cars' ? (
-              <div className={styles.note}>
-                <PanelNote>
-                  У машин под привоз нет VIN и фото СТС — их ещё нет в стране. Вместо пробега стоит
-                  срок доставки.
-                </PanelNote>
-              </div>
-            ) : null}
-
-            {query.isPending ? <ListSkeleton /> : null}
-            {!query.isPending && query.error ? (
-              <FailureNotice
-                message={(query.error as Error).message}
-                onRetry={() => void query.refetch()}
-              />
-            ) : null}
-
-            {data && kind === 'cars' ? (
-              data.cars.length === 0 ? (
-                <EmptyNotice title="Позиций под привоз пока нет">
-                  Оставьте заявку — поставщики откликнутся сами.
-                </EmptyNotice>
-              ) : (
-                <ListingGrid listings={data.cars.map(toListingView)} />
-              )
-            ) : null}
-
-            {data && kind === 'requests' && data.requests_locked ? (
-              <EmptyNotice title="Лента заявок открыта поставщикам">
-                Здесь покупатели описывают, что нужно привезти, и поставщики отвечают
-                ценой под ключ. Свои заявки видно в профиле, а чужие — тем, кто по ним
-                работает: иначе покупатель видел бы, с кем он в очереди.
-              </EmptyNotice>
-            ) : null}
-
-            {data && kind === 'requests' && !data.requests_locked && data.requests.length === 0 ? (
-              <EmptyNotice title="Заявок пока нет">
-                Покупатели ещё ничего не просили привезти.
-              </EmptyNotice>
-            ) : null}
-
-            {data && kind === 'suppliers' && data.suppliers.length === 0 ? (
-              <EmptyNotice title="Витрин поставщиков пока не видно">
-                Витрина появляется здесь, когда модератор её одобрил. Одобренный
-                поставщик заполняет её в своём профиле и отправляет на проверку.
-              </EmptyNotice>
-            ) : null}
-
-            {data && kind !== 'cars' && !(kind === 'requests' && data.requests_locked) ? (
-              <div className={styles.grid}>
-                {kind === 'suppliers'
-                  ? data.suppliers.map((supplier) => (
-                      <SupplierCard key={supplier.id} supplier={toSupplierCard(supplier)} />
-                    ))
-                  : data.requests.map((request) => (
-                      <RequestCard
-                        key={request.request_id}
-                        request={toRequestCard(request, now)}
-                      />
-                    ))}
-              </div>
-            ) : null}
+            <ImportFeedContent
+              kind={kind}
+              data={data}
+              states={<QueryStates query={query} isEmpty={false} />}
+            />
           </div>
         </Container>
       </main>
     </>
+  )
+}
+
+function ImportFeedHead({ data }: { data: ImportFeedWire | null }) {
+  return (
+    <div className={styles.head}>
+      <ChannelTabs current="import" />
+      <span className={styles.count}>{data ? importCountLine(data) : 'загружаем…'}</span>
+      <span className={styles.spacer} />
+      <ButtonLink to={ROUTES.newImportRequest} size="small">
+        Оставить заявку
+      </ButtonLink>
+    </div>
   )
 }

@@ -1,5 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { approveListing, dismissComplaint, fetchComplaints, rejectListing, unpublishListing } from '../moderationApi'
+import {
+  approveListing,
+  dismissComplaint,
+  fetchComplaints,
+  rejectListing,
+  unpublishListing,
+} from '../moderationApi'
 import { toComplaintCase } from '../../logic/complaintView'
 import { complain } from '../../../../shared/api/backend/moderationApi'
 import { BACKEND } from '../../../../shared/api/backend/paths'
@@ -43,7 +49,10 @@ afterEach(resetServer)
 describe('решения модератора', () => {
   it('Scenario: модератор видит жалобу с причиной словами и текстом покупателя', async () => {
     // Given покупатель пожаловался на цену-приманку
-    server.on('GET', BACKEND.moderation.complaints, { status: 200, body: { items: [group], total: 1, page: 1, size: 20 } })
+    server.on('GET', BACKEND.moderation.complaints, {
+      status: 200,
+      body: { items: [group], total: 1, page: 1, size: 20 },
+    })
     // When модератор открывает жалобы
     const { items, open } = await fetchComplaints()
     const view = toComplaintCase(items[0], new Date(2026, 8, 14, 18, 0))
@@ -59,7 +68,10 @@ describe('решения модератора', () => {
   })
 
   it('Scenario: жалоба необоснованна — модератор её отклоняет, объявление остаётся', async () => {
-    server.on('POST', BACKEND.moderation.dismissComplaint('c1'), { status: 200, body: { ...group.complaints[0], status: 'handled' } })
+    server.on('POST', BACKEND.moderation.dismissComplaint('c1'), {
+      status: 200,
+      body: { ...group.complaints[0], status: 'handled' },
+    })
 
     await dismissComplaint('c1')
 
@@ -67,7 +79,10 @@ describe('решения модератора', () => {
   })
 
   it('Scenario: снять с публикации по жалобе можно только с причиной для продавца', async () => {
-    server.on('POST', BACKEND.moderation.unpublish('car1'), { status: 200, body: { status: 'rejected' } })
+    server.on('POST', BACKEND.moderation.unpublish('car1'), {
+      status: 200,
+      body: { status: 'rejected' },
+    })
 
     await unpublishListing('car1', 'bait_price', '  цена ниже рынка вдвое ')
 
@@ -82,20 +97,30 @@ describe('решения модератора', () => {
 
     await rejectListing('car1', 'too_few_photos', '   ')
 
-    expect(server.callsTo('POST', BACKEND.saleCar.reject('car1'))[0].body).toEqual({ label: 'too_few_photos' })
+    expect(server.callsTo('POST', BACKEND.saleCar.reject('car1'))[0].body).toEqual({
+      label: 'too_few_photos',
+    })
   })
 
   it('Scenario: модератор публикует объявление', async () => {
-    server.on('POST', BACKEND.saleCar.approve('car1'), { status: 200, body: { status: 'published' } })
+    server.on('POST', BACKEND.saleCar.approve('car1'), {
+      status: 200,
+      body: { status: 'published' },
+    })
 
     await expect(approveListing('car1')).resolves.toEqual({ status: 'published' })
   })
 
   it('Scenario: повторная жалоба того же покупателя — отказ сервера текстом', async () => {
-    server.on('POST', BACKEND.moderation.complain('car1'), { status: 409, body: { code: 'DUPLICATE', message: 'Вы уже жаловались' } })
+    server.on('POST', BACKEND.moderation.complain('car1'), {
+      status: 409,
+      body: { code: 'DUPLICATE', message: 'Вы уже жаловались' },
+    })
 
     const failure = await complain('car1', 'other', 'ещё раз').catch((error: unknown) => error)
 
-    expect((failure as Error).message).toBe('Данные успели измениться. Обновите страницу и попробуйте снова.')
+    expect((failure as Error).message).toBe(
+      'Данные успели измениться. Обновите страницу и попробуйте снова.',
+    )
   })
 })

@@ -22,7 +22,6 @@ export interface ComplaintCaseView {
   complaints: ComplaintView[]
 }
 
-
 export function toComplaintCase(wire: ComplaintCaseWire, now: Date): ComplaintCaseView {
   return {
     listingId: wire.listing_id,

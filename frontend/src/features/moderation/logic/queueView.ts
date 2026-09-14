@@ -24,7 +24,6 @@ export interface ReviewCardView {
   facts: { label: string; value: string; mono?: boolean }[]
 }
 
-
 export function toQueueRow(wire: QueueItemWire): QueueRowView {
   return {
     id: wire.id,
@@ -58,7 +57,7 @@ function metaLine(wire: QueueItemWire): string {
       ? `${wire.seller_name} · новый продавец`
       : `${wire.seller_name} · рейтинг ${ratingValue(wire.seller_rating)}`,
   )
-    // Момент отправки бывает пустым: объявление могло попасть на проверку в обход
+  // Момент отправки бывает пустым: объявление могло попасть на проверку в обход
   // мастера. Пустая строка вместо времени — не поломка; поломкой было падение экрана.
   const sentAt = hoursAndMinutes(wire.submitted_at)
   if (sentAt) parts.push(`отправлено ${sentAt}`)

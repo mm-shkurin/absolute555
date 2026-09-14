@@ -52,7 +52,9 @@ describe('страница заявок на роль', () => {
     fireEvent.click(await screen.findByRole('button', { name: 'Одобрить и выдать роль' }))
 
     await waitFor(() =>
-      expect(server.callsTo('PUT', BACKEND.role.answerRequest('r1'))[0]?.body).toEqual({ status: 'approved' }),
+      expect(server.callsTo('PUT', BACKEND.role.answerRequest('r1'))[0]?.body).toEqual({
+        status: 'approved',
+      }),
     )
   })
 
@@ -82,7 +84,9 @@ describe('страница заявок на роль', () => {
     renderPage(<RoleApplicationsPage />)
 
     expect(await screen.findByText('решение принято')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Одобрить и выдать роль', hidden: true })).not.toBeVisible()
+    expect(
+      screen.getByRole('button', { name: 'Одобрить и выдать роль', hidden: true }),
+    ).not.toBeVisible()
   })
 
   it('Scenario: вкладка без заявок называет, чего нет', async () => {
@@ -98,6 +102,8 @@ describe('страница заявок на роль', () => {
 
     fireEvent.click(await screen.findByRole('button', { name: 'Одобренные' }))
 
-    await waitFor(() => expect(server.calls.some((call) => call.path.endsWith('?status=approved'))).toBe(true))
+    await waitFor(() =>
+      expect(server.calls.some((call) => call.path.endsWith('?status=approved'))).toBe(true),
+    )
   })
 })

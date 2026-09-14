@@ -46,7 +46,6 @@ export interface ComplaintCaseWire {
   complaints: ComplaintWire[]
 }
 
-
 import {
   fetchQueue as fetchQueuePage,
   fetchCounts,
@@ -55,10 +54,7 @@ import {
   unpublishListing as unpublishListingCall,
   type QueueTabWire,
 } from '../../../shared/api/backend/moderationApi'
-import {
-  answerRoleRequest,
-  fetchRoleRequests,
-} from '../../../shared/api/backend/accountApi'
+import { answerRoleRequest, fetchRoleRequests } from '../../../shared/api/backend/accountApi'
 import type { RoleRequestDecision } from '../../../shared/api/backend/accountContract'
 import {
   approveListing as approveListingCall,

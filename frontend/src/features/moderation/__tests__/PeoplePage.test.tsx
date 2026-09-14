@@ -60,7 +60,11 @@ describe('страница людей', () => {
     expect(server.calls.length).toBe(before)
     fireEvent.click(screen.getByRole('button', { name: 'Найти' }))
 
-    await waitFor(() => expect(server.calls.some((call) => call.path.includes('query=%D0%90%D0%BD%D0%BD%D0%B0'))).toBe(true))
+    await waitFor(() =>
+      expect(
+        server.calls.some((call) => call.path.includes('query=%D0%90%D0%BD%D0%BD%D0%B0')),
+      ).toBe(true),
+    )
   })
 
   it('Scenario: людей больше страницы — «Дальше» открывает вторую', async () => {
@@ -71,7 +75,9 @@ describe('страница людей', () => {
     fireEvent.click(screen.getByTestId('people-next'))
 
     expect(await screen.findByText('2 из 3')).toBeInTheDocument()
-    await waitFor(() => expect(server.calls.some((call) => call.path.includes('page=2'))).toBe(true))
+    await waitFor(() =>
+      expect(server.calls.some((call) => call.path.includes('page=2'))).toBe(true),
+    )
   })
 
   it('Scenario: никого не нашлось — так и написано', async () => {

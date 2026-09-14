@@ -1,92 +1,79 @@
 // Карточка заявки на роль. Отказ требует текста: заявитель должен понять, что исправить,
 // иначе он подаст ту же заявку заново.
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { Button } from '../../../shared/ui/Button'
 import { Panel } from '../../../shared/ui/Panel'
-import { Avatar } from '../../../shared/ui/Avatar'
-import { StatusBadge } from '../../../shared/ui/StatusBadge'
+import type { RoleRequestDecision } from '../../../shared/api/backend/accountContract'
 import type { RoleApplicationView } from '../logic/roleView'
+import { RoleApplicationSummary } from './RoleApplicationSummary'
 import styles from '../roles.module.css'
 import moderation from '../moderation.module.css'
 
-export function RoleApplicationCard({
-  application,
-  first,
-  busy,
-  onApprove,
-  onReject,
-}: {
+interface RoleApplicationCardProps {
   application: RoleApplicationView
   first?: boolean
   busy?: boolean
-  onApprove: () => void
-  onReject: (reason: string) => void
-}) {
+  onAnswer: (id: string, decision: RoleRequestDecision) => void
+}
+
+export const RoleApplicationCard = memo(function RoleApplicationCard(
+  props: RoleApplicationCardProps,
+) {
+  const { application, busy, onAnswer } = props
   const [rejecting, setRejecting] = useState(false)
   const [reason, setReason] = useState('')
+  const reject = () => onAnswer(application.id, { status: 'rejected', review_comment: reason })
 
   return (
-    <Panel first={first} testId="role-application">
-      <div className={styles.head}>
-        <Avatar size={56} />
-        <div className={styles.headBody}>
-          <div className={styles.name}>{application.name}</div>
-          <div className={styles.meta}>{application.meta}</div>
-        </div>
-        <StatusBadge tone={application.answered ? 'info' : 'wait'}>
-          {application.answered ? 'решение принято' : 'на рассмотрении'}
-        </StatusBadge>
-      </div>
-
-      <div className={styles.terms}>
-        <div>
-          <span>Роль</span>
-          <b>{application.role}</b>
-        </div>
-        <div>
-          <span>Зачем</span>
-          <b>{application.reason}</b>
-        </div>
-      </div>
-
-      {application.about ? (
-        <div className={styles.about}>
-          <div className={moderation.label}>Что добавил от себя</div>
-          <p>{application.about}</p>
-        </div>
-      ) : null}
-
+    <Panel first={props.first} testId="role-application">
+      <RoleApplicationSummary application={application} />
       {/* Разобранную заявку решать нечем: сервер отвечает на второе решение отказом. */}
       <div className={styles.actions} hidden={application.answered}>
-        <Button disabled={busy} onClick={onApprove}>
+        <Button disabled={busy} onClick={() => onAnswer(application.id, { status: 'approved' })}>
           Одобрить и выдать роль
         </Button>
         <Button tone="ghost" disabled={busy} onClick={() => setRejecting((value) => !value)}>
           Отклонить с причиной
         </Button>
       </div>
-
       {rejecting && !application.answered ? (
-        <div className={styles.rejection} data-testid="role-rejection">
-          <textarea
-            className={moderation.reason}
-            value={reason}
-            onChange={(event) => setReason(event.target.value)}
-            placeholder="Причина. Текст увидит заявитель."
-          />
-          <div className={styles.actions}>
-            <Button
-              disabled={busy || reason.trim().length === 0}
-              onClick={() => onReject(reason)}
-            >
-              Отправить отказ
-            </Button>
-            <Button tone="ghost" onClick={() => setRejecting(false)}>
-              Отмена
-            </Button>
-          </div>
-        </div>
+        <RoleRejection
+          reason={reason}
+          busy={busy}
+          onReason={setReason}
+          onSubmit={reject}
+          onCancel={() => setRejecting(false)}
+        />
       ) : null}
     </Panel>
+  )
+})
+
+interface RoleRejectionProps {
+  reason: string
+  busy?: boolean
+  onReason: (reason: string) => void
+  onSubmit: () => void
+  onCancel: () => void
+}
+
+function RoleRejection({ reason, busy, onReason, onSubmit, onCancel }: RoleRejectionProps) {
+  return (
+    <div className={styles.rejection} data-testid="role-rejection">
+      <textarea
+        className={moderation.reason}
+        value={reason}
+        onChange={(event) => onReason(event.target.value)}
+        placeholder="Причина. Текст увидит заявитель."
+      />
+      <div className={styles.actions}>
+        <Button disabled={busy || reason.trim().length === 0} onClick={onSubmit}>
+          Отправить отказ
+        </Button>
+        <Button tone="ghost" onClick={onCancel}>
+          Отмена
+        </Button>
+      </div>
+    </div>
   )
 }

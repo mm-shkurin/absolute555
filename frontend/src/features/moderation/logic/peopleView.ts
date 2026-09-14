@@ -108,5 +108,3 @@ export function toJournalRow(wire: AuditEntryWire): JournalRow {
 export function pageCount(total: number, pageSize: number): number {
   return Math.max(1, Math.ceil(total / Math.max(pageSize, 1)))
 }
-
-

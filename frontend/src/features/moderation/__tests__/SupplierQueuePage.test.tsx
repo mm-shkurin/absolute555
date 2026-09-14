@@ -25,7 +25,10 @@ const profile = (over: Record<string, unknown> = {}) => ({
 let server: FakeServer
 
 function queue(...items: ReturnType<typeof profile>[]) {
-  server.on('GET', BACKEND.moderation.suppliers, { status: 200, body: { items, total: items.length } })
+  server.on('GET', BACKEND.moderation.suppliers, {
+    status: 200,
+    body: { items, total: items.length },
+  })
 }
 
 beforeEach(() => {
@@ -48,7 +51,9 @@ describe('очередь витрин поставщиков', () => {
   })
 
   it('Scenario: правка опубликованной витрины показана поверх прежних полей', async () => {
-    queue(profile({ pending_changes: { company_name: 'Токио Авто Импорт', terms: 'Без предоплаты' } }))
+    queue(
+      profile({ pending_changes: { company_name: 'Токио Авто Импорт', terms: 'Без предоплаты' } }),
+    )
     renderPage(<SupplierQueuePage />)
 
     expect(await screen.findByText('Токио Авто Импорт')).toBeInTheDocument()
@@ -57,22 +62,32 @@ describe('очередь витрин поставщиков', () => {
 
   it('Scenario: публикация витрины уходит на сервер', async () => {
     queue(profile())
-    server.on('POST', BACKEND.moderation.approveSupplier('s1'), { status: 200, body: profile({ status: 'approved' }) })
+    server.on('POST', BACKEND.moderation.approveSupplier('s1'), {
+      status: 200,
+      body: profile({ status: 'approved' }),
+    })
     renderPage(<SupplierQueuePage />)
 
     fireEvent.click(await screen.findByTestId('supplier-approve'))
 
-    await waitFor(() => expect(server.callsTo('POST', BACKEND.moderation.approveSupplier('s1'))).toHaveLength(1))
+    await waitFor(() =>
+      expect(server.callsTo('POST', BACKEND.moderation.approveSupplier('s1'))).toHaveLength(1),
+    )
   })
 
   it('Scenario: отказ витрине только с причиной — причина уходит на сервер', async () => {
     queue(profile())
-    server.on('POST', BACKEND.moderation.rejectSupplier('s1'), { status: 200, body: profile({ status: 'rejected' }) })
+    server.on('POST', BACKEND.moderation.rejectSupplier('s1'), {
+      status: 200,
+      body: profile({ status: 'rejected' }),
+    })
     renderPage(<SupplierQueuePage />)
 
     const reject = await screen.findByTestId('supplier-reject')
     expect(reject).toBeDisabled()
-    fireEvent.change(screen.getByTestId('supplier-reason'), { target: { value: 'Нет условий доставки' } })
+    fireEvent.change(screen.getByTestId('supplier-reason'), {
+      target: { value: 'Нет условий доставки' },
+    })
     fireEvent.click(reject)
 
     await waitFor(() =>
@@ -86,7 +101,9 @@ describe('очередь витрин поставщиков', () => {
     queue(profile({ delivery_days_min: null, delivery_days_max: null, countries: [], brands: [] }))
     renderPage(<SupplierQueuePage />)
 
-    expect(await screen.findByText('страны не указаны · любые марки · срок не указан')).toBeInTheDocument()
+    expect(
+      await screen.findByText('страны не указаны · любые марки · срок не указан'),
+    ).toBeInTheDocument()
   })
 
   it('Scenario: очередь пуста — страница объясняет, где ждут заявки на роль', async () => {

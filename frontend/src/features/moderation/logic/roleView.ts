@@ -16,7 +16,6 @@ export interface RoleApplicationView {
   answered: boolean
 }
 
-
 const ROLE: Record<UserRole, string> = {
   guest: 'гость',
   user: 'пользователь',
