@@ -13,7 +13,8 @@ from loguru import logger
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.features.account.models.role_request import RoleRequest, RoleRequestStatus
+from app.features.account.models.role_request import RoleRequest
+from app.features.account.domain.role_request_status import RoleRequestStatus
 from app.features.account.models.users import Users
 from app.permissions.roles import UserRole
 from app.features.account.schemas.role import RoleRequestCreate, RoleRequestUpdate

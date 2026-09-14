@@ -5,7 +5,8 @@ from sqlalchemy import select, desc
 from datetime import datetime
 
 from app.features.account.models.users import Users
-from app.features.account.models.role_request import RoleRequest, RoleRequestStatus
+from app.features.account.models.role_request import RoleRequest
+from app.features.account.domain.role_request_status import RoleRequestStatus
 from app.permissions.roles import UserRole
 from app.permissions.checker import PermissionChecker
 from app.permissions.permissions import Permission

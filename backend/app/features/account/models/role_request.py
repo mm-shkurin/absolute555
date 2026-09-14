@@ -1,18 +1,11 @@
-from enum import Enum as PyEnum
 
 from sqlalchemy import Column, String, Text, DateTime, ForeignKey, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 import uuid
+from app.features.account.domain.role_request_status import RoleRequestStatus
 
-class RoleRequestStatus(str, PyEnum):
-    """Три исхода заявки. Наследовал sqlalchemy.Enum — значения оказывались строками,
-    и то, что сравнения работали, было случайностью."""
-
-    PENDING = "pending"
-    APPROVED = "approved"
-    REJECTED = "rejected"
 
 class RoleRequest(Base):
     __tablename__ = "role_requests"
