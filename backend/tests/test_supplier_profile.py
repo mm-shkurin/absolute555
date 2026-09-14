@@ -7,10 +7,10 @@
 
 import uuid
 
-import jwt
 import pytest
 
 from tests.conftest import run_sql
+from tests.conftest import user_id_of as _id_of
 
 COMPLETE = {
     "company_name": "Ветер с востока",
@@ -20,12 +20,6 @@ COMPLETE = {
     "delivery_days_max": 60,
     "terms": "Предоплата 30%, растаможка включена",
 }
-
-
-def _id_of(headers) -> str:
-    return jwt.decode(
-        headers["Authorization"].removeprefix("Bearer "), options={"verify_signature": False}
-    )["id"]
 
 
 @pytest.fixture

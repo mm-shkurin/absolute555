@@ -12,13 +12,7 @@ import pytest
 
 from tests.conftest import verify_account as _verify
 from tests.test_listing_lifecycle import COMPLETE, _create
-
-
-def _offer(client, headers, listing_id, price=1000000.0):
-    return client.post(
-        "/api/v1/offer/", headers=headers, json={"sale_car_id": listing_id, "price": price}
-    )
-
+from tests.test_offer_lifecycle import _offer
 
 
 def _settle(client, headers, offer_id, decision):

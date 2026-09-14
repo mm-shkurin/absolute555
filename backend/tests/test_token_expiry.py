@@ -12,6 +12,7 @@ import pytest
 
 from app.core.config import JWTSettings
 from app.features.account.services.session_service import SessionService
+from tests.conftest import user_id_of as _user_id
 
 jwt_settings = JWTSettings()
 
@@ -27,11 +28,6 @@ def _expired_access(user_id: str) -> str:
         jwt_settings.secret_key,
     )
 
-
-def _user_id(headers) -> str:
-    return jwt.decode(
-        headers["Authorization"].removeprefix("Bearer "), options={"verify_signature": False}
-    )["id"]
 
 
 def test_should_refuse_an_expired_access_token(client, signed_in):

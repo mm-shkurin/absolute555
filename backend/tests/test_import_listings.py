@@ -7,10 +7,10 @@
 
 import uuid
 
-import jwt
 import pytest
 
 from tests.conftest import run_sql
+from tests.conftest import user_id_of as _id_of
 from tests.test_listing_lifecycle import COMPLETE
 
 IMPORT_FIELDS = {
@@ -20,12 +20,6 @@ IMPORT_FIELDS = {
     "price": 2300000.0,
     "phone_number": "+79130000000",
 }
-
-
-def _id_of(headers) -> str:
-    return jwt.decode(
-        headers["Authorization"].removeprefix("Bearer "), options={"verify_signature": False}
-    )["id"]
 
 
 @pytest.fixture

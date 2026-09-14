@@ -8,6 +8,7 @@ the label can say what is turned back most often.
 
 import pytest
 
+from tests.helpers import sale_car_ids as _ids
 from tests.test_listing_lifecycle import COMPLETE, _create
 
 PLATE = {"label": "plate_or_face_visible", "comment": "the plate is readable"}
@@ -33,10 +34,6 @@ def _queue(client, moderator, **params):
     response = client.get("/api/v1/moderation/queue", headers=moderator, params=params)
     assert response.status_code == 200, response.text
     return response.json()
-
-
-def _ids(page):
-    return [row["sale_car_id"] for row in page["items"]]
 
 
 def _all_ids(client, moderator, **params):

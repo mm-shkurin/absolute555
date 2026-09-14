@@ -4,11 +4,7 @@
 подменяет цену в чужой витрине, удаление уносит её целиком. Отказ виден только в тесте.
 """
 
-
-def _create(client, headers) -> str:
-    response = client.post("/api/v1/sale_car", headers=headers)
-    assert response.status_code == 201, response.text
-    return response.json()["sale_car_id"]
+from tests.test_listing_lifecycle import _create
 
 
 def test_should_save_a_new_price_on_a_draft(client, seller):

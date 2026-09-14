@@ -8,6 +8,7 @@
 import pytest
 
 from app.tasks.decode_by_vin import _decoded
+from tests.helpers import get_listing as _listing
 from tests.test_listing_lifecycle import COMPLETE, _create
 
 VIN = "XTA21074051234567"
@@ -17,12 +18,6 @@ def _decode(client, headers, listing_id, vin=VIN):
     return client.post(
         f"/api/v1/sale_car/{listing_id}/decode-vin", headers=headers, json={"vin": vin}
     )
-
-
-def _listing(client, headers, listing_id):
-    response = client.get(f"/api/v1/sale_car/{listing_id}", headers=headers)
-    assert response.status_code == 200, response.text
-    return response.json()
 
 
 def test_should_accept_a_typed_vin_and_start_reading_by_it(client, seller):

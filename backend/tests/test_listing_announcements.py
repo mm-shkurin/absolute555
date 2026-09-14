@@ -58,16 +58,14 @@ def test_should_complete_a_status_change_the_channel_did_not_hear(
 def test_should_read_a_listing_without_touching_the_photo_store(
     client, seller, catalogue, attach_photo, monkeypatch
 ):
-    # Photo links are built from configuration, so reading a listing asks the store
-    # nothing. Story 4 asserted the opposite -- a preview that went missing when the
-    # store was unreachable -- because links were signed one at a time back then.
+    # Photo links are built from configuration, so reading a listing asks the store nothing.
     listing_id = _create(client, seller)
     _fill(client, seller, listing_id, *catalogue, attach_photo, count=3)
 
-    async def _unreachable(self, key, expires_in=3600):
+    async def _unreachable(call):
         raise RuntimeError("the photo store is unreachable")
 
-    monkeypatch.setattr(S3Service, "generate_presigned_url", _unreachable)
+    monkeypatch.setattr(S3Service, "_run", staticmethod(_unreachable))
 
     response = client.post(f"/api/v1/sale_car/{listing_id}/submit", headers=seller)
     assert response.status_code == 200, response.text

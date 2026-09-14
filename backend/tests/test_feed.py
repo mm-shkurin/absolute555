@@ -12,6 +12,7 @@ import uuid
 
 import pytest
 
+from tests.helpers import sale_car_ids as _ids
 from tests.test_listing_lifecycle import COMPLETE, _create
 
 
@@ -40,10 +41,6 @@ def _feed(client, **params):
     response = client.get("/api/v1/sale_car/list", params=params)
     assert response.status_code == 200, response.text
     return response.json()
-
-
-def _ids(page):
-    return [card["sale_car_id"] for card in page["items"]]
 
 
 def test_should_answer_with_a_page_and_a_count(client, publish):

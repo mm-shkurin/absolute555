@@ -5,13 +5,8 @@
 видит владелец, имя решившего — только модератор.
 """
 
+from tests.helpers import get_listing as _listing
 from tests.test_listing_lifecycle import COMPLETE, _create
-
-
-def _listing(client, headers, listing_id):
-    response = client.get(f"/api/v1/sale_car/{listing_id}", headers=headers)
-    assert response.status_code == 200, response.text
-    return response.json()
 
 
 def _published(client, seller, catalogue, attach_photo, moderator):

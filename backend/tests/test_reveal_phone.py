@@ -9,16 +9,11 @@
 import uuid
 
 from tests.conftest import run_sql
+from tests.test_listing_lifecycle import _create
 
 PHONE = "+79995553311"
 
 COMPLETE = {"price": 1200000.0, "milleage": 90000.0, "phone_number": PHONE, "year": 2014}
-
-
-def _create(client, headers) -> str:
-    response = client.post("/api/v1/sale_car", headers=headers)
-    assert response.status_code == 201, response.text
-    return response.json()["sale_car_id"]
 
 
 def _publish(client, seller, moderator, catalogue, attach_photo, **fields) -> str:

@@ -7,10 +7,11 @@ refused the moderator's routes, and a moderator is not thereby an administrator.
 
 import uuid
 
-import jwt
 import pytest
 
-from tests.conftest import run_sql
+from tests.conftest import user_id_of as _id_of
+from tests.conftest import verify_account as _leave_the_guest_bench
+from tests.helpers import grant_role as _as
 
 # Читать список людей стало модераторским с истории 21: разбор жалобы должен чем-то
 # заканчиваться, а закрыть доступ, не видя, кому, нельзя. Роли остались администраторскими
@@ -20,25 +21,8 @@ MODERATOR_ROUTES = ["/api/v1/role/stats", "/api/v1/role/users"]
 PRIVILEGED_ROUTES = MODERATOR_ROUTES + [MODERATOR_QUEUE]
 
 
-def _id_of(headers):
-    return jwt.decode(
-        headers["Authorization"].removeprefix("Bearer "), options={"verify_signature": False}
-    )["id"]
-
-
-def _as(headers, role):
-    run_sql("UPDATE users SET role = :role WHERE id = :id", {"role": role, "id": uuid.UUID(_id_of(headers))})
-    return headers
-
-
-def _leave_the_guest_bench(headers):
-    """Гостевой вход даёт настоящую строку пользователя с флагом гостя.
-
-    С истории 13 заявку на роль подаёт только не-гость, а тесты входят гостевым
-    маршрутом — единственным, у которого нет провайдера.
-    """
-    run_sql("UPDATE users SET is_guest = false WHERE id = :id", {"id": uuid.UUID(_id_of(headers))})
-    return headers
+# _leave_the_guest_bench: с истории 13 заявку на роль подаёт только не-гость, а тесты
+# входят гостевым маршрутом — единственным, у которого нет провайдера.
 
 
 @pytest.fixture

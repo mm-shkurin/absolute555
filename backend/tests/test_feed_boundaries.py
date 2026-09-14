@@ -8,6 +8,7 @@ import pytest
 from sqlalchemy import text
 
 from tests.conftest import test_session
+from tests.test_feed import _feed
 from tests.test_listing_lifecycle import COMPLETE, _create
 
 pytestmark = pytest.mark.asyncio
@@ -19,12 +20,6 @@ INDEXED = [
     "ix_sale_cars_feed_mileage",
     "ix_sale_cars_feed_published",
 ]
-
-
-def _feed(client, **params):
-    response = client.get("/api/v1/sale_car/list", params=params)
-    assert response.status_code == 200, response.text
-    return response.json()
 
 
 def test_should_never_carry_a_phone_number_in_the_feed(client, seller, moderator, catalogue, attach_photo):

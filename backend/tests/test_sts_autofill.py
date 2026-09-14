@@ -10,6 +10,7 @@ import pytest
 
 from app.tasks.decode_vin import failed_at
 from tests.conftest import make_image
+from tests.helpers import get_listing as _listing
 from tests.test_listing_lifecycle import COMPLETE, _create
 
 
@@ -20,12 +21,6 @@ def _attach(client, headers, listing_id, body=None, mime="image/jpeg"):
         headers=headers,
         files={"file": ("sts.jpg", payload, mime)},
     )
-
-
-def _listing(client, headers, listing_id):
-    response = client.get(f"/api/v1/sale_car/{listing_id}", headers=headers)
-    assert response.status_code == 200, response.text
-    return response.json()
 
 
 def test_should_accept_a_scan_onto_a_draft_and_start_reading_it(client, seller):
