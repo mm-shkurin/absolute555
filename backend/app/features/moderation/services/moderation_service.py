@@ -74,32 +74,9 @@ class ModerationService:
     @staticmethod
     def _tab(tab: str, moderator_id: str) -> Select:
         if tab == COMPLAINED:
-            # Published listings somebody objected to. Complaints about listings already
-            # taken down are settled by that decision, so they are not here.
-            complained_about = (
-                select(Complaint.sale_car_id)
-                .where(Complaint.status == ComplaintStatus.OPEN.value)
-                .subquery()
-            )
-            return (
-                select(SaleCars)
-                .where(
-                    SaleCars.status == SaleCarStatus.PUBLISHED,
-                    SaleCars.sale_car_id.in_(select(complained_about.c.sale_car_id)),
-                )
-                .order_by(SaleCars.published_at.asc().nullsfirst(), SaleCars.sale_car_id.asc())
-            )
-
+            return ModerationService._complained()
         if tab == HANDLED_TODAY:
-            # This moderator's own decisions since midnight: the tab tells them what they
-            # have done today, not what the team has.
-            since = datetime.combine(datetime.utcnow().date(), time.min)
-            return (
-                select(SaleCars)
-                .where(SaleCars.moderated_at >= since, SaleCars.moderated_by == moderator_id)
-                .order_by(SaleCars.moderated_at.desc(), SaleCars.sale_car_id.asc())
-            )
-
+            return ModerationService._handled_today(moderator_id)
         return (
             select(SaleCars)
             .where(SaleCars.status == SaleCarStatus.MODERATION)
@@ -108,4 +85,33 @@ class ModerationService:
                 SaleCars.created_at.asc(),
                 SaleCars.sale_car_id.asc(),
             )
+        )
+
+    @staticmethod
+    def _complained() -> Select:
+        # Published listings somebody objected to. Complaints about listings already
+        # taken down are settled by that decision, so they are not here.
+        complained_about = (
+            select(Complaint.sale_car_id)
+            .where(Complaint.status == ComplaintStatus.OPEN.value)
+            .subquery()
+        )
+        return (
+            select(SaleCars)
+            .where(
+                SaleCars.status == SaleCarStatus.PUBLISHED,
+                SaleCars.sale_car_id.in_(select(complained_about.c.sale_car_id)),
+            )
+            .order_by(SaleCars.published_at.asc().nullsfirst(), SaleCars.sale_car_id.asc())
+        )
+
+    @staticmethod
+    def _handled_today(moderator_id: str) -> Select:
+        # This moderator's own decisions since midnight: the tab tells them what they
+        # have done today, not what the team has.
+        since = datetime.combine(datetime.utcnow().date(), time.min)
+        return (
+            select(SaleCars)
+            .where(SaleCars.moderated_at >= since, SaleCars.moderated_by == moderator_id)
+            .order_by(SaleCars.moderated_at.desc(), SaleCars.sale_car_id.asc())
         )

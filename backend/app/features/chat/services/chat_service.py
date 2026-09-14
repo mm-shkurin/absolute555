@@ -15,7 +15,6 @@ from typing import List
 
 from sqlalchemy import or_, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from app.features.account.models.users import Users
 from app.features.chat.models.chat import Dialog, Message, MessageKind
@@ -23,7 +22,7 @@ from app.features.importing.models.request import BuyerRequest
 from app.features.importing.models.supplier import SupplierProfile
 from app.features.listing.models.sale_car import SaleCars
 from app.features.chat.services.chat_errors import DialogNotFound, EmptyMessage
-from app.features.chat.services.chat_reader import unread_for
+from app.features.chat.services.chat_reader import WITH_LISTING_AND_PEOPLE, unread_for
 
 
 class ChatService:
@@ -90,15 +89,7 @@ class ChatService:
         # пятисоткой — то есть выглядит как поломка сервиса, а не как ответ.
         if not await self.db.scalar(select(Users.id).where(Users.id == other)):
             raise DialogNotFound(str(other_id))
-        found = await self.db.execute(
-            select(Dialog).where(
-                Dialog.buyer_id == asker,
-                Dialog.seller_id == other,
-                Dialog.sale_car_id.is_(None),
-                Dialog.request_id.is_(None),
-            )
-        )
-        dialog = found.scalar_one_or_none()
+        dialog = await self._direct_between(asker, other)
         if dialog is None:
             dialog = Dialog(buyer_id=asker, seller_id=other)
             self.db.add(dialog)
@@ -109,6 +100,17 @@ class ChatService:
             await self.db.commit()
             await self.db.refresh(dialog)
         return dialog
+
+    async def _direct_between(self, asker: uuid.UUID, other: uuid.UUID) -> Dialog | None:
+        found = await self.db.execute(
+            select(Dialog).where(
+                Dialog.buyer_id == asker,
+                Dialog.seller_id == other,
+                Dialog.sale_car_id.is_(None),
+                Dialog.request_id.is_(None),
+            )
+        )
+        return found.scalar_one_or_none()
 
     async def _direct_opening(self, supplier_id) -> str:
         name = await self.db.scalar(
@@ -142,14 +144,7 @@ class ChatService:
         person = uuid.UUID(str(user_id))
         found = await self.db.execute(
             select(Dialog)
-            .options(
-                selectinload(Dialog.listing).selectinload(SaleCars.brand),
-                selectinload(Dialog.listing).selectinload(SaleCars.model),
-                selectinload(Dialog.request).selectinload(BuyerRequest.brand),
-                selectinload(Dialog.request).selectinload(BuyerRequest.model),
-                selectinload(Dialog.buyer),
-                selectinload(Dialog.seller),
-            )
+            .options(*WITH_LISTING_AND_PEOPLE)
             .where(
                 Dialog.dialog_id == key,
                 or_(Dialog.buyer_id == person, Dialog.seller_id == person),

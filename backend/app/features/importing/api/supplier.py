@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, File, Query, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import PayloadTooLarge, ValidationError
+from app.core.exceptions import ValidationError
 from app.db.database import get_db
 from app.features.importing.schemas.supplier import (
     SupplierOwnProfileResponse,
@@ -16,7 +16,7 @@ from app.features.importing.schemas.supplier import (
 from app.features.importing.services.supplier_errors import SupplierError
 from app.features.importing.services.supplier_cover import SupplierCoverService
 from app.features.importing.services.supplier_service import SupplierProfileService
-from app.features.listing.services.photo_errors import NotAnImage, PhotoTooLarge
+from app.features.listing.api.photo_http import image_upload
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 
@@ -62,18 +62,10 @@ async def upload_cover(
     db: AsyncSession = Depends(get_db),
     importer=Depends(IMPORTER),
 ):
-    try:
+    with image_upload("cover"):
         return await SupplierCoverService(db).set(
             str(importer.id), await file.read(), file.content_type or "image/jpeg"
         )
-    except PhotoTooLarge as error:
-        raise PayloadTooLarge(
-            str(error),
-            code="PHOTO_TOO_LARGE",
-            details={"limit_bytes": error.limit, "size_bytes": error.size},
-        )
-    except NotAnImage as error:
-        raise ValidationError(str(error), code="NOT_AN_IMAGE", details={"filename": "cover"})
 
 
 @supplier_router.delete("/me/cover", response_model=SupplierOwnProfileResponse)

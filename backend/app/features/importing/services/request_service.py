@@ -100,16 +100,7 @@ class BuyerRequestService:
         if request.status != RequestStatus.OPEN.value:
             raise RequestClosed(request_id)
 
-        held = await self._response_of(request_id, supplier_id)
-        if held is None:
-            held = SupplierResponse(
-                request_id=request.request_id, supplier_id=uuid.UUID(supplier_id), **fields
-            )
-            self.db.add(held)
-        else:
-            for name, value in fields.items():
-                setattr(held, name, value)
-
+        held = await self._write_response(request, request_id, supplier_id, fields)
         chat = ChatService(self.db)
         dialog = await chat.open_for_request(request, supplier_id)
         said = await chat.say(
@@ -120,6 +111,20 @@ class BuyerRequestService:
         await self.db.refresh(dialog)
         await self.db.refresh(said)
         return held, dialog, said
+
+    async def _write_response(
+        self, request: BuyerRequest, request_id: str, supplier_id: str, fields: dict
+    ) -> SupplierResponse:
+        held = await self._response_of(request_id, supplier_id)
+        if held is None:
+            held = SupplierResponse(
+                request_id=request.request_id, supplier_id=uuid.UUID(supplier_id), **fields
+            )
+            self.db.add(held)
+        else:
+            for name, value in fields.items():
+                setattr(held, name, value)
+        return held
 
     async def responses_for(self, reader_id: str, request_id: str) -> List[SupplierResponse]:
         """Автору заявки — все отклики, поставщику — только свой."""

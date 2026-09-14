@@ -73,7 +73,9 @@ class ComplaintService:
         wanted = [row[0] for row in page_of]
         if not wanted:
             return [], total
+        return await self._under_listings(wanted, status), total
 
+    async def _under_listings(self, wanted: list, status: str) -> list:
         found = await self.db.execute(
             select(Complaint)
             .options(
@@ -89,7 +91,7 @@ class ComplaintService:
         by_listing: dict = {listing_id: [] for listing_id in wanted}
         for complaint in found.scalars():
             by_listing[complaint.sale_car_id].append(complaint)
-        return [(listing_id, by_listing[listing_id]) for listing_id in wanted], total
+        return [(listing_id, by_listing[listing_id]) for listing_id in wanted]
 
     async def dismiss(self, complaint_id: str, moderator_id: str) -> Complaint:
         complaint = await self.get(complaint_id)

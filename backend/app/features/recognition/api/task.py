@@ -11,12 +11,9 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.features.listing.services.listing_errors import ListingError
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
+from app.features.listing.api.listing_http import owned_listing
 from app.sse.listing_stream import listing_events
 from app.utils.security import get_current_user
-
-from app.features.listing.api.listing_http import listing_of, to_http
 
 task_router = APIRouter()
 
@@ -33,10 +30,7 @@ async def sse_endpoint(
     what a private document was read as, and a listing identifier is in every URL its
     owner has ever shared.
     """
-    try:
-        await listing_of(ListingLifecycleService(db), sale_car_id, current_user)
-    except ListingError as error:
-        raise to_http(error)
+    await owned_listing(db, sale_car_id, current_user)
 
     return StreamingResponse(
         listing_events(sale_car_id),

@@ -1,29 +1,17 @@
 import json
-import redis
 import asyncio
 from typing import Optional, Dict, Any
 from loguru import logger
 from app.core.config import RedisSettings
+from app.shared.redis_client import make_redis_client
 
 redis_settings = RedisSettings()
 
 class CacheService:
     
     def __init__(self):
-        redis_params = {
-            'host': redis_settings.redis_network_name,
-            'port': redis_settings.redis_port,
-            'decode_responses': True
-        }
-        
-        if redis_settings.redis_user and redis_settings.redis_user_password:
-            redis_params['username'] = redis_settings.redis_user
-            redis_params['password'] = redis_settings.redis_user_password
-        elif redis_settings.redis_password:
-            redis_params['password'] = redis_settings.redis_password
-        
         try:
-            self.redis_client = redis.Redis(**redis_params)
+            self.redis_client = make_redis_client(redis_settings)
             self.redis_client.ping()
         except Exception as e:
             logger.error(f"Failed to connect to Redis for caching: {e}")

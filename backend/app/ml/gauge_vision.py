@@ -9,13 +9,10 @@ Tesseract на семисегментных цифрах прибора ошиб
 import re
 from typing import Optional
 
-import requests
 from loguru import logger
 
 from app.core.config_ml import GigaChatSettings
-from app.ml.sts_vision import access_token
-
-MODEL = "GigaChat-2-Max"
+from app.ml.sts_vision import access_token, ask_about_file, upload_image
 
 PROMPT = """На фотографии — экран толщиномера лакокрасочного покрытия автомобиля.
 
@@ -45,33 +42,12 @@ class GaugeVisionUnavailable(Exception):
 
 
 def _upload(api: str, access: str, body: bytes, timeout: int, verify) -> str:
-    answer = requests.post(
-        f"{api}/files",
-        headers={"Authorization": f"Bearer {access}"},
-        files={"file": ("gauge.jpg", body, "image/jpeg")},
-        data={"purpose": "general"},
-        verify=verify,
-        timeout=timeout,
-    )
-    answer.raise_for_status()
-    return answer.json()["id"]
+    return upload_image(api, access, body, timeout, verify, "gauge.jpg")
 
 
 def _ask(api: str, access: str, file_id: str, timeout: int, verify) -> str:
-    answer = requests.post(
-        f"{api}/chat/completions",
-        headers={"Authorization": f"Bearer {access}", "Content-Type": "application/json"},
-        json={
-            "model": MODEL,
-            # Ноль, потому что число читается, а не сочиняется.
-            "temperature": 0,
-            "messages": [{"role": "user", "content": PROMPT, "attachments": [file_id]}],
-        },
-        verify=verify,
-        timeout=timeout,
-    )
-    answer.raise_for_status()
-    return answer.json()["choices"][0]["message"]["content"]
+    # Ноль, потому что число читается, а не сочиняется.
+    return ask_about_file(api, access, file_id, timeout, verify, PROMPT, 0)
 
 
 def parse_reading(content: str) -> Optional[int]:

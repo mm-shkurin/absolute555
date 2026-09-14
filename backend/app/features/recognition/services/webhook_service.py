@@ -80,9 +80,7 @@ class WebhookService:
         if not webhook_settings.tg_webhook_url:
             logger.warning("Telegram webhook URL not configured")
             return
-        
-        webhook_url = str(webhook_settings.tg_webhook_url)
-        
+
         payload = {
             "event": "sale_car_status_changed",
             "sale_car_id": sale_car_id,
@@ -90,18 +88,24 @@ class WebhookService:
             "new_status": new_status,
             "timestamp": datetime.now().isoformat()
         }
-        
         if sale_car_data:
             payload["data"] = sale_car_data
 
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(
-                    webhook_url,
-                    json=payload,
-                    headers={"X-Webhook-Secret": webhook_settings.webhook_secret}
-                )
-                response.raise_for_status()
-                logger.info(f"Status change webhook sent successfully for sale_car_id={sale_car_id}: {old_status} -> {new_status}")
+            await _post(payload)
+            logger.info(
+                f"Status change webhook sent successfully for sale_car_id={sale_car_id}: "
+                f"{old_status} -> {new_status}"
+            )
         except Exception as e:
             logger.error(f"Failed to send status change webhook for sale_car_id={sale_car_id}: {e}")
+
+
+async def _post(payload: dict) -> None:
+    async with httpx.AsyncClient(timeout=10.0) as client:
+        response = await client.post(
+            str(webhook_settings.tg_webhook_url),
+            json=payload,
+            headers={"X-Webhook-Secret": webhook_settings.webhook_secret}
+        )
+        response.raise_for_status()

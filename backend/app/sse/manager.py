@@ -1,30 +1,15 @@
 import asyncio
 import json
-import redis
 from typing import Dict, List, Any
 from loguru import logger
-from app.core.config import RedisSettings
+from app.shared.redis_client import make_redis_client
 
 class SSEManager:
 
     def __init__(self):
         self.active_connections: Dict[str,List[asyncio.Queue]] = {}
         
-        redis_settings = RedisSettings()
-        
-        redis_params = {
-            'host': redis_settings.redis_network_name,
-            'port': redis_settings.redis_port,
-            'decode_responses': True
-        }
-        
-        if redis_settings.redis_user and redis_settings.redis_user_password:
-            redis_params['username'] = redis_settings.redis_user
-            redis_params['password'] = redis_settings.redis_user_password
-        elif redis_settings.redis_password:
-            redis_params['password'] = redis_settings.redis_password
-        
-        self.redis_client = redis.Redis(**redis_params)
+        self.redis_client = make_redis_client()
         
         self.pubsub = self.redis_client.pubsub()
         logger.info("SSE Manager initialized with Redis support")

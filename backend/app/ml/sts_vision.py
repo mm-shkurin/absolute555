@@ -76,11 +76,11 @@ def access_token(settings: GigaChatSettings) -> str:
     return answer.json()["access_token"]
 
 
-def _upload(api: str, access: str, body: bytes, timeout: int, verify) -> str:
+def upload_image(api: str, access: str, body: bytes, timeout: int, verify, name: str) -> str:
     answer = requests.post(
         f"{api}/files",
         headers={"Authorization": f"Bearer {access}"},
-        files={"file": ("sts.jpg", body, "image/jpeg")},
+        files={"file": (name, body, "image/jpeg")},
         data={"purpose": "general"},
         verify=verify,
         timeout=timeout,
@@ -89,21 +89,31 @@ def _upload(api: str, access: str, body: bytes, timeout: int, verify) -> str:
     return answer.json()["id"]
 
 
-def _ask(api: str, access: str, file_id: str, timeout: int, verify) -> str:
+def ask_about_file(
+    api: str, access: str, file_id: str, timeout: int, verify, prompt: str, temperature: float
+) -> str:
     answer = requests.post(
         f"{api}/chat/completions",
         headers={"Authorization": f"Bearer {access}", "Content-Type": "application/json"},
         json={
             "model": MODEL,
-            # Низкая температура, потому что документ читается, а не сочиняется.
-            "temperature": 0.1,
-            "messages": [{"role": "user", "content": PROMPT, "attachments": [file_id]}],
+            "temperature": temperature,
+            "messages": [{"role": "user", "content": prompt, "attachments": [file_id]}],
         },
         verify=verify,
         timeout=timeout,
     )
     answer.raise_for_status()
     return answer.json()["choices"][0]["message"]["content"]
+
+
+def _upload(api: str, access: str, body: bytes, timeout: int, verify) -> str:
+    return upload_image(api, access, body, timeout, verify, "sts.jpg")
+
+
+def _ask(api: str, access: str, file_id: str, timeout: int, verify) -> str:
+    # Низкая температура, потому что документ читается, а не сочиняется.
+    return ask_about_file(api, access, file_id, timeout, verify, PROMPT, 0.1)
 
 
 def valid_vin(value: Optional[str]) -> bool:

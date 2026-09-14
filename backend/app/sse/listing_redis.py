@@ -3,10 +3,9 @@
 import asyncio
 import json
 
-import redis
 from loguru import logger
 
-from app.core.config import RedisSettings
+from app.shared.redis_client import make_redis_client
 
 
 def get_redis_message(pubsub, timeout=0.1):
@@ -23,18 +22,7 @@ def _channel_name(value) -> str:
 
 
 def open_pubsub():
-    settings = RedisSettings()
-    params = {
-        "host": settings.redis_network_name,
-        "port": settings.redis_port,
-        "decode_responses": True,
-    }
-    if settings.redis_user and settings.redis_user_password:
-        params["username"] = settings.redis_user
-        params["password"] = settings.redis_user_password
-    elif settings.redis_password:
-        params["password"] = settings.redis_password
-    return redis.Redis(**params).pubsub(ignore_subscribe_messages=False)
+    return make_redis_client().pubsub(ignore_subscribe_messages=False)
 
 
 async def subscribe(pubsub, sale_car_id: str) -> None:

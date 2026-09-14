@@ -34,18 +34,7 @@ class OfferService(OfferListingReader):
 
         if str(car.user_id) == user_id:
             raise OfferOnOwnCar()
-
-        existing = await self.db.execute(
-            select(Offer).where(
-                and_(
-                    Offer.sale_car_id == car.sale_car_id,
-                    Offer.user_id == uuid.UUID(user_id),
-                    Offer.status == OfferStatus.PENDING
-                )
-            )
-        )
-        if existing.scalar_one_or_none():
-            raise DuplicatePendingOffer()
+        await self._refuse_second_pending(car, user_id)
 
         offer = Offer(
             user_id=uuid.UUID(user_id),
@@ -63,6 +52,19 @@ class OfferService(OfferListingReader):
         await self.db.commit()
         await self.db.refresh(offer)
         return offer
+
+    async def _refuse_second_pending(self, car: SaleCars, user_id: str) -> None:
+        existing = await self.db.execute(
+            select(Offer).where(
+                and_(
+                    Offer.sale_car_id == car.sale_car_id,
+                    Offer.user_id == uuid.UUID(user_id),
+                    Offer.status == OfferStatus.PENDING
+                )
+            )
+        )
+        if existing.scalar_one_or_none():
+            raise DuplicatePendingOffer()
 
     async def get_offer_by_id(self, offer_id: str) -> Offer | None:
         try:

@@ -5,13 +5,12 @@ same car must land in the same conversation, and two rows would split one negoti
 into two screens with half the history each.
 """
 
-import uuid
 from enum import Enum as PyEnum
 
-from sqlalchemy import Column, DateTime, ForeignKey, String, Text, UniqueConstraint, func
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, DateTime, String, Text, UniqueConstraint, func
 from sqlalchemy.orm import relationship
 
+from app.db.columns import uuid_key, uuid_ref
 from app.db.database import Base
 
 
@@ -27,28 +26,18 @@ class Dialog(Base):
         UniqueConstraint("request_id", "seller_id", name="dialogs_one_per_request_and_supplier"),
     )
 
-    dialog_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    dialog_id = uuid_key()
     # One of the two is set. A dialogue hangs either off a listing (an offer on a car)
     # or off a buyer's request (a supplier answering demand); a request has no car, so
     # filling the listing with anything would be inventing one.
-    sale_car_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("sale_cars.sale_car_id", ondelete="CASCADE"),
-        nullable=True,
-        index=True,
-    )
-    request_id = Column(
-        UUID(as_uuid=True),
-        ForeignKey("buyer_requests.request_id", ondelete="CASCADE"),
-        nullable=True,
-        index=True,
-    )
-    buyer_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    sale_car_id = uuid_ref("sale_cars.sale_car_id", "CASCADE", nullable=True, index=True)
+    request_id = uuid_ref("buyer_requests.request_id", "CASCADE", nullable=True, index=True)
+    buyer_id = uuid_ref("users.id", "CASCADE", nullable=False, index=True)
 
     # Denormalised from the listing so that "my dialogues" is one query rather than a
     # join per row -- and so that a listing changing hands would not silently move the
     # conversation to somebody who never had it.
-    seller_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="CASCADE"), nullable=False, index=True)
+    seller_id = uuid_ref("users.id", "CASCADE", nullable=False, index=True)
 
     # Moved by every message, so the list can be ordered by what was last said without
     # reading the messages themselves.
@@ -65,14 +54,12 @@ class Dialog(Base):
 class Message(Base):
     __tablename__ = "messages"
 
-    message_id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-    dialog_id = Column(
-        UUID(as_uuid=True), ForeignKey("dialogs.dialog_id", ondelete="CASCADE"), nullable=False, index=True
-    )
+    message_id = uuid_key()
+    dialog_id = uuid_ref("dialogs.dialog_id", "CASCADE", nullable=False, index=True)
 
     # Null for a system line: nobody wrote it, the server did. A client that could set
     # this could sign "the offer was accepted" as the seller.
-    author_id = Column(UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True)
+    author_id = uuid_ref("users.id", "SET NULL", nullable=True)
     kind = Column(String, default=MessageKind.TEXT.value, nullable=False)
     text = Column(Text, nullable=False)
 
