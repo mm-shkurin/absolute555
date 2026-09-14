@@ -32,6 +32,12 @@
   `auth/services/access_service.py`); сервисы получают соседей через конструктор; виды
   переехали из `shared/` в `api/` своих фич; модули сервисов названы `<noun>_service.py`;
   перечисления и таблицы правил лежат в слое `domain/` фичи.
+- **Деплой:** сессии документации (`/docs`, `/redoc`) хранятся в Redis и живут
+  `DOCS_SESSION_TTL_SECONDS` (по умолчанию 3600); cookie — `secure`, `samesite=strict`, так
+  что Swagger открывается только по HTTPS или на localhost. Новые необязательные настройки
+  `MESSAGES_PAGE_SIZE` (50), `MESSAGES_PAGE_MAX` (100), `OWN_REQUESTS_LIMIT` (100).
+- Удаление объявления сначала удаляет строку, затем фото и документ из хранилища.
+- Ошибки Redis, S3, базы, GigaChat и OCR ловятся по типам; ruff проверяет `BLE`, `B`, `W`.
 - CI требует покрытия изменённых строк (`diff-cover --fail-under=60` против `dev`), а не
   порога по всему репозиторию; tesseract ставится в прогон.
 
