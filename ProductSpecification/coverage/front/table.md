@@ -1,6 +1,6 @@
 # Цикл покрытия — frontend
 
-Цель: 50% lines · старт 23.8% · сейчас 41.9% · итераций 4
+Цель: 50% lines · старт 23.8% · сейчас 46.5% · итераций 5
 
 ## Прогноз (2026-09-14)
 
@@ -22,10 +22,11 @@
 | 2 | shared/session + транспорт | 15 | 0 | +46 | 31.8% | см. log #2 |
 | 3 | moderation (провод) | 12 | 1 | +33 | 33.1% | см. log #3 |
 | 4 | moderation (страницы) | 38 | 0 | +232 | 41.9% | см. log #4 |
+| 5 | listing (страница) | 12 | 0 | +123 | 46.5% | см. log #5 |
 
-Типы сейчас: logic 91.2% · hooks 35.9% · api 59.9% · tsx 21.6% · other 77.5%
+Типы сейчас: logic 92.5% · hooks 43.7% · api 62.8% · tsx 29.3% · other 80.3%
 
-До цели ~+215 строк. Рендер страницы с подменным сервером — самый дешёвый рост: одна страница даёт 25–40 строк вместе с компонентами и клиентом.
+До цели ~+92 строки.
 
-Очередь: listing 152 · selling 137 (tsx) · shared/api 128 · profile 82 · importRequest 81 · feed 76 · thickness 65 · chats 61 · supplierProfile 60 · landing 51
+Очередь: selling 137 (tsx) · shared/api 120 · profile 82 · importRequest 81 · feed 76 · thickness 65 · chats 61 · supplierProfile 60 · listing 57 · landing 51
 Отложено: moderation/queueView — подпись VIN «нет — машина под заказ» у машины в наличии (сервер VIN не отдаёт; решение продукта), log #3
