@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { toPersonRow } from '../logic/peopleView'
@@ -19,7 +20,7 @@ export function PeopleList({ rows }: PeopleListProps) {
   )
 }
 
-function PersonRow({ row }: { row: PersonRowView }) {
+const PersonRow = memo(function PersonRow({ row }: { row: PersonRowView }) {
   return (
     <li className={styles.row}>
       <Link to={ROUTES.adminPerson(row.id)} className={styles.name}>
@@ -40,4 +41,4 @@ function PersonRow({ row }: { row: PersonRowView }) {
       ) : null}
     </li>
   )
-}
+})

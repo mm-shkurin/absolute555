@@ -4,7 +4,7 @@ import {
   REJECTION_REASONS,
   complaintReasonText,
   rejectionLabelText,
-} from '../moderationReasons'
+} from '../moderationReasonLabels'
 
 describe('причины отклонения и жалобы', () => {
   it('отдаёт коды контракта, а не подписи с экрана', () => {

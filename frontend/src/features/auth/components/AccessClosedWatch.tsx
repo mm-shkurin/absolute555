@@ -5,8 +5,8 @@
 // хватает прав» — текстом, по которому не понять ни что случилось, ни что делать.
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { onAccessClosed } from '../../shared/session/accessClosed'
-import { ROUTES } from '../../shared/navigation/routes'
+import { onAccessClosed } from '../../../shared/session/accessClosed'
+import { ROUTES } from '../../../shared/navigation/routes'
 
 export function AccessClosedWatch() {
   const navigate = useNavigate()

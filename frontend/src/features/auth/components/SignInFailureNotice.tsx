@@ -1,7 +1,7 @@
-import { BigNotice } from '../../shared/ui/BigNotice'
-import { Button, ButtonLink } from '../../shared/ui/Button'
-import { ROUTES } from '../../shared/navigation/routes'
-import { beginSignIn } from '../../shared/session/signIn'
+import { BigNotice } from '../../../shared/ui/BigNotice'
+import { Button, ButtonLink } from '../../../shared/ui/Button'
+import { ROUTES } from '../../../shared/navigation/routes'
+import { beginSignIn } from '../../../shared/session/signIn'
 
 interface SignInFailureNoticeProps {
   failure: string

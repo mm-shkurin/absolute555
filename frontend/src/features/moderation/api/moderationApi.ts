@@ -65,7 +65,7 @@ import type {
   QueueItemWire as WireQueueItem,
   RejectionLabel,
 } from '../../../shared/api/backend/moderationContract'
-import { complaintReasonText } from '../../../shared/domain/moderationReasons'
+import { complaintReasonText } from '../../../shared/domain/moderationReasonLabels'
 
 // Вкладки экрана и вкладки сервера названы по-разному: экран говорит о работе модератора,
 // сервер — о состоянии объявления. Перевод здесь, чтобы имя с провода не расползлось.

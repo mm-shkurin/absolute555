@@ -1,6 +1,6 @@
 import { Button } from '../../../shared/ui/Button'
 import { ReasonPicker } from '../../../shared/ui/ReasonPicker'
-import { REJECTION_REASONS } from '../../../shared/domain/moderationReasons'
+import { REJECTION_REASONS } from '../../../shared/domain/moderationReasonLabels'
 import type { RejectionLabel } from '../../../shared/api/backend/moderationContract'
 import styles from '../moderation.module.css'
 

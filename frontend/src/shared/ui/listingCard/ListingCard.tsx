@@ -1,13 +1,14 @@
 // Карточка ленты. Ссылка целиком, а не карточка с кнопкой внутри: средняя кнопка мыши и
 // «открыть в новой вкладке» — обычный способ сравнивать машины.
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
-import { Placeholder } from '../../ui/Placeholder'
+import { Placeholder } from '../Placeholder'
 import { ROUTES } from '../../navigation/routes'
 import { ListingCardBody } from './ListingCardBody'
-import type { ListingView } from './listingView'
+import type { ListingView } from '../../domain/listing/listingView'
 import styles from './ListingCard.module.css'
 
-export function ListingCard({ listing }: { listing: ListingView }) {
+export const ListingCard = memo(function ListingCard({ listing }: { listing: ListingView }) {
   return (
     <Link to={ROUTES.listing(listing.id)} className={styles.card} data-testid="listing-card">
       <Placeholder className={styles.photo}>
@@ -28,7 +29,7 @@ export function ListingCard({ listing }: { listing: ListingView }) {
       <ListingCardBody listing={listing} />
     </Link>
   )
-}
+})
 
 // Число колонок — проп, а не внешняя сетка вокруг: обёртка с собственным
 // `grid-template-columns` делит уже поделённую колонку и сплющивает карточку до

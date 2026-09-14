@@ -3,7 +3,7 @@ import { FailureNotice, ListSkeleton } from './ListStates'
 
 export interface QueryLike {
   isPending: boolean
-  error: unknown
+  error: Error | null
   refetch: () => unknown
 }
 
@@ -26,7 +26,7 @@ export function QueryStates({
   if (query.error) {
     return (
       <FailureNotice
-        message={failureMessage ?? (query.error as Error).message}
+        message={failureMessage ?? query.error.message}
         onRetry={() => void query.refetch()}
       />
     )
@@ -35,11 +35,11 @@ export function QueryStates({
 }
 
 interface MutationFailureProps {
-  error: unknown
+  error: Error | null
   onReset: () => void
 }
 
 export function MutationFailure({ error, onReset }: MutationFailureProps) {
   if (!error) return null
-  return <FailureNotice message={(error as Error).message} onRetry={onReset} />
+  return <FailureNotice message={error.message} onRetry={onReset} />
 }

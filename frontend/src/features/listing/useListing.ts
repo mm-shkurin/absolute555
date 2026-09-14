@@ -36,7 +36,7 @@ export function useListing(id: string, signedIn: boolean, now: Date): ListingRes
     // Разные вещи, и на экране они выглядят по-разному.
     offers: wire?.offers ? toOfferRows(wire.offers, now) : null,
     isLoading: result.isPending,
-    error: (result.error as Error | null) ?? null,
+    error: result.error,
     retry: () => void result.refetch(),
   }
 }

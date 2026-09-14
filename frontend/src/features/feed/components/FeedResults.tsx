@@ -1,5 +1,5 @@
 import { Button } from '../../../shared/ui/Button'
-import { ListingGrid } from '../../../shared/domain/listing/ListingCard'
+import { ListingGrid } from '../../../shared/ui/listingCard/ListingCard'
 import { EmptyFeed, FeedFailure, FeedSkeleton } from './FeedStates'
 import type { FeedResult } from '../useFeed'
 import styles from '../feed.module.css'

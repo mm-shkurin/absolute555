@@ -19,7 +19,7 @@ export function useComplaintSheet(listingId: string) {
     },
     close: () => setOpen(false),
     busy: complaint.isPending,
-    failure: (complaint.error as Error | null)?.message ?? null,
+    failure: complaint.error?.message ?? null,
     sent: complaint.isSuccess,
     send: (reason: ComplaintReason, text: string) => complaint.mutate({ reason, text }),
   }

@@ -1,10 +1,10 @@
-import { memo } from 'react'
+import { memo, useCallback } from 'react'
 import { Panel } from '../../../shared/ui/Panel'
 import { Avatar } from '../../../shared/ui/Avatar'
 import { Button, ButtonLink } from '../../../shared/ui/Button'
 import { Cover } from '../../../shared/ui/Cover'
 import { ReasonPicker } from '../../../shared/ui/ReasonPicker'
-import { REJECTION_REASONS } from '../../../shared/domain/moderationReasons'
+import { REJECTION_REASONS } from '../../../shared/domain/moderationReasonLabels'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { RejectionLabel } from '../../../shared/api/backend/moderationContract'
 import type { toComplaintCase } from '../logic/complaintView'
@@ -23,33 +23,46 @@ interface ComplaintCaseProps {
 }
 
 export const ComplaintCase = memo(function ComplaintCase(props: ComplaintCaseProps) {
-  const { item, busy } = props
+  const { item, busy, onToggle, onDismiss, onUnpublish } = props
+  const toggle = useCallback(() => onToggle(item.listingId), [onToggle, item.listingId])
+  const dismiss = useCallback(
+    () => onDismiss(item.complaints.map((one) => one.id)),
+    [onDismiss, item.complaints],
+  )
+  const unpublish = useCallback(
+    (label: RejectionLabel) => onUnpublish(item.listingId, label),
+    [onUnpublish, item.listingId],
+  )
   return (
     <Panel first={props.first} testId="complaint-case">
       <CaseHead item={item} />
       <ComplaintEntries complaints={item.complaints} />
-      <div className={styles.actions}>
-        <ButtonLink to={ROUTES.listing(item.listingId)}>Открыть карточку</ButtonLink>
-        <Button tone="ghost" disabled={busy} onClick={() => props.onToggle(item.listingId)}>
-          Снять с публикации
-        </Button>
-        <Button
-          tone="ghost"
-          disabled={busy}
-          onClick={() => props.onDismiss(item.complaints.map((one) => one.id))}
-        >
-          Отклонить жалобы
-        </Button>
-      </div>
-      {props.unpublishing ? (
-        <UnpublishReasons
-          busy={busy}
-          onPick={(label) => props.onUnpublish(item.listingId, label)}
-        />
-      ) : null}
+      <CaseActions listingId={item.listingId} busy={busy} onToggle={toggle} onDismiss={dismiss} />
+      {props.unpublishing ? <UnpublishReasons busy={busy} onPick={unpublish} /> : null}
     </Panel>
   )
 })
+
+interface CaseActionsProps {
+  listingId: string
+  busy: boolean
+  onToggle: () => void
+  onDismiss: () => void
+}
+
+function CaseActions({ listingId, busy, onToggle, onDismiss }: CaseActionsProps) {
+  return (
+    <div className={styles.actions}>
+      <ButtonLink to={ROUTES.listing(listingId)}>Открыть карточку</ButtonLink>
+      <Button tone="ghost" disabled={busy} onClick={onToggle}>
+        Снять с публикации
+      </Button>
+      <Button tone="ghost" disabled={busy} onClick={onDismiss}>
+        Отклонить жалобы
+      </Button>
+    </div>
+  )
+}
 
 function CaseHead({ item }: { item: ComplaintCaseView }) {
   return (

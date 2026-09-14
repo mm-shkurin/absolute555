@@ -8,11 +8,11 @@
 import { useState } from 'react'
 import { Sheet } from '../../../shared/ui/Sheet'
 import { FailureNotice, ListSkeleton } from '../../../shared/ui/ListStates'
-import type { BrandChoice, PickedBrand } from './brandChoice'
-import { useBrandCatalog } from './useBrandCatalog'
+import type { BrandChoice, PickedBrand } from '../logic/brandChoice'
+import { useBrandCatalog } from '../useBrandCatalog'
 import { BrandActions, BrandList, ModelList } from './BrandPicker'
 
-export type { BrandChoice } from './brandChoice'
+export type { BrandChoice } from '../logic/brandChoice'
 
 interface BrandSheetProps {
   current: BrandChoice

@@ -38,7 +38,7 @@ export function useFeed(query: FeedQuery): FeedResult {
     isLoadingMore: result.isFetchingNextPage,
     hasMore: result.hasNextPage,
     loadMore: () => void result.fetchNextPage(),
-    error: (result.error as Error | null) ?? null,
+    error: result.error,
     retry: () => void result.refetch(),
   }
 }

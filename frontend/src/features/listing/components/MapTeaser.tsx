@@ -1,7 +1,7 @@
 // Схема кузова в карточке объявления — та же, что на странице карты, только для взгляда:
 // панели не выбираются, за подробностями ведёт кнопка «Открыть карту целиком».
-import { BodySchematic } from '../../../shared/thicknessMap/BodySchematic'
-import { useThicknessMap } from '../../../shared/thicknessMap/useThicknessMap'
+import { BodySchematic } from '../../../shared/thicknessMap/ui/BodySchematic'
+import { useThicknessMap } from '../../../shared/thicknessMap/api/useThicknessMap'
 import styles from '../listing.module.css'
 
 export function MapTeaser({ listingId }: { listingId: string }) {

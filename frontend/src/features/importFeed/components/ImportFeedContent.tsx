@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { PanelNote } from '../../../shared/ui/Panel'
 import { EmptyNotice } from '../../../shared/ui/ListStates'
-import { ListingGrid } from '../../../shared/domain/listing/ListingCard'
+import { ListingGrid } from '../../../shared/ui/listingCard/ListingCard'
 import { toListingView } from '../../../shared/domain/listing/listingView'
 import type { ImportFeedWire as ImportFeed, ImportKind } from '../api/importApi'
 import { toRequestCard, toSupplierCard } from '../logic/importView'

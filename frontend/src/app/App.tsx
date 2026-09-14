@@ -4,7 +4,7 @@
 // таблица «Срезы Абсолюта».
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import { useCurrentSession } from '../shared/session/useCurrentSession'
-import { AccessClosedWatch } from '../features/auth/AccessClosedWatch'
+import { AccessClosedWatch } from '../features/auth/components/AccessClosedWatch'
 import { TabBar } from '../shared/ui/TabBar'
 import { useUnreadMessages } from '../shared/session/useUnread'
 import { accountRoutes } from './AccountRoutes'

@@ -4,7 +4,7 @@ import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { PageSection } from '../../shared/ui/PageHeading'
 import { BigNotice, Spinner } from '../../shared/ui/BigNotice'
-import { SignInFailureNotice } from './SignInFailureNotice'
+import { SignInFailureNotice } from './components/SignInFailureNotice'
 import { useOAuthExchange } from './useOAuthExchange'
 
 export function OAuthCallbackPage() {

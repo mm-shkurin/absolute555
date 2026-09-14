@@ -1,6 +1,6 @@
 import { Button } from '../../../shared/ui/Button'
 import { ListSkeleton } from '../../../shared/ui/ListStates'
-import type { BrandChoice, PickedBrand } from './brandChoice'
+import type { BrandChoice, PickedBrand } from '../logic/brandChoice'
 import styles from '../feed.module.css'
 
 interface BrandOption {

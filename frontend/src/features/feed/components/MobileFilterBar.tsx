@@ -1,5 +1,6 @@
 // Полоса фильтров для узкого экрана. Показывает только то, что уже выбрано, плюс вход в
 // полную панель: на 390 точках ширины список всех фильтров не помещается ни в какой форме.
+import { memo, useCallback } from 'react'
 import { toggleTransmission, type FeedQuery } from '../logic/feedQuery'
 import { FilterChip } from './FilterChip'
 import styles from '../feed.module.css'
@@ -11,6 +12,10 @@ interface MobileFilterBarProps {
 }
 
 export function MobileFilterBar({ query, onChange, onOpenSheet }: MobileFilterBarProps) {
+  const removeTransmission = useCallback(
+    (item: string) => onChange(toggleTransmission(query, item)),
+    [query, onChange],
+  )
   return (
     <div className={styles.mobileFilters} data-testid="mobile-filters">
       <FilterChip onClick={onOpenSheet}>Фильтры</FilterChip>
@@ -20,9 +25,7 @@ export function MobileFilterBar({ query, onChange, onOpenSheet }: MobileFilterBa
         </FilterChip>
       ) : null}
       {query.transmissions.map((item) => (
-        <FilterChip key={item} pressed onClick={() => onChange(toggleTransmission(query, item))}>
-          {item} ✕
-        </FilterChip>
+        <TransmissionChip key={item} item={item} onRemove={removeTransmission} />
       ))}
       <FilterChip
         pressed={query.withThicknessMap}
@@ -33,3 +36,17 @@ export function MobileFilterBar({ query, onChange, onOpenSheet }: MobileFilterBa
     </div>
   )
 }
+
+interface TransmissionChipProps {
+  item: string
+  onRemove: (item: string) => void
+}
+
+const TransmissionChip = memo(function TransmissionChip({ item, onRemove }: TransmissionChipProps) {
+  const remove = useCallback(() => onRemove(item), [onRemove, item])
+  return (
+    <FilterChip pressed onClick={remove}>
+      {item} ✕
+    </FilterChip>
+  )
+})

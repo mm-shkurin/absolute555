@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { browserWindow } from '../../../shared/lib/browser'
+import { browserWindow } from '../../shared/lib/browser'
 
 export function useLightboxKeys(onClose: () => void, step: (delta: number) => void) {
   useEffect(() => {

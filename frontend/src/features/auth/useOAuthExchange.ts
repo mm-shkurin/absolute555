@@ -23,15 +23,22 @@ export function useOAuthExchange(): string | null {
       setFailure(outcome.kind === 'refused' ? outcome.reason : MALFORMED)
       return
     }
+    let cancelled = false
     exchangeCode(outcome.code)
       .then(startSessionFrom)
-      .then(() => navigate(ROUTES.feed, { replace: true }))
+      .then(() => {
+        if (!cancelled) navigate(ROUTES.feed, { replace: true })
+      })
       .catch(() => {
+        if (cancelled) return
         // Повторный вход этой же вкладкой мог уже состояться — тогда отказ по потраченному
         // коду не повод выкидывать вошедшего человека на экран ошибки.
         if (isSignedIn()) navigate(ROUTES.feed, { replace: true })
         else setFailure('Код входа не подошёл — возможно, он уже использован или истёк.')
       })
+    return () => {
+      cancelled = true
+    }
   }, [params, navigate])
 
   return failure

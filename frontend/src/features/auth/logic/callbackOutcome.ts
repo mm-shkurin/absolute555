@@ -10,7 +10,6 @@ export type CallbackOutcome =
 const REASONS: Record<string, string> = {
   state_invalid: 'Ссылка возврата устарела или пришла не с того устройства. Начните вход заново.',
   code_missing: 'Провайдер вернул нас без кода входа. Попробуйте ещё раз.',
-  provider_failed: 'Провайдер не подтвердил вход — возможно, вы закрыли окно или отклонили доступ.',
 }
 
 const DEFAULT_REASON =

@@ -2,8 +2,8 @@
 // форматируются одинаково в ленте, в карточке и в офферах, а неразрывный пробел в цене
 // нельзя увидеть в коде — только в тесте.
 import { formatAmount, formatPrice, pluralize } from '../../format/money'
-import type { Grade } from '../../thicknessMap/bodyPanels'
-import { GRADE_COLOR } from '../../thicknessMap/gradeLabels'
+import type { Grade } from '../../thicknessMap/logic/bodyPanels'
+import { GRADE_COLOR } from '../../thicknessMap/logic/gradeLabels'
 import type { ListingWire } from './listingWire'
 
 export interface ListingView {
@@ -64,9 +64,13 @@ export function countLabel(total: number): string {
   return `${formatAmount(total)} ${pluralize(total, 'объявление', 'объявления', 'объявлений')}`
 }
 
+function isGrade(status: string | null): status is Grade {
+  return status !== null && Object.hasOwn(GRADE_COLOR, status)
+}
+
 /** Полоска рисуется, только если замерена хоть одна панель: тринадцать серых отрезков
  *  сказали бы «проверено и пусто», а это «не проверяли». */
 function paintStrip(panels: (string | null)[]): string[] {
   if (!panels.some(Boolean)) return []
-  return panels.map((status) => GRADE_COLOR[status as Grade] ?? GRADE_COLOR.none)
+  return panels.map((status) => (isGrade(status) ? GRADE_COLOR[status] : GRADE_COLOR.none))
 }

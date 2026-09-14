@@ -1,6 +1,6 @@
 import { Cover } from '../../../shared/ui/Cover'
 import { GalleryArrows } from './GalleryArrows'
-import { usePointerSwipe } from './usePointerSwipe'
+import { usePointerSwipe } from '../usePointerSwipe'
 import styles from './Gallery.module.css'
 
 interface GalleryFrameProps {

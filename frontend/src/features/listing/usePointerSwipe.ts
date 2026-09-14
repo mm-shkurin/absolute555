@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import type { PointerEvent as ReactPointerEvent } from 'react'
-import { swipeStep } from '../logic/gallerySwipe'
+import { swipeStep } from './logic/gallerySwipe'
 
 export function usePointerSwipe(onStep: (by: number) => void) {
   // Точка нажатия: от неё считается жест. В ref, а не в состоянии — перерисовывать

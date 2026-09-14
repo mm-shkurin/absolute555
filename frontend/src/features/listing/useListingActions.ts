@@ -27,7 +27,7 @@ export function useListingActions(listingId: string): ListingActions {
   const [offering, setOffering] = useState(false)
   const { offer, phone } = useBuyerMutations(listingId)
   const { owner, setting } = useOwnerMutations(listingId)
-  const failure = (offer.error ?? phone.error ?? owner.error ?? setting.error) as Error | null
+  const failure = offer.error ?? phone.error ?? owner.error ?? setting.error
   return {
     phone: phone.data?.phone_number ?? null,
     offering,

@@ -35,7 +35,7 @@ export function OrderPanel({ supplierId }: OrderPanelProps) {
         >
           Написать
         </Button>
-        {write.error ? <p className={styles.writeError}>{(write.error as Error).message}</p> : null}
+        {write.error ? <p className={styles.writeError}>{write.error.message}</p> : null}
       </div>
     </Panel>
   )

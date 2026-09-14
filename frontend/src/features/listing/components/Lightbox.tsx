@@ -2,7 +2,7 @@
 // единственные два жеста, которые человек пробует, не глядя на кнопки.
 import { LightboxStage } from './LightboxStage'
 import { LightboxStrip } from './LightboxStrip'
-import { useLightboxKeys } from './useLightboxKeys'
+import { useLightboxKeys } from '../useLightboxKeys'
 import styles from './Lightbox.module.css'
 
 interface LightboxProps {

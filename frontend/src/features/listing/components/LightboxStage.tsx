@@ -1,5 +1,5 @@
 import { Cover } from '../../../shared/ui/Cover'
-import { usePointerSwipe } from './usePointerSwipe'
+import { usePointerSwipe } from '../usePointerSwipe'
 import styles from './Lightbox.module.css'
 
 interface LightboxStageProps {

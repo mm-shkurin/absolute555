@@ -10,6 +10,10 @@ const SORTS: { value: FeedSort; label: string }[] = [
   { value: 'price-desc', label: 'цена по убыванию' },
 ]
 
+function isFeedSort(value: string): value is FeedSort {
+  return SORTS.some((sort) => sort.value === value)
+}
+
 interface FeedHeadProps {
   query: FeedQuery
   countText: string
@@ -28,7 +32,12 @@ export function FeedHead({ query, countText, onChange }: FeedHeadProps) {
         Сортировка
         <select
           value={query.sort}
-          onChange={(event) => onChange({ ...query, sort: event.target.value as FeedSort })}
+          onChange={(event) =>
+            onChange({
+              ...query,
+              sort: isFeedSort(event.target.value) ? event.target.value : query.sort,
+            })
+          }
         >
           {SORTS.map((sort) => (
             <option key={sort.value} value={sort.value}>
