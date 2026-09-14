@@ -30,6 +30,14 @@ describe('черновик заявки на привоз', () => {
     })
   })
 
+  it('Scenario: бюджет, введённый как в подсказке «12 000 000», уходит в заявку', () => {
+    // Given покупатель заполняет заявку
+    // When вписывает бюджет с пробелами между разрядами
+    const body = toRequestBody({ ...filled, budget: '12 000 000' })
+    // Then в заявке бюджет числом
+    expect(body.budget_max).toBe(12000000)
+  })
+
   it('пустое и нечисловое поле не отправляется', () => {
     const body = toRequestBody({ ...filled, yearFrom: 'скоро', comment: '   ' })
     expect(body.year_from).toBeUndefined()

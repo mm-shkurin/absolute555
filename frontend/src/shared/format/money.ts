@@ -12,6 +12,16 @@ export function formatAmount(value: number): string {
     .replace(/\B(?=(\d{3})+(?!\d))/g, GROUP)
 }
 
+/** Сумма, введённая человеком, или `null`. Разряды пишут через пробел — так показывают
+ *  подсказки полей, — а телефон и копирование добавляют неразрывные пробелы (`\s` в JS
+ *  покрывает и U+00A0, и U+202F). */
+export function readAmount(typed: string): number | null {
+  const digits = typed.replace(/\s/g, '')
+  if (!digits) return null
+  const parsed = Number(digits)
+  return Number.isFinite(parsed) ? parsed : null
+}
+
 export function formatPrice(value: number): string {
   return `${formatAmount(value)} ₽`
 }

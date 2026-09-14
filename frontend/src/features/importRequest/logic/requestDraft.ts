@@ -4,6 +4,7 @@
 // Страны, пробег и «готов ждать» из мокапа сюда не входят: сервер их не принимает, и
 // собранное в этих полях никто бы не сохранил.
 import type { BuyerRequestCreate } from '../../../shared/api/backend/requestContract'
+import { readAmount } from '../../../shared/format/money'
 
 export interface RequestDraft {
   brandId: string
@@ -38,9 +39,9 @@ export function missingForRequest(draft: RequestDraft): string[] {
 export function toRequestBody(draft: RequestDraft): BuyerRequestCreate {
   const body: BuyerRequestCreate = { brand_id: draft.brandId, model_id: draft.modelId }
   const year = Number(draft.yearFrom.trim())
-  const budget = Number(draft.budget.trim())
+  const budget = readAmount(draft.budget)
   if (draft.yearFrom.trim() && Number.isFinite(year)) body.year_from = year
-  if (draft.budget.trim() && Number.isFinite(budget)) body.budget_max = budget
+  if (budget !== null) body.budget_max = budget
   if (draft.comment.trim()) body.comment = draft.comment.trim()
   return body
 }

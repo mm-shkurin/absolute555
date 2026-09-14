@@ -12,6 +12,7 @@ import type {
 } from '../../../shared/api/backend/saleCarContract'
 import type { Draft, DraftField, FieldSource } from './draft'
 import { EMPTY_DRAFT } from './draft'
+import { readAmount } from '../../../shared/format/money'
 
 // `ocr` на проводе означает «прочитано с документа»: распознавание СТС — единственный
 // источник, который сервер отличает от продавца.
@@ -58,10 +59,10 @@ function put(patch: SaleCarPatch, key: keyof SaleCarPatch, value: string, asNumb
     Object.assign(patch, { [key]: trimmed })
     return
   }
-  const parsed = Number(trimmed)
+  const parsed = readAmount(trimmed)
   // Нечисло в числовом поле не уходит на сервер: он отвергнет весь запрос, и человек
   // потеряет остальные правки из-за одной опечатки в пробеге.
-  if (Number.isFinite(parsed)) Object.assign(patch, { [key]: parsed })
+  if (parsed !== null) Object.assign(patch, { [key]: parsed })
 }
 
 /** Только заполненное. Марка и модель уходят как `mark_raw`/`model_raw`: справочник

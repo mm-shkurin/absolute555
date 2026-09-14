@@ -1,5 +1,5 @@
 // Черновик объявления: поля, происхождение каждого значения и сводка перед отправкой.
-import { formatAmount } from '../../../shared/format/money'
+import { formatAmount, readAmount } from '../../../shared/format/money'
 
 import type { ListingKind } from '../../../shared/api/backend/saleCarContract'
 import type { FieldSource } from '../../../shared/ui/fieldSource'
@@ -73,8 +73,8 @@ export function summaryRows(draft: Draft): SummaryRow[] {
   return [
     { label: 'Марка и модель', value: `${draft.brand.value} ${draft.model.value}`.trim() || '—' },
     { label: 'Год', value: draft.year.value || '—' },
-    { label: 'Цена', value: draft.price ? `${formatAmount(Number(draft.price))} ₽` : '—' },
-    { label: 'Пробег', value: draft.mileage ? `${formatAmount(Number(draft.mileage))} км` : '—' },
+    { label: 'Цена', value: amount(draft.price, '₽') },
+    { label: 'Пробег', value: amount(draft.mileage, 'км') },
     { label: 'Коробка', value: draft.transmission.value || '—' },
     { label: 'Мощность', value: draft.enginePower.value ? `${draft.enginePower.value} л.с.` : '—' },
     { label: 'Фотографии', value: `${draft.photosCount} из ${MAX_PHOTOS}` },
@@ -89,6 +89,11 @@ export function summaryRows(draft: Draft): SummaryRow[] {
   ]
 }
 
+function amount(typed: string, unit: string): string {
+  const parsed = readAmount(typed)
+  return parsed === null ? '—' : `${formatAmount(parsed)} ${unit}`
+}
+
 function importRows(draft: Draft): SummaryRow[] {
   return [
     { label: 'Откуда везут', value: draft.importCountry || '—', warn: !draft.importCountry },
@@ -99,7 +104,7 @@ function importRows(draft: Draft): SummaryRow[] {
     },
     {
       label: 'Цена под ключ',
-      value: draft.turnkeyPrice ? `${formatAmount(Number(draft.turnkeyPrice))} ₽` : '—',
+      value: amount(draft.turnkeyPrice, '₽'),
       warn: !draft.turnkeyPrice,
     },
   ]
