@@ -4,7 +4,7 @@ import './index.css'
 import { App } from './app/App'
 import { initTheme } from './shared/theme/themeStore'
 import { browserDocument } from './shared/lib/browser'
-import { QueryBoundary } from './shared/query/QueryBoundary'
+import { createQueryClient, QueryBoundary } from './shared/query/QueryBoundary'
 
 // Страховка, а не механизм: тему на <html> уже поставил инлайновый скрипт из index.html
 // до первой отрисовки. Это повторение закрывает единственный случай, который тот скрипт
@@ -28,7 +28,7 @@ if (!host) throw new Error('Не найден корневой элемент #r
 
 createRoot(host).render(
   <StrictMode>
-    <QueryBoundary>
+    <QueryBoundary client={createQueryClient()}>
       <App />
     </QueryBoundary>
   </StrictMode>,
