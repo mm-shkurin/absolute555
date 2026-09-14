@@ -8,6 +8,12 @@ import { fakeServer, resetServer, signedIn, type FakeServer } from '../../../tes
 
 const FEED = BACKEND.saleCar.published
 
+// Запрос, который не отвечает никогда и сдаётся только отмене.
+const hanging = (signal: AbortSignal) =>
+  new Promise<never>((_, reject) =>
+    signal.addEventListener('abort', () => reject(new Error('aborted'))),
+  )
+
 let server: FakeServer
 
 beforeEach(() => {
@@ -41,7 +47,9 @@ describe('транспорт запросов', () => {
 
     const failure = await sendPublic(FEED).catch((error: unknown) => error)
 
-    expect((failure as Error).message).toBe('Сервис временно недоступен. Мы уже знаем, попробуйте позже.')
+    expect((failure as Error).message).toBe(
+      'Сервис временно недоступен. Мы уже знаем, попробуйте позже.',
+    )
   })
 
   it('Scenario: интернет пропал — просьба проверить связь', async () => {
@@ -53,19 +61,16 @@ describe('транспорт запросов', () => {
   })
 
   it('Scenario: сервер молчит — запрос прерывается и говорит, что сервер не ответил', async () => {
-    const hanging = (signal: AbortSignal) =>
-      new Promise<never>((_, reject) => signal.addEventListener('abort', () => reject(new Error('aborted'))))
-
     const failure = await withTimeout(hanging, 20).catch((error: unknown) => error)
 
     expect(isRequestTimeout(failure)).toBe(true)
-    expect(failureText(failure)).toBe('Сервер не ответил вовремя. Проверьте связь и попробуйте ещё раз.')
+    expect(failureText(failure)).toBe(
+      'Сервер не ответил вовремя. Проверьте связь и попробуйте ещё раз.',
+    )
   })
 
   it('отмена экраном — не таймаут: ушедший с экрана не видит ошибку «сервер не ответил»', async () => {
     const screen = new AbortController()
-    const hanging = (signal: AbortSignal) =>
-      new Promise<never>((_, reject) => signal.addEventListener('abort', () => reject(new Error('aborted'))))
 
     const pending = withTimeout(hanging, 10_000, screen.signal).catch((error: unknown) => error)
     screen.abort()
@@ -76,13 +81,20 @@ describe('транспорт запросов', () => {
   it('удаление без тела — законный ответ, а не ошибка разбора', async () => {
     server.on('DELETE', BACKEND.saleCar.one('car1'), { status: 204 })
 
-    await expect(request(BACKEND.saleCar.one('car1'), { method: 'DELETE' })).resolves.toBeUndefined()
+    await expect(
+      request(BACKEND.saleCar.one('car1'), { method: 'DELETE' }),
+    ).resolves.toBeUndefined()
   })
 
   it('отказ на скачивании файла читается как отказ, а не как файл', async () => {
-    server.on('GET', BACKEND.saleCar.sts('car1'), { status: 404, body: { code: 'NOT_FOUND', message: 'нет' } })
+    server.on('GET', BACKEND.saleCar.sts('car1'), {
+      status: 404,
+      body: { code: 'NOT_FOUND', message: 'нет' },
+    })
 
-    const failure = await request(BACKEND.saleCar.sts('car1'), { responseType: 'blob' }).catch((e: unknown) => e)
+    const failure = await request(BACKEND.saleCar.sts('car1'), { responseType: 'blob' }).catch(
+      (e: unknown) => e,
+    )
 
     expect(failure).toMatchObject({ status: 404, errorCode: 'NOT_FOUND' })
   })
