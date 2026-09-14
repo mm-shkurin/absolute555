@@ -3,19 +3,10 @@
 import { useState } from 'react'
 import { Sheet } from '../ui/Sheet'
 import { Button } from '../ui/Button'
+import { RatingPicker } from './RatingPicker'
 import styles from './ReviewSheet.module.css'
 
-const RATINGS = [1, 2, 3, 4, 5]
-
-export function ReviewSheet({
-  title,
-  initial,
-  busy,
-  failure,
-  editable,
-  onClose,
-  onSend,
-}: {
+export interface ReviewSheetProps {
   title: string
   initial: { rating: number | null; text: string }
   busy: boolean
@@ -24,43 +15,32 @@ export function ReviewSheet({
   editable: boolean
   onClose: () => void
   onSend: (rating: number, text: string) => void
-}) {
+}
+
+export function ReviewSheet(props: ReviewSheetProps) {
+  const { title, initial, busy, failure, editable, onClose, onSend } = props
   const [rating, setRating] = useState<number | null>(initial.rating)
   const [text, setText] = useState(initial.text)
+  const locked = busy || !editable
 
   return (
     <Sheet title={title} onClose={onClose} testId="review-sheet">
-      <div className={styles.ratings}>
-        {RATINGS.map((value) => (
-          <button
-            key={value}
-            type="button"
-            className={styles.rating}
-            aria-pressed={rating === value}
-            disabled={busy || !editable}
-            onClick={() => setRating(value)}
-          >
-            {value}
-          </button>
-        ))}
-      </div>
+      <RatingPicker rating={rating} disabled={locked} onPick={setRating} />
       <textarea
         className={styles.reviewText}
         value={text}
         maxLength={2000}
-        disabled={busy || !editable}
+        disabled={locked}
         onChange={(event) => setText(event.target.value)}
         placeholder="Что было с этой сделкой. Текст увидят все, кто откроет профиль продавца."
       />
       {failure ? <p className={styles.reviewFailure}>{failure}</p> : null}
       {editable ? null : (
-        <p className={styles.reviewFailure}>
-          Сутки на правку прошли — отзыв больше не меняется.
-        </p>
+        <p className={styles.reviewFailure}>Сутки на правку прошли — отзыв больше не меняется.</p>
       )}
       <Button
         block
-        disabled={busy || !editable || rating === null}
+        disabled={locked || rating === null}
         onClick={() => rating !== null && onSend(rating, text)}
       >
         {initial.rating === null ? 'Оставить отзыв' : 'Сохранить'}

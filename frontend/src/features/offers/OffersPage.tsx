@@ -9,7 +9,7 @@ import { PillTabs } from '../../shared/ui/PillTabs'
 import { EmptyNotice, FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
 import { OfferRow } from './components/OfferRow'
-import { ReviewSheet } from '../../shared/review/ReviewSheet'
+import { ReviewSheetFor } from '../../shared/review/ReviewSheetFor'
 import { useReview } from '../../shared/review/useReview'
 import type { OfferDirection } from './api/offersApi'
 import type { OfferAction, OfferRowView } from './logic/offerRows'
@@ -24,8 +24,7 @@ export function OffersPage({ onSignIn }: { onSignIn?: () => void }) {
 
   const onAction = (action: OfferAction['id'], offer: OfferRowView) => {
     if (action === 'chat' || action === 'message') return navigate(ROUTES.chats)
-    if (action === 'review')
-      return review.open({ offerId: offer.id, reviewId: offer.reviewId })
+    if (action === 'review') return review.open({ offerId: offer.id, reviewId: offer.reviewId })
     if (action === 'accept') return offers.decide('accept', offer.id)
     if (action === 'reject') return offers.decide('reject', offer.id)
     if (action === 'withdraw') return offers.decide('withdraw', offer.id)
@@ -74,17 +73,7 @@ export function OffersPage({ onSignIn }: { onSignIn?: () => void }) {
           </PageSection>
         </Container>
       </main>
-      {review.target ? (
-        <ReviewSheet
-          title={review.target.reviewId ? 'Изменить отзыв' : 'Отзыв о сделке'}
-          initial={{ rating: null, text: '' }}
-          busy={review.busy}
-          failure={review.failure}
-          editable={review.editable}
-          onClose={review.close}
-          onSend={review.send}
-        />
-      ) : null}
+      <ReviewSheetFor review={review} newTitle="Отзыв о сделке" />
     </>
   )
 }

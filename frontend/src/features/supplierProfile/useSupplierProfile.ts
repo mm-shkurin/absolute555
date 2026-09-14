@@ -1,14 +1,14 @@
 // Свой профиль поставщика: чтение, правка и отправка в очередь.
-import { useEffect, useState } from 'react'
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery } from '@tanstack/react-query'
 import {
   fetchMyProfile,
   saveMyProfile,
   submitMyProfile,
 } from '../../shared/api/backend/supplierApi'
 import type { SupplierProfileWire } from '../../shared/api/backend/supplierContract'
-import { EMPTY_FORM, toForm, toUpdate, type ProfileForm } from './logic/profileForm'
-import { profileFailureText } from './logic/profileStatus'
+import { toUpdate, type ProfileForm } from './logic/profileForm'
+import { useProfileForm } from './useProfileForm'
+import { useProfileMutation } from './useProfileMutation'
 
 export interface SupplierProfileHandle {
   profile: SupplierProfileWire | null
@@ -25,68 +25,31 @@ export interface SupplierProfileHandle {
   reload: () => void
 }
 
+const SUBMITTED = 'Отправлено на проверку. Модератор решит, и мы покажем решение здесь.'
+
+async function saveAndSubmit(form: ProfileForm) {
+  // Отправка сохраняет набранное: иначе в очередь уехал бы прошлый текст, а человек
+  // видел бы на экране свой.
+  await saveMyProfile(toUpdate(form))
+  return submitMyProfile()
+}
+
 export function useSupplierProfile(): SupplierProfileHandle {
-  const client = useQueryClient()
-  const query = useQuery({ queryKey: ['supplier-profile'], queryFn: ({ signal }) => fetchMyProfile(signal) })
-  const [form, setForm] = useState<ProfileForm>(EMPTY_FORM)
-  const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
-
-  // Форма наполняется тем, что пришло, один раз на загрузку: дальше ею владеет человек,
-  // и перетирать набранное ответом сервера значило бы стирать правку на полуслове.
-  useEffect(() => {
-    if (query.data) setForm(toForm(query.data))
-  }, [query.data])
-
-  const done = (profile: SupplierProfileWire) => {
-    client.setQueryData(['supplier-profile'], profile)
-    setForm(toForm(profile))
-    setError(null)
-  }
-
-  const save = useMutation({
-    mutationFn: () => saveMyProfile(toUpdate(form)),
-    onSuccess: (profile) => {
-      done(profile)
-      setNotice('Сохранено.')
-    },
-    onError: (failure) => {
-      setNotice(null)
-      setError(profileFailureText(failure))
-    },
+  const query = useQuery({
+    queryKey: ['supplier-profile'],
+    queryFn: ({ signal }) => fetchMyProfile(signal),
   })
-
-  const submit = useMutation({
-    mutationFn: async () => {
-      // Отправка сохраняет набранное: иначе в очередь уехал бы прошлый текст, а человек
-      // видел бы на экране свой.
-      await saveMyProfile(toUpdate(form))
-      return submitMyProfile()
-    },
-    onSuccess: (profile) => {
-      done(profile)
-      setNotice('Отправлено на проверку. Модератор решит, и мы покажем решение здесь.')
-    },
-    onError: (failure) => {
-      setNotice(null)
-      setError(profileFailureText(failure))
-    },
-  })
+  const { form, error, notice, setField, succeed, fail } = useProfileForm(query.data)
+  const save = useProfileMutation(() => saveMyProfile(toUpdate(form)), 'Сохранено.', succeed, fail)
+  const submit = useProfileMutation(() => saveAndSubmit(form), SUBMITTED, succeed, fail)
 
   return {
     profile: query.data ?? null,
     form,
     notice,
-    setField: (key, value) => {
-      setNotice(null)
-      setForm((previous) => ({ ...previous, [key]: value }))
-    },
-    save: async () => {
-      await save.mutateAsync().catch(() => undefined)
-    },
-    submit: async () => {
-      await submit.mutateAsync().catch(() => undefined)
-    },
+    setField,
+    save: save.run,
+    submit: submit.run,
     busy: save.isPending || submit.isPending,
     error,
     isLoading: query.isPending,

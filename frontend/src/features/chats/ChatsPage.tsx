@@ -11,7 +11,7 @@ import { Conversation } from './components/Conversation'
 import { PHONE, useMediaQuery } from '../../shared/lib/useMediaQuery'
 import { useChats, useConversation } from './useChats'
 import { useReview } from '../../shared/review/useReview'
-import { ReviewSheet } from '../../shared/review/ReviewSheet'
+import { ReviewSheetFor } from '../../shared/review/ReviewSheetFor'
 import styles from './chats.module.css'
 
 export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
@@ -61,7 +61,11 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
                     onBack={phone ? () => setSelected(null) : undefined}
                     onReview={
                       current
-                        ? () => review.open({ dialogId: current.id, reviewId: current.review_id ?? null })
+                        ? () =>
+                            review.open({
+                              dialogId: current.id,
+                              reviewId: current.review_id ?? null,
+                            })
                         : undefined
                     }
                   />
@@ -71,17 +75,7 @@ export function ChatsPage({ onSignIn }: { onSignIn?: () => void }) {
           </div>
         </Container>
       </main>
-      {review.target ? (
-        <ReviewSheet
-          title={review.target.reviewId ? 'Изменить отзыв' : 'Отзыв о собеседнике'}
-          initial={{ rating: null, text: '' }}
-          busy={review.busy}
-          failure={review.failure}
-          editable={review.editable}
-          onClose={review.close}
-          onSend={review.send}
-        />
-      ) : null}
+      <ReviewSheetFor review={review} newTitle="Отзыв о собеседнике" />
     </>
   )
 }
