@@ -14,6 +14,10 @@ import pytest
 from app.sse.listing_stream import listing_events
 from app.sse.manager import sse_manager
 
+# Генератор читает статус объявления через общий движок приложения, из цикла теста.
+# Без сброса пула эти соединения достаются первому запросу следующего модуля.
+pytestmark = pytest.mark.usefixtures("app_engine_in_this_loop")
+
 
 def _payload(frame: str) -> dict:
     assert frame.startswith("data: ") and frame.endswith("\n\n"), frame

@@ -9,7 +9,7 @@ import pytest
 from sqlalchemy import func, select
 
 from app.data.seed_catalog import seed
-from app.db.database import get_db_session, get_engine
+from app.db.database import get_db_session
 from app.features.catalog.models.catalog import Brand, BrandAlias, CarModel
 
 
@@ -19,21 +19,6 @@ async def _counts() -> tuple[int, int, int]:
         models = await db.execute(select(func.count()).select_from(CarModel))
         aliases = await db.execute(select(func.count()).select_from(BrandAlias))
         return brands.scalar_one(), models.scalar_one(), aliases.scalar_one()
-
-
-@pytest.fixture
-async def app_engine_in_this_loop():
-    """Пул приложения, освобождённый до и после теста.
-
-    Засев ходит в базу через общий движок, а asyncpg привязывает соединение к циклу,
-    который его открыл. В одиночку тест проходит, в общем прогоне — нет: до него тем же
-    движком уже пользовался TestClient из своего цикла. Пул сбрасывается, чтобы
-    соединения открылись здесь, и сбрасывается снова, чтобы следующий тест не получил
-    соединения этого цикла.
-    """
-    await get_engine().dispose()
-    yield
-    await get_engine().dispose()
 
 
 @pytest.mark.asyncio

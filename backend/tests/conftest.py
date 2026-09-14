@@ -44,6 +44,23 @@ def run_sql(statement: str, params: dict) -> None:
     asyncio.run(_run())
 
 
+@pytest.fixture
+async def app_engine_in_this_loop():
+    """Пул приложения, освобождённый до и после асинхронного теста.
+
+    Асинхронный тест, зовущий код приложения напрямую, открывает соединения общего
+    движка в цикле pytest-asyncio. Цикл закрывается вместе с тестом, соединения остаются
+    в пуле, и следующий запрос через TestClient берёт одно из них: «attached to a
+    different loop» в чужом модуле, а не в том, что его вызвал. Какое соединение выдаст
+    пул — случай, поэтому отказ плавает.
+    """
+    from app.db.database import get_engine
+
+    await get_engine().dispose()
+    yield
+    await get_engine().dispose()
+
+
 @pytest.fixture(scope="session")
 def client() -> TestClient:
     """A client over the real application object.
