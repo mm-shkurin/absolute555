@@ -13,7 +13,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.catalog.models.catalog import CatalogSuggestion, SuggestionKind, SuggestionStatus
-from app.features.listing.models.sale_car import AutofillState, FieldSource, SaleCars
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import AutofillState, FieldSource
 from app.features.catalog.services.catalog_normalize import normalize
 from app.features.listing.services.listing_errors import ListingFrozen, VinMalformed
 from app.ml.vin_shape import NumberKind, classify, normalise

@@ -5,7 +5,7 @@ rejected listing, the mistaken sale, and two hazards -- a price that must surviv
 trip and a submit sent twice. Racing actions are in test_listing_race.py.
 """
 
-from app.features.listing.models.sale_car import MAX_DRAFTS_PER_USER
+from app.features.listing.domain.statuses import MAX_DRAFTS_PER_USER
 from tests.test_listing_lifecycle import _create, _fill, _publish, _status
 
 

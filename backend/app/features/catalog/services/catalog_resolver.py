@@ -14,7 +14,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.catalog.models.catalog import CatalogSuggestion, SuggestionKind, SuggestionStatus
-from app.features.listing.models.sale_car import FieldSource, SaleCars
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import FieldSource
 from app.features.catalog.services.catalog_normalize import normalize
 
 

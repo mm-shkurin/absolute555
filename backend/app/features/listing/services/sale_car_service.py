@@ -1,7 +1,8 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
-from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import SaleCarStatus
 from app.features.listing.services.listing_errors import ListingNotFound
 
 from typing import List, Optional

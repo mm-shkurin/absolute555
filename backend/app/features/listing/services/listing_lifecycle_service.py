@@ -18,13 +18,13 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config_getters import get_photo_settings
-from app.features.listing.models.sale_car import (
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import (
     ALLOWED_TRANSITIONS,
     MAX_DRAFTS_PER_USER,
     REQUIRED_TO_SUBMIT,
     REQUIRED_TO_SUBMIT_IMPORT,
     ListingKind,
-    SaleCars,
     SaleCarStatus,
 )
 from app.features.listing.services.listing_errors import (

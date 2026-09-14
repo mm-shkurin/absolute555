@@ -12,7 +12,8 @@ import pytest_asyncio
 from sqlalchemy import select
 
 from app.features.catalog.models.catalog import Brand, CatalogSuggestion, SuggestionKind, SuggestionStatus
-from app.features.listing.models.sale_car import AutofillState, FieldSource, SaleCars, SaleCarStatus
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import AutofillState, FieldSource, SaleCarStatus
 from app.features.account.models.users import Users
 from app.features.catalog.services.catalog_normalize import normalize
 from app.features.catalog.deps import build_catalog_resolver

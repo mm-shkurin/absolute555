@@ -12,7 +12,8 @@ from sqlalchemy.orm import selectinload
 
 from app.features.account.models.users import Users
 from app.features.catalog.models.catalog import CarModel
-from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import SaleCarStatus
 from app.features.listing.models.thickness import ThicknessMeasurement
 from app.features.listing.domain.panels import TOTAL_PANELS
 from app.features.listing.schemas.feed import FeedQuery, FeedSort

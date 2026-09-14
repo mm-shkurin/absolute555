@@ -16,7 +16,8 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config_getters import get_photo_settings
-from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import SaleCarStatus
 from app.features.listing.services.listing_errors import ListingFrozen
 from app.features.listing.services.listing_cleanup import discard_objects
 from app.features.listing.services.photo_errors import (

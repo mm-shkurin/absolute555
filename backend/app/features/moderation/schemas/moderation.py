@@ -7,7 +7,7 @@ from uuid import UUID
 from pydantic import BaseModel, ConfigDict
 
 from app.features.moderation.models.complaint import ComplaintReason, ComplaintStatus
-from app.features.listing.models.sale_car import RejectionLabel
+from app.features.listing.domain.statuses import RejectionLabel
 from app.features.listing.schemas.feed import FeedCard, Seller
 
 

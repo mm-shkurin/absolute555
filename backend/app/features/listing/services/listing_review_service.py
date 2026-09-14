@@ -10,7 +10,8 @@ from typing import Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.features.listing.models.sale_car import RejectionLabel, SaleCars, SaleCarStatus
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import RejectionLabel, SaleCarStatus
 from app.features.listing.services.listing_errors import RejectionNeedsReason, TransitionNotAllowed
 
 LABELS = {label.value for label in RejectionLabel}
