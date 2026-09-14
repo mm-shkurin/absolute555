@@ -1,10 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
-import { useStsRecognition } from '../useStsRecognition'
+import {
+  CHECK_BACKOFF,
+  FIRST_CHECK_MS,
+  MAX_CHECK_MS,
+  useStsRecognition,
+} from '../useStsRecognition'
 import { BACKEND } from '../../../shared/api/backend/paths'
 import { fakeServer, resetServer, signedIn, type FakeServer } from '../../../test/fakeServer'
 
-const stream = vi.hoisted(() => ({ onEvent: null as null | ((event: { status: string }) => void), closed: 0 }))
+const stream = vi.hoisted(() => ({
+  onEvent: null as null | ((event: { status: string }) => void),
+  closed: 0,
+}))
 vi.mock('../../../shared/api/backend/listingStream', () => ({
   openListingStream: (_id: string, handlers: { onEvent: (event: { status: string }) => void }) => {
     stream.onEvent = handlers.onEvent
@@ -50,6 +58,48 @@ describe('ожидание распознавания СТС', () => {
     })
 
     expect(result.current.outcome).toBe('done')
+  })
+
+  it('объявление перечитывается всё реже, пока исхода нет', async () => {
+    vi.useFakeTimers()
+    const draft = BACKEND.saleCar.one('car1')
+    server.on('GET', draft, {
+      status: 200,
+      body: { sale_car_id: 'car1', autofill: { state: 'pending' } },
+    })
+    renderHook(() => useStsRecognition('car1', true))
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(FIRST_CHECK_MS)
+    })
+    expect(server.callsTo('GET', draft)).toHaveLength(1)
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(FIRST_CHECK_MS)
+    })
+    expect(server.callsTo('GET', draft)).toHaveLength(1)
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(FIRST_CHECK_MS * CHECK_BACKOFF - FIRST_CHECK_MS)
+    })
+    expect(server.callsTo('GET', draft)).toHaveLength(2)
+  })
+
+  it('исход из потока останавливает перечитывание объявления', async () => {
+    vi.useFakeTimers()
+    const draft = BACKEND.saleCar.one('car1')
+    server.on('GET', draft, {
+      status: 200,
+      body: { sale_car_id: 'car1', autofill: { state: 'pending' } },
+    })
+    renderHook(() => useStsRecognition('car1', true))
+
+    act(() => stream.onEvent?.({ status: 'DecodeSuccess' }))
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(MAX_CHECK_MS * 2)
+    })
+
+    expect(server.callsTo('GET', draft)).toHaveLength(0)
   })
 
   it('исход принимается один раз — поздний кадр его не перезаписывает', () => {
