@@ -50,6 +50,7 @@ export function useThicknessEditor(saleCarId: string): ThicknessEditor {
     read: (photo) =>
       readGauge(saleCarId, photo).then(
         (answer) => answer.value_um,
+        // Нечитаемый снимок не ошибка: продавец впишет число руками.
         () => null,
       ),
     busy: write.isPending || erase.isPending,

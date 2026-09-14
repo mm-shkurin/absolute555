@@ -5,6 +5,7 @@
 import { send } from '../send'
 import { sendPublic } from '../sendPublic'
 import { BACKEND } from './paths'
+import { isSaleCarBody } from './bodyGuards'
 import type { FeedFilters, FeedPageWire, RevealedPhone } from './feedContract'
 import type { RejectionLabel } from './moderationContract'
 import type {
@@ -58,7 +59,7 @@ export function fetchMyListings(status?: SaleCarStatus, signal?: AbortSignal) {
 /** Чужое неопубликованное объявление сервер отдаёт как ненайденное — это одно и то же
  *  и снаружи неразличимо намеренно. */
 export function fetchListing(saleCarId: string, signal?: AbortSignal) {
-  return sendPublic<SaleCarWire>(BACKEND.saleCar.one(saleCarId), { signal })
+  return sendPublic<SaleCarWire>(BACKEND.saleCar.one(saleCarId), { signal, guard: isSaleCarBody })
 }
 
 /** Черновик заводится пустым: полей в запросе нет, они дописываются правкой. Кроме

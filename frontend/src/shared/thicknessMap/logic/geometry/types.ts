@@ -30,8 +30,22 @@ export interface Projection {
 
 /** Зеркальный код панели: левая сторона кузова превращается в правую. Панели без стороны
  *  (капот, крыша, бамперы) остаются собой. */
+const MIRROR: Record<PanelCode, PanelCode> = {
+  hood: 'hood',
+  roof: 'roof',
+  trunk_lid: 'trunk_lid',
+  front_bumper: 'front_bumper',
+  rear_bumper: 'rear_bumper',
+  front_left_fender: 'front_right_fender',
+  front_right_fender: 'front_left_fender',
+  rear_left_fender: 'rear_right_fender',
+  rear_right_fender: 'rear_left_fender',
+  front_left_door: 'front_right_door',
+  front_right_door: 'front_left_door',
+  rear_left_door: 'rear_right_door',
+  rear_right_door: 'rear_left_door',
+}
+
 export function mirrorCode(code: PanelCode): PanelCode {
-  if (code.includes('_left_')) return code.replace('_left_', '_right_') as PanelCode
-  if (code.includes('_right_')) return code.replace('_right_', '_left_') as PanelCode
-  return code
+  return MIRROR[code]
 }

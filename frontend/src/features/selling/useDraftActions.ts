@@ -1,4 +1,4 @@
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { attachSts, decodeVin, fetchListing } from '../../shared/api/backend/saleCarApi'
 import { saveDraft } from './api/draftApi'
 import { isEmptyPatch, toDraft, toPatch } from './logic/draftWire'
@@ -20,6 +20,14 @@ async function reloadDraft(id: string | null) {
 
 export function useDraftSave(idRef: IdRef) {
   const [saved, setSaved] = useState(false)
+  const mounted = useRef(true)
+
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   const save = useCallback(
     async (draft: Draft) => {
@@ -27,12 +35,11 @@ export function useDraftSave(idRef: IdRef) {
       if (!id) return
       // Пустую правку сервер отвергает как ошибку — на первом шаге отправлять ещё нечего.
       if (isEmptyPatch(toPatch(draft))) return
-      try {
-        await saveDraft(id, draft)
-        setSaved(true)
-      } catch {
-        setSaved(false)
-      }
+      const ok = await saveDraft(id, draft).then(
+        () => true,
+        () => false,
+      )
+      if (mounted.current) setSaved(ok)
     },
     [idRef],
   )

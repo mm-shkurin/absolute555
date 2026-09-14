@@ -1,11 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, renderHook } from '@testing-library/react'
-import {
-  CHECK_BACKOFF,
-  FIRST_CHECK_MS,
-  MAX_CHECK_MS,
-  useStsRecognition,
-} from '../useStsRecognition'
+import { CHECK_BACKOFF, FIRST_CHECK_MS, MAX_CHECK_MS } from '../api/recognitionWatch'
+import { useStsRecognition } from '../useStsRecognition'
 import { BACKEND } from '../../../shared/api/backend/paths'
 import { fakeServer, resetServer, signedIn, type FakeServer } from '../../../test/fakeServer'
 

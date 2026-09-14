@@ -3,8 +3,6 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AutofillState } from '../../shared/api/backend/saleCarContract'
 import { watchRecognition } from './api/recognitionWatch'
 
-export { FIRST_CHECK_MS, CHECK_BACKOFF, MAX_CHECK_MS } from './api/recognitionWatch'
-
 export function useStsRecognition(saleCarId: string | null, watching: boolean) {
   const [outcome, setOutcome] = useState<AutofillState | null>(null)
   const settled = useRef(false)

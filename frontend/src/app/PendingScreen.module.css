@@ -1,0 +1,19 @@
+.screen {
+  padding: 48px 24px;
+}
+
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.title {
+  font-size: 28px;
+  margin-top: 8px;
+}
+
+.note {
+  color: var(--text-secondary);
+  margin-top: 8px;
+}

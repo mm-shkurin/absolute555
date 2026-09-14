@@ -72,6 +72,7 @@ export async function fetchImportFeed(signal?: AbortSignal): Promise<ImportFeedW
   // экран показывал им ноль заявок при шестидесяти четырёх открытых.
   const [cars, requests, suppliers] = await Promise.all([
     fetchFeed({ kind: 'import' }, signal),
+    // Закрытые сервером заявки — пустая вкладка, а не поломка всей ленты.
     fetchOpenRequests(1, signal).catch(() => null),
     fetchSuppliers(1, signal),
   ])

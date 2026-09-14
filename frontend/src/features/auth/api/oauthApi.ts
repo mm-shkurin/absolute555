@@ -5,6 +5,7 @@
 // редиректом не едет: он остался бы в истории браузера и в referer следующей страницы.
 import { request } from '../../../shared/api/httpClient'
 import { BACKEND } from '../../../shared/api/backend/paths'
+import { isTokenPairBody } from '../../../shared/api/backend/bodyGuards'
 import { fetchProfile } from '../../../shared/api/backend/accountApi'
 import type { TokenWire, UserWire } from '../../../shared/api/backend/accountContract'
 import { roleFrom, startSession } from '../../../shared/session/authSession'
@@ -12,7 +13,11 @@ import { roleFrom, startSession } from '../../../shared/session/authSession'
 /** Мимо `send`: токена ещё нет, прикладывать к запросу нечего, а истёкшая сессия здесь
  *  не событие — её и не было. */
 export function exchangeCode(code: string): Promise<TokenWire> {
-  return request<TokenWire>(BACKEND.auth.oauthExchange, { method: 'POST', body: { code } })
+  return request<TokenWire>(BACKEND.auth.oauthExchange, {
+    method: 'POST',
+    body: { code },
+    guard: isTokenPairBody,
+  })
 }
 
 function displayName(user: UserWire): string {

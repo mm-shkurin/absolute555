@@ -5,12 +5,20 @@
 // отзывы это история 12, а сводка кабинета вообще не сделана.
 import { monthAndYear } from '../../../shared/format/dates'
 import type {
+  RoleRequestStatus,
   RoleRequestWire,
   UserWire,
 } from '../../../shared/api/backend/accountContract'
 import type { BuyerRequestWire } from '../../../shared/api/backend/requestContract'
 import type { ProfileWire, SupplierApplicationStatus } from '../api/profileApi'
 
+function supplierStatus(
+  importer: boolean,
+  application: RoleRequestStatus | undefined,
+): SupplierApplicationStatus {
+  if (importer) return 'approved'
+  return application ?? 'none'
+}
 
 /** Имя, каким его назвал сервер: своё, если человек его вписал, иначе провайдерское
  *  (история 21 — правило живёт на строке, а не здесь). Разбор `yandex_json` остался
@@ -53,8 +61,7 @@ export function toProfileWire(
     incoming_offers: 0,
     outgoing_offers: 0,
     unread_messages: 0,
-    supplier_status:
-      user.role === 'importer' ? 'approved' : ((live?.status ?? 'none') as SupplierApplicationStatus),
+    supplier_status: supplierStatus(user.role === 'importer', live?.status),
     supplier_applied_at: live?.created_at ?? null,
     import_requests: importRequests.map((request) => ({
       id: request.request_id,
