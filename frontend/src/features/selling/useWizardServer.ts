@@ -12,6 +12,7 @@ import { submitFailureText } from './logic/submitFailure'
 import type { ListingKind } from '../../shared/api/backend/saleCarContract'
 import { useDraftSync } from './useDraftSync'
 import { useGallery, type Gallery } from './useGallery'
+import { useLatest } from './useLatest'
 import { useStsRecognition } from './useStsRecognition'
 import { resumeStep, type DocumentStage, type StepId } from '../../shared/domain/wizardSteps'
 
@@ -48,57 +49,66 @@ export function useWizardServer(
   // остальных шагах незачем, а сервер шлёт по нему пульс каждые тридцать секунд.
   const recognition = useStsRecognition(sync.saleCarId, wizard.stage === 'recognizing')
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const wizardRef = useLatest(wizard)
+  const syncRef = useLatest(sync)
+  const galleryRef = useLatest(gallery)
+  const recognitionRef = useLatest(recognition)
 
   // Открытый по ссылке черновик подтягивается целиком: поля, их происхождение и снимки.
   // Без этого «Продолжить» открывало бы пустой мастер поверх уже начатого объявления.
+  // Загрузка делается один раз на открытие: дальше состоянием владеет мастер.
   useEffect(() => {
     if (!existingId) return
-    void sync.reload().then((loaded) => {
-      if (!loaded) return
-      wizard.applyDraft(loaded)
-      wizard.goStep(resumeStep(loaded))
+    let cancelled = false
+    void syncRef.current.reload().then((loaded) => {
+      if (cancelled || !loaded) return
+      wizardRef.current.applyDraft(loaded)
+      wizardRef.current.goStep(resumeStep(loaded))
     })
-    // Загрузка делается один раз на открытие: дальше состоянием владеет мастер.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingId])
+    return () => {
+      cancelled = true
+    }
+  }, [existingId, syncRef, wizardRef])
 
   // Галерея — отдельно и после того, как id черновика дошёл до неё: в первом заходе он ещё
   // не выставлен, запрос молча не уходил, и «Отправка» показывала «0 из 15» при шести фото.
   useEffect(() => {
-    if (existingId && sync.saleCarId) void gallery.refresh()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingId, sync.saleCarId])
+    if (existingId && sync.saleCarId) void galleryRef.current.refresh()
+  }, [existingId, sync.saleCarId, galleryRef])
 
   useEffect(() => {
-    if (!recognition.outcome) return
-    if (recognition.outcome === 'done') {
-      // Распознанное перечитывается из объявления целиком: там же лежит и происхождение
-      // каждого поля, а без него подставленные значения неотличимы от введённых.
-      void sync.reload().then((loaded) => {
-        if (loaded) wizard.applyDraft(loaded)
-        wizard.goStage(stageFor('done'))
-        wizard.goStep('specs')
-      })
+    const outcome = recognition.outcome
+    if (!outcome) return
+    if (outcome !== 'done') {
+      wizardRef.current.goStage(stageFor(outcome))
       return
     }
-    wizard.goStage(stageFor(recognition.outcome))
-    // Хук возвращает шаги мастера, и они не меняются между рендерами.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [recognition.outcome])
+    // Распознанное перечитывается из объявления целиком: там же лежит и происхождение
+    // каждого поля, а без него подставленные значения неотличимы от введённых.
+    let cancelled = false
+    void syncRef.current.reload().then((loaded) => {
+      if (cancelled) return
+      if (loaded) wizardRef.current.applyDraft(loaded)
+      wizardRef.current.goStage(stageFor('done'))
+      wizardRef.current.goStep('specs')
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [recognition.outcome, syncRef, wizardRef])
 
   // Запрос не приняли — черновика на сервере нет или сеть отказала. Мастер возвращается
   // на тот экран, с которого распознавание запускали: «распознаём» без запроса крутилось
   // бы вечно.
   const startRecognition = useCallback(
     (send: () => Promise<boolean>, fallback: DocumentStage) => {
-      wizard.goStage('recognizing')
-      recognition.reset()
+      wizardRef.current.goStage('recognizing')
+      recognitionRef.current.reset()
       void send().then((accepted) => {
-        if (!accepted) wizard.goStage(fallback)
+        if (!accepted) wizardRef.current.goStage(fallback)
       })
     },
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [recognition],
+    [wizardRef, recognitionRef],
   )
 
   const pickDocument = useCallback(

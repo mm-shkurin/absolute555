@@ -54,11 +54,15 @@ export function useConversation(chat: ChatWire | null, now: Date) {
   // уходит после загрузки, а её ответ обновляет бейдж в таб-баре.
   useEffect(() => {
     if (!chat || messages.length === 0) return
+    let cancelled = false
     void markConversationRead(chat.id, messages).then((read) => {
-      if (!read) return
+      if (cancelled || !read) return
       void client.invalidateQueries({ queryKey: ['chats'] })
       void client.invalidateQueries({ queryKey: ['chat-unread'] })
     })
+    return () => {
+      cancelled = true
+    }
   }, [chat, messages, client])
 
   const sending = useMutation({
