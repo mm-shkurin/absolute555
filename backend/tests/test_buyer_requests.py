@@ -7,21 +7,9 @@
 
 import uuid
 
-import jwt
 import pytest
 
-from tests.conftest import run_sql
-
-
-def _id_of(headers) -> str:
-    return jwt.decode(
-        headers["Authorization"].removeprefix("Bearer "), options={"verify_signature": False}
-    )["id"]
-
-
-def _verify(headers):
-    run_sql("UPDATE users SET is_guest = false WHERE id = :id", {"id": uuid.UUID(_id_of(headers))})
-    return headers
+from tests.conftest import run_sql, user_id_of as _id_of, verify_account as _verify
 
 
 @pytest.fixture

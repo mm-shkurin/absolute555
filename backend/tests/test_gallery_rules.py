@@ -65,7 +65,7 @@ def test_should_refuse_an_upload_carrying_no_files(client, seller):
     response = client.post(f"/api/v1/sale_car/{listing_id}/photos", headers=seller, files=[])
 
     assert response.status_code == 422, response.text
-    assert response.json()["code"] in ("NO_FILES_GIVEN", "VALIDATION_ERROR")
+    assert response.json()["code"] == "NO_FILES_GIVEN"
 
 
 def test_should_let_a_published_listing_be_rearranged(

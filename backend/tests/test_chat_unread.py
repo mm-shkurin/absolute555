@@ -9,7 +9,8 @@ import uuid
 
 import pytest
 
-from tests.test_chat import _id_of, _say, _verify, published  # noqa: F401
+from tests.conftest import user_id_of as _id_of, verify_account as _verify
+from tests.test_chat import _say, published  # noqa: F401
 
 
 @pytest.fixture

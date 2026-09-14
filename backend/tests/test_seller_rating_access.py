@@ -42,7 +42,8 @@ def test_should_refuse_a_review_from_a_guest(client, signed_in, parties, closed_
 
     refused = rate(client, guest, offer_id)
 
-    assert refused.status_code in (403, 404), refused.text
+    assert refused.status_code == 403, refused.text
+    assert refused.json()["code"] == "GUEST_FORBIDDEN"
 
 
 def test_should_refuse_the_writing_routes_without_credentials(client, review):

@@ -8,10 +8,9 @@ alike — so they only exist here.
 
 import uuid
 
-import jwt
 import pytest
 
-from tests.conftest import run_sql
+from tests.conftest import verify_account as _verify
 from tests.test_listing_lifecycle import COMPLETE, _create
 
 
@@ -20,18 +19,6 @@ def _offer(client, headers, listing_id, price=1000000.0):
         "/api/v1/offer/", headers=headers, json={"sale_car_id": listing_id, "price": price}
     )
 
-
-def _verify(headers):
-    """Turn a guest account into an ordinary one.
-
-    A guest may bid but may not read the bids on their own listing (`forbid_guest`), and
-    this project has no endpoint that verifies an account -- story 13 builds it. Setup
-    reaches for the row, exactly as the moderator fixture does; every assertion still
-    goes over HTTP.
-    """
-    user_id = jwt.decode(headers["Authorization"].removeprefix("Bearer "), options={"verify_signature": False})["id"]
-    run_sql("UPDATE users SET is_guest = false WHERE id = :id", {"id": uuid.UUID(user_id)})
-    return headers
 
 
 def _settle(client, headers, offer_id, decision):

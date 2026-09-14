@@ -263,4 +263,6 @@ def test_should_not_let_a_moderator_promote_themselves(client, moderator, admin)
     ],
 )
 def test_should_refuse_a_caller_who_has_not_signed_in(client, call):
-    assert call(client).status_code in (401, 403)
+    refused = call(client)
+    assert refused.status_code == 401, refused.text
+    assert refused.json()["code"] == "CREDENTIALS_INVALID"

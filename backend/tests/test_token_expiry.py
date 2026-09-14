@@ -93,7 +93,8 @@ def test_should_refuse_a_refresh_token_of_a_user_who_never_existed(client):
 
     refreshed = client.post("/api/v1/auth/refresh", json={"refresh_token": token})
 
-    assert refreshed.status_code in (401, 404), refreshed.text
+    assert refreshed.status_code == 401, refreshed.text
+    assert refreshed.json()["code"] == "TOKEN_INVALID"
 
 
 @pytest.mark.parametrize("known", [True, False])

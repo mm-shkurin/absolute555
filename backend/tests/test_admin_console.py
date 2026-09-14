@@ -243,7 +243,7 @@ def test_should_walk_from_a_complaint_to_a_closed_door(
         headers=signed_in(),
         json={"reason": "photos_of_another_car", "text": "фотографии чужой машины"},
     )
-    assert complaint.status_code in (200, 201), complaint.text
+    assert complaint.status_code == 201, complaint.text
 
     taken_down = client.post(
         f"/api/v1/moderation/listings/{listing_id}/unpublish",

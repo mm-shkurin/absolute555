@@ -20,10 +20,11 @@ PROTECTED = [
 @pytest.mark.parametrize("method,path", PROTECTED)
 def test_should_refuse_an_anonymous_caller(client, method, path):
     response = client.request(method, path, json={})
-    assert response.status_code in (401, 403), (
+    assert response.status_code == 401, (
         f"{method} {path} answered {response.status_code}; an unauthenticated caller "
         "must be refused by the dependency, not by whatever fails deeper in"
     )
+    assert response.json()["code"] == "CREDENTIALS_INVALID"
 
 
 def test_should_leave_the_public_feed_open(client):
@@ -31,4 +32,4 @@ def test_should_leave_the_public_feed_open(client):
     # ProductSpecification/UserFlows.md. It needs a database, so this asserts only that
     # it is not the auth layer that stops an anonymous caller.
     response = client.get("/api/v1/sale_car/list")
-    assert response.status_code not in (401, 403)
+    assert response.status_code == 200, response.text

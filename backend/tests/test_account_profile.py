@@ -148,7 +148,8 @@ def test_should_leave_what_the_deleted_account_left_behind(client, seller):
     )
     # Черновик чужому не виден — но он существует, иначе ответ был бы тем же 404 и после
     # реального удаления строки. Проверяем то, что видно снаружи: удаление не роняет API.
-    assert seen.status_code in (403, 404)
+    assert seen.status_code == 404, seen.text
+    assert seen.json()["code"] == "LISTING_NOT_FOUND"
 
 
 def test_should_refuse_an_unauthenticated_rename(client):

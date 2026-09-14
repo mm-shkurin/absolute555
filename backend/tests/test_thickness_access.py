@@ -88,7 +88,8 @@ def test_should_refuse_a_caller_who_has_not_signed_in(client, owner):
         files={"photo": ("gauge.png", make_image(), "image/png")},
     )
 
-    assert refused.status_code in (401, 403), refused.text
+    assert refused.status_code == 401, refused.text
+    assert refused.json()["code"] == "CREDENTIALS_INVALID"
 
 
 def test_should_hold_one_measurement_per_panel(client, owner):

@@ -7,21 +7,8 @@ that disappears when a dependency is dropped from a signature.
 
 import uuid
 
-import jwt
-
-from tests.conftest import run_sql
+from tests.conftest import verify_account as _verify
 from tests.test_listing_lifecycle import COMPLETE, _create
-
-
-def _id_of(headers):
-    return jwt.decode(
-        headers["Authorization"].removeprefix("Bearer "), options={"verify_signature": False}
-    )["id"]
-
-
-def _verify(headers):
-    run_sql("UPDATE users SET is_guest = false WHERE id = :id", {"id": uuid.UUID(_id_of(headers))})
-    return headers
 
 
 def test_should_let_a_guest_hold_several_drafts(client, seller):

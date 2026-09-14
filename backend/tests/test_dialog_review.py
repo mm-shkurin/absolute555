@@ -5,7 +5,7 @@
 """
 
 from tests.test_buyer_requests import ask, buyer, importer, respond  # noqa: F401
-from tests.test_chat import _verify, published, talking  # noqa: F401
+from tests.test_chat import published, talking  # noqa: F401
 
 
 def _review(client, headers, dialog_id, rating=5, text="Всё честно"):

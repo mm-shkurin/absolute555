@@ -82,7 +82,8 @@ def test_should_refuse_to_approve_a_profile_nobody_submitted(client, importer, m
 
     approved = decide(client, moderator, importer, "approve")
 
-    assert approved.status_code in (400, 404, 409, 422), approved.text
+    assert approved.status_code == 404, approved.text
+    assert approved.json()["code"] == "SUPPLIER_NOT_FOUND"
     assert client.get(f"/api/v1/supplier/{_id_of(importer)}").status_code == 404
 
 

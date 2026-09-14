@@ -26,7 +26,7 @@ def test_should_refuse_a_patch_that_carries_nothing(client, seller):
 
     empty = client.patch(f"/api/v1/sale_car/{listing_id}", headers=seller, json={})
 
-    assert empty.status_code in (400, 422), empty.text
+    assert empty.status_code == 422, empty.text
     assert empty.json()["code"] == "EMPTY_PATCH"
 
 
@@ -49,7 +49,8 @@ def test_should_not_let_a_stranger_edit_a_listing(client, seller, signed_in):
         f"/api/v1/sale_car/{listing_id}", headers=stranger, json={"price": 1.0}
     )
 
-    assert patched.status_code in (403, 404), patched.text
+    assert patched.status_code == 404, patched.text
+    assert patched.json()["code"] == "LISTING_NOT_FOUND"
     assert client.get(f"/api/v1/sale_car/{listing_id}", headers=seller).json()["price"] is None
 
 
@@ -69,7 +70,8 @@ def test_should_not_let_a_stranger_delete_a_listing(client, seller, signed_in):
 
     deleted = client.delete(f"/api/v1/sale_car/{listing_id}", headers=signed_in())
 
-    assert deleted.status_code in (403, 404), deleted.text
+    assert deleted.status_code == 403, deleted.text
+    assert deleted.json()["code"] == "NOT_LISTING_OWNER"
     assert client.get(f"/api/v1/sale_car/{listing_id}", headers=seller).status_code == 200
 
 
@@ -115,7 +117,7 @@ def test_should_delete_a_listing_that_carries_a_document(client, seller, image_b
         headers=seller,
         files={"file": ("sts.png", image_bytes(), "image/png")},
     )
-    assert attached.status_code in (200, 202), attached.text
+    assert attached.status_code == 202, attached.text
 
     deleted = client.delete(f"/api/v1/sale_car/{listing_id}", headers=seller)
 

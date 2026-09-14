@@ -1,6 +1,5 @@
 """Прямая переписка: «Написать» на странице поставщика открывает чат без объявления."""
 
-from tests.test_chat import _verify  # noqa: F401
 
 
 def _open(client, headers, user_id):
@@ -32,7 +31,7 @@ def test_should_let_both_sides_write_in_a_direct_chat(client, signed_in):
         f"/api/v1/chat/dialogs/{dialog_id}/messages", headers=asker, json={"text": "Привезёте?"}
     )
 
-    assert said.status_code in (200, 201), said.text
+    assert said.status_code == 201, said.text
     theirs = client.get("/api/v1/chat/dialogs", headers=supplier).json()
     assert dialog_id in {one["dialog_id"] for one in theirs}
 

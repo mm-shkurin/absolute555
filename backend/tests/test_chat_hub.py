@@ -13,16 +13,13 @@ import pytest
 
 from app.core.config import JWTSettings
 from app.sse.chat_socket import ChatHub, listener_of
+from tests.conftest import sign_token
 
 jwt_settings = JWTSettings()
 
 ONE = "11111111-1111-1111-1111-111111111111"
 OTHER = "22222222-2222-2222-2222-222222222222"
 
-
-def _token(claims: dict, secret=None) -> str:
-    body = {"exp": datetime.now(timezone.utc) + timedelta(minutes=5), **claims}
-    return jwt.encode(body, secret or jwt_settings.secret_key, algorithm=jwt_settings.algorithm)
 
 
 async def test_should_hand_a_message_to_both_sides():
@@ -83,11 +80,11 @@ async def test_should_survive_a_queue_that_refuses_the_message():
 
 
 async def test_should_recognise_the_person_behind_an_access_token():
-    assert await listener_of(_token({"id": ONE, "type": "access"})) == ONE
+    assert await listener_of(sign_token({"id": ONE, "type": "access"})) == ONE
 
 
 async def test_should_accept_the_bearer_prefix():
-    token = _token({"id": ONE, "type": "access"})
+    token = sign_token({"id": ONE, "type": "access"})
 
     assert await listener_of(f"Bearer {token}") == ONE
 
@@ -97,8 +94,8 @@ async def test_should_accept_the_bearer_prefix():
     [
         "",
         "не токен",
-        _token({"id": ONE, "type": "refresh"}),
-        _token({"id": ONE, "type": "access"}, secret="a" * 40),
+        sign_token({"id": ONE, "type": "refresh"}),
+        sign_token({"id": ONE, "type": "access"}, secret="a" * 40),
         jwt.encode(
             {"id": ONE, "type": "access", "exp": datetime.now(timezone.utc) - timedelta(minutes=1)},
             JWTSettings().secret_key,

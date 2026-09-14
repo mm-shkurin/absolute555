@@ -10,23 +10,18 @@ import uuid
 import jwt
 import pytest
 
-from app.core.config import JWTSettings
 from app.sse.chat_socket import ChatHub, listener_of
+from tests.conftest import sign_token
 
 pytestmark = pytest.mark.asyncio
 
-jwt_settings = JWTSettings()
-
-
-def _token(payload: dict) -> str:
-    return jwt.encode(payload, jwt_settings.secret_key, algorithm=jwt_settings.algorithm)
 
 
 async def test_should_recognise_the_person_behind_an_access_token():
     person = str(uuid.uuid4())
 
-    assert await listener_of(_token({"id": person, "type": "access"})) == person
-    assert await listener_of(f"Bearer {_token({'id': person, 'type': 'access'})}") == person
+    assert await listener_of(sign_token({"id": person, "type": "access"}, expires_in=None)) == person
+    assert await listener_of(f"Bearer {sign_token({'id': person, 'type': 'access'}, expires_in=None)}") == person
 
 
 @pytest.mark.parametrize(
@@ -42,7 +37,7 @@ async def test_should_refuse_a_token_it_cannot_trust(token):
 
 
 async def test_should_refuse_a_refresh_token_where_an_access_token_belongs():
-    refresh = _token({"id": str(uuid.uuid4()), "type": "refresh"})
+    refresh = sign_token({"id": str(uuid.uuid4()), "type": "refresh"}, expires_in=None)
 
     assert await listener_of(refresh) is None
 

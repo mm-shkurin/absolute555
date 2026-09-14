@@ -2,6 +2,7 @@ import asyncio
 import io
 import itertools
 import uuid
+from datetime import datetime, timedelta, timezone
 
 import jwt
 import pytest
@@ -10,7 +11,7 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from sqlalchemy.pool import NullPool
 
-from app.core.config import DatabaseSettings
+from app.core.config import DatabaseSettings, JWTSettings
 from app.main import app
 
 
@@ -42,6 +43,21 @@ def run_sql(statement: str, params: dict) -> None:
             await engine.dispose()
 
     asyncio.run(_run())
+
+
+def user_id_of(headers: dict) -> str:
+    token = headers["Authorization"].removeprefix("Bearer ")
+    return jwt.decode(token, options={"verify_signature": False})["id"]
+
+
+def verify_account(headers: dict) -> dict:
+    run_sql("UPDATE users SET is_guest = false WHERE id = :id", {"id": uuid.UUID(user_id_of(headers))})
+    return headers
+
+
+def sign_token(claims: dict, secret=None, expires_in=timedelta(minutes=5)) -> str:
+    exp = {} if expires_in is None else {"exp": datetime.now(timezone.utc) + expires_in}
+    return jwt.encode({**exp, **claims}, secret or JWTSettings().secret_key, algorithm=JWTSettings().algorithm)
 
 
 @pytest.fixture
