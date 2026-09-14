@@ -28,7 +28,7 @@ from app.features.review.services.review_dialog import DialogReviewService
 from app.shared.realtime.chat_socket import chat_hub, listener_of
 from app.features.auth.deps import get_current_user
 
-from app.shared.http.chat_view import dialog_view, message_view
+from app.features.chat.api.chat_view import dialog_view, message_view
 
 chat_router = APIRouter()
 

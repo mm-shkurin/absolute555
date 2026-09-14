@@ -14,7 +14,7 @@ from app.features.importing.schemas.request import (
     SupplierResponseCreate,
     SupplierResponseView,
 )
-from app.shared.http.chat_view import message_view
+from app.features.chat.api.chat_view import message_view
 from app.features.chat.schemas.chat import MessageResponse
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission

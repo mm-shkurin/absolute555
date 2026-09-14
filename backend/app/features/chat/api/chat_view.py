@@ -1,6 +1,6 @@
 """One shape for a dialogue and a message."""
 
-from app.shared.http.sale_car_view import seller_view, to_card
+from app.features.listing.api.sale_car_view import seller_view, to_card
 from app.shared.storage.s3_service import s3_service
 
 

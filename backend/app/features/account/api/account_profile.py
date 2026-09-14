@@ -12,7 +12,7 @@ from app.features.listing.api.image_upload import image_upload
 from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import CurrentUser
 
-from app.shared.http.account_view import profile_view
+from app.features.account.api.account_view import profile_view
 
 profile_router = APIRouter()
 
