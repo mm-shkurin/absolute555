@@ -20,7 +20,9 @@
 
 .layout {
   display: grid;
-  grid-template-columns: 1fr 380px;
+  /* `minmax(0, …)`, а не `1fr`: колонка `1fr` не уже содержимого, и снимок в полную
+     ширину исходника выталкивал страницу за край телефона. */
+  grid-template-columns: minmax(0, 1fr) 380px;
   gap: 32px;
   align-items: start;
   padding: 24px 0 90px;
@@ -106,7 +108,7 @@
 
 @media (max-width: 1023px) {
   .layout {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
     gap: 16px;
     padding: 12px 0 100px;
   }
