@@ -6,6 +6,8 @@ const summary = require(path.join(process.cwd(), 'coverage', 'coverage-summary.j
 
 // Доля, которую vitest честно покрывает в каждом типе: [низ, верх].
 const KINDS = {
+  // Фикстуры режима `dev:mock`: в сборку не попадают, тестировать нечего.
+  dev: { test: /src\/dev\//, reach: [0, 0] },
   logic: { test: /\/logic\//, reach: [0.9, 0.95] },
   hooks: { test: /\/use[A-Z]\w*\.ts$/, reach: [0.7, 0.8] },
   api: { test: /\/(api|session)\//, reach: [0.7, 0.8] },
@@ -20,7 +22,7 @@ for (const [file, value] of Object.entries(summary)) {
   if (file === 'total') continue
   const normalized = file.split(path.sep).join('/')
   // tsx проверяется раньше api: компонент в папке api — всё равно компонент.
-  const kind = ['tsx', 'logic', 'hooks', 'api', 'other'].find((k) => KINDS[k].test.test(normalized))
+  const kind = ['dev', 'tsx', 'logic', 'hooks', 'api', 'other'].find((k) => KINDS[k].test.test(normalized))
   rows[kind].covered += value.lines.covered
   rows[kind].total += value.lines.total
   const area = normalized.match(/src\/((?:features|shared)\/[^/]+|[^/]+)/)?.[1] ?? 'root'

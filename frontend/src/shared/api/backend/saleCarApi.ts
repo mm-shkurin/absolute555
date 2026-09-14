@@ -108,7 +108,7 @@ export function attachSts(saleCarId: string, file: File) {
 export function decodeVin(saleCarId: string, vin: string) {
   return send<StsAcceptedWire>(BACKEND.saleCar.decodeVin(saleCarId), {
     method: 'POST',
-    body: JSON.stringify({ vin }),
+    body: { vin },
   })
 }
 
