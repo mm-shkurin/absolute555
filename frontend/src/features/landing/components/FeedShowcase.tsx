@@ -3,13 +3,12 @@
 // обещал бы витрину, которой в ленте нет.
 import { Link } from 'react-router-dom'
 import { useQuery } from '@tanstack/react-query'
-import { ButtonLink } from '../../../shared/ui/Button'
 import { Container } from '../../../shared/ui/Container'
 import { Cover } from '../../../shared/ui/Cover'
 import { ROUTES } from '../../../shared/navigation/routes'
 import { fetchFeed } from '../../../shared/api/backend/saleCarApi'
 import { SHOWCASE_SIZE, TAG_LABEL, toShowcaseCar, type ShowcaseCar } from '../logic/showcaseView'
-import { SectionHead } from './SectionParts'
+import { ShowcaseHead } from './ShowcaseHead'
 import section from '../landing.module.css'
 import styles from './FeedShowcase.module.css'
 
@@ -52,21 +51,7 @@ export function FeedShowcase() {
   return (
     <section className={section.section} data-testid="landing-showcase">
       <Container>
-        <div className={styles.head}>
-          <div>
-            <SectionHead
-              eyebrow="Сейчас в продаже"
-              title="Кузов видно ещё до звонка"
-              sub={
-                'Полоска под ценой — карта замеров: сколько панелей кузова уже промерено ' +
-                'толщиномером. Серая — замеров нет.'
-              }
-            />
-          </div>
-          <ButtonLink to={ROUTES.feed} size="big" data-testid="showcase-feed">
-            Перейти к ленте
-          </ButtonLink>
-        </div>
+        <ShowcaseHead />
         <div className={styles.feed}>
           {cars.map((car) => (
             <Card key={car.id} car={car} />

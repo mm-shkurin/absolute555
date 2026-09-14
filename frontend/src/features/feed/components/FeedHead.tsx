@@ -10,15 +10,13 @@ const SORTS: { value: FeedSort; label: string }[] = [
   { value: 'price-desc', label: 'цена по убыванию' },
 ]
 
-export function FeedHead({
-  query,
-  countText,
-  onChange,
-}: {
+interface FeedHeadProps {
   query: FeedQuery
   countText: string
   onChange: (query: FeedQuery) => void
-}) {
+}
+
+export function FeedHead({ query, countText, onChange }: FeedHeadProps) {
   return (
     <div className={styles.head} data-testid="feed-head">
       <ChannelTabs current="available" />

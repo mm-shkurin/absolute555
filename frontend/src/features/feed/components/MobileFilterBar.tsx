@@ -1,52 +1,35 @@
 // Полоса фильтров для узкого экрана. Показывает только то, что уже выбрано, плюс вход в
 // полную панель: на 390 точках ширины список всех фильтров не помещается ни в какой форме.
 import { toggleTransmission, type FeedQuery } from '../logic/feedQuery'
-import panel from './FilterPanel.module.css'
+import { FilterChip } from './FilterChip'
 import styles from '../feed.module.css'
 
-export function MobileFilterBar({
-  query,
-  onChange,
-  onOpenSheet,
-}: {
+interface MobileFilterBarProps {
   query: FeedQuery
   onChange: (query: FeedQuery) => void
   onOpenSheet?: () => void
-}) {
+}
+
+export function MobileFilterBar({ query, onChange, onOpenSheet }: MobileFilterBarProps) {
   return (
     <div className={styles.mobileFilters} data-testid="mobile-filters">
-      <button type="button" className={panel.chip} onClick={onOpenSheet}>
-        Фильтры
-      </button>
+      <FilterChip onClick={onOpenSheet}>Фильтры</FilterChip>
       {query.brand ? (
-        <button
-          type="button"
-          className={panel.chip}
-          aria-pressed="true"
-          onClick={() => onChange({ ...query, brand: undefined })}
-        >
+        <FilterChip pressed onClick={() => onChange({ ...query, brand: undefined })}>
           {query.brand} ✕
-        </button>
+        </FilterChip>
       ) : null}
       {query.transmissions.map((item) => (
-        <button
-          key={item}
-          type="button"
-          className={panel.chip}
-          aria-pressed="true"
-          onClick={() => onChange(toggleTransmission(query, item))}
-        >
+        <FilterChip key={item} pressed onClick={() => onChange(toggleTransmission(query, item))}>
           {item} ✕
-        </button>
+        </FilterChip>
       ))}
-      <button
-        type="button"
-        className={panel.chip}
-        aria-pressed={query.withThicknessMap}
+      <FilterChip
+        pressed={query.withThicknessMap}
         onClick={() => onChange({ ...query, withThicknessMap: !query.withThicknessMap })}
       >
         с картой замеров
-      </button>
+      </FilterChip>
     </div>
   )
 }
