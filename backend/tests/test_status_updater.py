@@ -86,7 +86,6 @@ async def test_should_leave_the_seller_view_alone_for_a_step_that_says_nothing(
 
 
 async def test_should_say_nothing_about_an_entity_it_does_not_know(session_of_its_own, listing):
-    # Раньше умолчанием был личный гараж, и всякий вызывающий, забывший тип, писал туда.
     await update_task_status(listing, TaskStatus.SUCCESS, entity_type="spare_part")
 
 

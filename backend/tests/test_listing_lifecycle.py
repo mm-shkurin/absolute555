@@ -95,7 +95,7 @@ def test_should_name_every_missing_field_when_a_draft_is_incomplete(client, sell
 
     assert response.status_code == 422, response.text
     missing = set(response.json()["details"]["missing_fields"])
-    # Make and model are not in here: story 6 took them out of the gate so that a make
+    # Make and model are not in the gate, so that a make
     # the catalogue does not know cannot block a sale.
     assert missing == {"phone_number", "year", "photos"}
     assert _status(client, seller, listing_id) == "draft"
@@ -131,7 +131,6 @@ def test_should_return_a_withdrawn_listing_through_review(client, seller, modera
     assert response.status_code == 200, response.text
     assert response.json()["status"] == "moderation"
 
-    # The feed answers a page and a count since story 7, not a bare array.
     feed = client.get("/api/v1/sale_car/list").json()
     assert listing_id not in [car["sale_car_id"] for car in feed["items"]]
 

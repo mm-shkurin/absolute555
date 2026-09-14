@@ -121,7 +121,7 @@ def moderator(client, signed_in):
     """A caller who may approve and reject.
 
     The role is granted straight in the database: this project has no endpoint that
-    promotes a user, and story 13 is where role requests are built. Setup reaches for
+    promotes a user directly. Setup reaches for
     the row; every assertion still goes over HTTP.
     """
     headers = signed_in()
@@ -141,7 +141,7 @@ def seller(signed_in):
 def catalogue(client) -> tuple:
     """A make and a model that exist, as ids.
 
-    Completeness needs both resolved against the catalogue (story 3), so every test that
+    Completeness needs both resolved against the catalogue, so every test that
     reaches moderation needs a real pair rather than an invented uuid.
     """
     brands = client.get("/api/v1/catalog/brands")

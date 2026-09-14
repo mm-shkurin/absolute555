@@ -25,7 +25,7 @@ def _settle(client, headers, offer_id, decision):
 def published(client, seller, moderator, catalogue, attach_photo):
     """A listing buyers can actually bargain over.
 
-    Story 10 narrowed offers to published listings, so the fixture drives the real path:
+    Offers need a published listing, so the fixture drives the real path:
     fill in, send for review, publish.
     """
     brand_id, model_id = catalogue
@@ -44,7 +44,7 @@ def published(client, seller, moderator, catalogue, attach_photo):
 
 @pytest.fixture
 def buyer(signed_in):
-    """A signed-in person who is not a guest: a guest does not bargain (story 10)."""
+    """A signed-in person who is not a guest: a guest does not bargain."""
     return _verify(signed_in())
 
 

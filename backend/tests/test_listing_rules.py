@@ -95,7 +95,6 @@ def test_should_withdraw_a_listing_marked_sold_by_mistake(
 
     assert response.status_code == 200, response.text
     assert response.json()["status"] == "withdrawn"
-    # The feed answers a page and a count since story 7, not a bare array.
     feed = client.get("/api/v1/sale_car/list").json()
     assert listing_id not in [car["sale_car_id"] for car in feed["items"]]
 

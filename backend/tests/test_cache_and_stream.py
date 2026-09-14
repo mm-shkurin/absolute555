@@ -63,7 +63,7 @@ async def test_should_keep_two_prefixes_apart(cache):
 
 
 def test_should_refuse_the_stream_to_a_caller_who_has_not_signed_in(client):
-    """Story 11 shut this: it used to answer anyone who could spell an identifier."""
+    """The stream answers only a signed-in caller, not anyone who can spell an identifier."""
     assert client.get("/api/v1/task/sse/not-a-uuid").status_code == 401
 
 
