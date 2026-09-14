@@ -43,10 +43,10 @@ async def decode_vin(file_bytes: bytes, car_id: str = None) -> dict:
         loop = asyncio.get_running_loop()
         fields = await loop.run_in_executor(None, _read, file_bytes)
     except VisionUnavailable as error:
-        logger.error(f"vision provider unavailable: {error}")
+        logger.error("vision provider unavailable: {}", error)
         return {"error": "vision_unavailable", "message": str(error)}
-    except Exception as error:  # noqa: BLE001 - the job answers ocr_failed, not a crash
-        logger.exception(f"reading the registration document failed: {error}")
+    except Exception:  # noqa: BLE001 - the job answers ocr_failed, not a crash
+        logger.exception("reading the registration document failed")
         return {"error": "ocr_failed"}
 
     if not any(fields.get(name) for name in ("vin", "body_number", "mark", "model")):

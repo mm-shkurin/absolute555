@@ -31,10 +31,10 @@ def read_text(image, images_to_try: list) -> str:
     """The best text tesseract can get out of these candidates, VIN candidates first."""
     best_text, best_confidence = _best_reading(images_to_try)
     if not best_text or (best_confidence < 30 and len(best_text) < 100):
-        logger.warning(f"Very low OCR confidence ({best_confidence:.1f}%) or short text, trying single fallback")
+        logger.warning("Very low OCR confidence ({:.1f}%) or short text, trying single fallback", best_confidence)
         best_text, best_confidence = _try_fallback(image, best_text, best_confidence)
 
-    logger.info(f"OCR extracted text (confidence: {best_confidence:.1f}%): {best_text[:300]}...")
+    logger.info("OCR extracted text (confidence: {:.1f}%): {}...", best_confidence, best_text[:300])
     return _prepend_vin_candidates(best_text)
 
 
@@ -67,8 +67,7 @@ def _best_reading(images_to_try: list) -> tuple:
             break
     if best["config"]:
         logger.info(
-            f"Best OCR: {best['image_type']} {best['config']} with confidence "
-            f"{best['confidence']:.1f}%, text length {len(best['text'])}"
+            "Best OCR: {} {} with confidence {:.1f}%, text length {}", best['image_type'], best['config'], best['confidence'], len(best['text'])
         )
     return best["text"], best["confidence"]
 
@@ -77,15 +76,15 @@ def _try_configs(img_type: str, img, best: dict) -> None:
     for config in CONFIGS:
         try:
             text, confidence = _ocr(img, config)
-            logger.debug(f"OCR {img_type} {config}: confidence={confidence:.1f}%, text_length={len(text)}")
+            logger.debug("OCR {} {}: confidence={:.1f}%, text_length={}", img_type, config, confidence, len(text))
             improves = _score(confidence, text) > _score(best["confidence"], best["text"])
             if improves or (confidence > best["confidence"] and len(text) > len(best["text"]) * 0.8):
                 best.update(text=text, confidence=confidence, config=config, image_type=img_type)
                 if confidence >= 75 and len(text) > 200:
-                    logger.info(f"Excellent result ({confidence:.1f}%, {len(text)} chars) with {img_type} {config}, stopping")
+                    logger.info("Excellent result ({:.1f}%, {} chars) with {} {}, stopping", confidence, len(text), img_type, config)
                     return
         except (cv2.error, pytesseract.TesseractError, OSError, ValueError) as e:
-            logger.warning(f"OCR {img_type} {config} failed: {e}")
+            logger.warning("OCR {} {} failed: {}", img_type, config, e)
 
 
 def _try_fallback(image, best_text: str, best_confidence) -> tuple:
@@ -100,10 +99,10 @@ def _try_fallback(image, best_text: str, best_confidence) -> tuple:
 
         text, confidence = _ocr(original_image, '--psm 6 --oem 3')
         if text and (len(text) > len(best_text) or confidence > best_confidence):
-            logger.info(f"Fallback method improved: confidence={confidence:.1f}%, text_length={len(text)}")
+            logger.info("Fallback method improved: confidence={:.1f}%, text_length={}", confidence, len(text))
             return text, confidence
     except (cv2.error, pytesseract.TesseractError, OSError, ValueError) as e:
-        logger.debug(f"Fallback method failed: {e}")
+        logger.debug("Fallback method failed: {}", e)
     return best_text, best_confidence
 
 
@@ -113,7 +112,7 @@ def _prepend_vin_candidates(ocr_text: str) -> str:
         for match in re.findall(pattern, ocr_text.upper()):
             if len(set(match)) > 5 and match not in potential_vins:
                 potential_vins.append(match)
-                logger.info(f"Found potential VIN in OCR text: {match}")
+                logger.info("Found potential VIN in OCR text: {}", match)
     if not potential_vins:
         return ocr_text
     found = ", ".join(potential_vins)

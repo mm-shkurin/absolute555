@@ -35,7 +35,7 @@ def read_number(body: bytes) -> Optional[str]:
         image, candidates = prepare_candidates(body)
         text = normalise(read_text(image, candidates))
     except (cv2.error, pytesseract.TesseractError, OSError, ValueError) as error:
-        logger.warning(f"tesseract could not read the document: {error}")
+        logger.warning("tesseract could not read the document: {}", error)
         return None
 
     # По словам, а не по склеенному тексту. Склейка убирает пробелы, и семнадцать подряд

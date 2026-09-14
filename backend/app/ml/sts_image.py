@@ -28,7 +28,7 @@ def prepare_candidates(file_bytes: bytes) -> tuple:
     prepared candidate reads badly.
     """
     image = Image.open(BytesIO(file_bytes))
-    logger.info(f"Original image size: {image.size[0]}x{image.size[1]}")
+    logger.info("Original image size: {}x{}", image.size[0], image.size[1])
     image, width, height = _downscale_for_processing(image)
     image = _to_rgb(_apply_exif_orientation(image))
     # Deliberately the pre-rotation size: the upscale check has always used it.
@@ -50,7 +50,7 @@ def _downscale_for_processing(image):
     if width > MAX_PROCESSING_SIZE or height > MAX_PROCESSING_SIZE:
         scale = min(MAX_PROCESSING_SIZE / width, MAX_PROCESSING_SIZE / height)
         new_width, new_height = int(width * scale), int(height * scale)
-        logger.info(f"Downscaling image from {width}x{height} to {new_width}x{new_height} to save memory")
+        logger.info("Downscaling image from {}x{} to {}x{} to save memory", width, height, new_width, new_height)
         image = image.resize((new_width, new_height), Image.LANCZOS)
         width, height = new_width, new_height
     return image, width, height
@@ -66,14 +66,14 @@ def _apply_exif_orientation(image):
                         image = image.rotate(_EXIF_ROTATION[value], expand=True)
                     break
     except (AttributeError, KeyError, TypeError, ValueError, OSError) as exif_error:
-        logger.debug(f"EXIF orientation fix skipped: {exif_error}")
+        logger.debug("EXIF orientation fix skipped: {}", exif_error)
     return image
 
 
 def _to_rgb(image):
     if image.mode == 'RGB':
         return image
-    logger.info(f"Converting image from {image.mode} to RGB")
+    logger.info("Converting image from {} to RGB", image.mode)
     rgb_image = Image.new('RGB', image.size)
     if image.mode == 'RGBA':
         rgb_image.paste(image, mask=image.split()[3])
@@ -86,7 +86,7 @@ def _upscale_if_small(image, width, height):
     if width < MIN_SIZE or height < MIN_SIZE:
         scale = max(MIN_SIZE / width, MIN_SIZE / height)
         new_width, new_height = int(width * scale), int(height * scale)
-        logger.info(f"Upscaling image from {width}x{height} to {new_width}x{new_height}")
+        logger.info("Upscaling image from {}x{} to {}x{}", width, height, new_width, new_height)
         image = image.resize((new_width, new_height), Image.LANCZOS)
     return image
 
@@ -110,7 +110,7 @@ def _enhanced_gray(image):
 
     gray = cv2.cvtColor(img_array, cv2.COLOR_BGR2GRAY)
     mean_brightness, std_brightness = np.mean(gray), np.std(gray)
-    logger.info(f"Image brightness: mean={mean_brightness:.1f}, std={std_brightness:.1f}")
+    logger.info("Image brightness: mean={:.1f}, std={:.1f}", mean_brightness, std_brightness)
     alpha, beta = _brightness_correction(mean_brightness)
     gray = cv2.convertScaleAbs(gray, alpha=alpha, beta=beta)
 
@@ -151,8 +151,8 @@ def _fit_for_ocr(img, name: str, info: bool = False):
         scale = min(MAX_OCR_SIZE / w, MAX_OCR_SIZE / h)
         new_w, new_h = int(w * scale), int(h * scale)
         if info:
-            logger.info(f"Downscaling image for OCR from {w}x{h} to {new_w}x{new_h}")
+            logger.info("Downscaling image for OCR from {}x{} to {}x{}", w, h, new_w, new_h)
         else:
-            logger.debug(f"Resizing {name} from {w}x{h} to {new_w}x{new_h}")
+            logger.debug("Resizing {} from {}x{} to {}x{}", name, w, h, new_w, new_h)
         img = img.resize((new_w, new_h), Image.LANCZOS)
     return img

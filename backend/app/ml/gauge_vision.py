@@ -83,6 +83,6 @@ def read_gauge_vision(body: bytes) -> Optional[int]:
 
     readings = {parse_reading(content) for content in answers}
     if len(readings) != 1 or None in readings:
-        logger.info(f"gauge vision is not sure: {[a[:20] for a in answers]!r}")
+        logger.info("gauge vision is not sure: {!r}", [a[:20] for a in answers])
         return None
     return readings.pop()

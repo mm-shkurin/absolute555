@@ -38,7 +38,7 @@ async def read_panel_photo(body: bytes) -> Optional[int]:
     try:
         reading = read_gauge_vision(body)
     except GaugeVisionUnavailable as error:
-        logger.warning(f"gauge vision unavailable: {str(error)[:120]}")
+        logger.warning("gauge vision unavailable: {}", str(error)[:120])
         return None
 
     ttl = get_recognition_settings().gauge_cache_ttl_seconds
