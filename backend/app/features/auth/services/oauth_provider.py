@@ -13,12 +13,8 @@ import httpx
 
 from app.core.config import YandexSettings
 from app.core.config_getters import get_oauth_settings, get_yandex_settings
+from app.features.auth.services.oauth_errors import OAuthFailed
 from app.shared.outbound_http import outbound_client
-
-
-
-class OAuthFailed(Exception):
-    """The provider refused, answered with nothing usable, or could not be reached."""
 
 
 @dataclass(frozen=True)

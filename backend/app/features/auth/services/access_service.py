@@ -34,10 +34,8 @@ class AccessService:
             await self._still_allowed(payload.get("id"))
 
             return await create_access_token({"id": payload.get("id")})
-        except AuthenticationError:
-            raise
-        except Exception:
-            raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
+        except AuthorizationError as error:
+            raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID") from error
 
     async def user_of(self, token: str) -> Users:
         user_id = await self._access_subject(token)
@@ -72,8 +70,6 @@ class AccessService:
         except AuthenticationError as error:
             if error.code == "TOKEN_EXPIRED":
                 raise
-            raise _credentials_invalid() from error
-        except Exception as error:
             raise _credentials_invalid() from error
         if revoked or payload.get("id") is None or payload.get("type") != "access":
             raise _credentials_invalid()

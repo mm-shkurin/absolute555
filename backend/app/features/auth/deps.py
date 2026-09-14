@@ -6,12 +6,19 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.config_getters import get_cookie_settings
 from app.core.exceptions import AuthenticationError
 from app.db.database import get_db
+from app.features.account.deps import get_user_service
+from app.features.account.services.user_service import UserService
 from app.features.auth.services.access_service import AccessService
+from app.features.auth.services.guest_auth_service import GuestAuthService
 from app.utils.security import auth_scheme
 
 
 def get_access_service(db: AsyncSession = Depends(get_db)) -> AccessService:
     return AccessService(db)
+
+
+def get_guest_auth_service(users: UserService = Depends(get_user_service)) -> GuestAuthService:
+    return GuestAuthService(users)
 
 
 def _bearer(request: Request, token: str | None) -> str:

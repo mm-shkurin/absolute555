@@ -20,7 +20,8 @@ from urllib.parse import urlencode
 from app.core.config_getters import get_oauth_settings
 from app.core.exceptions import AuthenticationError
 from app.features.auth.schemas.token import Token
-from app.features.auth.services.oauth_provider import OAuthFailed, provider_for
+from app.features.auth.services.oauth_errors import OAuthFailed
+from app.features.auth.services.oauth_provider import provider_for
 from app.features.auth.services.oauth_store import OAuthStore
 from app.features.account.services.user_service import UserService
 from app.utils.security import create_access_token, create_refresh_token
@@ -55,7 +56,7 @@ async def finish_yandex_sign_in(
     try:
         identity = await provider.fetch_identity(code)
     except OAuthFailed as failure:
-        logger.warning(f"yandex sign-in failed: {failure}")
+        logger.warning("yandex sign-in failed: {}", failure)
         return _back_to_frontend(error="provider_failed", provider=provider.name)
 
     # Ответ провайдера кладётся объектом, а не строкой: колонка JSONB, и `json.dumps`

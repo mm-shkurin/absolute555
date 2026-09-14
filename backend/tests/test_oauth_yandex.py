@@ -13,10 +13,10 @@ import pytest
 
 from app.features.auth.services.oauth_provider import (
     FakeOAuthProvider,
-    OAuthFailed,
     YandexOAuthProvider,
     provider_for,
 )
+from app.features.auth.services.oauth_errors import OAuthFailed
 from app.features.auth.services.oauth_store import OAuthStore
 
 pytestmark = pytest.mark.asyncio

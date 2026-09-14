@@ -13,27 +13,19 @@ listed in .gitignore so a local copy does not drift back in.
 from typing import Optional
 
 from fastapi import APIRouter, Body, Depends, status
-from app.features.account.deps import get_user_service
 
-from app.core.exceptions import BaseErrorApp, ExternalServiceError
-from loguru import logger
-
-from app.features.auth.deps import get_access_service
-from app.features.auth.services.access_service import AccessService
-from app.features.auth.schemas.token import Token
-from app.features.account.services.user_service import UserService
-from app.features.auth.services import token_revocation
 from app.core.config_getters import get_jwt_settings
-from app.utils.security import (
-    auth_scheme,
-    create_access_token,
-    create_refresh_token,
-    verify_token,
-)
+from app.features.auth.deps import get_access_service, get_guest_auth_service
+from app.features.auth.schemas.token import Token
+from app.features.auth.services import token_revocation
+from app.features.auth.services.access_service import AccessService
+from app.features.auth.services.guest_auth_service import GuestAuthService
+from app.utils.security import auth_scheme
 
 from .auth_yandex import yandex_router
 
 auth_router = APIRouter()
+
 
 @auth_router.post("/refresh", response_model=Token)
 async def refresh(
@@ -41,12 +33,7 @@ async def refresh(
     access: AccessService = Depends(get_access_service),
 ):
     new_access_token = await access.refresh(refresh_token)
-    
-    return Token(
-        access_token=new_access_token,
-        refresh_token=refresh_token,
-        token_type="bearer"
-    )
+    return Token(access_token=new_access_token, refresh_token=refresh_token)
 
 
 @auth_router.post("/logout", status_code=status.HTTP_204_NO_CONTENT)
@@ -60,46 +47,21 @@ async def logout(
     «жив ли этот токен» кому угодно, кто его подобрал.
     """
     if token:
-        await _revoke(token.removeprefix("Bearer "), get_jwt_settings().secret_key)
+        await token_revocation.revoke_if_valid(
+            token.removeprefix("Bearer "), get_jwt_settings().secret_key
+        )
     if refresh_token:
-        await _revoke(refresh_token, get_jwt_settings().refresh_token_secret_key)
+        await token_revocation.revoke_if_valid(
+            refresh_token, get_jwt_settings().refresh_token_secret_key
+        )
 
-
-async def _revoke(token: str, secret: str) -> None:
-    try:
-        payload = await verify_token(token, secret, get_jwt_settings().algorithm)
-    except Exception:
-        # Истёкший или подделанный отзывать нечего: он и так не пройдёт проверку подписи.
-        return
-    await token_revocation.revoke(token, payload)
 
 @auth_router.post("/guest/login", response_model=Token)
 async def guest_login(
     device_id: str = Body(..., embed=True),
-    user_service: UserService = Depends(get_user_service)
+    guests: GuestAuthService = Depends(get_guest_auth_service),
 ):
-    try:
-        user_id = await user_service.create_or_get_guest_user(device_id=device_id)
-        
-        if not user_id:
-            raise ExternalServiceError("Failed to create guest user", code="GUEST_CREATE_FAILED")
-        
-        access_token = await create_access_token({"id": str(user_id), "is_guest": True})
-        refresh_token = await create_refresh_token({"id": str(user_id), "is_guest": True})
-        
-        logger.info(f"Guest login successful: user_id={user_id}, device_id={device_id}")
-        
-        return Token(
-            access_token=access_token,
-            refresh_token=refresh_token,
-            token_type="bearer"
-        )
-        
-    except BaseErrorApp:
-        raise
-    except Exception as e:
-        logger.error(f"Guest login error: {e}")
-        raise ExternalServiceError("Guest login failed", code="GUEST_LOGIN_FAILED")
+    return await guests.login(device_id)
 
 
 auth_router.include_router(yandex_router)

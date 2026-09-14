@@ -17,9 +17,15 @@ from datetime import datetime, timezone
 
 from loguru import logger
 
+from app.core.config_getters import get_jwt_settings
+from app.core.exceptions import AuthenticationError
 from app.shared.storage.cache_service import cache_service
+from app.utils.security import verify_token
 
 PREFIX = "revoked_token"
+NO_EXPIRY_SECONDS = 3600
+MIN_SECONDS = 60
+MAX_SECONDS = 86400
 
 
 def fingerprint(token: str) -> str:
@@ -30,9 +36,9 @@ def _seconds_left(payload: dict) -> int:
     """Сколько токену осталось жить. Не больше суток и не меньше минуты."""
     expires_at = payload.get("exp")
     if not expires_at:
-        return 3600
+        return NO_EXPIRY_SECONDS
     left = int(expires_at - time.time())
-    return max(60, min(left, 86400))
+    return max(MIN_SECONDS, min(left, MAX_SECONDS))
 
 
 async def revoke(token: str, payload: dict) -> None:
@@ -40,6 +46,15 @@ async def revoke(token: str, payload: dict) -> None:
         PREFIX, fingerprint(token), {"revoked_at": datetime.now(timezone.utc).isoformat()},
         ttl=_seconds_left(payload),
     )
+
+
+async def revoke_if_valid(token: str, secret: str) -> None:
+    """An expired or forged token has nothing to revoke: it fails the signature check anyway."""
+    try:
+        payload = await verify_token(token, secret, get_jwt_settings().algorithm)
+    except AuthenticationError:
+        return
+    await revoke(token, payload)
 
 
 async def is_revoked(token: str) -> bool:
@@ -51,6 +66,6 @@ async def is_revoked(token: str) -> bool:
     """
     try:
         return await cache_service.get(PREFIX, fingerprint(token)) is not None
-    except Exception as error:
-        logger.warning(f"проверка отозванных токенов не удалась: {error}")
+    except Exception as error:  # noqa: BLE001 - any cache failure answers "not revoked", see above
+        logger.warning("проверка отозванных токенов не удалась: {}", error)
         return False
