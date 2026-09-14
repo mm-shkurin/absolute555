@@ -23,9 +23,6 @@ from app.shared.storage.cache_service import cache_service
 from app.utils.security import verify_token
 
 PREFIX = "revoked_token"
-NO_EXPIRY_SECONDS = 3600
-MIN_SECONDS = 60
-MAX_SECONDS = 86400
 
 
 def fingerprint(token: str) -> str:
@@ -33,12 +30,11 @@ def fingerprint(token: str) -> str:
 
 
 def _seconds_left(payload: dict) -> int:
-    """Сколько токену осталось жить. Не больше суток и не меньше минуты."""
+    """Сколько токену осталось жить; без `exp` — сколько живёт самый долгий токен."""
     expires_at = payload.get("exp")
     if not expires_at:
-        return NO_EXPIRY_SECONDS
-    left = int(expires_at - time.time())
-    return max(MIN_SECONDS, min(left, MAX_SECONDS))
+        return get_jwt_settings().refresh_token_expire_minutes * 60
+    return max(int(expires_at - time.time()), 1)
 
 
 async def revoke(token: str, payload: dict) -> None:
