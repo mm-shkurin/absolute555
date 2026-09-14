@@ -83,35 +83,6 @@
   color: var(--text-inverse);
 }
 
-.card {
-  background: var(--bg-card);
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-surface);
-  padding: 26px;
-}
-
-.card h2 {
-  font-size: 25px;
-  font-weight: 700;
-  letter-spacing: -0.028em;
-  margin: 0 0 8px;
-}
-
-.sub {
-  font-size: 15.5px;
-  line-height: 1.55;
-  color: var(--text-secondary);
-  margin: 0 0 22px;
-}
-
-.nav {
-  display: flex;
-  gap: 10px;
-  margin-top: 24px;
-  padding-top: 20px;
-  border-top: 1px solid var(--border-subtle);
-}
-
 .hint {
   margin: 14px 0 0;
   font-size: 13.5px;
@@ -147,12 +118,6 @@
      не помещаются, а номера без подписи всё равно читаются как прогресс. */
   .step:not(.current) .stepTitle {
     display: none;
-  }
-  .card {
-    padding: 18px;
-  }
-  .card h2 {
-    font-size: 21px;
   }
   .pair {
     grid-template-columns: 1fr;

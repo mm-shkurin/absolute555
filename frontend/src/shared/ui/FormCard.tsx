@@ -1,21 +1,19 @@
 import type { ReactNode } from 'react'
 import styles from './FormCard.module.css'
 
-export function FormCard({
-  title,
-  sub,
-  children,
-  nav,
-  testId,
-}: {
+export interface FormCardProps {
   title: string
   sub?: string
-  children: ReactNode
+  children?: ReactNode
   nav: ReactNode
   testId?: string
-}) {
+  /** Без верхнего отступа: карточка стоит в сетке, где отступ задаёт сама сетка. */
+  flush?: boolean
+}
+
+export function FormCard({ title, sub, children, nav, testId, flush = false }: FormCardProps) {
   return (
-    <div className={styles.card} data-testid={testId}>
+    <div className={flush ? `${styles.card} ${styles.flush}` : styles.card} data-testid={testId}>
       <h2>{title}</h2>
       {sub ? <p className={styles.sub}>{sub}</p> : null}
       {children}

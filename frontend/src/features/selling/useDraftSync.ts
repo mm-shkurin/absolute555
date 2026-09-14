@@ -3,20 +3,10 @@
 // Отдельно от `useDraftState`, потому что состояние мастера обязано работать и без сети:
 // человек фотографирует машину во дворе, и потеря связи не должна стирать введённое.
 // Отсюда правило — сохранение может провалиться молча, а мастер продолжает работать.
-import { useCallback, useEffect, useRef, useState } from 'react'
-import {
-  isEmptyPatch,
-  loadDraft,
-  saveDraft,
-  sendSts,
-  sendVin,
-  startDraft,
-  toDraft,
-} from './api/draftApi'
 import type { ListingKind } from '../../shared/api/backend/saleCarContract'
-import { browserWindow } from '../../shared/lib/browser'
-import { toPatch } from './logic/draftWire'
 import type { Draft } from './logic/draft'
+import { useDraftSave, useRecognitionStart } from './useDraftActions'
+import { useDraftCreation } from './useDraftCreation'
 
 export interface DraftSync {
   saleCarId: string | null
@@ -33,102 +23,9 @@ export interface DraftSync {
   reload: () => Promise<Draft | null>
 }
 
-/** Адрес мастера получает id только что заведённого черновика. Без этого `/sell` оставался
- *  `/sell`: обновление страницы или возврат заводили новый пустой черновик, а начатый
- *  терялся среди них. Адрес меняется мимо роутера намеренно: навигация перезапустила бы
- *  загрузку черновика с сервера и затёрла бы то, что человек уже ввёл на экране. */
-function rememberInAddress(saleCarId: string) {
-  const win = browserWindow()
-  if (!win) return
-  const path = win.location.pathname.replace(/\/+$/, '')
-  if (path !== '/sell') return
-  win.history.replaceState(win.history.state, '', `/sell/${saleCarId}`)
-}
-
 /** `existingId` — черновик, начатый раньше: мастер открыт по ссылке из «Моих объявлений»,
  *  и заводить второй черновик на ту же машину нельзя. */
 export function useDraftSync(enabled: boolean, existingId?: string, kind?: ListingKind): DraftSync {
-  const [saleCarId, setSaleCarId] = useState<string | null>(null)
-  const [saved, setSaved] = useState(false)
-  // Идентификатор нужен обработчикам сразу после создания, до следующего рендера.
-  const idRef = useRef<string | null>(existingId ?? null)
-  // Обещание создания черновика. Человек успевает выбрать фотографию СТС раньше, чем
-  // вернётся ответ на создание, и без ожидания снимок уходил бы в никуда, а мастер
-  // откатывался на выбор файла — с виду беспричинно.
-  const creating = useRef<Promise<string | null> | null>(null)
-
-  const draftId = useCallback(async () => {
-    if (idRef.current) return idRef.current
-    return (await creating.current) ?? null
-  }, [])
-
-  useEffect(() => {
-    if (existingId) {
-      idRef.current = existingId
-      setSaleCarId(existingId)
-      return
-    }
-    if (!enabled || idRef.current || creating.current) return
-    // Отмены здесь нет намеренно. Первый заход эффекта в режиме строгой проверки сразу
-    // отменяется и запускается заново, а обещание создания уже сохранено — отменённый
-    // заход разрешался бы в «черновика нет», и загрузка снимка ждала бы именно его,
-    // навсегда. Записать идентификатор в размонтированном мастере безвредно: это ссылка,
-    // а не состояние, и следующий заход её же и переиспользует.
-    creating.current = startDraft(kind)
-      .then((car) => {
-        idRef.current = car.sale_car_id
-        setSaleCarId(car.sale_car_id)
-        rememberInAddress(car.sale_car_id)
-        return car.sale_car_id
-      })
-      // Гость и оборванная сеть выглядят здесь одинаково: черновик остаётся только на
-      // экране, и мастер об этом молчит до попытки отправки.
-      .catch(() => null)
-  }, [enabled, existingId, kind])
-
-  const save = useCallback(async (draft: Draft) => {
-    const id = idRef.current
-    if (!id) return
-    const patch = toPatch(draft)
-    // Пустую правку сервер отвергает как ошибку — на первом шаге отправлять ещё нечего.
-    if (isEmptyPatch(patch)) return
-    try {
-      await saveDraft(id, draft)
-      setSaved(true)
-    } catch {
-      setSaved(false)
-    }
-  }, [])
-
-  // Снимок и вписанный VIN — два входа в одно распознавание, и запускаются одинаково:
-  // дождаться черновика, послать, ответить мастеру, дошло ли.
-  const start = useCallback(
-    async (send: (id: string) => Promise<unknown>) => {
-      const id = await draftId()
-      if (!id) return false
-      try {
-        await send(id)
-        return true
-      } catch {
-        return false
-      }
-    },
-    [draftId],
-  )
-
-  const attachDocument = useCallback((file: File) => start((id) => sendSts(id, file)), [start])
-
-  const decodeByVin = useCallback((vin: string) => start((id) => sendVin(id, vin)), [start])
-
-  const reload = useCallback(async () => {
-    const id = idRef.current
-    if (!id) return null
-    try {
-      return toDraft(await loadDraft(id))
-    } catch {
-      return null
-    }
-  }, [])
-
-  return { saleCarId, saved, save, attachDocument, decodeByVin, reload }
+  const { saleCarId, idRef, draftId } = useDraftCreation(enabled, existingId, kind)
+  return { saleCarId, ...useDraftSave(idRef), ...useRecognitionStart(draftId) }
 }

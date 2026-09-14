@@ -1,12 +1,12 @@
 // Шестой шаг: сводка и отправка. Перед модерацией человек видит ровно то, что уйдёт.
 import { Button } from '../../../shared/ui/Button'
-import { Placeholder } from '../../../shared/ui/Placeholder'
-import { missingForSubmit, summaryRows, type Draft } from '../logic/draft'
-import { Alert } from './Alert'
-import { WizardCard, NavSpacer } from './WizardCard'
-import styles from './StepReview.module.css'
+import { missingForSubmit, type Draft } from '../logic/draft'
+import { ReviewAlerts } from './ReviewAlerts'
+import { ReviewSummary } from './ReviewSummary'
+import { WizardCard } from './WizardCard'
+import { WizardNav } from './WizardNav'
 
-interface Props {
+export interface StepReviewProps {
   draft: Draft
   /** Первое фото галереи — обложка, какой её увидят в ленте. */
   coverUrl?: string | null
@@ -19,72 +19,31 @@ interface Props {
   onFillThickness: () => void
 }
 
-export function StepReview({
-  draft,
-  coverUrl = null,
-  error,
-  onBack,
-  onSaveDraft,
-  onSubmit,
-  onFillThickness,
-}: Props) {
+export function StepReview({ draft, coverUrl = null, ...props }: StepReviewProps) {
   const gaps = missingForSubmit(draft)
-  const unmeasured = draft.totalPanels - draft.measuredPanels
-
   return (
     <WizardCard
       testId="step-review"
       title="Проверьте и отправьте"
       sub="После отправки объявление попадёт к модератору. Обычно проверка занимает несколько часов."
       nav={
-        <>
-          <Button tone="ghost" onClick={onBack}>
-            Назад
-          </Button>
-          <NavSpacer />
-          <Button tone="ghost" onClick={onSaveDraft}>
+        <WizardNav onBack={props.onBack}>
+          <Button tone="ghost" onClick={props.onSaveDraft}>
             Сохранить черновик
           </Button>
-          <Button onClick={onSubmit} disabled={gaps.length > 0} data-testid="submit-listing">
+          <Button onClick={props.onSubmit} disabled={gaps.length > 0} data-testid="submit-listing">
             Отправить на модерацию
           </Button>
-        </>
+        </WizardNav>
       }
     >
-      <div className={styles.review}>
-        {coverUrl ? (
-          <img className={styles.cover} src={coverUrl} alt="Обложка объявления" />
-        ) : (
-          <Placeholder className={styles.cover}>обложка</Placeholder>
-        )}
-        <div className={styles.summary}>
-          {summaryRows(draft).map((row) => (
-            <div key={row.label}>
-              <span>{row.label}</span>
-              <b className={row.warn ? styles.warn : undefined}>{row.value}</b>
-            </div>
-          ))}
-        </div>
-      </div>
-      {error ? (
-        <Alert tone="bad" title="Объявление не отправлено" spaced>
-          {error}
-        </Alert>
-      ) : null}
-      {gaps.length > 0 ? (
-        <Alert tone="bad" title="Без этого объявление не отправить" spaced>
-          Не заполнено: {gaps.join(', ')}.
-        </Alert>
-      ) : null}
-      {unmeasured > 0 ? (
-        <Alert tone="warn" spaced>
-          Не замерено панелей: {unmeasured} — бейджа «полная карта» не будет.{' '}
-          <button type="button" onClick={onFillThickness} className={styles.link}>
-            Домерить
-          </button>{' '}
-          можно и после публикации.
-        </Alert>
-      ) : null}
+      <ReviewSummary draft={draft} coverUrl={coverUrl} />
+      <ReviewAlerts
+        error={props.error}
+        gaps={gaps}
+        unmeasured={draft.totalPanels - draft.measuredPanels}
+        onFillThickness={props.onFillThickness}
+      />
     </WizardCard>
   )
 }

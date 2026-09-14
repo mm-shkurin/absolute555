@@ -1,30 +1,13 @@
-// Обёртка шага: заголовок, подзаголовок, содержимое и полоса навигации внизу.
-import type { ReactNode } from 'react'
-import styles from '../selling.module.css'
+// Обёртка шага: та же карточка, что у одиночной формы, но без верхнего отступа — его задаёт
+// сетка мастера.
+import { FormCard, type FormCardProps } from '../../../shared/ui/FormCard'
 
-export function WizardCard({
-  title,
-  sub,
-  children,
-  nav,
-  testId,
-}: {
-  title: string
-  sub?: string
-  children?: ReactNode
-  nav: ReactNode
+export { NavSpacer } from '../../../shared/ui/FormCard'
+
+export interface WizardCardProps extends Omit<FormCardProps, 'flush' | 'testId'> {
   testId: string
-}) {
-  return (
-    <div className={styles.card} data-testid={testId}>
-      <h2>{title}</h2>
-      {sub ? <p className={styles.sub}>{sub}</p> : null}
-      {children}
-      <div className={styles.nav}>{nav}</div>
-    </div>
-  )
 }
 
-export function NavSpacer() {
-  return <span className={styles.spacer} />
+export function WizardCard(props: WizardCardProps) {
+  return <FormCard {...props} flush />
 }

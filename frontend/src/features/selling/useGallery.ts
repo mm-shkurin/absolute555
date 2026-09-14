@@ -1,9 +1,9 @@
 // Галерея объявления на сервере. Каждая правка возвращает галерею целиком, поэтому
 // локальный список — это просто последний ответ сервера, а не своя копия, которую надо
 // сводить с ним после каждой операции.
-import { useCallback, useState } from 'react'
-import type { GalleryWire, PhotoWire } from '../../shared/api/backend/saleCarContract'
+import type { PhotoWire } from '../../shared/api/backend/saleCarContract'
 import { addPhotos, loadDraft, removePhoto, setPhotoOrder } from './api/draftApi'
+import { DEFAULT_LIMIT, useGalleryRequest } from './useGalleryRequest'
 
 export interface Gallery {
   photos: PhotoWire[]
@@ -18,41 +18,10 @@ export interface Gallery {
   refresh: () => Promise<void>
 }
 
-const DEFAULT_LIMIT = 15
-
 export function useGallery(saleCarId: string | null): Gallery {
-  // Фотографии и потолок приходят одним ответом и меняются только вместе.
-  const [{ photos, limit }, setShown] = useState<{ photos: PhotoWire[]; limit: number }>({
-    photos: [],
-    limit: DEFAULT_LIMIT,
-  })
-  const [busy, setBusy] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-
-  const run = useCallback(
-    async (action: (id: string) => Promise<GalleryWire>) => {
-      if (!saleCarId) return
-      setBusy(true)
-      setError(null)
-      try {
-        const gallery = await action(saleCarId)
-        setShown({ photos: gallery.photos, limit: gallery.limit })
-      } catch (failure) {
-        // Отказ показывается текстом: лимит фотографий и слишком большой файл — это то,
-        // что человек может исправить сам, и молчание оставило бы его гадать.
-        setError(failure instanceof Error ? failure.message : 'Не удалось изменить галерею.')
-      } finally {
-        setBusy(false)
-      }
-    },
-    [saleCarId],
-  )
-
+  const { run, ...shown } = useGalleryRequest(saleCarId)
   return {
-    photos,
-    limit,
-    busy,
-    error,
+    ...shown,
     add: (files) => run((id) => addPhotos(id, files)),
     refresh: () =>
       run(async (id) => {

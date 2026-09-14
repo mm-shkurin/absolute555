@@ -10,7 +10,11 @@ const photo = (photoId: string, position: number) => ({
   preview_url: `https://cdn/${photoId}-s.jpg`,
   position,
 })
-const gallery = (...photos: ReturnType<typeof photo>[]) => ({ sale_car_id: 'car1', photos, limit: 15 })
+const gallery = (...photos: ReturnType<typeof photo>[]) => ({
+  sale_car_id: 'car1',
+  photos,
+  limit: 15,
+})
 
 let server: FakeServer
 
@@ -23,7 +27,10 @@ afterEach(resetServer)
 describe('фотографии в мастере', () => {
   it('Scenario: добавленные фото показываются так, как их сохранил сервер', async () => {
     // Given черновик без фотографий
-    server.on('POST', BACKEND.saleCar.photos('car1'), { status: 200, body: gallery(photo('p1', 0), photo('p2', 1)) })
+    server.on('POST', BACKEND.saleCar.photos('car1'), {
+      status: 200,
+      body: gallery(photo('p1', 0), photo('p2', 1)),
+    })
     const { result } = renderHook(() => useGallery('car1'))
     // When продавец добавляет два снимка
     await act(() => result.current.add([new File(['a'], 'a.jpg'), new File(['b'], 'b.jpg')]))
@@ -46,17 +53,25 @@ describe('фотографии в мастере', () => {
   })
 
   it('Scenario: продавец меняет порядок — сервер получает новый порядок', async () => {
-    server.on('PUT', BACKEND.saleCar.photoOrder('car1'), { status: 200, body: gallery(photo('p2', 0), photo('p1', 1)) })
+    server.on('PUT', BACKEND.saleCar.photoOrder('car1'), {
+      status: 200,
+      body: gallery(photo('p2', 0), photo('p1', 1)),
+    })
     const { result } = renderHook(() => useGallery('car1'))
 
     await act(() => result.current.reorder(['p2', 'p1']))
 
-    expect(server.callsTo('PUT', BACKEND.saleCar.photoOrder('car1'))[0].body).toEqual({ photo_ids: ['p2', 'p1'] })
+    expect(server.callsTo('PUT', BACKEND.saleCar.photoOrder('car1'))[0].body).toEqual({
+      photo_ids: ['p2', 'p1'],
+    })
     expect(result.current.photos[0].photo_id).toBe('p2')
   })
 
   it('Scenario: удалённое фото пропадает из галереи', async () => {
-    server.on('DELETE', BACKEND.saleCar.photo('car1', 'p1'), { status: 200, body: gallery(photo('p2', 0)) })
+    server.on('DELETE', BACKEND.saleCar.photo('car1', 'p1'), {
+      status: 200,
+      body: gallery(photo('p2', 0)),
+    })
     const { result } = renderHook(() => useGallery('car1'))
 
     await act(() => result.current.remove('p1'))
@@ -65,7 +80,10 @@ describe('фотографии в мастере', () => {
   })
 
   it('Scenario: вернулся к черновику — галерея перечитывается с сервера', async () => {
-    server.on('GET', BACKEND.saleCar.one('car1'), { status: 200, body: { sale_car_id: 'car1', photos: [photo('p1', 0)] } })
+    server.on('GET', BACKEND.saleCar.one('car1'), {
+      status: 200,
+      body: { sale_car_id: 'car1', photos: [photo('p1', 0)] },
+    })
     const { result } = renderHook(() => useGallery('car1'))
 
     await act(() => result.current.refresh())

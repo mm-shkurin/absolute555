@@ -39,7 +39,11 @@ const draft = (over: Record<string, unknown> = {}) => ({
   ...over,
 })
 
-const gallery = (...photos: ReturnType<typeof photo>[]) => ({ sale_car_id: 'car1', photos, limit: 15 })
+const gallery = (...photos: ReturnType<typeof photo>[]) => ({
+  sale_car_id: 'car1',
+  photos,
+  limit: 15,
+})
 
 let server: FakeServer
 
@@ -68,19 +72,29 @@ describe('страница мастера продажи', () => {
   it('Scenario: цена с пробелами сохраняется числом при переходе дальше', async () => {
     openDraft()
 
-    fireEvent.change(await screen.findByPlaceholderText('4 020 000'), { target: { value: '1 900 000' } })
+    fireEvent.change(await screen.findByPlaceholderText('4 020 000'), {
+      target: { value: '1 900 000' },
+    })
     fireEvent.click(screen.getByTestId('pricing-next'))
 
     expect(await screen.findByTestId('step-photos')).toBeInTheDocument()
     await waitFor(() =>
-      expect(server.callsTo('PATCH', BACKEND.saleCar.one('car1')).at(-1)?.body).toMatchObject({ price: 1900000 }),
+      expect(server.callsTo('PATCH', BACKEND.saleCar.one('car1')).at(-1)?.body).toMatchObject({
+        price: 1900000,
+      }),
     )
   })
 
   it('Scenario: продавец добавляет фото и делает второе обложкой', async () => {
     openDraft({ price: 1900000 })
-    server.on('POST', BACKEND.saleCar.photos('car1'), { status: 200, body: gallery(photo('p1'), photo('p2')) })
-    server.on('PUT', BACKEND.saleCar.photoOrder('car1'), { status: 200, body: gallery(photo('p2'), photo('p1')) })
+    server.on('POST', BACKEND.saleCar.photos('car1'), {
+      status: 200,
+      body: gallery(photo('p1'), photo('p2')),
+    })
+    server.on('PUT', BACKEND.saleCar.photoOrder('car1'), {
+      status: 200,
+      body: gallery(photo('p2'), photo('p1')),
+    })
     await screen.findByTestId('step-photos')
 
     fireEvent.change(screen.getByTestId('photos-file'), {
@@ -90,7 +104,9 @@ describe('страница мастера продажи', () => {
     fireEvent.click(screen.getByTestId('photo-make-cover'))
 
     await waitFor(() =>
-      expect(server.callsTo('PUT', BACKEND.saleCar.photoOrder('car1'))[0]?.body).toEqual({ photo_ids: ['p2', 'p1'] }),
+      expect(server.callsTo('PUT', BACKEND.saleCar.photoOrder('car1'))[0]?.body).toEqual({
+        photo_ids: ['p2', 'p1'],
+      }),
     )
   })
 
@@ -99,7 +115,9 @@ describe('страница мастера продажи', () => {
     server.on('POST', BACKEND.saleCar.photos('car1'), { status: 200, body: gallery(photo('p1')) })
     server.on('DELETE', BACKEND.saleCar.photo('car1', 'p1'), { status: 200, body: gallery() })
     await screen.findByTestId('step-photos')
-    fireEvent.change(screen.getByTestId('photos-file'), { target: { files: [new File(['a'], 'a.jpg')] } })
+    fireEvent.change(screen.getByTestId('photos-file'), {
+      target: { files: [new File(['a'], 'a.jpg')] },
+    })
     await screen.findByText(/Снято 1 из 15/)
 
     fireEvent.click(screen.getByRole('button', { name: 'Удалить фото 1' }))
@@ -126,12 +144,17 @@ describe('страница мастера продажи', () => {
     await waitFor(() => expect(screen.getByTestId('submit-listing')).toBeEnabled())
     fireEvent.click(screen.getByTestId('submit-listing'))
 
-    await waitFor(() => expect(server.callsTo('POST', BACKEND.saleCar.submit('car1'))).toHaveLength(1))
+    await waitFor(() =>
+      expect(server.callsTo('POST', BACKEND.saleCar.submit('car1'))).toHaveLength(1),
+    )
     await waitFor(() => expect(screen.queryByTestId('step-review')).toBeNull())
   })
 
   it('Scenario: СТС нет под рукой — продавец заполняет характеристики сам', async () => {
-    server.on('POST', BACKEND.saleCar.draft, { status: 201, body: draft({ brand: null, model: null, year: null, milleage: null }) })
+    server.on('POST', BACKEND.saleCar.draft, {
+      status: 201,
+      body: draft({ brand: null, model: null, year: null, milleage: null }),
+    })
     renderPage(<SellingWizardPage />, { at: '/sell', route: '/sell' })
 
     fireEvent.click(await screen.findByRole('button', { name: 'Заполнить вручную' }))

@@ -2,31 +2,28 @@
 // сервере, и держать телефон открытым сорок секунд никто не станет.
 import { Button } from '../../../shared/ui/Button'
 import { Placeholder } from '../../../shared/ui/Placeholder'
+import { RecognitionStatus } from './RecognitionStatus'
 import type { DocumentHandlers } from './StepDocument'
-import { WizardCard, NavSpacer } from './WizardCard'
+import { WizardCard } from './WizardCard'
+import { WizardNav } from './WizardNav'
 import styles from './StepDocument.module.css'
 
-export function RecognitionProgress({
-  handlers,
-  shotUrl = null,
-}: {
+export interface RecognitionProgressProps {
   handlers: DocumentHandlers
   /** Сам выбранный снимок: человек видит, что распознаётся именно его документ. */
   shotUrl?: string | null
-}) {
+}
+
+export function RecognitionProgress({ handlers, shotUrl = null }: RecognitionProgressProps) {
   return (
     <WizardCard
       testId="step-document-recognizing"
       title="Распознаём документ"
       sub="Обработка идёт в фоне. Можно свернуть приложение — черновик сохранён, результат придёт уведомлением."
       nav={
-        <>
-          <Button tone="ghost" onClick={handlers.onCancel}>
-            Отмена
-          </Button>
-          <NavSpacer />
+        <WizardNav backLabel="Отмена" onBack={handlers.onCancel}>
           <Button onClick={handlers.onDone}>Готово</Button>
-        </>
+        </WizardNav>
       }
     >
       <div className={styles.recognizing}>
@@ -35,15 +32,7 @@ export function RecognitionProgress({
         ) : (
           <Placeholder className={styles.shot}>снимок СТС</Placeholder>
         )}
-        <div>
-          <div className={styles.working}>
-            <span className={styles.spinner} /> Читаем текст и разбираем VIN
-          </div>
-          <div className={styles.progress}>
-            <i style={{ width: '48%' }} />
-          </div>
-          <p className={styles.dropHint}>Обычно занимает 10–40 секунд.</p>
-        </div>
+        <RecognitionStatus />
       </div>
     </WizardCard>
   )

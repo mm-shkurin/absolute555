@@ -5,7 +5,9 @@ import { EMPTY_DRAFT } from '../logic/draft'
 import { BACKEND } from '../../../shared/api/backend/paths'
 import { fakeServer, resetServer, signedIn, type FakeServer } from '../../../test/fakeServer'
 
-vi.mock('../../../shared/api/backend/listingStream', () => ({ openListingStream: () => () => undefined }))
+vi.mock('../../../shared/api/backend/listingStream', () => ({
+  openListingStream: () => () => undefined,
+}))
 
 function wizard() {
   return {

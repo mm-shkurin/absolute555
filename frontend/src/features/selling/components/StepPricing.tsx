@@ -1,14 +1,13 @@
 // Третий шаг: цена, пробег и связь. Телефон обязателен, но его показ — выбор продавца.
 import { Button } from '../../../shared/ui/Button'
 import type { Draft } from '../logic/draft'
-import { Form, Field, Select, Switch, TextArea, TextInput } from '../../../shared/ui/Form'
-import { ImportFields } from './ImportFields'
-import { WizardCard, NavSpacer } from './WizardCard'
+import { Switch } from '../../../shared/ui/Form'
+import { PricingFields } from './PricingFields'
+import { WizardCard } from './WizardCard'
+import { WizardNav } from './WizardNav'
 import styles from '../selling.module.css'
 
-const CITIES = ['Омск', 'Калачинск', 'Тара']
-
-interface Props {
+export interface StepPricingProps {
   draft: Draft
   onField: (key: keyof Draft, value: string) => void
   onShowPhone: (value: boolean) => void
@@ -16,66 +15,21 @@ interface Props {
   onNext: () => void
 }
 
-export function StepPricing({ draft, onField, onShowPhone, onBack, onNext }: Props) {
+export function StepPricing({ draft, onField, onShowPhone, onBack, onNext }: StepPricingProps) {
   return (
     <WizardCard
       testId="step-pricing"
       title="Цена, пробег и как с вами связаться"
       sub="Телефон нужен, но в карточке он скрыт — покажется только если вы разрешите."
       nav={
-        <>
-          <Button tone="ghost" onClick={onBack}>
-            Назад
-          </Button>
-          <NavSpacer />
+        <WizardNav onBack={onBack}>
           <Button onClick={onNext} data-testid="pricing-next">
             Дальше
           </Button>
-        </>
+        </WizardNav>
       }
     >
-      <Form>
-        <Field label="Цена, ₽">
-          <TextInput
-            value={draft.price}
-            onChange={(value) => onField('price', value)}
-            placeholder="4 020 000"
-          />
-        </Field>
-        {/* У привоза пробега не бывает: машина ещё не приехала. */}
-        {draft.kind === 'import' ? null : (
-          <Field label="Пробег, км">
-            <TextInput
-              value={draft.mileage}
-              onChange={(value) => onField('mileage', value)}
-              placeholder="180 000"
-            />
-          </Field>
-        )}
-        <ImportFields draft={draft} onField={onField} />
-        <Field label="Город">
-          <Select
-            value={draft.city}
-            onChange={(value) => onField('city', value)}
-            options={CITIES}
-          />
-        </Field>
-        <Field label="Телефон">
-          <TextInput
-            value={draft.phone}
-            onChange={(value) => onField('phone', value)}
-            placeholder="+7 913 000-00-00"
-            mono
-          />
-        </Field>
-        <Field label="Описание" full>
-          <TextArea
-            value={draft.description}
-            onChange={(value) => onField('description', value)}
-            placeholder="Что важно знать покупателю: история обслуживания, что менялось, что требует внимания."
-          />
-        </Field>
-      </Form>
+      <PricingFields draft={draft} onField={onField} />
       <Switch checked={draft.showPhone} onChange={onShowPhone}>
         Показывать телефон в карточке
       </Switch>

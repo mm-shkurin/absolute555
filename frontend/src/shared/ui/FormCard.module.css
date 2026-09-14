@@ -9,6 +9,10 @@
   border-radius: var(--radius-surface);
 }
 
+.flush {
+  margin-top: 0;
+}
+
 .card h2 {
   margin: 0 0 8px;
   font-size: 25px;
