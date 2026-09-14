@@ -3,7 +3,7 @@ import uuid
 from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from app.db.database import BaseModel
-from app.features.account.provider_profile import as_profile, name_in
+from app.features.account.domain.provider_profile import as_profile, name_in
 from app.permissions.roles import UserRole
 class Users(BaseModel):
     __tablename__ = "users"

@@ -3,7 +3,7 @@ from fastapi import APIRouter
 
 from app.features.account.schemas.user import User_Data
 from app.permissions.dependencies import CurrentUser
-from app.features.account.provider_profile import as_profile
+from app.features.account.domain.provider_profile import as_profile
 
 from app.features.account.api.account_view import avatar_url, name_of
 
