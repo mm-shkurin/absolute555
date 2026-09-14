@@ -53,27 +53,29 @@ class SaleCarService:
         except (BotoCoreError, ClientError) as error:
             logger.warning(f"Failed to delete document for {sale_car.sale_car_id}: {error}")
 
-    async def delete_sale_car(self, sale_car_id: str) -> bool:
+    async def delete_sale_car(self, sale_car_id: str) -> None:
+        """Delete the row, then the objects and the announcement that hang off it.
+
+        Objects go only after the commit: a failed commit must not leave a listing whose
+        photographs are already gone.
+        """
         sale_car = await self.get_sale_car_by_id(sale_car_id)
         if not sale_car:
             raise ListingNotFound(sale_car_id)
+        keys = [key for photo in (sale_car.photos or []) for key in (photo["key"], photo.get("preview_key")) if key]
+
+        await self.db.execute(
+            delete(SaleCars).where(SaleCars.sale_car_id == uuid.UUID(sale_car_id))
+        )
+        await self.db.commit()
 
         try:
             await self.webhooks.send_tg_webhook_delete(sale_car_id)
         except Exception as e:  # noqa: BLE001 - a notification never undoes the action it reports
             logger.warning(f"Failed to send delete webhook for sale_car_id={sale_car_id}: {e}")
-
-        keys = [photo["key"] for photo in (sale_car.photos or [])]
-        keys += [p["preview_key"] for p in (sale_car.photos or []) if p.get("preview_key")]
         if sale_car.sts_key:
             await self._forget_document(sale_car)
         if keys:
             failed = (await s3_service.delete_files(keys))["failed"]
             if failed:
                 logger.warning("{} photo(s) of {} stayed in S3", len(failed), sale_car_id)
-
-        await self.db.execute(
-            delete(SaleCars).where(SaleCars.sale_car_id == uuid.UUID(sale_car_id))
-        )
-        await self.db.commit()
-        return True

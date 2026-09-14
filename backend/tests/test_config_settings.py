@@ -8,13 +8,8 @@
 import pytest
 from pydantic import ValidationError as PydanticError
 
-from app.core.config import (
-    DatabaseSettings,
-    JWTSettings,
-    LogLevel,
-    MinioSettings,
-    RedisSettings,
-)
+from app.core.config import DatabaseSettings, JWTSettings, LogLevel
+from app.core.config_storage import MinioSettings, RedisSettings
 
 DATABASE = {
     "POSTGRES_NETWORK_NAME": "postgres",

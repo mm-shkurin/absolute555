@@ -2,7 +2,7 @@
 
 import redis
 
-from app.core.config import RedisSettings
+from app.core.config_storage import RedisSettings
 
 
 def make_redis_client(settings: RedisSettings | None = None) -> redis.Redis:

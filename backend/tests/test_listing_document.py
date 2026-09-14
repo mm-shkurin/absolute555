@@ -11,7 +11,7 @@ import pytest
 from botocore.exceptions import ClientError
 from sqlalchemy import text
 
-from app.core.config import MinioSettings, PhotoSettings
+from app.core.config_storage import MinioSettings, PhotoSettings
 from tests.conftest import test_session
 from app.shared.storage.s3_service import s3_service
 from tests.conftest import make_image

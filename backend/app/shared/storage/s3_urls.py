@@ -1,6 +1,6 @@
 """Addresses of stored objects: from a key to the link a browser opens."""
 
-from app.core.config import MinioSettings
+from app.core.config_storage import MinioSettings
 
 
 def public_photo_url(settings: MinioSettings, key: str) -> str:

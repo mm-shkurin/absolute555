@@ -12,7 +12,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 import boto3
 
-from app.core.config import MinioSettings
+from app.core.config_storage import MinioSettings
 
 
 def build_client(settings: MinioSettings):

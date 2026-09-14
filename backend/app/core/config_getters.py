@@ -12,16 +12,13 @@ from app.core.config import (
     DocsSettings,
     FrontendSettings,
     JWTSettings,
-    MinioSettings,
     OAuthSettings,
     OfferSettings,
     OutboundHttpSettings,
-    PhotoSettings,
-    RedisSettings,
-    ThicknessSettings,
     WebhookSettings,
     YandexSettings,
 )
+from app.core.config_storage import MinioSettings, PhotoSettings, RedisSettings, ThicknessSettings
 
 
 @lru_cache
