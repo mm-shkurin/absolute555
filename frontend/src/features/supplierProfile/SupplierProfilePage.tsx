@@ -4,26 +4,15 @@ import { Link } from 'react-router-dom'
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { PageSection } from '../../shared/ui/PageHeading'
-import { FormCard, NarrowPage, NavSpacer } from '../../shared/ui/FormCard'
-import { Button } from '../../shared/ui/Button'
-import { PanelNote } from '../../shared/ui/Panel'
+import { NarrowPage } from '../../shared/ui/FormCard'
 import { FailureNotice, ListSkeleton } from '../../shared/ui/ListStates'
 import { ROUTES } from '../../shared/navigation/routes'
-import { ProfileFields } from './components/ProfileFields'
-import { CoverPicker } from './components/CoverPicker'
-import { missingForSubmit } from './logic/profileForm'
-import { STATUS_NOTE, STATUS_WORD, isEditable, shownStatus } from './logic/profileStatus'
+import { ProfileEditor } from './components/ProfileEditor'
 import { useSupplierProfile } from './useSupplierProfile'
 import styles from './supplierProfile.module.css'
 
 export function SupplierProfilePage() {
   const handle = useSupplierProfile()
-  const status = shownStatus(handle.profile)
-  // Правка опубликованной витрины: покупатели видят прежнюю версию, пока модератор не решит.
-  const revising = handle.profile?.status === 'published' && status !== 'published'
-  const editable = isEditable(status)
-  const gaps = missingForSubmit(handle.form)
-
   return (
     <>
       <SiteHeader signedIn />
@@ -38,72 +27,7 @@ export function SupplierProfilePage() {
               {handle.loadError ? (
                 <FailureNotice message={handle.loadError.message} onRetry={handle.reload} />
               ) : null}
-              {handle.profile ? (
-                <FormCard
-                  title="Профиль поставщика"
-                  sub={STATUS_NOTE[status]}
-                  testId="supplier-profile-form"
-                  nav={
-                    <>
-                      <Button
-                        tone="ghost"
-                        disabled={!editable || handle.busy}
-                        onClick={() => void handle.save()}
-                        data-testid="profile-save"
-                      >
-                        Сохранить
-                      </Button>
-                      <NavSpacer />
-                      <Button
-                        disabled={!editable || handle.busy || gaps.length > 0}
-                        onClick={() => void handle.submit()}
-                        data-testid="profile-submit"
-                      >
-                        Отправить на проверку
-                      </Button>
-                    </>
-                  }
-                >
-                  {handle.notice ? (
-                    <p className={styles.notice} role="status" data-testid="profile-notice">
-                      {handle.notice}
-                    </p>
-                  ) : null}
-                  <div className={styles.status} data-testid="profile-status" data-status={status}>
-                    {revising ? `правка: ${STATUS_WORD[status]}` : STATUS_WORD[status]}
-                  </div>
-                  {revising ? (
-                    <PanelNote>
-                      Покупатели видят прежнюю версию витрины, пока модератор не одобрит правку.
-                    </PanelNote>
-                  ) : null}
-                  {status === 'rejected' && handle.profile.reject_reason ? (
-                    <PanelNote>
-                      Причина отказа: {handle.profile.reject_reason}. Правка вернёт профиль в
-                      черновик.
-                    </PanelNote>
-                  ) : null}
-                  <CoverPicker
-                    coverUrl={handle.profile.pending_cover_url ?? handle.profile.cover_url ?? null}
-                    pending={Boolean(handle.profile.pending_cover_url)}
-                  />
-                  <ProfileFields
-                    form={handle.form}
-                    disabled={!editable}
-                    onField={handle.setField}
-                  />
-                  {gaps.length > 0 ? (
-                    <p className={styles.gaps} data-testid="profile-gaps">
-                      Для отправки не хватает: {gaps.join(', ')}.
-                    </p>
-                  ) : null}
-                  {handle.error ? (
-                    <p className={styles.refused} role="alert" data-testid="profile-error">
-                      {handle.error}
-                    </p>
-                  ) : null}
-                </FormCard>
-              ) : null}
+              {handle.profile ? <ProfileEditor profile={handle.profile} handle={handle} /> : null}
             </PageSection>
           </NarrowPage>
         </Container>

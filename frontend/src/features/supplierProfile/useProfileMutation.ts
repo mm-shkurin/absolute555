@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import type { SupplierProfileWire } from '../../shared/api/backend/supplierContract'
-import { profileFailureText } from './logic/profileStatus'
+import { profileFailureText } from './logic/profileFailure'
 
 export function useProfileMutation(
   mutationFn: () => Promise<SupplierProfileWire>,
@@ -18,6 +18,7 @@ export function useProfileMutation(
     onError: (failure) => fail(profileFailureText(failure)),
   })
   return {
+    // Исход уже доставлен через onSuccess/onError; отказ промиса не должен всплыть необработанным.
     run: () => mutation.mutateAsync().then(ignore, ignore),
     isPending: mutation.isPending,
   }

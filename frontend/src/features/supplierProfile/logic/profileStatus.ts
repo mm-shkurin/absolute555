@@ -28,5 +28,3 @@ export function shownStatus(profile: SupplierProfileWire | null): SupplierStatus
 export function isEditable(status: SupplierStatus): boolean {
   return status !== 'pending'
 }
-
-export { profileFailureText } from './profileFailure'

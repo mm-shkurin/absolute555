@@ -1,44 +1,28 @@
 // Свои заявки на привоз. Отклик — главное число строки: заявка без откликов ничем не
 // отличается от заявки, о которой забыли, кроме этого счётчика.
-import { Link } from 'react-router-dom'
 import { Panel } from '../../../shared/ui/Panel'
-import { IconTile } from '../../../shared/ui/Icon'
-import { StatusBadge } from '../../../shared/ui/StatusBadge'
 import { ButtonLink } from '../../../shared/ui/Button'
 import { ROUTES } from '../../../shared/navigation/routes'
 import type { ImportRequestView } from '../logic/profileView'
-import styles from '../profile.module.css'
+import { RequestRow } from './RequestRow'
 
-export function MyRequests({ requests }: { requests: ImportRequestView[] }) {
+interface MyRequestsProps {
+  requests: ImportRequestView[]
+}
+
+export function MyRequests({ requests }: MyRequestsProps) {
+  const aside = (
+    <ButtonLink to={ROUTES.newImportRequest} tone="ghost" size="small">
+      Новая заявка
+    </ButtonLink>
+  )
   return (
-    <Panel
-      title="Мои заявки на привоз"
-      aside={
-        <ButtonLink to={ROUTES.newImportRequest} tone="ghost" size="small">
-          Новая заявка
-        </ButtonLink>
-      }
-      testId="my-requests"
-    >
+    <Panel title="Мои заявки на привоз" aside={aside} testId="my-requests">
       {requests.length === 0 ? (
         <p>Не нашли нужную машину в ленте — опишите её заявкой, и поставщики откликнутся сами.</p>
       ) : null}
       {requests.map((request) => (
-        <div key={request.id} className={styles.request}>
-          <IconTile name="document" className={styles.requestPhoto} />
-          <div>
-            <Link to={ROUTES.importRequest(request.id)} className={styles.requestTitle}>
-              {request.title}
-            </Link>
-            <div className={styles.shortcutMeta}>{request.meta}</div>
-          </div>
-          <div className={styles.requestRight}>
-            <div className={styles.responses}>{request.responses}</div>
-            <div className={styles.badgeRow}>
-              <StatusBadge tone={request.tone}>{request.badge}</StatusBadge>
-            </div>
-          </div>
-        </div>
+        <RequestRow key={request.id} request={request} />
       ))}
     </Panel>
   )
