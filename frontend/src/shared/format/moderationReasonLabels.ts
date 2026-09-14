@@ -2,7 +2,7 @@
 // очереди и покупатель в карточке, — а формулировка за одно и то же нарушение должна
 // совпадать, иначе продавец получает два разных объяснения одного отказа.
 import type { ComplaintReason, RejectionLabel } from '../api/backend/moderationContract'
-import { COMPLAINT_REASON_CODES, REJECTION_LABELS } from './moderationReasons'
+import { COMPLAINT_REASON_CODES, REJECTION_LABELS } from '../domain/moderationReasons'
 
 export interface ReasonOption<T> {
   value: T

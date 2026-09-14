@@ -5,8 +5,6 @@ import { fromFeedCard } from '../../../shared/domain/listing/fromFeedCard'
 import type { ListingWire } from '../../../shared/domain/listing/listingWire'
 import { toFeedFilters, type FeedQuery } from '../logic/feedQuery'
 
-export type { ListingWire }
-
 export interface FeedWire {
   items: ListingWire[]
   total: number

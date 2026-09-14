@@ -1,4 +1,5 @@
 import { useCallback, useState } from 'react'
+import { failureText } from '../../shared/api/failureText'
 import type { GalleryWire, PhotoWire } from '../../shared/api/backend/saleCarContract'
 
 export const DEFAULT_LIMIT = 15
@@ -23,7 +24,7 @@ export function useGalleryRequest(saleCarId: string | null) {
       } catch (failure) {
         // Отказ показывается текстом: лимит фотографий и слишком большой файл — это то,
         // что человек может исправить сам, и молчание оставило бы его гадать.
-        setError(failure instanceof Error ? failure.message : 'Не удалось изменить галерею.')
+        setError(failure instanceof Error ? failure.message : failureText(failure))
       } finally {
         setBusy(false)
       }

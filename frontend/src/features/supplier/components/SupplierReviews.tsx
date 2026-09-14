@@ -1,14 +1,12 @@
 import { Panel } from '../../../shared/ui/Panel'
 import { Avatar } from '../../../shared/ui/Avatar'
 import { stars } from '../../../shared/format/rating'
-import type { fetchSupplierReviews } from '../api/supplierApi'
+import type { ReviewWire } from '../../../shared/api/backend/reviewContract'
 import styles from '../supplier.module.css'
-
-type SupplierReview = Awaited<ReturnType<typeof fetchSupplierReviews>>['items'][number]
 
 interface SupplierReviewsProps {
   title: string
-  reviews: SupplierReview[]
+  reviews: ReviewWire[]
 }
 
 export function SupplierReviews({ title, reviews }: SupplierReviewsProps) {

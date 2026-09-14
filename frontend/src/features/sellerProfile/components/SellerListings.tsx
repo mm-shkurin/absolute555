@@ -1,6 +1,6 @@
 import { Panel } from '../../../shared/ui/Panel'
 import { ListingGrid } from '../../../shared/ui/listingCard/ListingCard'
-import { toListingView } from '../../../shared/domain/listing/listingView'
+import { toListingView } from '../../../shared/ui/listingCard/listingView'
 import type { useSellerQueries } from '../useSellerQueries'
 
 interface SellerListingsProps {

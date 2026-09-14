@@ -1,7 +1,8 @@
 import { Panel } from '../../../shared/ui/Panel'
 import { ListingGrid } from '../../../shared/ui/listingCard/ListingCard'
-import { toListingView } from '../../../shared/domain/listing/listingView'
-import type { fetchSupplier, fetchSupplierReviews } from '../api/supplierApi'
+import { toListingView } from '../../../shared/ui/listingCard/listingView'
+import type { ReviewWire } from '../../../shared/api/backend/reviewContract'
+import type { fetchSupplier } from '../api/supplierApi'
 import type { SupplierView } from '../logic/supplierView'
 import { SupplierSide } from './SupplierSide'
 import { SupplierSummary } from './SupplierSummary'
@@ -11,7 +12,7 @@ import styles from '../supplier.module.css'
 interface SupplierContentProps {
   view: SupplierView
   data: Awaited<ReturnType<typeof fetchSupplier>>
-  reviews: Awaited<ReturnType<typeof fetchSupplierReviews>> | undefined
+  reviews: { items: ReviewWire[] } | undefined
 }
 
 export function SupplierContent({ view, data, reviews }: SupplierContentProps) {

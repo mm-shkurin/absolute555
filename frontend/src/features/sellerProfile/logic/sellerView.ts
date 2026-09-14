@@ -1,7 +1,7 @@
 // Продавец и отзывы о нём.
 import { dayAndMonth, monthAndYear } from '../../../shared/format/dates'
 import { ratingLine, reviewsLabel } from '../../../shared/format/rating'
-import type { ReviewWire, SellerProfileWire } from '../api/sellerApi'
+import type { ReviewWire, SellerProfileWire } from '../../../shared/api/backend/reviewContract'
 
 export interface ReviewView {
   /** Фото автора отзыва — то же, что у него в профиле. */

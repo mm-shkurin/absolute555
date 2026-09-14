@@ -1,4 +1,4 @@
-import type { ListingView } from '../../domain/listing/listingView'
+import type { ListingView } from './listingView'
 import styles from './ListingCard.module.css'
 
 export function ListingCardBody({ listing }: { listing: ListingView }) {

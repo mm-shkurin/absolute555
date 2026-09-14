@@ -1,6 +1,5 @@
 import { Panel } from '../../../shared/ui/Panel'
 import type { SupplierResponseWire } from '../../../shared/api/backend/requestContract'
-import { failureText } from '../../../shared/api/failureText'
 import type { RequestActions } from '../useRequestActions'
 import { RespondForm } from './RespondForm'
 
@@ -18,7 +17,7 @@ export function RequestRespondPanel({ myResponse, respond }: RequestRespondPanel
         key={myResponse?.response_id ?? 'new'}
         existing={myResponse ?? null}
         busy={respond.isPending}
-        error={respond.error ? failureText(respond.error) : null}
+        error={respond.error?.message ?? null}
         onSend={(price, days, comment) =>
           respond.mutate({ price, delivery_days: days, comment: comment || undefined })
         }

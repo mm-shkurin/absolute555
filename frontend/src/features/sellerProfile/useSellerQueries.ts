@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
-import { fetchSellerProfile } from '../../shared/api/backend/reviewApi'
-import { fetchSellerListings, fetchSellerReviews } from './api/sellerApi'
+import { fetchSellerProfile, fetchSellerReviews } from '../../shared/api/backend/reviewApi'
+import { fetchSellerListings } from './api/sellerApi'
 
 export function useSellerQueries(userId: string) {
   const seller = useQuery({
@@ -9,7 +9,7 @@ export function useSellerQueries(userId: string) {
   })
   const reviews = useQuery({
     queryKey: ['seller-reviews', userId],
-    queryFn: ({ signal }) => fetchSellerReviews(userId, signal),
+    queryFn: ({ signal }) => fetchSellerReviews(userId, {}, signal),
   })
   const listings = useQuery({
     queryKey: ['seller-listings', userId],

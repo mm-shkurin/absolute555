@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom'
 import { Placeholder } from '../Placeholder'
 import { ROUTES } from '../../navigation/routes'
 import { ListingCardBody } from './ListingCardBody'
-import type { ListingView } from '../../domain/listing/listingView'
+import type { ListingView } from './listingView'
 import styles from './ListingCard.module.css'
 
 export const ListingCard = memo(function ListingCard({ listing }: { listing: ListingView }) {

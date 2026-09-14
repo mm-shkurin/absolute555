@@ -1,27 +1,28 @@
 // Лестница шагов. Кликабельна назад и вперёд: черновик сохраняется на каждом шаге, и
 // запрет прыгать вперёд заставлял бы проходить мастер заново ради одной правки.
-import { STEPS, isPassed, stepIndex, type StepId } from '../../../shared/domain/wizardSteps'
+import { STEP_IDS, isPassed, stepIndex, type StepId } from '../../../shared/domain/wizardSteps'
+import { STEP_TITLE } from '../logic/stepTitles'
 import styles from '../selling.module.css'
 
 export function StepNav({ current, onGo }: { current: StepId; onGo: (step: StepId) => void }) {
   return (
     <nav className={styles.steps} data-testid="wizard-steps">
-      {STEPS.map((step, index) => (
+      {STEP_IDS.map((step, index) => (
         <button
-          key={step.id}
+          key={step}
           type="button"
           className={[
             styles.step,
-            step.id === current ? styles.current : '',
-            isPassed(step.id, current) ? styles.passed : '',
+            step === current ? styles.current : '',
+            isPassed(step, current) ? styles.passed : '',
           ]
             .filter(Boolean)
             .join(' ')}
-          onClick={() => onGo(step.id)}
-          aria-current={step.id === current}
+          onClick={() => onGo(step)}
+          aria-current={step === current}
         >
           <span className={styles.stepNumber}>{index + 1}</span>
-          <span className={styles.stepTitle}>{step.title}</span>
+          <span className={styles.stepTitle}>{STEP_TITLE[step]}</span>
         </button>
       ))}
     </nav>

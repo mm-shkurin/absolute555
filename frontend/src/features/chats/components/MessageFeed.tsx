@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { memo, useEffect, useRef } from 'react'
 import type { MessageView } from '../logic/conversation'
 import styles from './Conversation.module.css'
 
@@ -29,7 +29,7 @@ interface MessageBubbleProps {
   message: MessageView
 }
 
-function MessageBubble({ message }: MessageBubbleProps) {
+const MessageBubble = memo(function MessageBubble({ message }: MessageBubbleProps) {
   if (message.kind === 'system') return <div className={styles.system}>{message.body}</div>
   return (
     <div className={[styles.message, message.outgoing ? styles.me : styles.them].join(' ')}>
@@ -37,4 +37,4 @@ function MessageBubble({ message }: MessageBubbleProps) {
       <span className={styles.time}>{message.time}</span>
     </div>
   )
-}
+})

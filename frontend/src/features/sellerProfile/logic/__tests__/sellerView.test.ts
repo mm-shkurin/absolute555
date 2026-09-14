@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { sellerLine, toReviewView } from '../sellerView'
-import type { ReviewWire, SellerProfileWire } from '../../api/sellerApi'
+import type { ReviewWire, SellerProfileWire } from '../../../../shared/api/backend/reviewContract'
 
 const seller: SellerProfileWire = {
   user_id: 'u1',

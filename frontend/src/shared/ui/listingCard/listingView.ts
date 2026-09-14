@@ -4,7 +4,7 @@
 import { formatAmount, formatPrice, pluralize } from '../../format/money'
 import type { Grade } from '../../thicknessMap/logic/bodyPanels'
 import { GRADE_COLOR } from '../../thicknessMap/logic/gradeLabels'
-import type { ListingWire } from './listingWire'
+import type { ListingWire } from '../../domain/listing/listingWire'
 
 export interface ListingView {
   id: string

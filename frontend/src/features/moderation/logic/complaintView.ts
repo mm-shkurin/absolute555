@@ -3,6 +3,7 @@
 import { dayAndMonth, hoursAndMinutes, parseMoment } from '../../../shared/format/dates'
 import { formatPrice, pluralize } from '../../../shared/format/money'
 import { ratingValue } from '../../../shared/format/rating'
+import { complaintReasonText } from '../../../shared/format/moderationReasonLabels'
 import type { ComplaintCaseWire, ComplaintWire } from '../api/moderationApi'
 
 export interface ComplaintView {
@@ -52,7 +53,7 @@ function toComplaint(wire: ComplaintWire, now: Date): ComplaintView {
     author: wire.author_name,
     authorAvatar: wire.author_avatar,
     // Причина стоит в подписи рядом с автором: она задаёт, что читать в тексте ниже.
-    meta: `· ${when} · причина: ${wire.reason}`,
+    meta: `· ${when} · причина: ${complaintReasonText(wire.reason)}`,
     body: wire.body,
   }
 }

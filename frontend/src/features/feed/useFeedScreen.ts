@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { countLabel } from '../../shared/domain/listing/listingView'
+import { countLabel } from '../../shared/ui/listingCard/listingView'
 import { EMPTY_QUERY, type FeedQuery } from './logic/feedQuery'
 import { useFeed } from './useFeed'
 

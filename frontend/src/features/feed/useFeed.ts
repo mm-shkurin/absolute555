@@ -6,7 +6,7 @@
 import { useInfiniteQuery } from '@tanstack/react-query'
 import { fetchFeed, hasMorePages } from './api/listingsApi'
 import type { FeedQuery } from './logic/feedQuery'
-import { toListingView, type ListingView } from '../../shared/domain/listing/listingView'
+import { toListingView, type ListingView } from '../../shared/ui/listingCard/listingView'
 
 export interface FeedResult {
   listings: ListingView[]

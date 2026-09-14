@@ -1,12 +1,13 @@
+import { useCallback } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { fetchThicknessMap } from '../../api/backend/thicknessApi'
-import type { PanelCode } from '../logic/bodyPanels'
+import { fetchThicknessMap } from '../api/backend/thicknessApi'
+import type { PanelCode } from './logic/bodyPanels'
 import {
   toPanelDetail,
   toThicknessView,
   type PanelDetail,
   type ThicknessView,
-} from '../logic/thicknessMap'
+} from './logic/thicknessMap'
 
 export interface ThicknessResult {
   view: ThicknessView | null
@@ -23,9 +24,13 @@ export function useThicknessMap(saleCarId: string): ThicknessResult {
   })
 
   const wire = result.data ?? null
+  const detailOf = useCallback(
+    (code: PanelCode) => (wire ? toPanelDetail(wire, code) : null),
+    [wire],
+  )
   return {
     view: wire ? toThicknessView(wire) : null,
-    detailOf: (code) => (wire ? toPanelDetail(wire, code) : null),
+    detailOf,
     isLoading: result.isPending,
     error: result.error,
     retry: () => void result.refetch(),

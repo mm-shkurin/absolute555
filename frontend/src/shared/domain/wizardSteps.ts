@@ -17,25 +17,18 @@ export interface WizardState {
 
 export const INITIAL_STATE: WizardState = { step: 'document', stage: 'await', submitted: false }
 
-export const STEPS: { id: StepId; title: string }[] = [
-  { id: 'document', title: 'Фото СТС' },
-  { id: 'specs', title: 'Характеристики' },
-  { id: 'pricing', title: 'Цена и контакты' },
-  { id: 'photos', title: 'Фотографии' },
-  { id: 'thickness', title: 'Карта замеров' },
-  { id: 'review', title: 'Отправка' },
-]
+export const STEP_IDS: StepId[] = ['document', 'specs', 'pricing', 'photos', 'thickness', 'review']
 
 export function stepIndex(step: StepId): number {
-  return STEPS.findIndex((item) => item.id === step)
+  return STEP_IDS.indexOf(step)
 }
 
 export function nextStep(step: StepId): StepId {
-  return STEPS[Math.min(stepIndex(step) + 1, STEPS.length - 1)].id
+  return STEP_IDS[Math.min(stepIndex(step) + 1, STEP_IDS.length - 1)]
 }
 
 export function previousStep(step: StepId): StepId {
-  return STEPS[Math.max(stepIndex(step) - 1, 0)].id
+  return STEP_IDS[Math.max(stepIndex(step) - 1, 0)]
 }
 
 // Пройденным считается шаг левее текущего. Черновик можно бросить и вернуться, поэтому
@@ -63,4 +56,3 @@ export function resumeStep(draft: {
   if (draft.photosCount === 0) return 'photos'
   return 'thickness'
 }
-

@@ -2,7 +2,7 @@
 // `logic/feedQuery.ts`, здесь только разметка и вызовы.
 import { Button } from '../../../shared/ui/Button'
 import type { FeedQuery } from '../logic/feedQuery'
-import { countLabel } from '../../../shared/domain/listing/listingView'
+import { countLabel } from '../../../shared/ui/listingCard/listingView'
 import { BrandGroup, RangeGroups, ThicknessGroup, TransmissionGroup } from './FilterGroups'
 import styles from './FilterPanel.module.css'
 

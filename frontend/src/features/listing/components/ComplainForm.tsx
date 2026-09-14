@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '../../../shared/ui/Button'
 import { ReasonPicker } from '../../../shared/ui/ReasonPicker'
-import { COMPLAINT_REASONS } from '../../../shared/domain/moderationReasonLabels'
+import { COMPLAINT_REASONS } from '../../../shared/format/moderationReasonLabels'
 import type { ComplaintReason } from '../../../shared/api/backend/moderationContract'
 import styles from './ComplainSheet.module.css'
 

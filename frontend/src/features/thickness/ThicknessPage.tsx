@@ -3,7 +3,7 @@
 // экрана: там другое состояние и другие права.
 import { Link, useParams } from 'react-router-dom'
 import { ROUTES } from '../../shared/navigation/routes'
-import { useThicknessMap } from '../../shared/thicknessMap/api/useThicknessMap'
+import { useThicknessMap } from '../../shared/thicknessMap/useThicknessMap'
 import { PanelDetail } from './components/PanelDetail'
 import { ThicknessFrame } from './components/ThicknessFrame'
 

@@ -56,7 +56,6 @@ import type {
   ComplaintGroupWire,
   QueueItemWire as WireQueueItem,
 } from '../../../shared/api/backend/moderationContract'
-import { complaintReasonText } from '../../../shared/domain/moderationReasonLabels'
 
 // Вкладки экрана и вкладки сервера названы по-разному: экран говорит о работе модератора,
 // сервер — о состоянии объявления. Перевод здесь, чтобы имя с провода не расползлось.
@@ -127,7 +126,7 @@ function toComplaintCase(group: ComplaintGroupWire): ComplaintCaseWire {
       author_name: complaint.author?.name ?? '',
       author_avatar: complaint.author?.avatar_url ?? null,
       created_at: complaint.created_at,
-      reason: complaintReasonText(complaint.reason),
+      reason: complaint.reason,
       body: complaint.text ?? '',
     })),
   }

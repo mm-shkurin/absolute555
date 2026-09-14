@@ -3,7 +3,7 @@
 // экран пришлось бы спрашивать «а вы владелец?» у каждой кнопки.
 import { Link, useParams } from 'react-router-dom'
 import { ROUTES } from '../../shared/navigation/routes'
-import { useThicknessMap } from '../../shared/thicknessMap/api/useThicknessMap'
+import { useThicknessMap } from '../../shared/thicknessMap/useThicknessMap'
 import { SellerPanelSlot } from './components/SellerPanelSlot'
 import { ThicknessFrame } from './components/ThicknessFrame'
 import { useThicknessEditor } from './useThicknessEditor'

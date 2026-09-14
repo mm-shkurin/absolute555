@@ -3,7 +3,7 @@
 // переключение мгновенное и не гоняет сеть.
 import { fetchMyListings as fetchMySaleCars } from '../../../shared/api/backend/saleCarApi'
 import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
-import { resumeStep, stepIndex, STEPS } from '../../../shared/domain/wizardSteps'
+import { resumeStep, stepIndex, STEP_IDS } from '../../../shared/domain/wizardSteps'
 
 export type ListingStatus = 'draft' | 'moderation' | 'published' | 'rejected' | 'withdrawn' | 'sold'
 
@@ -72,7 +72,7 @@ function toMyListing(car: SaleCarWire): MyListingWire {
     // Пройдено шагов — ровно столько, сколько до того, с которого «Продолжить» откроет
     // мастер: список и мастер считают одним правилом и не расходятся.
     draft_step: car.status === 'draft' ? stepIndex(resumeStep(stepFields(car))) : null,
-    total_steps: STEPS.length,
+    total_steps: STEP_IDS.length,
     updated_at: car.updated_at ?? car.created_at ?? '',
     rejection_reason: car.reject_reason,
     sold_at: car.status === 'sold' ? car.updated_at : null,

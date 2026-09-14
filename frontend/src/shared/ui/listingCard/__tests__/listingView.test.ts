@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { countLabel, toListingView } from '../listingView'
 import { formatPrice } from '../../../format/money'
-import type { ListingWire } from '../listingWire'
+import type { ListingWire } from '../../../domain/listing/listingWire'
 
 const base: ListingWire = {
   id: 'a1',

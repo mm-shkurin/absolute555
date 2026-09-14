@@ -87,3 +87,7 @@ export function toPatch(draft: Draft): SaleCarPatch {
   }
   return patch
 }
+
+export function isEmptyPatch(patch: SaleCarPatch): boolean {
+  return Object.keys(patch).length === 0
+}

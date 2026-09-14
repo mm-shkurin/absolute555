@@ -2,15 +2,11 @@
 // позиции под привоз (17). Три запроса, потому что это три разные сущности сервера —
 // отдельной сводной ручки под эту страницу нет.
 import { fetchSupplierProfile } from '../../../shared/api/backend/supplierApi'
-import {
-  fetchSellerListings,
-  fetchSellerProfile,
-  fetchSellerReviews,
-} from '../../../shared/api/backend/reviewApi'
+import { fetchSellerListings, fetchSellerProfile } from '../../../shared/api/backend/reviewApi'
 import { fromFeedCard } from '../../../shared/domain/listing/fromFeedCard'
 import type { ListingWire } from '../../../shared/domain/listing/listingWire'
 import type { SupplierProfileWire } from '../../../shared/api/backend/supplierContract'
-import type { SellerProfileWire, ReviewWire } from '../../../shared/api/backend/reviewContract'
+import type { SellerProfileWire } from '../../../shared/api/backend/reviewContract'
 
 export interface SupplierPageWire {
   profile: SupplierProfileWire
@@ -28,12 +24,4 @@ export async function fetchSupplier(
     fetchSellerListings(userId, {}, signal),
   ])
   return { profile, seller, listings: listings.items.map(fromFeedCard) }
-}
-
-export async function fetchSupplierReviews(
-  userId: string,
-  signal?: AbortSignal,
-): Promise<{ items: ReviewWire[] }> {
-  const page = await fetchSellerReviews(userId, {}, signal)
-  return { items: page.items }
 }
