@@ -7,6 +7,7 @@ export interface Call {
   method: string
   path: string
   body: unknown
+  authorization?: string
 }
 
 type Reply = { status: number; body?: unknown }
@@ -34,7 +35,13 @@ export function fakeServer(): FakeServer {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string, init: RequestInit = {}) => {
-      const call = { method: init.method ?? 'GET', path: String(url), body: parsed(init.body) }
+      const headers = (init.headers ?? {}) as Record<string, string>
+      const call = {
+        method: init.method ?? 'GET',
+        path: String(url),
+        body: parsed(init.body),
+        authorization: headers.Authorization,
+      }
       calls.push(call)
       const route = routes.find((one) => one.method === call.method && one.path === call.path)
       const reply = route ? route.handler(call) : { status: 404, body: { code: 'NOT_FOUND' } }
