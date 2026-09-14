@@ -1,0 +1,7 @@
+{
+  "yandex_authorize": "https://oauth.yandex.ru/authorize",
+  "yandex_token": "https://oauth.yandex.ru/token",
+  "yandex_info": "https://login.yandex.ru/info",
+  "giga_oauth": "https://ngw.devices.sberbank.ru:9443/api/v2/oauth",
+  "giga_api": "https://gigachat.devices.sberbank.ru/api/v1"
+}

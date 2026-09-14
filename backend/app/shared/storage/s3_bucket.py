@@ -8,7 +8,7 @@ place rather than inside a constructor.
 import json
 import uuid
 from typing import Optional
-from urllib.parse import urlsplit
+from urllib.parse import urlsplit, urlunsplit
 
 import boto3
 
@@ -20,13 +20,13 @@ def build_client(settings: MinioSettings):
         "s3",
         aws_access_key_id=settings.minio_root_user,
         aws_secret_access_key=settings.minio_root_password,
-        endpoint_url=settings.minio_endpoint_url,
+        endpoint_url=endpoint_url(settings),
     )
 
 
 def public_base_url(settings: MinioSettings) -> str:
     # Photo links are handed to browsers over https; the internal endpoint is plain http.
-    return as_https(str(settings.minio_endpoint_url)).rstrip("/")
+    return as_https(str(endpoint_url(settings))).rstrip("/")
 
 
 def as_https(url: str) -> str:
@@ -71,3 +71,10 @@ def _read_policy(bucket: str) -> str:
             ],
         }
     )
+
+
+def endpoint_url(settings) -> str:
+    """MINIO_ENDPOINT_URL, or the MinIO service inside the compose network."""
+    if settings.minio_endpoint_url:
+        return settings.minio_endpoint_url
+    return urlunsplit(("http", f"{settings.minio_network_name}:{settings.minio_port}", "", "", ""))

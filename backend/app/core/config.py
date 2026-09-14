@@ -1,6 +1,7 @@
 from typing import Optional
 from pydantic import Field, HttpUrl
 from pydantic_settings import BaseSettings
+from app.core.provider_endpoints import endpoint
 from enum import Enum
 
 class BaseConfig(BaseSettings):
@@ -44,7 +45,6 @@ class AppSettings(BaseSettings):
     log_file: str = Field(default="logs/app.log")
     log_rotation: str = Field(default="1 day")
     log_compression: CompressionType = Field(default=CompressionType.GZIP)
-    
     model_config = BaseConfig.model_config
 class DatabaseSettings(BaseSettings):
     postgres_network_name: str = Field(..., alias="POSTGRES_NETWORK_NAME")
@@ -77,11 +77,13 @@ class JWTSettings(BaseSettings):
 class YandexSettings(BaseSettings):
     yandex_clientid: str = Field(..., min_length=32, alias="YANDEX_CLIENTID")
     yandex_client_secret: str = Field(..., min_length=32, alias="YANDEX_CLIENT_SECRET")
-    yandex_redirect_uri: HttpUrl = Field(..., alias="YANDEX_REDIRECT_URI")
-    yandex_redirect_uri_web: HttpUrl = Field(..., alias="YANDEX_REDIRECT_URI_WEB")
-    yandex_authorize_url: HttpUrl = Field(..., alias="YANDEX_AUTHORIZE_URL")
-    yandex_token_url: HttpUrl = Field(..., alias="YANDEX_TOKEN_URL")
-    yandex_info_url: HttpUrl = Field(..., alias="YANDEX_INFO_URL")
+    yandex_redirect_uri: HttpUrl = Field(
+        "http://localhost/api/v1/auth/oauth/yandex/callback", validate_default=True, alias="YANDEX_REDIRECT_URI")
+    yandex_redirect_uri_web: HttpUrl = Field(
+        "http://localhost/auth/callback", validate_default=True, alias="YANDEX_REDIRECT_URI_WEB")
+    yandex_authorize_url: HttpUrl = Field(default_factory=endpoint("yandex_authorize"), validate_default=True, alias="YANDEX_AUTHORIZE_URL")
+    yandex_token_url: HttpUrl = Field(default_factory=endpoint("yandex_token"), validate_default=True, alias="YANDEX_TOKEN_URL")
+    yandex_info_url: HttpUrl = Field(default_factory=endpoint("yandex_info"), validate_default=True, alias="YANDEX_INFO_URL")
     model_config = BaseConfig.model_config
 
 class OAuthSettings(BaseSettings):
@@ -94,7 +96,7 @@ class OAuthSettings(BaseSettings):
 
     oauth_provider: str = Field(default="yandex", alias="OAUTH_PROVIDER")
     oauth_frontend_callback_url: str = Field(
-        default="http://localhost:3000/auth/callback", alias="OAUTH_FRONTEND_CALLBACK_URL"
+        default="http://localhost/auth/callback", alias="OAUTH_FRONTEND_CALLBACK_URL"
     )
     # Minutes, not hours: a state is alive only while a person is on the provider's
     # consent screen, and a handoff code only while the browser is being redirected back.
@@ -115,7 +117,7 @@ class OfferSettings(BaseSettings):
 
 
 class FrontendSettings(BaseSettings):
-    frontend_url: HttpUrl = Field(..., alias="FRONTEND_URL")
+    frontend_url: HttpUrl = Field("http://localhost:3000", validate_default=True, alias="FRONTEND_URL")
     
     model_config = BaseConfig.model_config
 class CookieSettings(BaseSettings):
@@ -128,7 +130,7 @@ class CookieSettings(BaseSettings):
     
     model_config = BaseConfig.model_config
 class CORSSettings(BaseSettings):
-    cors_origins: str = Field(..., alias="CORS_ORIGINS") 
+    cors_origins: str = Field("http://localhost:3000", alias="CORS_ORIGINS") 
     
     model_config = BaseConfig.model_config
 class RedisSettings(BaseSettings):
@@ -146,7 +148,7 @@ class MinioSettings(BaseSettings):
     minio_default_buckets: str = Field(..., min_length=1, alias="MINIO_DEFAULT_BUCKETS")
     minio_network_name: str = Field(..., alias="MINIO_NETWORK_NAME")
     minio_port: int = Field(..., ge=1, le=65535, alias="MINIO_PORT")
-    minio_endpoint_url: str = Field(..., alias="MINIO_ENDPOINT_URL")
+    minio_endpoint_url: Optional[str] = Field(None, alias="MINIO_ENDPOINT_URL")
     minio_bucket_name: str = Field(..., min_length=1, alias="MINIO_BUCKET_NAME")
 
     # Two stores, not one bucket with a policy per prefix. A typo in a prefix exposes a
@@ -154,7 +156,7 @@ class MinioSettings(BaseSettings):
     minio_documents_bucket: str = Field("absolute-documents", alias="MINIO_DOCUMENTS_BUCKET")
 
     # Where a browser reaches the gallery.
-    public_photo_base_url: str = Field(..., alias="PUBLIC_PHOTO_BASE_URL")
+    public_photo_base_url: str = Field("http://localhost:9000/absolute", alias="PUBLIC_PHOTO_BASE_URL")
 
     model_config = BaseConfig.model_config
 

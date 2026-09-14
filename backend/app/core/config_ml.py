@@ -10,6 +10,7 @@ from typing import Optional, Union
 
 from pydantic import Field, HttpUrl
 from pydantic_settings import BaseSettings
+from app.core.provider_endpoints import endpoint
 
 from app.core.config import BaseConfig
 
@@ -35,7 +36,7 @@ class RecognitionSettings(BaseSettings):
 
 
 class OllamaSettings(BaseSettings):
-    ollama_url: HttpUrl = Field(..., alias="OLLAMA_URL")
+    ollama_url: HttpUrl = Field("http://localhost:11434", validate_default=True, alias="OLLAMA_URL")
     ollama_model_name: str = Field(..., min_length=1, alias="OLLAMA_MODEL_NAME")
     
     model_config = BaseConfig.model_config
@@ -44,8 +45,8 @@ class GigaChatSettings(BaseSettings):
     giga_auth_key: str = Field(..., min_length=1, alias="GIGA_AUTH_KEY")
     giga_client_id: str = Field(..., min_length=1, alias="GIGA_CLIENT_ID")
     giga_scope: str = Field(default="GIGACHAT_API_PERS", alias="GIGA_SCOPE")
-    giga_oauth_url: HttpUrl = Field(..., alias="GIGA_OAUTH_URL")
-    giga_api_url: HttpUrl = Field(..., alias="GIGA_API_URL")
+    giga_oauth_url: HttpUrl = Field(default_factory=endpoint("giga_oauth"), validate_default=True, alias="GIGA_OAUTH_URL")
+    giga_api_url: HttpUrl = Field(default_factory=endpoint("giga_api"), validate_default=True, alias="GIGA_API_URL")
     # Seconds. Reading a СТС answers slowest: the model reads a whole document.
     giga_token_timeout: int = Field(default=30, gt=0, alias="GIGA_TOKEN_TIMEOUT")
     giga_sts_upload_timeout: int = Field(default=90, gt=0, alias="GIGA_STS_UPLOAD_TIMEOUT")
