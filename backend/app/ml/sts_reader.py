@@ -99,7 +99,7 @@ def _ask_second_opinion(second_opinion, body: bytes):
         return None
     try:
         return second_opinion(body)
-    except Exception as error:
+    except Exception as error:  # noqa: BLE001 - see the comment below
         # Второй читатель — уточнение, а не условие. Его падение не должно уносить
         # уже прочитанный документ.
         logger.warning(f"second opinion on the number failed: {error}")

@@ -65,7 +65,7 @@ def _apply_exif_orientation(image):
                     if value in _EXIF_ROTATION:
                         image = image.rotate(_EXIF_ROTATION[value], expand=True)
                     break
-    except Exception as exif_error:
+    except (AttributeError, KeyError, TypeError, ValueError, OSError) as exif_error:
         logger.debug(f"EXIF orientation fix skipped: {exif_error}")
     return image
 

@@ -60,7 +60,7 @@ def read_vin(vin: str) -> dict:
     try:
         access = access_token(settings)
         content = _ask(api, access, vin, settings.giga_vin_timeout, settings.tls_verify)
-    except Exception as error:
+    except (requests.RequestException, OSError, KeyError, ValueError) as error:
         raise VisionUnavailable(str(error)) from error
 
     return parse_answer(content, FIELDS)

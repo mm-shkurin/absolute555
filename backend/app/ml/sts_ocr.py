@@ -84,7 +84,7 @@ def _try_configs(img_type: str, img, best: dict) -> None:
                 if confidence >= 75 and len(text) > 200:
                     logger.info(f"Excellent result ({confidence:.1f}%, {len(text)} chars) with {img_type} {config}, stopping")
                     return
-        except Exception as e:
+        except (cv2.error, pytesseract.TesseractError, OSError, ValueError) as e:
             logger.warning(f"OCR {img_type} {config} failed: {e}")
 
 
@@ -102,7 +102,7 @@ def _try_fallback(image, best_text: str, best_confidence) -> tuple:
         if text and (len(text) > len(best_text) or confidence > best_confidence):
             logger.info(f"Fallback method improved: confidence={confidence:.1f}%, text_length={len(text)}")
             return text, confidence
-    except Exception as e:
+    except (cv2.error, pytesseract.TesseractError, OSError, ValueError) as e:
         logger.debug(f"Fallback method failed: {e}")
     return best_text, best_confidence
 

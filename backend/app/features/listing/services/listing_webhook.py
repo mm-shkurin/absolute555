@@ -24,7 +24,7 @@ async def announce_when_ready(webhooks, sale_car: SaleCars) -> bool:
             sale_car_data=to_payload(sale_car),
         )
         return True
-    except Exception as error:
+    except Exception as error:  # noqa: BLE001 - a notification never undoes the action it reports
         logger.error(f"Failed to send webhook for sale_car_id={sale_car.sale_car_id}: {error}")
         return False
 

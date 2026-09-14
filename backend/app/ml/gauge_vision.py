@@ -9,6 +9,7 @@ Tesseract на семисегментных цифрах прибора ошиб
 import re
 from typing import Optional
 
+import requests
 from loguru import logger
 
 from app.core.config_ml import get_gigachat_settings
@@ -77,7 +78,7 @@ def read_gauge_vision(body: bytes) -> Optional[int]:
         timeout, verify = settings.giga_gauge_timeout, settings.tls_verify
         file_id = _upload(api, access, body, timeout, verify)
         answers = [_ask(api, access, file_id, timeout, verify) for _ in range(READS)]
-    except Exception as error:
+    except (requests.RequestException, OSError, KeyError, ValueError) as error:
         raise GaugeVisionUnavailable(str(error)) from error
 
     readings = {parse_reading(content) for content in answers}

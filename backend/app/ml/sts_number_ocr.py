@@ -8,6 +8,8 @@
 import re
 from typing import Optional
 
+import cv2
+import pytesseract
 from loguru import logger
 
 from app.ml.sts_image import prepare_candidates
@@ -32,7 +34,7 @@ def read_number(body: bytes) -> Optional[str]:
     try:
         image, candidates = prepare_candidates(body)
         text = normalise(read_text(image, candidates))
-    except Exception as error:
+    except (cv2.error, pytesseract.TesseractError, OSError, ValueError) as error:
         logger.warning(f"tesseract could not read the document: {error}")
         return None
 

@@ -132,7 +132,7 @@ def read_sts(body: bytes) -> dict:
         verify = settings.tls_verify
         file_id = _upload(api, access, body, settings.giga_sts_upload_timeout, verify)
         content = _ask(api, access, file_id, settings.giga_sts_answer_timeout, verify)
-    except Exception as error:
+    except (requests.RequestException, OSError, KeyError, ValueError) as error:
         raise VisionUnavailable(str(error)) from error
 
     fields = parse_answer(content, FIELDS)

@@ -27,7 +27,7 @@ def read_gauge(body: bytes) -> Optional[int]:
         with Image.open(BytesIO(body)) as image:
             prepared = ImageOps.autocontrast(ImageOps.grayscale(image))
             text = pytesseract.image_to_string(prepared, config=DIGITS_ONLY)
-    except Exception:
+    except (pytesseract.TesseractError, OSError, ValueError):
         # Нечитаемый кадр — это ответ «не прочитал», а не сбой сервера: продавец
         # переснимет или впишет число сам.
         return None

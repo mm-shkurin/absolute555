@@ -60,7 +60,7 @@ class SaleCarService:
 
         try:
             await self.webhooks.send_tg_webhook_delete(sale_car_id)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - a notification never undoes the action it reports
             logger.warning(f"Failed to send delete webhook for sale_car_id={sale_car_id}: {e}")
 
         keys = [photo["key"] for photo in (sale_car.photos or [])]

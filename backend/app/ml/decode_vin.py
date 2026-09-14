@@ -45,7 +45,7 @@ async def decode_vin(file_bytes: bytes, car_id: str = None) -> dict:
     except VisionUnavailable as error:
         logger.error(f"vision provider unavailable: {error}")
         return {"error": "vision_unavailable", "message": str(error)}
-    except Exception as error:
+    except Exception as error:  # noqa: BLE001 - the job answers ocr_failed, not a crash
         logger.exception(f"reading the registration document failed: {error}")
         return {"error": "ocr_failed"}
 
