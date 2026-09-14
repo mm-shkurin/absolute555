@@ -9,24 +9,20 @@ from typing import Annotated
 from fastapi import Depends
 
 from app.core.exceptions import AuthorizationError
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_db
-from app.features.listing.models.sale_car import SaleCars
+from app.features.account.deps import get_user_service
 from app.features.account.models.users import Users
 from app.features.account.services.user_service import UserService
-from app.utils.security import get_current_user
+from app.features.auth.deps import get_current_user
 
 
 async def require_guest_can_create_car(
     current_user: Users = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    user_service: UserService = Depends(get_user_service)
 ) -> Users:
     if not current_user.is_guest:
-        return current_user  
-    
-    user_service = UserService(db)
+        return current_user
+
     limits = await user_service.check_guest_limits(current_user.id)
     
     if not limits["can_create_car"]:
@@ -70,18 +66,13 @@ async def forbid_guest(current_user: Users = Depends(get_current_user)) -> Users
 
 async def check_guest_car_limit(
     current_user: Users = Depends(get_current_user),
-    db: AsyncSession = Depends(get_db)
+    user_service: UserService = Depends(get_user_service)
 ) -> Users:
     if not current_user.is_guest:
         return current_user
-    
-    # A guest's one allowed object is the one listing they may publish.
-    result = await db.execute(
-        select(func.count()).where(SaleCars.user_id == current_user.id)
-    )
-    listing_count = result.scalar_one()
 
-    if listing_count >= 1:
+    limits = await user_service.check_guest_limits(current_user.id)
+    if not limits["can_create_car"]:
         raise AuthorizationError(
             "Guest users can only create 1 listing. Verify your account to create more.",
             code="GUEST_LIMIT_REACHED",

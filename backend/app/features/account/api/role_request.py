@@ -24,7 +24,7 @@ from app.permissions.dependencies import require_permission
 from app.permissions.guests import forbid_guest
 from app.permissions.permissions import Permission
 from app.permissions.roles import UserRole
-from app.utils.security import get_current_user
+from app.features.auth.deps import get_current_user
 
 role_request_router = APIRouter()
 

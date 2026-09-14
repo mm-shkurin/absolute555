@@ -19,7 +19,7 @@ from app.features.chat.schemas.chat import MessageResponse
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 from app.shared.realtime.chat_socket import chat_hub
-from app.utils.security import get_current_user
+from app.features.auth.deps import get_current_user
 
 from .request_view import request_view, request_views
 

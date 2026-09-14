@@ -17,9 +17,9 @@ from app.features.account.deps import get_user_service
 
 from app.core.exceptions import BaseErrorApp, ExternalServiceError
 from loguru import logger
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_db
+from app.features.auth.deps import get_access_service
+from app.features.auth.services.access_service import AccessService
 from app.features.auth.schemas.token import Token
 from app.features.account.services.user_service import UserService
 from app.features.auth.services import token_revocation
@@ -28,7 +28,6 @@ from app.utils.security import (
     auth_scheme,
     create_access_token,
     create_refresh_token,
-    refresh_access_token,
     verify_token,
 )
 
@@ -37,8 +36,11 @@ from .auth_yandex import yandex_router
 auth_router = APIRouter()
 
 @auth_router.post("/refresh", response_model=Token)
-async def refresh(refresh_token: str = Body(..., embed=True), db: AsyncSession = Depends(get_db)):
-    new_access_token = await refresh_access_token(refresh_token, db)
+async def refresh(
+    refresh_token: str = Body(..., embed=True),
+    access: AccessService = Depends(get_access_service),
+):
+    new_access_token = await access.refresh(refresh_token)
     
     return Token(
         access_token=new_access_token,

@@ -11,7 +11,7 @@ from fastapi import Depends
 from app.core.exceptions import AuthorizationError
 
 from app.features.account.models.users import Users
-from app.utils.security import get_current_user
+from app.features.auth.deps import get_current_user
 
 from .mapping import ROLE_PERMISSIONS
 from .permissions import Permission

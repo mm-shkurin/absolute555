@@ -15,7 +15,7 @@ from app.features.listing.schemas.sale_cars import DocumentLink, StsAccepted
 from app.features.listing.services.listing_autofill import ListingAutofillService
 from app.features.listing.services.listing_document import ListingDocumentService
 from app.features.listing.services.photo_image import read_limited, require_image
-from app.utils.security import get_current_user
+from app.features.auth.deps import get_current_user
 
 from app.features.listing.services.listing_access_service import listing_of
 from app.features.listing.api.autofill_target import accepted, autofill_target

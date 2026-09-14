@@ -22,7 +22,7 @@ from app.permissions.permissions import Permission
 from app.features.listing.schemas.feed import FeedPage, FeedQuery, PhoneRevealed
 from app.features.listing.schemas.sale_cars import DraftKind, SaleCarResponse, SaleCarUpdate
 from app.features.listing.services.listing_feed import ListingFeedService
-from app.utils.security import get_current_user, get_current_user_or_none
+from app.features.auth.deps import get_current_user, get_current_user_or_none
 
 from .sale_car_feed_query import feed_query
 from app.features.listing.services.listing_access_service import PUBLIC_STATUSES, listing_of, visible_listing
