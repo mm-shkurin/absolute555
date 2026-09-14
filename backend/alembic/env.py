@@ -45,7 +45,7 @@ def do_run_migrations(connection: Connection) -> None:
 
 
 async def run_async_migrations() -> None:
- 
+
     config_section = config.get_section(config.config_ini_section)
     db_settings = DatabaseSettings()
     url = db_settings.database_url

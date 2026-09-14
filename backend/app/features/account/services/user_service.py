@@ -18,7 +18,7 @@ class UserService:
         logger.debug("yandex_json received")
         exists = await self.db.execute(select(Users).where(Users.yandex_id == yandex_id))
         user = exists.scalar_one_or_none()
-    
+
         logger.debug(f"Looking for user with yandex_id again: {yandex_id}")
         if not user:
             logger.info("Creating new user (yandex)")
@@ -56,7 +56,7 @@ class UserService:
             await self.db.commit()
             logger.debug("User vk_json updated")
             return user.id
-    
+
     async def create_or_get_guest_user(self, device_id: Optional[str] = None):
         if device_id :
             result = await self.db.execute(
@@ -66,7 +66,7 @@ class UserService:
                 )
             )
         user = result.scalar_one_or_none()
-    
+
         if not user:
             guest_json = {
                 "device_id":device_id,
@@ -83,7 +83,7 @@ class UserService:
             await self.db.commit()
             await self.db.refresh(user)
         return user.id
-    
+
     async def check_guest_limits(self, user_id: UUID) -> dict[str, bool]:
         """How many more listings this user may create.
 

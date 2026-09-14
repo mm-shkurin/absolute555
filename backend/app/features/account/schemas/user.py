@@ -10,13 +10,13 @@ class User_Data(BaseModel):
     tg_id: Optional[str] = None
     vk_id: Optional[str] = None
     yandex_id: Optional[str] = None
-    device_id: Optional[str] = None 
-    
-    tg_json: Optional[Dict[str, Any]] = None  
-    yandex_json: Optional[Dict[str, Any]] = None   
+    device_id: Optional[str] = None
+
+    tg_json: Optional[Dict[str, Any]] = None
+    yandex_json: Optional[Dict[str, Any]] = None
     vk_json: Optional[Dict[str, Any]] = None
-    guest_json: Optional[Dict[str, Any]] = None   
-    
+    guest_json: Optional[Dict[str, Any]] = None
+
     # Имя и фотография профиля: то же, что отдают ручки правки. Прежние поля с сырыми
     # ответами провайдера остались рядом, чтобы не ломать экраны, читающие их сегодня.
     name: Optional[str] = None
@@ -26,9 +26,9 @@ class User_Data(BaseModel):
     role: Optional[str] = None
     is_verified: Optional[bool] = None
     is_guest: Optional[bool] = False
-    
+
     created_at: Optional[datetime] = None
     updated_at: Optional[datetime] = None
-    
+
     class Config:
         from_attributes = True

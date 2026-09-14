@@ -11,8 +11,8 @@ user_router = APIRouter()
 
 @user_router.get("/profile", response_model=User_Data)
 async def get_profile(current_user: CurrentUser):
-    
-    
+
+
     # Разбор ответа провайдера — один на всё приложение (`Users._as_profile`): колонка
     # JSONB, но часть записей лежит в ней строкой,
     # а часть словарём, и разбирать их надо одинаково.
@@ -26,14 +26,14 @@ async def get_profile(current_user: CurrentUser):
         name=name_of(current_user),
         avatar_url=avatar_url(current_user),
         id=current_user.id,
-        device_id=current_user.device_id,         
+        device_id=current_user.device_id,
         vk_id=current_user.vk_id,
         yandex_id=current_user.yandex_id,
         yandex_json=yandex_json_parsed,
         vk_json=vk_json_parsed,
-        guest_json=guest_json_parsed,             
-        user_type=user_type,                      
-        is_guest=current_user.is_guest,           
+        guest_json=guest_json_parsed,
+        user_type=user_type,
+        is_guest=current_user.is_guest,
         role=current_user.role,
         is_verified=current_user.is_verified,
         created_at=current_user.created_at,

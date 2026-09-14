@@ -17,31 +17,31 @@ class RoleService:
 
     async def get_all_users(self, role_filter: Optional[UserRole] = None) -> List[Users]:
         query = select(Users).order_by(desc(Users.created_at))
-        
+
         if role_filter:
             query = query.where(Users.role == role_filter.value)
-        
+
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
     async def get_role_stats(self) -> dict:
         total_result = await self.db.execute(select(Users))
         total_users = len(list(total_result.scalars().all()))
-        
+
         users_by_role = {}
         for role in UserRole:
             role_result = await self.db.execute(
                 select(Users).where(Users.role == role.value)
             )
             users_by_role[role.value] = len(list(role_result.scalars().all()))
-        
+
         verified_result = await self.db.execute(
             select(Users).where(Users.is_verified == True)
         )
         verified_users = len(list(verified_result.scalars().all()))
-        
+
         unverified_users = total_users - verified_users
-        
+
         return {
             "total_users": total_users,
             "users_by_role": users_by_role,
@@ -57,14 +57,14 @@ class RoleService:
         user = await self.get_user_by_id(id)
         if user:
             user.role = new_role.value
-            
+
             all_pending_requests = await self.db.execute(
                 select(RoleRequest).where(
                     RoleRequest.user_id == id,
                     RoleRequest.status == RoleRequestStatus.PENDING
                 )
             )
-            
+
             for request in all_pending_requests.scalars().all():
                 if request.requested_role == new_role.value:
                     request.status = RoleRequestStatus.APPROVED
@@ -74,9 +74,9 @@ class RoleService:
                     request.status = RoleRequestStatus.REJECTED
                     request.review_comment = "Роль изменена на другую"
                     logger.info(f"Role request {request.id} auto-rejected for user {id}")
-                
+
                 request.reviewed_at = datetime.now()
-                
+
             await self.db.commit()
             await self.db.refresh(user)
         return user
@@ -98,8 +98,8 @@ class RoleService:
 
         if current_user.role == UserRole.ADMIN.value:
             return True
-        
+
         if current_user.role == UserRole.MANAGER.value:
             return target_user.role == UserRole.USER.value
-        
+
         return current_user.id == target_user.id

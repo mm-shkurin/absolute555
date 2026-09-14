@@ -12,11 +12,11 @@ class Users(BaseModel):
     vk_id = Column(String, unique=True, index=True)
     yandex_id = Column(String, unique = True,index=True)
     device_id = Column(String,index = True, nullable = True)
-    
+
     yandex_json = Column(JSONB,nullable=True)
     vk_json = Column(JSONB, nullable=True)
     guest_json = Column(JSONB,nullable=True)
-    
+
     # Своё имя и своя фотография: провайдер заполняет их при первом входе, дальше они
     # принадлежат человеку. Пустое profile_name уступает имени из провайдера, поэтому
     # смена имени в Яндексе не затирает то, что человек написал у нас.
@@ -46,8 +46,8 @@ class Users(BaseModel):
 
     role_requests = relationship("RoleRequest", foreign_keys="RoleRequest.user_id", back_populates="user")
     offers = relationship("Offer", back_populates="user", cascade="all, delete-orphan")
-    
-    created_at = Column(DateTime, server_default=func.now()) 
+
+    created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
 
     @property

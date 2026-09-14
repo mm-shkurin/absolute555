@@ -15,7 +15,7 @@ class UserRoleInfo(BaseModel):
 
 class RoleStats(BaseModel):
     total_users: int
-    users_by_role: dict  
+    users_by_role: dict
     verified_users: int
     unverified_users: int
 
@@ -30,13 +30,13 @@ class RoleRequestResponse(BaseModel):
     requested_role: UserRole
     reason: str
     additional_info: Optional[str] = None
-    status: str 
+    status: str
     created_at: datetime
     updated_at: datetime
     reviewed_by: Optional[UUID] = None
     reviewed_at: Optional[datetime] = None
     review_comment: Optional[str] = None
-    
+
     class Config:
         from_attributes = True
 
@@ -48,10 +48,10 @@ class RoleRequestListResponse(BaseModel):
     reason: str
     status: str
     created_at: datetime
-    
+
     class Config:
         from_attributes = True
 
 class RoleRequestUpdate(BaseModel):
-    status: str  
+    status: str
     review_comment: Optional[str] = None

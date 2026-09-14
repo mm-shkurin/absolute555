@@ -66,10 +66,10 @@ async def update_user_role(
     await account_access_service.record_role_change(
         user, current_user, role_data.reason, previous_role, role_data.new_role.value
     )
-    
+
     return {
-        "message": "Роль успешно обновлена", 
-        "user_id": user_id, 
+        "message": "Роль успешно обновлена",
+        "user_id": user_id,
         "new_role": role_data.new_role.value,
         "reason": role_data.reason,
         "note": "Все pending запросы на смену роли автоматически обновлены"
@@ -82,10 +82,10 @@ async def get_user_role_info(
     role_service: RoleService = Depends(get_role_service)
 ):
     user = await role_service.get_user_by_id(user_id)
-    
+
     if not user:
         raise ResourceNotFoundError("Пользователь не найден", code="USER_NOT_FOUND")
-    
+
     return UserRoleInfo(
         user_id=user.id,
         current_role=user.role,
@@ -98,7 +98,7 @@ async def get_role_stats(
     role_service: RoleService = Depends(get_role_service)
 ):
     stats = await role_service.get_role_stats()
-    
+
     return RoleStats(
         total_users=stats["total_users"],
         users_by_role=stats["users_by_role"],

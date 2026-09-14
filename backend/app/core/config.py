@@ -9,11 +9,11 @@ class BaseConfig(BaseSettings):
         "env_file": ".env",
         "env_file_encoding": "utf-8",
         "extra": "ignore",
-        "populate_by_name":True 
+        "populate_by_name":True
     }
 
 class LogLevel(str, Enum):
-    DEBUG = "debug"  
+    DEBUG = "debug"
     INFO = "info"
     WARNING = "warning"
     ERROR = "error"
@@ -29,15 +29,15 @@ class AppSettings(BaseSettings):
         ...,
         min_length=1,
         max_length=100,
-        alias="APP_NAME" 
+        alias="APP_NAME"
     )
     app_port: int = Field(
         ...,
         ge=1,
         le=65535,
-        alias="APP_PORT" 
+        alias="APP_PORT"
     )
-    
+
     app_host: str = Field(default="0.0.0.0")
     app_reload: bool = Field(default=False)
     app_log_level: LogLevel = Field(default=LogLevel.INFO)
@@ -58,9 +58,9 @@ class DatabaseSettings(BaseSettings):
     @property
     def database_url(self) -> str:
         return f"postgresql+asyncpg://{self.postgres_user}:{self.postgres_password}@{self.postgres_host}:{self.postgres_port}/{self.postgres_db}"
-    
+
     model_config = BaseConfig.model_config
-    
+
 class DocsSettings(BaseSettings):
     docs_api_key: str = Field(..., alias="DOCS_API_KEY")
     docs_session_ttl_seconds: int = Field(default=3600, ge=60, alias="DOCS_SESSION_TTL_SECONDS")
@@ -71,7 +71,7 @@ class JWTSettings(BaseSettings):
     algorithm: str = Field(default="HS256", alias="ALGORITHM")
     access_token_expire_minutes: int = Field(..., alias="ACCESS_TOKEN_EXPIRE_MINUTES")
     refresh_token_expire_minutes: int = Field(..., alias="REFRESH_TOKEN_EXPIRE_MINUTES")
-    
+
     model_config = BaseConfig.model_config
 
 class YandexSettings(BaseSettings):
@@ -118,7 +118,7 @@ class OfferSettings(BaseSettings):
 
 class FrontendSettings(BaseSettings):
     frontend_url: HttpUrl = Field("http://localhost:3000", validate_default=True, alias="FRONTEND_URL")
-    
+
     model_config = BaseConfig.model_config
 class CookieSettings(BaseSettings):
     access_cookie_name: str = Field(default="access_token", alias="ACCESS_COOKIE_NAME")
@@ -126,12 +126,12 @@ class CookieSettings(BaseSettings):
     cookie_domain: str = Field(..., alias="COOKIE_DOMAIN")
     cookie_path: str = Field(default="/", alias="COOKIE_PATH")
     cookie_secure: bool = Field(default=True, alias="COOKIE_SECURE")
-    cookie_samesite: str = Field(default="none", alias="COOKIE_SAMESITE") 
-    
+    cookie_samesite: str = Field(default="none", alias="COOKIE_SAMESITE")
+
     model_config = BaseConfig.model_config
 class CORSSettings(BaseSettings):
-    cors_origins: str = Field("http://localhost:3000", alias="CORS_ORIGINS") 
-    
+    cors_origins: str = Field("http://localhost:3000", alias="CORS_ORIGINS")
+
     model_config = BaseConfig.model_config
 class RedisSettings(BaseSettings):
     redis_network_name: str = Field(..., alias="REDIS_NETWORK_NAME")

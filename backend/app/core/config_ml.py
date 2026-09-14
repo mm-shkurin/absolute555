@@ -38,7 +38,7 @@ class RecognitionSettings(BaseSettings):
 class OllamaSettings(BaseSettings):
     ollama_url: HttpUrl = Field("http://localhost:11434", validate_default=True, alias="OLLAMA_URL")
     ollama_model_name: str = Field(..., min_length=1, alias="OLLAMA_MODEL_NAME")
-    
+
     model_config = BaseConfig.model_config
 
 class GigaChatSettings(BaseSettings):

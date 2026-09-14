@@ -97,7 +97,7 @@ class RoleRequestService:
 
         if status:
             query = query.where(RoleRequest.status == status.value)
-        
+
         result = await self.db.execute(query)
         return list(result.scalars().all())
 
