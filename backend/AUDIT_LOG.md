@@ -27,3 +27,17 @@
 - ruff rule set minimal (no `I`, `B`, `BLE`); `ruff format --check` not in CI
 - `app/utils`, `app/sse` outside the documented layer map; `coding-rules.md` still cites a fixed violation
 - Merged `features/*` branches not deleted; FastAPI 0.104 / Starlette 0.27 outdated, no `pip-audit`
+
+## Iteration 3 — Score: 2.5 / 3.0 — 2026-09-14 — 4740395 (confirmation)
+### Fixed Issues:
+- Docs sessions moved from an in-memory set to Redis; `compare_digest`, secure cookie, `docs.py` deduplicated
+- `guest_login` / `_revoke` moved into auth services; broad excepts narrowed across shared, listing, ml, tasks
+- ruff selects `BLE`, `B`, `W`; B904 raise-from everywhere; `pytest.raises(Exception)` narrowed
+- `config.py` split, page and worker limits in settings; `delete_sale_car` commits before S3 cleanup
+- Supplier moderation split out; status enums imported from `domain/`; history comments removed
+### Outstanding Blockers:
+- 105 f-string log calls (fixed after this audit: lazy loguru arguments)
+- `decode_by_vin` nested try reported failure twice (fixed after this audit)
+- ruff lacks `UP`, `I`, `C90`; no `ruff format --check` in CI
+- `token_revocation.is_revoked` fails open when Redis is down
+- Merged `features/*` branches not deleted; two author identities without `.mailmap`
