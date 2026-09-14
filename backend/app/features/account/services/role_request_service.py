@@ -26,7 +26,6 @@ from app.features.account.services.role_errors import (
     RoleRequestNotFound,
     UserNotFound,
 )
-from app.features.account.services.role_service import RoleService
 
 # Что модератор вправе выдать. Всё, что выше, — только администратор: запросить admin
 # может любой, и без этой границы «рассмотреть заявку» становится дорогой наверх.
@@ -41,11 +40,12 @@ def _may_grant(reviewer: Users, role: str) -> bool:
 
 
 class RoleRequestService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, roles):
         self.db = db
+        self.roles = roles
 
     async def create_role_request(self, user_id: UUID, request_data: RoleRequestCreate) -> RoleRequest:
-        user = await RoleService(self.db).get_user_by_id(user_id)
+        user = await self.roles.get_user_by_id(user_id)
         if not user:
             raise UserNotFound(user_id)
 
@@ -136,7 +136,7 @@ class RoleRequestService:
         return role_request
 
     async def _grant(self, role_request: RoleRequest) -> None:
-        user = await RoleService(self.db).get_user_by_id(role_request.user_id)
+        user = await self.roles.get_user_by_id(role_request.user_id)
         if user:
             user.role = role_request.requested_role
             logger.info(f"User {user.id} role updated to {role_request.requested_role}")

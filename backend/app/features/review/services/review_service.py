@@ -65,7 +65,7 @@ class ReviewService:
 
         # In the same transaction as the review: an aggregate written afterwards is an
         # aggregate that a failure between the two writes leaves permanently wrong.
-        await self._recount(seller_id)
+        await self.recount(seller_id)
         await self.db.commit()
         await self.db.refresh(review)
         return review
@@ -93,7 +93,7 @@ class ReviewService:
             review.text = changes["text"] or None
 
         await self.db.flush()
-        await self._recount(review.seller_id)
+        await self.recount(review.seller_id)
         await self.db.commit()
         await self.db.refresh(review)
         return review
@@ -131,7 +131,7 @@ class ReviewService:
             raise DealNotClosed(offer.status)
         return offer, seller_id
 
-    async def _recount(self, seller_id) -> None:
+    async def recount(self, seller_id) -> None:
         counted = await self.db.execute(
             select(func.avg(Review.rating), func.count(Review.review_id)).where(
                 Review.seller_id == seller_id

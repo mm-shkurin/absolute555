@@ -18,12 +18,13 @@ from app.features.review.services.review_errors import (
     DialogNotReviewable,
     ReviewAlreadyWritten,
 )
-from app.features.review.services.review_service import ReviewService, as_uuid
+from app.features.review.services.review_service import as_uuid
 
 
 class DialogReviewService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, reviews):
         self.db = db
+        self.reviews = reviews
 
     async def create(
         self, dialog_id: str, author_id: str, rating: int, text: Optional[str]
@@ -51,7 +52,7 @@ class DialogReviewService:
         self.db.add(review)
         await self.db.flush()
         # Агрегат — в той же транзакции, что и отзыв: общий пересчёт живёт в ReviewService.
-        await ReviewService(self.db)._recount(dialog.seller_id)
+        await self.reviews.recount(dialog.seller_id)
         await self.db.commit()
         await self.db.refresh(review)
         return review

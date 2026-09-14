@@ -25,7 +25,7 @@ def get_profile_service(db: AsyncSession = Depends(get_db)) -> ProfileService:
 
 
 def get_role_request_service(db: AsyncSession = Depends(get_db)) -> RoleRequestService:
-    return RoleRequestService(db)
+    return RoleRequestService(db, RoleService(db))
 
 
 def get_role_service(db: AsyncSession = Depends(get_db)) -> RoleService:

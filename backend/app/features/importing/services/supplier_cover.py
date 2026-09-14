@@ -10,18 +10,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.importing.models.supplier import SupplierProfile, SupplierStatus
 from app.features.importing.services.supplier_errors import ProfileFrozen
-from app.features.importing.services.supplier_service import SupplierProfileService
 from app.features.listing.services.photo_image import require_image
 from app.shared.storage.s3_service import s3_service
 
 
 class SupplierCoverService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, profiles):
         self.db = db
+        self.profiles = profiles
 
     async def set(self, user_id: str, body: bytes) -> SupplierProfile:
         content_type = require_image("cover", body)
-        held = await SupplierProfileService(self.db).mine(user_id)
+        held = await self.profiles.mine(user_id)
         if held.revision_status == SupplierStatus.PENDING.value:
             raise ProfileFrozen(SupplierStatus.PENDING.value)
 
@@ -45,7 +45,7 @@ class SupplierCoverService:
         return held
 
     async def drop(self, user_id: str) -> SupplierProfile:
-        held = await SupplierProfileService(self.db).mine(user_id)
+        held = await self.profiles.mine(user_id)
         key, held.cover_key = held.cover_key, None
         await self.db.commit()
         await self.db.refresh(held)

@@ -15,7 +15,7 @@ def get_buyer_request_service(db: AsyncSession = Depends(get_db)) -> BuyerReques
 
 
 def get_supplier_cover_service(db: AsyncSession = Depends(get_db)) -> SupplierCoverService:
-    return SupplierCoverService(db)
+    return SupplierCoverService(db, SupplierProfileService(db))
 
 
 def get_supplier_profile_service(db: AsyncSession = Depends(get_db)) -> SupplierProfileService:

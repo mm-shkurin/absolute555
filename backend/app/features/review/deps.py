@@ -10,7 +10,7 @@ from app.features.review.services.review_dialog import DialogReviewService
 
 
 def get_dialog_review_service(db: AsyncSession = Depends(get_db)) -> DialogReviewService:
-    return DialogReviewService(db)
+    return DialogReviewService(db, ReviewService(db))
 
 
 def get_review_service(db: AsyncSession = Depends(get_db)) -> ReviewService:
