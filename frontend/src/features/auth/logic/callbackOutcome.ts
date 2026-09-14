@@ -14,6 +14,8 @@ const REASONS: Record<string, string> = {
 const DEFAULT_REASON =
   'Провайдер не подтвердил вход — возможно, вы закрыли окно или отклонили доступ.'
 
+const MAX_CODE_LENGTH = 512
+
 /** Порядок проверок важен: при отказе кода нет, и обмен не должен запускаться вовсе. */
 export function callbackOutcome(params: URLSearchParams): CallbackOutcome {
   const error = params.get('error')
@@ -22,6 +24,6 @@ export function callbackOutcome(params: URLSearchParams): CallbackOutcome {
   const code = params.get('code')?.trim() ?? ''
   // Пустой и неправдоподобно длинный код не тратим: это не выданный нам одноразовый код,
   // а мусор в адресной строке.
-  if (!code || code.length > 512) return { kind: 'malformed' }
+  if (!code || code.length > MAX_CODE_LENGTH) return { kind: 'malformed' }
   return { kind: 'exchange', code }
 }

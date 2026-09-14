@@ -3,6 +3,7 @@
 import { Button } from '../../../shared/ui/Button'
 import { toggleTransmission, type FeedQuery } from '../logic/feedQuery'
 import { countLabel } from '../../../shared/domain/listing/listingView'
+import { currentYear, OLDEST_YEAR_HINT } from '../../../shared/format/yearHints'
 import { RangePair } from './RangePair'
 import styles from './FilterPanel.module.css'
 
@@ -44,8 +45,8 @@ export function FilterPanel({
         </div>
         <RangePair
           label="Год"
-          from={{ value: query.yearFrom, placeholder: 'от 2005' }}
-          to={{ value: query.yearTo, placeholder: 'до 2026' }}
+          from={{ value: query.yearFrom, placeholder: `от ${OLDEST_YEAR_HINT}` }}
+          to={{ value: query.yearTo, placeholder: `до ${currentYear()}` }}
           onFrom={(yearFrom) => onChange({ ...query, yearFrom })}
           onTo={(yearTo) => onChange({ ...query, yearTo })}
         />

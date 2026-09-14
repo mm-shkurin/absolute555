@@ -11,6 +11,7 @@ import { Form, Field, TextArea, TextInput } from '../../shared/ui/Form'
 import { Button } from '../../shared/ui/Button'
 import { PanelNote } from '../../shared/ui/Panel'
 import { ROUTES } from '../../shared/navigation/routes'
+import { recentYearHint } from '../../shared/format/yearHints'
 import { openRequest } from './api/requestApi'
 import { CatalogPickers } from './components/CatalogPickers'
 import { emptyRequestDraft, missingForRequest, toRequestBody } from './logic/requestDraft'
@@ -81,7 +82,7 @@ export function NewRequestPage({ signedIn = true }: { signedIn?: boolean }) {
                     <TextInput
                       value={draft.yearFrom}
                       onChange={(value) => set('yearFrom', value)}
-                      placeholder="2022"
+                      placeholder={recentYearHint()}
                     />
                   </Field>
                   <Field label="Бюджет под ключ, ₽">
@@ -109,8 +110,8 @@ export function NewRequestPage({ signedIn = true }: { signedIn?: boolean }) {
                   </p>
                 ) : null}
                 <PanelNote>
-                  Открытых заявок может быть не больше трёх. Закрытая заявка откликов не
-                  принимает — поставщики видят только открытые.
+                  Открытых заявок может быть не больше трёх. Закрытая заявка откликов не принимает —
+                  поставщики видят только открытые.
                 </PanelNote>
               </FormCard>
             </PageSection>
