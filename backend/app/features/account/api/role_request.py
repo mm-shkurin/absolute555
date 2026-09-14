@@ -5,6 +5,7 @@
 """
 
 from typing import List, Optional
+from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +19,10 @@ from app.features.account.schemas.role import (
     RoleRequestUpdate,
 )
 from app.features.account.services.role_errors import RoleRequestError
-from app.features.account.services.role_request_service import RoleRequestService
+from app.features.account.services.role_request_service import (
+    RoleRequestService,
+    RoleRequestStatus,
+)
 from app.permissions.dependencies import require_permission
 from app.permissions.guests import forbid_guest
 from app.permissions.permissions import Permission
@@ -57,7 +61,7 @@ async def get_my_role_requests(
 
 @role_request_router.get("/role-requests", response_model=List[RoleRequestListResponse])
 async def get_all_role_requests(
-    status: Optional[str] = Query(None, description="pending, approved или rejected"),
+    status: Optional[RoleRequestStatus] = Query(None),
     current_user=Depends(require_permission(Permission.VIEW_ROLE_REQUESTS)),
     db: AsyncSession = Depends(get_db),
 ):
@@ -79,7 +83,7 @@ async def get_all_role_requests(
 
 @role_request_router.put("/role-requests/{request_id}", response_model=RoleRequestResponse)
 async def decide_role_request(
-    request_id: str,
+    request_id: UUID,
     update_data: RoleRequestUpdate,
     current_user=Depends(require_permission(Permission.MANAGE_ROLE_REQUESTS)),
     db: AsyncSession = Depends(get_db),

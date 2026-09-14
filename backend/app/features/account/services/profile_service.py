@@ -33,18 +33,18 @@ class ProfileService:
         await self.db.commit()
         return user
 
-    async def set_avatar(self, user: Users, body: bytes, content_type: str) -> Users:
+    async def set_avatar(self, user: Users, body: bytes) -> Users:
         """Заменить фотографию профиля.
 
         Проверки те же, что у фотографий объявления: настоящее изображение и лимит
         размера. Превью не делается — аватар и так мал, а второй объект означал бы
         второй ключ, который надо чистить.
         """
-        require_image("avatar", body)
+        content_type = require_image("avatar", body)
 
         previous = user.avatar_key
-        user.avatar_key = await s3_service.upload_file_get_key_from_bytes(
-            str(user.id), body, filename="avatar", content_type=content_type, folder="avatars"
+        user.avatar_key = await s3_service.put_public(
+            str(user.id), body, content_type, folder="avatars"
         )
         await self.db.commit()
 

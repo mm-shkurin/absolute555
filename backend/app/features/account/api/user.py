@@ -14,9 +14,8 @@ async def get_profile(current_user: CurrentUser):
     
     
     # Разбор ответа провайдера — один на всё приложение (`Users._as_profile`): колонка
-    # JSONB, но записи, заведённые до правки 2026-09-05, лежат в ней строкой. Здесь
-    # раньше стояли три почти одинаковых блока try/except, и один из них разбирал только
-    # строку — он и падал, когда вход начал класть словарь.
+    # JSONB, но часть записей лежит в ней строкой,
+    # а часть словарём, и разбирать их надо одинаково.
     yandex_json_parsed = as_profile(current_user.yandex_json) or None
     vk_json_parsed = as_profile(current_user.vk_json) or None
     guest_json_parsed = as_profile(current_user.guest_json) or None

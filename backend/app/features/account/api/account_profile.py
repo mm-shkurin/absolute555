@@ -12,6 +12,7 @@ from app.db.database import get_db
 from app.features.account.schemas.profile import Profile, ProfilePatch
 from app.features.account.services.profile_service import NameNotAllowed, ProfileService
 from app.features.listing.api.photo_http import image_upload
+from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import CurrentUser
 
 from .account_view import profile_view
@@ -40,9 +41,7 @@ async def upload_avatar(
     db: AsyncSession = Depends(get_db),
 ):
     with image_upload("avatar"):
-        updated = await ProfileService(db).set_avatar(
-            current_user, await file.read(), file.content_type or "image/jpeg"
-        )
+        updated = await ProfileService(db).set_avatar(current_user, await read_limited(file))
     return profile_view(updated)
 
 

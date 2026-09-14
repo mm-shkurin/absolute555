@@ -1,8 +1,7 @@
 """Люди глазами консоли: страница списка и карточка одного.
 
 Отдельно от `RoleService`: тот отвечает за роли и заявки, а здесь читают учётные записи.
-Разделение не косметическое — сборка списка раньше жила прямо в роутере, что история 19
-уже разбирала как нарушение слоёв.
+Разделение не косметическое: сборка списка — работа сервиса, а не роутера.
 """
 
 from typing import List, Optional, Tuple
@@ -11,12 +10,11 @@ from uuid import UUID
 from sqlalchemy import Text, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import AdminSettings
+from app.core.config_getters import get_admin_settings
 from app.features.account.models.users import Users
 from app.features.listing.models.sale_car import SaleCars
 from app.features.moderation.models.complaint import Complaint
 
-MAX_PAGE_SIZE = AdminSettings().admin_max_page_size
 
 
 class PeopleService:
@@ -33,7 +31,7 @@ class PeopleService:
         page_size: int = 20,
     ) -> Tuple[List[Users], int, int, int]:
         page = max(page, 1)
-        page_size = min(max(page_size, 1), MAX_PAGE_SIZE)
+        page_size = min(max(page_size, 1), get_admin_settings().admin_max_page_size)
         conditions = self._conditions(query, role, blocked, deleted)
 
         total = await self.db.scalar(select(func.count()).select_from(Users).where(*conditions))
