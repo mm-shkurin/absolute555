@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from app.features.listing.statuses import ListingKind
+from app.features.listing.domain.statuses import ListingKind
 
 
 class SaleCarCreate(BaseModel):

@@ -5,7 +5,7 @@
 понадобился, когда файл выдачи упёрся в лимит в 200 строк.
 """
 
-from app.features.listing.panels import TOTAL_PANELS, BodyPanel, status_of
+from app.features.listing.domain.panels import TOTAL_PANELS, BodyPanel, status_of
 from app.shared.storage.s3_service import s3_service
 
 

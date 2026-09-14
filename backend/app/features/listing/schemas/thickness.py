@@ -5,7 +5,7 @@ from typing import List, Optional
 
 from pydantic import BaseModel
 
-from app.features.listing.panels import BodyPanel, PanelStatus, ValueSource
+from app.features.listing.domain.panels import BodyPanel, PanelStatus, ValueSource
 
 
 class Measurement(BaseModel):

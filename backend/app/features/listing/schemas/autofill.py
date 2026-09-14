@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict
 
-from app.features.listing.statuses import AutofillState, FieldSource
+from app.features.listing.domain.statuses import AutofillState, FieldSource
 
 
 class Autofill(BaseModel):

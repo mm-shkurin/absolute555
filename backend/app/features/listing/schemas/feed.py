@@ -13,7 +13,7 @@ from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from app.features.listing.schemas.thickness import ThicknessSummary
 
-from app.features.listing.statuses import ListingKind, SaleCarStatus
+from app.features.listing.domain.statuses import ListingKind, SaleCarStatus
 
 MAX_PAGE_SIZE = 60
 

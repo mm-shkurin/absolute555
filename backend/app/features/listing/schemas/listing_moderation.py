@@ -4,7 +4,7 @@ from uuid import UUID
 
 from pydantic import BaseModel
 
-from app.features.listing.statuses import SaleCarStatus
+from app.features.listing.domain.statuses import SaleCarStatus
 
 
 class Moderator(BaseModel):

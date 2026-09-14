@@ -4,10 +4,10 @@ import uuid
 from sqlalchemy import Boolean, Column,Float, DateTime, ForeignKey, Integer,String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 
-# Словарь состояний живёт отдельно (app/features/listing/statuses.py): он нужен и схеме,
+# Словарь состояний живёт отдельно (app/features/listing/domain/statuses.py): он нужен и схеме,
 # и роутеру, а те не должны импортировать ORM ради перечисления. Имена продолжают
 # читаться отсюда — так их импортируют сервисы, для которых модель и есть их предмет.
-from app.features.listing.statuses import (  # noqa: F401
+from app.features.listing.domain.statuses import (  # noqa: F401
     ALLOWED_TRANSITIONS,
     MAX_DRAFTS_PER_USER,
     REQUIRED_TO_SUBMIT,

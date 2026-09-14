@@ -14,7 +14,7 @@ from fastapi import Query, Request
 from pydantic import ValidationError
 
 from app.core.exceptions import ValidationError as InvalidRequest
-from app.features.listing.statuses import ListingKind
+from app.features.listing.domain.statuses import ListingKind
 from app.features.listing.schemas.feed import FeedQuery, FeedSort
 
 KNOWN = set(FeedQuery.model_fields)

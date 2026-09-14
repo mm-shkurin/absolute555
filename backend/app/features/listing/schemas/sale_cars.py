@@ -4,7 +4,7 @@ from typing import List, Optional
 
 # One vocabulary for the wire and the row. Re-declaring the six values here is how the
 # two drift apart the first time one is extended.
-from app.features.listing.statuses import ListingKind, SaleCarStatus
+from app.features.listing.domain.statuses import ListingKind, SaleCarStatus
 from app.features.listing.schemas.autofill import Autofill, StsAccepted, VinDecodeRequest
 from app.features.listing.schemas.feed import Seller
 from app.features.listing.schemas.listing_edit import (
