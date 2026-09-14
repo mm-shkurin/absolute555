@@ -7,7 +7,9 @@ purpose.
 
 from typing import List
 
-from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
+from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect, status
+
+from app.core.config_getters import get_paging_settings
 from app.shared.http.paging import page_size as page_size_query
 from app.features.chat.deps import get_chat_reader, get_chat_service
 from app.features.review.deps import get_dialog_review_service
@@ -29,10 +31,8 @@ from app.features.auth.deps import get_current_user
 
 from app.features.chat.api.chat_view import dialog_view, message_view
 
-MESSAGES_PER_PAGE = 50
-MESSAGES_PER_PAGE_MAX = 100
-# Application close codes live in 4000-4999; 4403 mirrors HTTP 403.
-CLOSE_UNAUTHORIZED = 4403
+# Application close codes live in 4000-4999; the last three digits mirror the HTTP status.
+CLOSE_UNAUTHORIZED = 4000 + status.HTTP_403_FORBIDDEN
 
 chat_router = APIRouter()
 
@@ -88,7 +88,10 @@ async def unread_badge(
 async def read_messages(
     dialog_id: str,
     page: int = Query(default=1, ge=1),
-    size: int = Depends(page_size_query(default=MESSAGES_PER_PAGE, most=MESSAGES_PER_PAGE_MAX)),
+    size: int = Depends(page_size_query(
+        default=get_paging_settings().messages_page_size,
+        most=get_paging_settings().messages_page_max,
+    )),
     reader: ChatReader = Depends(get_chat_reader),
     chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),

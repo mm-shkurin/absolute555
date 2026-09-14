@@ -7,6 +7,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
+from app.core.config_getters import get_paging_settings
 from app.features.importing.models.request import (
     MAX_OPEN_REQUESTS,
     BuyerRequest,
@@ -20,10 +21,6 @@ from app.features.importing.services.request_errors import (
     RequestLimitReached,
     RequestNotFound,
 )
-
-
-# A buyer's own requests come back whole; a hundred is far past what one person files.
-OWN_REQUESTS_LIMIT = 100
 
 
 class BuyerRequestService:
@@ -148,7 +145,8 @@ class BuyerRequestService:
         )
         return found.scalar_one_or_none()
 
-    async def _page(self, condition, page: int = 1, size: int = OWN_REQUESTS_LIMIT) -> List[BuyerRequest]:
+    async def _page(self, condition, page: int = 1, size: Optional[int] = None) -> List[BuyerRequest]:
+        size = size or get_paging_settings().own_requests_limit
         found = await self.db.execute(
             select(BuyerRequest)
             .where(condition)

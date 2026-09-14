@@ -138,6 +138,14 @@ class AdminSettings(BaseSettings):
 
     model_config = BaseConfig.model_config
 
+class PagingSettings(BaseSettings):
+    messages_page_size: int = Field(50, gt=0, alias="MESSAGES_PAGE_SIZE")
+    messages_page_max: int = Field(100, gt=0, alias="MESSAGES_PAGE_MAX")
+    own_requests_limit: int = Field(100, gt=0, alias="OWN_REQUESTS_LIMIT")
+
+    model_config = BaseConfig.model_config
+
+
 class OutboundHttpSettings(BaseSettings):
     outbound_http_timeout_seconds: float = Field(10.0, gt=0, alias="OUTBOUND_HTTP_TIMEOUT_SECONDS")
 
