@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AuthorizationError, ResourceNotFoundError, ValidationError
 from app.db.database import get_db
+from app.features.listing.deps import get_listing_lifecycle_service, get_sale_car_service
 from app.features.listing.statuses import ListingKind, SaleCarStatus
 from app.permissions.dependencies import has_permission
 from app.permissions.ownership import can_manage_sale_car
@@ -19,18 +20,16 @@ from app.features.listing.schemas.feed import FeedPage, FeedQuery, PhoneRevealed
 from app.features.listing.schemas.sale_cars import DraftKind, SaleCarResponse, SaleCarUpdate
 from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_feed import ListingFeedService
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
-from app.features.listing.services.sale_cars_service import SaleCarService
 from app.utils.security import get_current_user, get_current_user_or_none
 
 from .feed_query import feed_query
-from .listing_http import PUBLIC_STATUSES, listing_of, to_http, visible_listing
+from app.shared.http.listing_http import PUBLIC_STATUSES, listing_of, to_http, visible_listing
 from .sale_car_document import document_router
 from .sale_car_lifecycle import lifecycle_router
 from .sale_car_photos import photos_router
 from .sale_car_thickness import thickness_router
 from .sale_car_vin import vin_router
-from .sale_car_view import to_card, to_view, to_views
+from app.shared.http.sale_car_view import to_card, to_view, to_views
 
 sale_car_router = APIRouter()
 
@@ -49,7 +48,7 @@ async def create_draft(
         raise AuthorizationError("Not an importer", code="NOT_AN_IMPORTER")
 
     try:
-        draft = await ListingLifecycleService(db).create_draft(
+        draft = await get_listing_lifecycle_service(db).create_draft(
             str(current_user.id), kind.listing_kind.value
         )
     except ListingError as error:
@@ -83,7 +82,7 @@ async def list_my_sale_cars(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    service = SaleCarService(db)
+    service = get_sale_car_service(db)
     cars = await service.get_sale_cars_by_user(str(current_user.id), status=status)
     return await to_views(cars, current_user)
 
@@ -94,7 +93,7 @@ async def get_sale_car_by_id(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user_or_none),
 ):
-    listing = await visible_listing(db, sale_car_id, current_user)
+    listing = await visible_listing(get_listing_lifecycle_service(db), sale_car_id, current_user)
     return await to_view(listing, current_user)
 
 
@@ -105,7 +104,7 @@ async def update_sale_car(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    service = ListingLifecycleService(db)
+    service = get_listing_lifecycle_service(db)
     fields = sale_car_update.model_dump(exclude_unset=True)
     if not fields:
         raise ValidationError("No data to update", code="EMPTY_PATCH")
@@ -130,7 +129,7 @@ async def reveal_phone(
     of a scraper, and the button on the card would then be decoration.
     """
     try:
-        listing = await ListingLifecycleService(db).get(sale_car_id)
+        listing = await get_listing_lifecycle_service(db).get(sale_car_id)
     except ListingError as error:
         raise to_http(error)
 
@@ -148,7 +147,7 @@ async def delete_sale_car(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user),
 ):
-    service = SaleCarService(db)
+    service = get_sale_car_service(db)
     car = await service.get_sale_car_by_id(sale_car_id)
     if not car:
         raise ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")

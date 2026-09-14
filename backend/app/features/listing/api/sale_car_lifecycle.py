@@ -8,6 +8,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.features.listing.deps import get_listing_lifecycle_service, get_listing_review_service
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 from app.features.moderation.schemas.moderation import ComplaintCreate, ComplaintResponse, RejectionReason
@@ -15,12 +16,10 @@ from app.features.listing.schemas.sale_cars import SaleCarStatusChanged
 from app.features.listing.services.listing_errors import ListingError
 from app.features.moderation.services.complaint_errors import ComplaintError
 from app.features.moderation.services.complaint_service import ComplaintService
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
-from app.features.listing.services.listing_review import ListingReviewService
 from app.utils.security import get_current_user
-from .listing_http import listing_of, to_http
-from app.features.moderation.api.moderation_http import to_http as complaint_to_http
-from app.features.moderation.api.moderation_view import complaint_view
+from app.shared.http.listing_http import listing_of, to_http
+from app.shared.http.moderation_http import to_http as complaint_to_http
+from app.shared.http.moderation_view import complaint_view
 
 lifecycle_router = APIRouter()
 
@@ -34,7 +33,7 @@ def _changed(listing) -> SaleCarStatusChanged:
 
 
 async def _own_action(action, sale_car_id: str, db: AsyncSession, user):
-    service = ListingLifecycleService(db)
+    service = get_listing_lifecycle_service(db)
     try:
         await listing_of(service, sale_car_id, user)
         return _changed(await getattr(service, action)(sale_car_id))
@@ -94,7 +93,7 @@ async def approve(
     moderator=Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
 ):
     try:
-        return _changed(await ListingReviewService(db).approve(sale_car_id, str(moderator.id)))
+        return _changed(await get_listing_review_service(db).approve(sale_car_id, str(moderator.id)))
     except ListingError as error:
         raise to_http(error)
 
@@ -108,7 +107,7 @@ async def reject(
 ):
     """Turn a listing back. The label is required; the comment the seller reads is not."""
     try:
-        turned_back = await ListingReviewService(db).reject(
+        turned_back = await get_listing_review_service(db).reject(
             sale_car_id, reason.label.value, reason.comment, str(moderator.id)
         )
         return _changed(turned_back)

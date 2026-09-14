@@ -6,6 +6,7 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.features.importing.deps import get_buyer_request_service
 from app.features.importing.schemas.request import (
     BuyerRequestCreate,
     BuyerRequestPage,
@@ -13,9 +14,8 @@ from app.features.importing.schemas.request import (
     SupplierResponseCreate,
     SupplierResponseView,
 )
-from app.features.chat.api.chat_view import message_view
+from app.shared.http.chat_view import message_view
 from app.features.chat.schemas.chat import MessageResponse
-from app.features.importing.services.request_service import BuyerRequestService
 from app.features.importing.services.supplier_errors import SupplierError
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
@@ -37,7 +37,7 @@ async def open_request(
     current_user=Depends(get_current_user),
 ):
     try:
-        opened = await BuyerRequestService(db).open(
+        opened = await get_buyer_request_service(db).open(
             str(current_user.id), body.model_dump(exclude_unset=True)
         )
     except SupplierError as error:
@@ -49,7 +49,7 @@ async def open_request(
 async def read_my_requests(
     db: AsyncSession = Depends(get_db), current_user=Depends(get_current_user)
 ):
-    return request_views(await BuyerRequestService(db).mine(str(current_user.id)))
+    return request_views(await get_buyer_request_service(db).mine(str(current_user.id)))
 
 
 @request_router.get("", response_model=BuyerRequestPage)
@@ -60,7 +60,7 @@ async def read_open_requests(
     importer=Depends(IMPORTER),
 ):
     """Лента спроса. Открыта поставщику: покупателю она сказала бы, с кем он в очереди."""
-    found, total = await BuyerRequestService(db).open_ones(page, size)
+    found, total = await get_buyer_request_service(db).open_ones(page, size)
     return {"items": request_views(found), "total": total, "page": page, "size": size}
 
 
@@ -71,7 +71,7 @@ async def close_request(
     current_user=Depends(get_current_user),
 ):
     try:
-        closed = await BuyerRequestService(db).close(str(current_user.id), request_id)
+        closed = await get_buyer_request_service(db).close(str(current_user.id), request_id)
     except SupplierError as error:
         raise to_http(error)
     return request_view(closed)
@@ -86,7 +86,7 @@ async def respond(
 ):
     """Идемпотентно: один отклик на поставщика, повторный вызов правит свой."""
     try:
-        answered, dialog, said = await BuyerRequestService(db).respond(
+        answered, dialog, said = await get_buyer_request_service(db).respond(
             str(importer.id), request_id, body.model_dump()
         )
     except SupplierError as error:
@@ -108,6 +108,6 @@ async def read_responses(
     current_user=Depends(get_current_user),
 ):
     try:
-        return await BuyerRequestService(db).responses_for(str(current_user.id), request_id)
+        return await get_buyer_request_service(db).responses_for(str(current_user.id), request_id)
     except SupplierError as error:
         raise to_http(error)

@@ -35,7 +35,6 @@ from app.features.listing.services.listing_errors import (
     TransitionNotAllowed,
 )
 from app.features.listing.services.listing_autofill import ListingAutofillService
-from app.features.recognition.services.webhook_service import WebhookService
 
 EDITABLE_IN = frozenset({SaleCarStatus.DRAFT, SaleCarStatus.REJECTED})
 # What the seller opens to a buyer, as opposed to what the listing says. A moderator
@@ -45,8 +44,9 @@ VISIBILITY_FIELDS = frozenset({"phone_visible", "chat_allowed", "offers_visible"
 
 
 class ListingLifecycleService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, webhooks):
         self.db = db
+        self.webhooks = webhooks
 
     async def create_draft(self, user_id: str, kind: str = ListingKind.STOCK.value) -> SaleCars:
         owner = uuid.UUID(user_id)
@@ -185,7 +185,7 @@ class ListingLifecycleService:
         # The listing has already moved. An announcement that cannot be delivered is a
         # lost notification, never an undone sale.
         try:
-            await WebhookService(self.db).send_tg_webhook_status_change(
+            await self.webhooks.send_tg_webhook_status_change(
                 sale_car_id=str(listing.sale_car_id),
                 old_status=previous,
                 new_status=listing.status,

@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.review.api.review_http import to_http
-from app.features.review.api.review_view import profile_view, review_view
-from app.features.listing.api.sale_car_view import to_card
+from app.shared.http.review_view import profile_view, review_view
+from app.shared.http.sale_car_view import to_card
 from app.db.database import get_db
 from app.features.review.schemas.review import (
     ReviewPage,

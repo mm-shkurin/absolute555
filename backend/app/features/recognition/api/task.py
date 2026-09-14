@@ -11,7 +11,8 @@ from fastapi.responses import StreamingResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.features.listing.api.listing_http import owned_listing
+from app.features.listing.deps import get_listing_lifecycle_service
+from app.shared.http.listing_http import owned_listing
 from app.sse.listing_stream import listing_events
 from app.utils.security import get_current_user
 
@@ -29,7 +30,7 @@ async def sse_endpoint(
     Ownership is checked, not just authentication: the stream carries what a private
     document was read as, and a listing identifier is in every URL its owner has shared.
     """
-    await owned_listing(db, sale_car_id, current_user)
+    await owned_listing(get_listing_lifecycle_service(db), sale_car_id, current_user)
 
     return StreamingResponse(
         listing_events(sale_car_id),

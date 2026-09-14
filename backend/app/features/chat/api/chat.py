@@ -28,7 +28,7 @@ from app.sse.chat_socket import chat_hub, listener_of
 from app.utils.security import get_current_user
 
 from .chat_http import to_http
-from .chat_view import dialog_view, message_view
+from app.shared.http.chat_view import dialog_view, message_view
 
 chat_router = APIRouter()
 

@@ -9,18 +9,17 @@ from loguru import logger
 from app.core.config_getters import get_frontend_settings
 from app.features.listing.models.sale_car import SaleCars
 from app.shared.storage.s3_service import s3_service
-from app.features.recognition.services.webhook_service import WebhookService
 
 
 
-async def announce_when_ready(db, sale_car: SaleCars) -> bool:
+async def announce_when_ready(webhooks, sale_car: SaleCars) -> bool:
     """Tell the channel about a listing, once it has at least one photo."""
     if not (sale_car.photos or []):
         logger.debug(f"Sale car {sale_car.sale_car_id} has no photos, skipping webhook")
         return False
 
     try:
-        await WebhookService(db).send_tg_webhook(
+        await webhooks.send_tg_webhook(
             sale_car_id=str(sale_car.sale_car_id),
             sale_car_data=to_payload(sale_car),
         )

@@ -16,7 +16,7 @@ from app.features.importing.schemas.supplier import (
 from app.features.importing.services.supplier_errors import SupplierError
 from app.features.importing.services.supplier_cover import SupplierCoverService
 from app.features.importing.services.supplier_service import SupplierProfileService
-from app.features.listing.api.photo_http import image_upload
+from app.shared.http.image_upload import image_upload
 from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission

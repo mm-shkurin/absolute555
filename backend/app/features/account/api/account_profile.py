@@ -11,11 +11,11 @@ from app.core.exceptions import ValidationError
 from app.db.database import get_db
 from app.features.account.schemas.profile import Profile, ProfilePatch
 from app.features.account.services.profile_service import NameNotAllowed, ProfileService
-from app.features.listing.api.photo_http import image_upload
+from app.shared.http.image_upload import image_upload
 from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import CurrentUser
 
-from .account_view import profile_view
+from app.shared.http.account_view import profile_view
 
 profile_router = APIRouter()
 

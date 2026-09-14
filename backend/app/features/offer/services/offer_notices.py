@@ -10,12 +10,11 @@ sign "the offer was accepted" as the seller.
 
 from app.features.chat.models.chat import MessageKind
 from app.features.listing.models.sale_car import SaleCars
-from app.features.chat.services.chat_service import ChatService
 
 
 class OfferNotices:
-    def __init__(self, db):
-        self.chat = ChatService(db)
+    def __init__(self, chat):
+        self.chat = chat
 
     async def offered(self, car: SaleCars, buyer_id, price: float) -> None:
         dialog = await self.chat.open_for_offer(car, buyer_id)

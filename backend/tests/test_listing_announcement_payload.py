@@ -91,8 +91,6 @@ async def test_should_survive_a_channel_that_did_not_answer(monkeypatch):
         async def send_tg_webhook(self, **kwargs):
             raise RuntimeError("канал недоступен")
 
-    monkeypatch.setattr(listing_webhook, "WebhookService", _Broken)
-
-    announced = await listing_webhook.announce_when_ready(None, _listing())
+    announced = await listing_webhook.announce_when_ready(_Broken(None), _listing())
 
     assert announced is False

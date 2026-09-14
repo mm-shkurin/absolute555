@@ -3,8 +3,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 
 from app.db.database import get_db
+from app.features.offer.deps import get_offer_service
 from app.features.offer.statuses import OfferStatus as OfferStatusEnum
-from app.features.offer.services.offer_service import OfferService
 from app.features.offer.schemas.offer import (
     OfferCreate,
     OfferResponse,
@@ -13,7 +13,7 @@ from app.features.offer.schemas.offer import (
 from app.core.exceptions import AuthorizationError, ResourceNotFoundError
 from app.features.offer.services.offer_errors import OfferError
 from app.features.offer.api.offer_http import to_http
-from app.features.review.api.review_view import offer_view
+from app.shared.http.review_view import offer_view
 from app.features.review.services.review_service import ReviewService
 from app.utils.security import get_current_user
 from app.permissions.guests import forbid_guest
@@ -27,7 +27,7 @@ async def create_offer(
 ):
     """A guest does not bargain: they cannot read the offers on their own listing either,
     so leaving this route open to them was an inconsistency rather than a decision."""
-    service = OfferService(db)
+    service = get_offer_service(db)
     try:
         offer = await service.create_offer(
             user_id=str(current_user.id),
@@ -50,7 +50,7 @@ async def get_my_offers(
     An offer of one's own also says whether the deal it closed may be reviewed, and which
     review already stands: the screen draws one button from those two answers.
     """
-    service = OfferService(db)
+    service = get_offer_service(db)
     if side == "received":
         return [offer_view(offer, None, False) for offer in await service.get_offers_received(str(current_user.id))]
 
@@ -74,7 +74,7 @@ async def withdraw_offer(
 ):
     """The buyer takes an unanswered offer back. They may send another afterwards."""
     try:
-        return await OfferService(db).withdraw(offer_id, str(current_user.id))
+        return await get_offer_service(db).withdraw(offer_id, str(current_user.id))
     except OfferError as error:
         raise to_http(error)
 
@@ -84,12 +84,12 @@ async def get_offers_for_car(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(forbid_guest)
 ):
-    service = OfferService(db)
+    service = get_offer_service(db)
     if not await can_manage_offer_as_owner(current_user, sale_car_id, db):
         # Не владелец видит торг, только если продавец сам его открыл: до появления этой
         # настройки предложения были закрыты всем, и решение показать их принадлежит
         # тому, чью машину обсуждают.
-        if not await OfferService(db).offers_shown(sale_car_id):
+        if not await get_offer_service(db).offers_shown(sale_car_id):
             raise AuthorizationError(
                 "Only the car owner may see every offer", code="NOT_CAR_OWNER"
             )
@@ -105,7 +105,7 @@ async def get_offer_by_id(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    service = OfferService(db)
+    service = get_offer_service(db)
     try:
         # Inside the guard: an identifier that is not one is a refusal the service
         # states, and reading it outside turned "not-a-uuid" into a 500.
@@ -128,7 +128,7 @@ async def update_offer_status(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user)
 ):
-    service = OfferService(db)
+    service = get_offer_service(db)
     try:
         offer = await service.get_offer_by_id(offer_id)
     except OfferError as error:

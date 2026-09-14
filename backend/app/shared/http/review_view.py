@@ -2,7 +2,7 @@
 
 from typing import Optional
 
-from app.features.listing.api.sale_car_view import seller_view
+from app.shared.http.sale_car_view import seller_view
 from app.features.review.services.review_service import editable_until
 
 

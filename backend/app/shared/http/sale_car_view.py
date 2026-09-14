@@ -11,7 +11,7 @@ to the model reached whichever of the five somebody remembered.
 from typing import Iterable, List, Optional
 
 from app.core.config_getters import get_photo_settings
-from app.features.account.api.account_view import avatar_url, name_of
+from app.shared.http.account_view import avatar_url, name_of
 from app.shared.storage.s3_service import s3_service
 
 from .sale_car_thickness_view import thickness_summary

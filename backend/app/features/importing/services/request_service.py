@@ -14,7 +14,6 @@ from app.features.importing.models.request import (
     SupplierResponse,
 )
 from app.features.chat.models.chat import Dialog, Message, MessageKind
-from app.features.chat.services.chat_service import ChatService
 from app.features.importing.services.response_line import response_line
 from app.features.importing.services.request_errors import (
     RequestClosed,
@@ -24,8 +23,9 @@ from app.features.importing.services.request_errors import (
 
 
 class BuyerRequestService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, chat):
         self.db = db
+        self.chat = chat
 
     async def open(self, user_id: str, fields: dict) -> BuyerRequest:
         held = await self.db.execute(
@@ -101,9 +101,8 @@ class BuyerRequestService:
             raise RequestClosed(request_id)
 
         held = await self._write_response(request, request_id, supplier_id, fields)
-        chat = ChatService(self.db)
-        dialog = await chat.open_for_request(request, supplier_id)
-        said = await chat.say(
+        dialog = await self.chat.open_for_request(request, supplier_id)
+        said = await self.chat.say(
             dialog, response_line(held), kind=MessageKind.SYSTEM.value
         )
         await self.db.commit()

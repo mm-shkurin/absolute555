@@ -10,7 +10,7 @@
 
 from typing import Iterable, List, Optional
 
-from app.features.account.api.account_view import avatar_url
+from app.shared.http.account_view import avatar_url
 from app.features.account.schemas.admin import (
     AuditEntry,
     UserAccess,

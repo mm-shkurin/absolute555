@@ -8,7 +8,6 @@ from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
 from app.features.offer.services.offer_listing import OfferListingReader
 from app.features.offer.models.offer import LIVE, Offer, OfferStatus
 from app.features.account.models.users import Users
-from app.features.offer.services.offer_notices import OfferNotices
 from app.features.offer.services.offer_errors import (
     DuplicatePendingOffer,
     NotOfferAuthor,
@@ -25,8 +24,9 @@ import uuid
 
 
 class OfferService(OfferListingReader):
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, notices):
         self.db = db
+        self.notices = notices
 
     async def create_offer(self, user_id: str, sale_car_id: str, price: float) -> Offer:
         car = await self._get_sale_car_or_404(sale_car_id, published_only=True)
@@ -46,7 +46,7 @@ class OfferService(OfferListingReader):
 
         # The conversation opens with the offer rather than from the card: the talk
         # begins with a price. A second offer on the same car joins the same room.
-        await OfferNotices(self.db).offered(car, user_id, price)
+        await self.notices.offered(car, user_id, price)
 
         await self.db.commit()
         await self.db.refresh(offer)
@@ -177,6 +177,6 @@ class OfferService(OfferListingReader):
         if seller is not None:
             seller.deals_count = (seller.deals_count or 0) + 1
 
-        await OfferNotices(self.db).sold(
+        await self.notices.sold(
             car, accepted.user_id, [other.user_id for other in closed]
         )

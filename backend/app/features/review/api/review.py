@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.review.api.review_http import to_http
-from app.features.review.api.review_view import review_view
+from app.shared.http.review_view import review_view
 from app.db.database import get_db
 from app.permissions.guests import forbid_guest
 from app.features.review.schemas.review import ReviewCreate, ReviewPatch, ReviewResponse

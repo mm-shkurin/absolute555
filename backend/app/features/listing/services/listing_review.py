@@ -11,18 +11,17 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.listing.models.sale_car import RejectionLabel, SaleCars, SaleCarStatus
-from app.features.moderation.services.complaint_service import ComplaintService
 from app.features.listing.services.listing_document import ListingDocumentService
 from app.features.listing.services.listing_errors import RejectionNeedsReason, TransitionNotAllowed
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
 
 LABELS = {label.value for label in RejectionLabel}
 
 
 class ListingReviewService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, lifecycle, complaints):
         self.db = db
-        self.lifecycle = ListingLifecycleService(db)
+        self.lifecycle = lifecycle
+        self.complaints = complaints
 
     async def approve(self, listing_id: str, moderator_id: str) -> SaleCars:
         listing = await self.lifecycle.get(listing_id)
@@ -62,7 +61,7 @@ class ListingReviewService:
             raise TransitionNotAllowed(standing.status, [SaleCarStatus.PUBLISHED])
 
         listing = await self._turn_back(listing_id, label, comment, moderator_id)
-        await ComplaintService(self.db).settle_all(listing.sale_car_id, moderator_id)
+        await self.complaints.settle_all(listing.sale_car_id, moderator_id)
         await self.db.commit()
         return await self.lifecycle.get(listing_id)
 

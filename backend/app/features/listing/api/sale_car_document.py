@@ -9,16 +9,16 @@ from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.schemas.sale_cars import DocumentLink, StsAccepted
 from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_autofill import ListingAutofillService
 from app.features.listing.services.listing_document import ListingDocumentService
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
 from app.features.listing.services.photo_image import read_limited, require_image
 from app.utils.security import get_current_user
 
-from .listing_http import listing_of, to_http
-from .sale_car_view import autofill_view
+from app.shared.http.listing_http import listing_of, to_http
+from app.shared.http.sale_car_view import autofill_view
 
 document_router = APIRouter()
 
@@ -35,7 +35,7 @@ async def get_document_link(
     the three cases are indistinguishable from outside on purpose.
     """
     try:
-        listing = await listing_of(ListingLifecycleService(db), sale_car_id, current_user)
+        listing = await listing_of(get_listing_lifecycle_service(db), sale_car_id, current_user)
         return await ListingDocumentService(db).signed_link(listing)
     except ListingError as error:
         raise to_http(error)
@@ -58,7 +58,7 @@ async def attach_document(
     endpoint above does.
     """
     try:
-        listing = await listing_of(ListingLifecycleService(db), sale_car_id, current_user)
+        listing = await listing_of(get_listing_lifecycle_service(db), sale_car_id, current_user)
         body = await read_limited(file)
         detected = require_image(file.filename, body)
         updated = await ListingAutofillService(db).attach_scan(listing, body, detected)

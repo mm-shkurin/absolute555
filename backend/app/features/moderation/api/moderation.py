@@ -9,6 +9,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.features.listing.deps import get_listing_review_service
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 from app.features.moderation.schemas.moderation import (
@@ -22,12 +23,11 @@ from app.features.listing.schemas.sale_cars import SaleCarStatusChanged
 from app.features.moderation.services.complaint_errors import ComplaintError
 from app.features.moderation.services.complaint_service import ComplaintService
 from app.features.listing.services.listing_errors import ListingError
-from app.features.listing.services.listing_review import ListingReviewService
 from app.features.moderation.services.moderation_service import ModerationService
 
-from app.features.listing.api.listing_http import to_http
-from .moderation_view import complaint_view, group_view, queue_item
-from .moderation_http import to_http as complaint_to_http
+from app.shared.http.listing_http import to_http
+from app.shared.http.moderation_view import complaint_view, group_view, queue_item
+from app.shared.http.moderation_http import to_http as complaint_to_http
 
 moderation_router = APIRouter()
 
@@ -100,7 +100,7 @@ async def unpublish_listing(
 ):
     """Take a published listing down and settle its complaints in the same decision."""
     try:
-        listing = await ListingReviewService(db).take_down(
+        listing = await get_listing_review_service(db).take_down(
             sale_car_id, reason.label.value, reason.comment, str(moderator.id)
         )
     except ListingError as error:

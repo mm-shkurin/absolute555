@@ -14,7 +14,6 @@ from app.core.exceptions import (
 )
 from app.features.listing.statuses import SaleCarStatus
 from app.permissions.ownership import can_manage_sale_car
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
 from app.features.listing.services.listing_errors import (
     ListingError,
     ListingFrozen,
@@ -111,18 +110,18 @@ async def listing_of(service, sale_car_id: str, user):
     return listing
 
 
-async def owned_listing(db, sale_car_id: str, user):
+async def owned_listing(service, sale_car_id: str, user):
     """`listing_of` for a router that has nothing else to translate."""
     try:
-        return await listing_of(ListingLifecycleService(db), sale_car_id, user)
+        return await listing_of(service, sale_car_id, user)
     except ListingError as error:
         raise to_http(error)
 
 
-async def visible_listing(db, sale_car_id: str, user):
+async def visible_listing(service, sale_car_id: str, user):
     """The listing, if this reader may see it: public, or managed by the reader."""
     try:
-        listing = await ListingLifecycleService(db).get(sale_car_id)
+        listing = await service.get(sale_car_id)
         if listing.status not in PUBLIC_STATUSES and not (
             user is not None and await can_manage_sale_car(user, str(listing.user_id))
         ):

@@ -11,21 +11,21 @@ from fastapi import APIRouter, Depends, File, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
+from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.schemas.sale_cars import GalleryResponse, PhotoOrder
 from app.features.listing.services.listing_errors import ListingError
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
 from app.features.listing.services.listing_photos import ListingGalleryService
 from app.features.listing.services.photo_image import read_limited
 from app.utils.security import get_current_user
 
-from .listing_http import listing_of, to_http
-from .sale_car_view import to_gallery
+from app.shared.http.listing_http import listing_of, to_http
+from app.shared.http.sale_car_view import to_gallery
 
 photos_router = APIRouter()
 
 
 async def _own_listing(db: AsyncSession, sale_car_id: str, user):
-    return await listing_of(ListingLifecycleService(db), sale_car_id, user)
+    return await listing_of(get_listing_lifecycle_service(db), sale_car_id, user)
 
 
 @photos_router.post("/{sale_car_id}/photos", response_model=GalleryResponse)

@@ -4,7 +4,7 @@ from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.features.account.api.admin_console import list_people
+from app.features.account.api.admin_view import page_of
 from app.features.account.schemas.admin import UserPage
 from app.features.account.schemas.role import (
     UserRoleUpdate,
@@ -12,6 +12,7 @@ from app.features.account.schemas.role import (
     RoleStats,
 )
 from app.features.account.services.account_access_service import AccountAccessService
+from app.features.account.services.people_service import PeopleService
 from app.core.exceptions import ResourceNotFoundError
 from app.features.account.services.role_service import RoleService
 from app.permissions.dependencies import require_permission
@@ -36,9 +37,8 @@ async def get_all_users(
     Прежняя форма отдавала всю таблицу одним массивом и собирала вид прямо здесь. При
     плановых тысячах учётных записей это ответ на всю базу ради одного экрана.
     """
-    return await list_people(
-        query, role_filter.value if role_filter else None, blocked, deleted, page, page_size, db
-    )
+    role = role_filter.value if role_filter else None
+    return page_of(*await PeopleService(db).page(query, role, blocked, deleted, page, page_size))
 
 
 @role_router.put("/users/{user_id}/role", response_model=dict)

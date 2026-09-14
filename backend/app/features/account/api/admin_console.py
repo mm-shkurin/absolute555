@@ -8,7 +8,7 @@
 всего, что позовёт сервис потом.
 """
 
-from typing import List, Optional
+from typing import List
 from uuid import UUID
 
 from fastapi import APIRouter, Depends
@@ -16,13 +16,12 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AuthorizationError, ConflictError, ResourceNotFoundError
 from app.db.database import get_db
-from app.features.account.api.admin_view import access_of, audit_of, card_of, page_of
+from app.features.account.api.admin_view import access_of, audit_of, card_of
 from app.features.account.schemas.admin import (
     AccessChange,
     AuditEntry,
     UserAccess,
     UserCard,
-    UserPage,
 )
 from app.features.account.services.account_access_service import (
     AccountAccessService,
@@ -89,18 +88,3 @@ async def _apply(action, user_id: UUID, actor, change: AccessChange):
     except AccessConflict as conflict:
         raise ConflictError(str(conflict), code="ACCESS_UNCHANGED") from conflict
 
-
-async def list_people(
-    query: Optional[str],
-    role: Optional[str],
-    blocked: Optional[bool],
-    deleted: Optional[bool],
-    page: int,
-    page_size: int,
-    db: AsyncSession,
-) -> UserPage:
-    """Страница списка. Вызывается из `role.py`, где маршрут `/users` живёт с самого
-    начала: переносить путь ради красоты значило бы сломать всех, кто его уже зовёт."""
-    return page_of(
-        *await PeopleService(db).page(query, role, blocked, deleted, page, page_size)
-    )

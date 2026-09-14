@@ -121,7 +121,7 @@ async def test_should_not_announce_a_listing_without_photographs(channel):
 
 
 async def test_should_announce_a_listing_that_has_a_photograph(channel):
-    announced = await announce_when_ready(None, _listing(photos=[{"key": "photos/one.jpg"}]))
+    announced = await announce_when_ready(WebhookService(None), _listing(photos=[{"key": "photos/one.jpg"}]))
 
     assert announced is True
     assert channel.calls[0]["json"]["data"]["photo_count"] == 1
@@ -133,7 +133,7 @@ async def test_should_report_a_failed_announcement_rather_than_raise(monkeypatch
 
     monkeypatch.setattr(WebhookService, "send_tg_webhook", _explode)
 
-    assert await announce_when_ready(None, _listing(photos=[{"key": "photos/one.jpg"}])) is False
+    assert await announce_when_ready(WebhookService(None), _listing(photos=[{"key": "photos/one.jpg"}])) is False
 
 
 def test_should_carry_only_what_the_channel_shows():

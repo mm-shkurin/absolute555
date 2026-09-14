@@ -4,7 +4,6 @@ from sqlalchemy.orm import selectinload
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
 
 from typing import List, Optional
-from app.features.recognition.services.webhook_service import WebhookService
 from app.shared.storage.s3_service import s3_service
 from loguru import logger
 import uuid
@@ -12,8 +11,9 @@ import uuid
 
 
 class SaleCarService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, webhooks):
         self.db = db
+        self.webhooks = webhooks
 
     async def get_sale_car_by_id(self, sale_car_id: str) -> Optional[SaleCars]:
         res = await self.db.execute(
@@ -57,8 +57,7 @@ class SaleCarService:
             raise ValueError("Sale car not found")
 
         try:
-            webhook_service = WebhookService(self.db)
-            await webhook_service.send_tg_webhook_delete(sale_car_id)
+            await self.webhooks.send_tg_webhook_delete(sale_car_id)
         except Exception as e:
             logger.warning(f"Failed to send delete webhook for sale_car_id={sale_car_id}: {e}")
 
