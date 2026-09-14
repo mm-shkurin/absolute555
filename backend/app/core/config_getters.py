@@ -16,6 +16,7 @@ from app.core.config import (
     OfferSettings,
     OutboundHttpSettings,
     PagingSettings,
+    QueueWorkerSettings,
     WebhookSettings,
     YandexSettings,
 )
@@ -95,3 +96,8 @@ def get_outbound_http_settings() -> OutboundHttpSettings:
 @lru_cache
 def get_paging_settings() -> PagingSettings:
     return PagingSettings()
+
+
+@lru_cache
+def get_queue_worker_settings() -> QueueWorkerSettings:
+    return QueueWorkerSettings()

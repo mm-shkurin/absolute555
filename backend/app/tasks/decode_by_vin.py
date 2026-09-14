@@ -22,8 +22,8 @@ def _decoded(vin: str) -> dict | None:
     except VisionUnavailable as error:
         logger.error(f"vin provider unavailable: {error}")
         return None
-    except Exception as error:  # noqa: BLE001 - a failed decode is recorded, not raised
-        logger.exception(f"decoding VIN {vin} failed: {error}")
+    except Exception:  # noqa: BLE001 - a failed decode is recorded, not raised
+        logger.exception("decoding a VIN failed")
         return None
 
     if not any(fields.get(name) for name in ("mark", "model", "year")):
@@ -41,34 +41,31 @@ def _decoded(vin: str) -> dict | None:
     }
 
 
+async def _fail(sale_car_id: str) -> dict:
+    await update_task_status(sale_car_id, TaskStatus.DecodeFailed, entity_type="sale_car")
+    await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
+    return {"sale_car_id": sale_car_id, "error": True}
+
+
 async def decode_car_from_vin(ctx: dict, sale_car_id: str, vin: str):
     """Прочитать характеристики по вписанному VIN и записать их на объявление."""
+    await update_task_status(sale_car_id, TaskStatus.STARTED, entity_type="sale_car")
+    await update_task_status(sale_car_id, TaskStatus.DecodeStarted, entity_type="sale_car")
+
+    result = _decoded(vin)
+    if result is None:
+        logger.info("nothing decoded from VIN for sale_car_id={}", sale_car_id)
+        return await _fail(sale_car_id)
+
     try:
-        await update_task_status(sale_car_id, TaskStatus.STARTED, entity_type="sale_car")
-        await update_task_status(sale_car_id, TaskStatus.DecodeStarted, entity_type="sale_car")
-
-        result = _decoded(vin)
-        if result is None:
-            logger.info(f"nothing decoded from VIN {vin} for sale_car_id={sale_car_id}")
-            await update_task_status(sale_car_id, TaskStatus.DecodeFailed, entity_type="sale_car")
-            await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
-            return {"sale_car_id": sale_car_id, "error": True}
-
-        try:
-            if not await persist_decoded(sale_car_id, result):
-                await update_task_status(sale_car_id, TaskStatus.DecodeFailed, entity_type="sale_car")
-                await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
-                return {"sale_car_id": sale_car_id, "error": True}
-
-            await update_task_status(sale_car_id, TaskStatus.DecodeSuccess, entity_type="sale_car")
-        except Exception:
-            await update_task_status(sale_car_id, TaskStatus.DecodeFailed, entity_type="sale_car")
-            raise
-
-        await update_task_status(sale_car_id, TaskStatus.SUCCESS, entity_type="sale_car")
-        return {"sale_car_id": sale_car_id, "result": result}
-
-    except Exception as error:
-        logger.exception(f"decode_car_from_vin failed for sale_car_id={sale_car_id}: {error}")
-        await update_task_status(sale_car_id, TaskStatus.FAILURE, entity_type="sale_car")
+        persisted = await persist_decoded(sale_car_id, result)
+    except Exception:
+        logger.exception("persisting the VIN decode failed for sale_car_id={}", sale_car_id)
+        await _fail(sale_car_id)
         raise
+    if not persisted:
+        return await _fail(sale_car_id)
+
+    await update_task_status(sale_car_id, TaskStatus.DecodeSuccess, entity_type="sale_car")
+    await update_task_status(sale_car_id, TaskStatus.SUCCESS, entity_type="sale_car")
+    return {"sale_car_id": sale_car_id, "result": result}

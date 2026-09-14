@@ -9,6 +9,7 @@ rather than pretending the work is cheap.
 from arq import cron
 from loguru import logger
 
+from app.core.config_getters import get_queue_worker_settings
 from app.db.database import get_engine
 from app.queue import queue_settings
 from app.tasks.decode_by_vin import decode_car_from_vin
@@ -39,12 +40,12 @@ class WorkerSettings:
 
     # A single reading occupies a core for seconds. Two at a time on one container is
     # already more than the machine has to spare; scale by adding containers.
-    max_jobs = 2
+    max_jobs = get_queue_worker_settings().worker_max_jobs
 
     # Long enough for a slow scan and a slow GigaChat reply, short enough that a wedged
     # job does not hold a slot forever.
-    job_timeout = 300
+    job_timeout = get_queue_worker_settings().worker_job_timeout_seconds
 
     # A failed reading is retried twice: GigaChat drops connections often enough that one
     # attempt is not an answer, and the OCR before it is deterministic anyway.
-    max_tries = 3
+    max_tries = get_queue_worker_settings().worker_max_tries

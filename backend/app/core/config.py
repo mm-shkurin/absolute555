@@ -146,6 +146,14 @@ class PagingSettings(BaseSettings):
     model_config = BaseConfig.model_config
 
 
+class QueueWorkerSettings(BaseSettings):
+    worker_max_jobs: int = Field(2, gt=0, alias="WORKER_MAX_JOBS")
+    worker_job_timeout_seconds: int = Field(300, gt=0, alias="WORKER_JOB_TIMEOUT_SECONDS")
+    worker_max_tries: int = Field(3, gt=0, alias="WORKER_MAX_TRIES")
+
+    model_config = BaseConfig.model_config
+
+
 class OutboundHttpSettings(BaseSettings):
     outbound_http_timeout_seconds: float = Field(10.0, gt=0, alias="OUTBOUND_HTTP_TIMEOUT_SECONDS")
 
