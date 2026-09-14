@@ -3,6 +3,7 @@
 import { formatAmount, formatPrice, pluralize } from '../../../shared/format/money'
 import type { StatusTone } from '../../../shared/ui/StatusBadge'
 import type { ListingStatus, MyListingWire } from '../api/myListingsApi'
+import { LISTING_LABEL, LISTING_TONE } from './listingStatusLabels'
 
 export interface MyListingAction {
   id: 'open' | 'offers' | 'continue' | 'fix' | 'preview' | 'republish'
@@ -21,33 +22,6 @@ export interface MyListingRowView {
   coverUrl: string | null
   faded: boolean
 }
-
-const TONE: Record<ListingStatus, StatusTone> = {
-  draft: 'info',
-  moderation: 'wait',
-  published: 'ok',
-  rejected: 'bad',
-  withdrawn: 'info',
-  sold: 'past',
-}
-
-const LABEL: Record<ListingStatus, string> = {
-  draft: 'черновик',
-  moderation: 'на модерации',
-  published: 'опубликовано',
-  rejected: 'отклонено',
-  withdrawn: 'снято с публикации',
-  sold: 'продано',
-}
-
-export const STATUS_TABS: { id: ListingStatus | 'all'; label: string }[] = [
-  { id: 'all', label: 'Все' },
-  { id: 'draft', label: 'Черновики' },
-  { id: 'moderation', label: 'На модерации' },
-  { id: 'published', label: 'Опубликованные' },
-  { id: 'rejected', label: 'Отклонённые' },
-  { id: 'sold', label: 'Проданные' },
-]
 
 export function countByStatus(items: MyListingWire[], status: ListingStatus | 'all'): number {
   return status === 'all' ? items.length : filterByStatus(items, status).length
@@ -73,8 +47,8 @@ export function toMyListingRow(wire: MyListingWire): MyListingRowView {
     id: wire.id,
     title: `${wire.title} · ${wire.year}`,
     meta: metaFor(wire),
-    badge: LABEL[wire.status],
-    tone: TONE[wire.status],
+    badge: LISTING_LABEL[wire.status],
+    tone: LISTING_TONE[wire.status],
     actions: actionsFor(wire.status),
     // Причина отказа показывается текстом прямо в строке, а не за кнопкой: её надо
     // прочитать, чтобы понять, что делать дальше, и прятать её незачем.

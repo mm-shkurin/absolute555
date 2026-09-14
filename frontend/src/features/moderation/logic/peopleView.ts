@@ -7,25 +7,7 @@ import type {
   UserSummaryWire,
 } from '../../../shared/api/backend/adminContract'
 import type { Role } from '../../../shared/session/authSession'
-
-const ROLE_NAMES: Record<Role, string> = {
-  guest: 'Гость',
-  user: 'Пользователь',
-  importer: 'Поставщик',
-  manager: 'Модератор',
-  admin: 'Администратор',
-}
-
-const ACTION_NAMES: Record<string, string> = {
-  role_changed: 'Смена роли',
-  blocked: 'Доступ закрыт',
-  unblocked: 'Доступ возвращён',
-}
-
-const PLATFORM_NAMES: Record<string, string> = {
-  yandex: 'Яндекс',
-  vk: 'VK',
-}
+import { ACTION_NAME, PLATFORM_NAME, ROLE_NAME } from './moderationLabels'
 
 /** Имени может не быть: гостевой вход не несёт профиля, а выдуманное имя хуже пустого —
  *  модератор по нему ищет человека и находит не того. */
@@ -34,15 +16,15 @@ export function displayName(name: string | null): string {
 }
 
 export function roleName(role: Role): string {
-  return ROLE_NAMES[role] ?? role
+  return ROLE_NAME[role] ?? role
 }
 
 export function platformName(platform: string | null): string | null {
-  return platform ? (PLATFORM_NAMES[platform] ?? platform) : null
+  return platform ? (PLATFORM_NAME[platform] ?? platform) : null
 }
 
 export function actionName(action: string): string {
-  return ACTION_NAMES[action] ?? action
+  return ACTION_NAME[action] ?? action
 }
 
 export interface PersonRow {

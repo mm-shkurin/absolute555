@@ -3,6 +3,7 @@
 import { formatPrice, pluralize } from '../../../shared/format/money'
 import type { StatusTone } from '../../../shared/ui/StatusBadge'
 import type { OfferDirection, OfferListItemWire, OfferStatus } from '../api/offersApi'
+import { OFFER_LABEL, OFFER_TONE } from './offerStatusLabels'
 
 export interface OfferAction {
   id: 'accept' | 'reject' | 'message' | 'withdraw' | 'chat' | 'review'
@@ -27,24 +28,6 @@ export interface OfferRowView {
   reviewId: string | null
 }
 
-const TONE: Record<OfferStatus, StatusTone> = {
-  pending: 'wait',
-  accepted: 'ok',
-  rejected: 'bad',
-  withdrawn: 'past',
-  expired: 'past',
-  car_sold: 'bad',
-}
-
-const LABEL: Record<OfferStatus, string> = {
-  pending: 'ждёт ответа',
-  accepted: 'принято',
-  rejected: 'отклонено',
-  withdrawn: 'отозван вами',
-  expired: 'истёк',
-  car_sold: 'машину продали',
-}
-
 // Живой оффер требует решения, закончившийся — только памяти о себе. Приглушение строки
 // делает список читаемым сверху вниз без чтения каждой плашки.
 function isLive(status: OfferStatus): boolean {
@@ -65,8 +48,11 @@ export function toOfferRow(
     meta: metaLine(wire, direction),
     amount: formatPrice(wire.amount),
     gap: gapLine(wire),
-    badge: status === 'pending' && left !== null ? `${LABEL[status]} · ${left}` : LABEL[status],
-    tone: TONE[status],
+    badge:
+      status === 'pending' && left !== null
+        ? `${OFFER_LABEL[status]} · ${left}`
+        : OFFER_LABEL[status],
+    tone: OFFER_TONE[status],
     actions: actionsFor(wire, direction),
     reviewId: wire.review_id,
     photoUrl: wire.photo_url,

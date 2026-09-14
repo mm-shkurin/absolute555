@@ -1,4 +1,4 @@
-// Панели кузова и то, как статус панели превращается в цвет.
+// Панели кузова и порядок их осмотра.
 //
 // Порогов здесь нет намеренно: статус (`factory` / `repaint` / `filler`) считает сервер
 // и присылает готовым. Копия порога на клиенте — это вторая копия в вебе и третья в
@@ -31,27 +31,3 @@ export const PANELS: { code: PanelCode; label: string }[] = [
 export const PANEL_LABEL: Record<PanelCode, string> = Object.fromEntries(
   PANELS.map((panel) => [panel.code, panel.label]),
 ) as Record<PanelCode, string>
-
-export const GRADE_COLOR: Record<Grade, string> = {
-  factory: 'var(--measure-ok)',
-  repaint: 'var(--measure-warn)',
-  filler: 'var(--measure-bad)',
-  none: 'var(--measure-none)',
-}
-
-export const GRADE_WORD: Record<Grade, string> = {
-  factory: 'заводская',
-  repaint: 'перекрашено',
-  filler: 'шпаклёвка',
-  none: 'не замерено',
-}
-
-// Подписи легенды. Числа — те, по которым считает сервер (спека
-// `sale_car_thickness.yaml`); они здесь текст для человека, а не правило: цвет панели
-// приходит статусом, и ни одна ветка кода не сравнивает число с этими границами.
-export const GRADE_RANGE: Record<Grade, string | null> = {
-  factory: 'меньше 200 мкм',
-  repaint: '200–499',
-  filler: 'от 500',
-  none: null,
-}
