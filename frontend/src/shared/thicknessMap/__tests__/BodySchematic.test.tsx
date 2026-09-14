@@ -5,16 +5,30 @@ import { toThicknessView } from '../thicknessMap'
 import type { ThicknessMapWire } from '../../api/backend/thicknessContract'
 
 // Форма `GET /sale-cars/{id}/thickness`: сервер присылает только замеренные панели.
-const wire = {
+const wire: ThicknessMapWire = {
   sale_car_id: 'car1',
   measurements: [
-    { panel: 'front_right_fender', value_um: 320, status: 'repaint', source: 'ocr', ocr_value_um: null, photo_url: null },
-    { panel: 'hood', value_um: 110, status: 'factory', source: 'ocr', ocr_value_um: null, photo_url: null },
+    {
+      panel: 'front_right_fender',
+      value_um: 320,
+      status: 'repaint',
+      source: 'ocr',
+      ocr_value_um: null,
+      photo_url: 'https://cdn/fender.jpg',
+    },
+    {
+      panel: 'hood',
+      value_um: 110,
+      status: 'factory',
+      source: 'ocr',
+      ocr_value_um: null,
+      photo_url: 'https://cdn/hood.jpg',
+    },
   ],
   measured_panels: 2,
   total_panels: 13,
   is_complete: false,
-} as unknown as ThicknessMapWire
+}
 
 function drawn(selected: string | null = null, onSelect = vi.fn()) {
   const { rows } = toThicknessView(wire)

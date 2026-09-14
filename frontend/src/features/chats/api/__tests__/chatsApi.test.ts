@@ -24,18 +24,41 @@ const fromBuyer: MessageWire = {
 }
 const system: MessageWire = { ...fromBuyer, message_id: 'm0', author_id: null, kind: 'system' }
 
-const listingDialog = {
+const listingDialog: DialogWire = {
   dialog_id: 'd1',
   sale_car_id: 'car1',
-  listing: { brand: 'Lexus', model: 'GS', price: 1900000, preview_photo_url: 'https://cdn/gs.jpg' },
+  listing: {
+    sale_car_id: 'car1',
+    brand: 'Lexus',
+    model: 'GS',
+    year: null,
+    price: 1900000,
+    milleage: null,
+    transmission: null,
+    status: 'published',
+    preview_photo_url: 'https://cdn/gs.jpg',
+    published_at: null,
+    listing_kind: 'stock',
+    import_country: null,
+    delivery_days: null,
+    turnkey_price: null,
+    thickness: null,
+  },
   request: null,
   storefront: null,
-  counterpart: { user_id: 'seller', name: 'Дмитрий', avatar_url: null },
+  counterpart: {
+    user_id: 'seller',
+    name: 'Дмитрий',
+    avatar_url: null,
+    rating: null,
+    reviews_count: 0,
+    deals_count: 0,
+  },
   last_message: fromBuyer,
   unread: 1,
   can_review: false,
   review_id: null,
-} as unknown as DialogWire
+}
 
 function signIn(userId: string) {
   startSession({
@@ -72,16 +95,34 @@ describe('чаты на проводе сервера', () => {
   })
 
   it('Scenario: переписка по заявке называет заявку и бюджет, а не машину', async () => {
-    const request = { request_id: 'r1', brand: null, model: null, year_from: null, budget_max: 3000000, status: 'open' }
-    wire.fetchDialogs.mockResolvedValue([{ ...listingDialog, listing: null, sale_car_id: null, request }])
+    const request = {
+      request_id: 'r1',
+      brand: null,
+      model: null,
+      year_from: null,
+      budget_max: 3000000,
+      status: 'open',
+    }
+    wire.fetchDialogs.mockResolvedValue([
+      { ...listingDialog, listing: null, sale_car_id: null, request },
+    ])
 
     const { items } = await fetchChats()
 
-    expect(items[0]).toMatchObject({ subject: 'request', listing_title: 'Заявка: без марки', listing_price: 3000000 })
+    expect(items[0]).toMatchObject({
+      subject: 'request',
+      listing_title: 'Заявка: без марки',
+      listing_price: 3000000,
+    })
   })
 
   it('Scenario: одна переписка у двух сторон — своё сообщение справа только у автора', async () => {
-    wire.fetchMessages.mockResolvedValue({ items: [system, fromBuyer], total: 2, page: 1, size: 50 })
+    wire.fetchMessages.mockResolvedValue({
+      items: [system, fromBuyer],
+      total: 2,
+      page: 1,
+      size: 50,
+    })
 
     signIn('buyer')
     const atBuyer = (await fetchMessages('d1')).items

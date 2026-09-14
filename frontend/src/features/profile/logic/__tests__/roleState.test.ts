@@ -2,8 +2,10 @@ import { describe, expect, it } from 'vitest'
 import { toProfileWire } from '../fromUser'
 import type { RoleRequestWire, UserWire } from '../../../../shared/api/backend/accountContract'
 
-const user = {
+const user: UserWire = {
   id: 'u1',
+  name: null,
+  avatar_url: null,
   tg_id: null,
   vk_id: null,
   yandex_id: 'y1',
@@ -11,11 +13,14 @@ const user = {
   tg_json: null,
   vk_json: null,
   yandex_json: { real_name: 'Игорь' },
+  guest_json: null,
+  user_type: 'user',
+  is_verified: null,
   is_guest: false,
   role: 'user',
   created_at: new Date(2026, 2, 14).toISOString(),
   updated_at: null,
-} as unknown as UserWire
+}
 
 const listings = { total: 2, rejected: 0 }
 
