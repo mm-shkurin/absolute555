@@ -1,14 +1,7 @@
 import type { ReactNode } from 'react'
 import styles from './Panel.module.css'
 
-export function Panel({
-  title,
-  aside,
-  first,
-  tone,
-  children,
-  testId,
-}: {
+interface PanelProps {
   title?: string
   aside?: ReactNode
   first?: boolean
@@ -17,24 +10,28 @@ export function Panel({
   tone?: 'accent'
   children: ReactNode
   testId?: string
-}) {
+}
+
+export function Panel({ title, aside, first, tone, children, testId }: PanelProps) {
+  const className = [styles.panel, first ? styles.first : '', tone ? styles.accent : '']
+    .filter(Boolean)
+    .join(' ')
   return (
-    <section
-      className={[styles.panel, first ? styles.first : '', tone ? styles.accent : '']
-        .filter(Boolean)
-        .join(' ')}
-      data-testid={testId}
-    >
-      {title && aside ? (
-        <div className={styles.head}>
-          <h3>{title}</h3>
-          {aside}
-        </div>
-      ) : title ? (
-        <h3>{title}</h3>
-      ) : null}
+    <section className={className} data-testid={testId}>
+      <PanelTitle title={title} aside={aside} />
       {children}
     </section>
+  )
+}
+
+function PanelTitle({ title, aside }: { title?: string; aside?: ReactNode }) {
+  if (!title) return null
+  if (!aside) return <h3>{title}</h3>
+  return (
+    <div className={styles.head}>
+      <h3>{title}</h3>
+      {aside}
+    </div>
   )
 }
 

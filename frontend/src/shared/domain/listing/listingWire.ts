@@ -3,7 +3,7 @@
 //
 // Змеиный регистр — это провод, а не наш код: так отдаёт FastAPI, и переименование здесь
 // скрыло бы расхождение с контрактом до первого запроса в проде.
-export interface ListingWire {
+export interface ListingCoreWire {
   id: string
   brand: string
   model: string
@@ -13,6 +13,9 @@ export interface ListingWire {
   engine_power_hp: number | null
   transmission: string | null
   city: string | null
+}
+
+export interface ListingWire extends ListingCoreWire {
   photo_url: string | null
   has_thickness_map: boolean
   /** Статусы панелей для полоски окрасов; пусто — замеров нет. */

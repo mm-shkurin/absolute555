@@ -1,37 +1,18 @@
 // Шторка снизу: фильтры, выбор марки, всё, что на телефоне не помещается на месте.
 // Закрывается по Escape и по клику вне — два жеста, которые человек пробует не глядя.
-import { useEffect, type ReactNode } from 'react'
-import { browserDocument, browserWindow } from '../lib/browser'
+import type { ReactNode } from 'react'
+import { useSheetDismissal } from './useSheetDismissal'
 import styles from './Sheet.module.css'
 
-export function Sheet({
-  title,
-  onClose,
-  children,
-  testId,
-}: {
+interface SheetProps {
   title: string
   onClose: () => void
   children: ReactNode
   testId?: string
-}) {
-  useEffect(() => {
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    const win = browserWindow()
-    const body = browserDocument()?.body
-    win?.addEventListener('keydown', onKey)
-    // Фон под шторкой не прокручивается: иначе палец, промахнувшийся мимо списка,
-    // уводит ленту, и человек теряет место, к которому вернётся после фильтра.
-    const previous = body?.style.overflow ?? ''
-    if (body) body.style.overflow = 'hidden'
-    return () => {
-      win?.removeEventListener('keydown', onKey)
-      if (body) body.style.overflow = previous
-    }
-  }, [onClose])
+}
 
+export function Sheet({ title, onClose, children, testId }: SheetProps) {
+  useSheetDismissal(onClose)
   return (
     <div
       className={styles.backdrop}
@@ -43,16 +24,24 @@ export function Sheet({
         if (event.target === event.currentTarget) onClose()
       }}
     >
-      <div className={styles.sheet}>
-        <div className={styles.grip} />
-        <div className={styles.head}>
-          <span className={styles.title}>{title}</span>
-          <button type="button" className={styles.close} onClick={onClose} aria-label="Закрыть">
-            ✕
-          </button>
-        </div>
-        <div className={styles.body}>{children}</div>
+      <SheetPanel title={title} onClose={onClose}>
+        {children}
+      </SheetPanel>
+    </div>
+  )
+}
+
+function SheetPanel({ title, onClose, children }: Omit<SheetProps, 'testId'>) {
+  return (
+    <div className={styles.sheet}>
+      <div className={styles.grip} />
+      <div className={styles.head}>
+        <span className={styles.title}>{title}</span>
+        <button type="button" className={styles.close} onClick={onClose} aria-label="Закрыть">
+          ✕
+        </button>
       </div>
+      <div className={styles.body}>{children}</div>
     </div>
   )
 }

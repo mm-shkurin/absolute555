@@ -49,3 +49,15 @@ export function hoursAndMinutes(value: string | null | undefined): string {
 export function shortDay(value: string | null | undefined): string {
   return safely(SHORT_DAY, value)
 }
+
+/** «сегодня», «вчера», дальше «3 сентября»: так человек соотносит дату без вычитания. */
+export function relativeDay(at: Date, now: Date): string {
+  const days = Math.round((startOfDay(now).getTime() - startOfDay(at).getTime()) / 86_400_000)
+  if (days <= 0) return 'сегодня'
+  if (days === 1) return 'вчера'
+  return DAY_MONTH.format(at)
+}
+
+function startOfDay(value: Date): Date {
+  return new Date(value.getFullYear(), value.getMonth(), value.getDate())
+}

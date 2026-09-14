@@ -5,6 +5,7 @@ import { fetchOffersForCar } from '../../../shared/api/backend/offerApi'
 import { fetchListing as fetchSaleCar } from '../../../shared/api/backend/saleCarApi'
 import { currentSession } from '../../../shared/session/authSession'
 import { toListingDetailWire } from '../logic/fromSaleCar'
+import type { ListingCoreWire } from '../../../shared/domain/listing/listingWire'
 import type { ModerationWire } from '../../../shared/api/backend/saleCarContract'
 
 export interface SellerWire {
@@ -21,16 +22,7 @@ export interface OfferWire {
   created_at: string
 }
 
-export interface ListingDetailWire {
-  id: string
-  brand: string
-  model: string
-  year: number
-  price: number
-  mileage_km: number | null
-  engine_power_hp: number | null
-  transmission: string | null
-  city: string | null
+export interface ListingDetailWire extends ListingCoreWire {
   vin_masked: string | null
   description: string | null
   photo_urls: string[]

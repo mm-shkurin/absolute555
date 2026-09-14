@@ -5,7 +5,7 @@
 // чтобы, когда ручки появятся, было видно, что именно менять.
 import type { OfferWire as BackendOffer } from '../../../shared/api/backend/offerContract'
 import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
-import { maskVin } from '../../../shared/domain/listing/vin'
+import { maskVin } from '../../../shared/domain/listing/vinMask'
 import type { ListingDetailWire, OfferWire } from '../api/listingApi'
 
 // Набор панелей знает сервер и присылает его в сводке. Число здесь — только на случай

@@ -1,4 +1,5 @@
 // Три вида карточек одной ленты и подпись над ней.
+import { relativeDay } from '../../../shared/format/dates'
 import { formatPrice, pluralize } from '../../../shared/format/money'
 import { ratingValue } from '../../../shared/format/rating'
 import type { BuyerRequestWire } from '../../../shared/api/backend/requestContract'
@@ -21,8 +22,6 @@ export interface RequestCardView {
   budget: string
   meta: string
 }
-
-const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
 
 // Счётчик ленты называет все три сущности сразу: человек, пришедший за машиной, должен
 // увидеть, что здесь есть и поставщики, и чужие заявки, не переключая вкладку.
@@ -60,17 +59,6 @@ export function toRequestCard(wire: BuyerRequestWire, now: Date): RequestCardVie
     title: `${wire.brand ?? ''} ${wire.model ?? ''}`.trim() || 'Заявка на привоз',
     spec: wire.year_from === null ? 'год любой' : `от ${wire.year_from} года`,
     budget: wire.budget_max === null ? 'бюджет не назван' : `до ${formatPrice(wire.budget_max)}`,
-    meta: `${wire.responses_count} ${pluralize(wire.responses_count, 'отклик', 'отклика', 'откликов')} · создана ${createdWord(new Date(wire.created_at), now)}`,
+    meta: `${wire.responses_count} ${pluralize(wire.responses_count, 'отклик', 'отклика', 'откликов')} · создана ${relativeDay(new Date(wire.created_at), now)}`,
   }
-}
-
-function createdWord(at: Date, now: Date): string {
-  const days = Math.round((startOfDay(now).getTime() - startOfDay(at).getTime()) / 86_400_000)
-  if (days <= 0) return 'сегодня'
-  if (days === 1) return 'вчера'
-  return DATE.format(at)
-}
-
-function startOfDay(value: Date): Date {
-  return new Date(value.getFullYear(), value.getMonth(), value.getDate())
 }

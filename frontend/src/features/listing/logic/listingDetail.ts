@@ -1,7 +1,7 @@
 // Перевод карточки с провода в то, что видит человек, и одно решение: в каком режиме
 // показывать правую колонку. Режим считается здесь, а не в разметке — иначе три экрана
 // мокапа превратились бы в три ветки JSX, разъезжающиеся при первой же правке.
-import { dayAndMonth } from '../../../shared/format/dates'
+import { dayAndMonth, relativeDay } from '../../../shared/format/dates'
 import { formatAmount, formatPrice } from '../../../shared/format/money'
 import { dealsLabel, stars } from '../../../shared/format/rating'
 import type { ListingDetailWire, OfferWire } from '../api/listingApi'
@@ -105,7 +105,6 @@ function summary(wire: ListingDetailWire): string {
   return parts.join(' · ')
 }
 
-const DATE = new Intl.DateTimeFormat('ru-RU', { day: 'numeric', month: 'long' })
 const TIME = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
 export function toListingDetailView(wire: ListingDetailWire): ListingDetailView {
@@ -156,20 +155,8 @@ export function toOfferRows(offers: OfferWire[], now: Date): OfferRow[] {
     const at = new Date(offer.created_at)
     return {
       id: offer.id,
-      when: `${dayWord(at, now)}, ${TIME.format(at)}`,
+      when: `${relativeDay(at, now)}, ${TIME.format(at)}`,
       amount: formatPrice(offer.amount),
     }
   })
-}
-
-// «Сегодня в 14:55» человек соотносит с торгом мгновенно, полная дата требует вычитания.
-function dayWord(at: Date, now: Date): string {
-  const days = Math.round((startOfDay(now).getTime() - startOfDay(at).getTime()) / 86_400_000)
-  if (days <= 0) return 'сегодня'
-  if (days === 1) return 'вчера'
-  return DATE.format(at)
-}
-
-function startOfDay(value: Date): Date {
-  return new Date(value.getFullYear(), value.getMonth(), value.getDate())
 }
