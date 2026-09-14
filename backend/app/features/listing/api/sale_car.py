@@ -21,12 +21,11 @@ from app.permissions.ownership import can_manage_sale_car
 from app.permissions.permissions import Permission
 from app.features.listing.schemas.feed import FeedPage, FeedQuery, PhoneRevealed
 from app.features.listing.schemas.sale_cars import DraftKind, SaleCarResponse, SaleCarUpdate
-from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_feed import ListingFeedService
 from app.utils.security import get_current_user, get_current_user_or_none
 
 from .sale_car_feed_query import feed_query
-from app.shared.http.listing_http import PUBLIC_STATUSES, listing_of, to_http, visible_listing
+from app.features.listing.services.listing_access_service import PUBLIC_STATUSES, listing_of, visible_listing
 from .sale_car_document import document_router
 from .sale_car_lifecycle import lifecycle_router
 from .sale_car_photos import photos_router
@@ -50,12 +49,9 @@ async def create_draft(
         # заявку на роль поставщика одобрил модератор, а не любой продавец.
         raise AuthorizationError("Not an importer", code="NOT_AN_IMPORTER")
 
-    try:
-        draft = await listing_lifecycle_service.create_draft(
-            str(current_user.id), kind.listing_kind.value
-        )
-    except ListingError as error:
-        raise to_http(error)
+    draft = await listing_lifecycle_service.create_draft(
+        str(current_user.id), kind.listing_kind.value
+    )
     return await to_view(draft, current_user)
 
 
@@ -110,11 +106,8 @@ async def update_sale_car(
     if not fields:
         raise ValidationError("No data to update", code="EMPTY_PATCH")
 
-    try:
-        await listing_of(listing_lifecycle_service, sale_car_id, current_user)
-        updated = await listing_lifecycle_service.edit(sale_car_id, fields)
-    except ListingError as error:
-        raise to_http(error)
+    await listing_of(listing_lifecycle_service, sale_car_id, current_user)
+    updated = await listing_lifecycle_service.edit(sale_car_id, fields)
     return await to_view(updated, current_user)
 
 
@@ -129,10 +122,7 @@ async def reveal_phone(
     A field in the listing payload would hand every number on the platform to one pass
     of a scraper, and the button on the card would then be decoration.
     """
-    try:
-        listing = await listing_lifecycle_service.get(sale_car_id)
-    except ListingError as error:
-        raise to_http(error)
+    listing = await listing_lifecycle_service.get(sale_car_id)
 
     if listing.status not in PUBLIC_STATUSES or not listing.phone_number:
         # A listing nobody may see and a listing with no number are one answer: the

@@ -10,8 +10,6 @@ from app.features.listing.deps import get_listing_autofill_service
 from app.features.listing.api.autofill_target import accepted, autofill_target
 from app.features.listing.schemas.sale_cars import StsAccepted, VinDecodeRequest
 from app.features.listing.services.listing_autofill import ListingAutofillService
-from app.features.listing.services.listing_errors import ListingError
-from app.shared.http.listing_http import to_http
 
 vin_router = APIRouter()
 
@@ -28,8 +26,5 @@ async def decode_vin(
     listing_autofill_service: ListingAutofillService = Depends(get_listing_autofill_service),
 ):
     """Accepted, not done: the reading runs on the queue and reports back separately."""
-    try:
-        updated = await listing_autofill_service.decode_from_vin(listing, body.vin)
-    except ListingError as error:
-        raise to_http(error)
+    updated = await listing_autofill_service.decode_from_vin(listing, body.vin)
     return accepted(updated)

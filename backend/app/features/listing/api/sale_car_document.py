@@ -12,13 +12,12 @@ from app.features.listing.services.listing_lifecycle import ListingLifecycleServ
 
 from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.schemas.sale_cars import DocumentLink, StsAccepted
-from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_autofill import ListingAutofillService
 from app.features.listing.services.listing_document import ListingDocumentService
 from app.features.listing.services.photo_image import read_limited, require_image
 from app.utils.security import get_current_user
 
-from app.shared.http.listing_http import listing_of, to_http
+from app.features.listing.services.listing_access_service import listing_of
 from app.features.listing.api.autofill_target import accepted, autofill_target
 
 document_router = APIRouter()
@@ -36,11 +35,8 @@ async def get_document_link(
     So is a caller whose listing has already had its scan discarded after moderation --
     the three cases are indistinguishable from outside on purpose.
     """
-    try:
-        listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
-        return await listing_document_service.signed_link(listing)
-    except ListingError as error:
-        raise to_http(error)
+    listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
+    return await listing_document_service.signed_link(listing)
 
 
 @document_router.post(
@@ -59,10 +55,7 @@ async def attach_document(
     A caller who does not own the listing is told it is not there, exactly as the link
     endpoint above does.
     """
-    try:
-        body = await read_limited(file)
-        detected = require_image(file.filename, body)
-        updated = await listing_autofill_service.attach_scan(listing, body, detected)
-    except ListingError as error:
-        raise to_http(error)
+    body = await read_limited(file)
+    detected = require_image(file.filename, body)
+    updated = await listing_autofill_service.attach_scan(listing, body, detected)
     return accepted(updated)

@@ -15,12 +15,9 @@ from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 from app.features.moderation.schemas.moderation import ComplaintCreate, ComplaintResponse, RejectionReason
 from app.features.listing.schemas.sale_cars import SaleCarStatusChanged
-from app.features.listing.services.listing_errors import ListingError
-from app.features.moderation.services.complaint_errors import ComplaintError
 from app.features.moderation.services.complaint_service import ComplaintService
 from app.utils.security import get_current_user
-from app.shared.http.listing_http import listing_of, to_http
-from app.shared.http.moderation_http import to_http as complaint_to_http
+from app.features.listing.services.listing_access_service import listing_of
 from app.shared.http.moderation_view import complaint_view
 
 lifecycle_router = APIRouter()
@@ -35,11 +32,8 @@ def _changed(listing) -> SaleCarStatusChanged:
 
 
 async def _own_action(action, sale_car_id: str, service, user):
-    try:
-        await listing_of(service, sale_car_id, user)
-        return _changed(await getattr(service, action)(sale_car_id))
-    except ListingError as error:
-        raise to_http(error)
+    await listing_of(service, sale_car_id, user)
+    return _changed(await getattr(service, action)(sale_car_id))
 
 
 @lifecycle_router.post("/{sale_car_id}/submit", response_model=SaleCarStatusChanged)
@@ -93,10 +87,7 @@ async def approve(
     listing_review_service: ListingReviewService = Depends(get_listing_review_service),
     moderator=Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
 ):
-    try:
-        return _changed(await listing_review_service.approve(sale_car_id, str(moderator.id)))
-    except ListingError as error:
-        raise to_http(error)
+    return _changed(await listing_review_service.approve(sale_car_id, str(moderator.id)))
 
 
 @lifecycle_router.post("/{sale_car_id}/reject", response_model=SaleCarStatusChanged)
@@ -107,13 +98,10 @@ async def reject(
     moderator=Depends(require_permission(Permission.EDIT_ANY_SALE_CAR)),
 ):
     """Turn a listing back. The label is required; the comment the seller reads is not."""
-    try:
-        turned_back = await listing_review_service.reject(
-            sale_car_id, reason.label.value, reason.comment, str(moderator.id)
-        )
-        return _changed(turned_back)
-    except ListingError as error:
-        raise to_http(error)
+    turned_back = await listing_review_service.reject(
+        sale_car_id, reason.label.value, reason.comment, str(moderator.id)
+    )
+    return _changed(turned_back)
 
 
 @lifecycle_router.post(
@@ -126,12 +114,7 @@ async def complain(
     current_user=Depends(get_current_user),
 ):
     """Anyone signed in, once per listing. Only about a listing that is published."""
-    try:
-        recorded = await complaint_service.complain(
-            sale_car_id, str(current_user.id), complaint.reason.value, complaint.text
-        )
-    except ListingError as error:
-        raise to_http(error)
-    except ComplaintError as error:
-        raise complaint_to_http(error)
+    recorded = await complaint_service.complain(
+        sale_car_id, str(current_user.id), complaint.reason.value, complaint.text
+    )
     return complaint_view(recorded)

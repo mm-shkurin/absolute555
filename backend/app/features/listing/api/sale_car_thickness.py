@@ -13,14 +13,13 @@ from app.features.listing.services.listing_lifecycle import ListingLifecycleServ
 from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.panels import BodyPanel
 from app.features.listing.schemas.thickness import GaugeReading, ThicknessMap
-from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.photo_image import read_limited, require_image
 from app.features.listing.services.listing_thickness import ThicknessMapService
 from app.ml.gauge_reader import read_panel_photo
 from app.utils.security import get_current_user, get_current_user_or_none
 
-from app.shared.http.listing_http import listing_of, owned_listing, to_http, visible_listing
-from app.shared.http.image_upload import image_upload
+from app.features.listing.services.listing_access_service import listing_of, visible_listing
+from app.features.listing.api.image_upload import image_upload
 from app.shared.http.sale_car_thickness_view import to_thickness_map
 
 thickness_router = APIRouter()
@@ -51,7 +50,7 @@ async def read_gauge_photo(
     ошибается на бликах и срезанных краях экрана, и молча записанная ошибка окрасила бы
     панель у покупателя в чужой цвет. Тот же снимок при сохранении читается из кэша.
     """
-    await owned_listing(listing_lifecycle_service, sale_car_id, current_user)
+    await listing_of(listing_lifecycle_service, sale_car_id, current_user)
     with image_upload(photo.filename):
         body = await read_limited(photo)
         require_image(photo.filename, body)
@@ -68,12 +67,9 @@ async def record_measurement(
     thickness_map_service: ThicknessMapService = Depends(get_thickness_map_service),
     current_user=Depends(get_current_user),
 ):
-    try:
-        listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
-        payload = (photo.filename, photo.content_type, await read_limited(photo))
-        measured = await thickness_map_service.record(listing, panel, value_um, payload)
-    except ListingError as error:
-        raise to_http(error)
+    listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
+    payload = (photo.filename, photo.content_type, await read_limited(photo))
+    measured = await thickness_map_service.record(listing, panel, value_um, payload)
     return to_thickness_map(listing, measured)
 
 
@@ -85,9 +81,6 @@ async def remove_measurement(
     thickness_map_service: ThicknessMapService = Depends(get_thickness_map_service),
     current_user=Depends(get_current_user),
 ):
-    try:
-        listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
-        left = await thickness_map_service.remove(listing, panel)
-    except ListingError as error:
-        raise to_http(error)
+    listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
+    left = await thickness_map_service.remove(listing, panel)
     return to_thickness_map(listing, left)
