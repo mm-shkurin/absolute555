@@ -289,7 +289,7 @@
 | `webhook_service.py` | 36% | приём отчёта распознавания |
 | `review_service.py` | 40% | ветки отказов отзыва |
 | `offer_service.py` | 44% | переходы статусов предложения |
-| `listing_records.py` | 39% | чтение и фильтры объявлений |
+| `sale_car_service.py` | 39% | чтение и фильтры объявлений |
 | `complaint_service.py` | 46% | группировка и разбор жалоб |
 
 Порядок добивки: сначала сервисы (`offer`, `review`, `complaint`, `sale_cars`) — они

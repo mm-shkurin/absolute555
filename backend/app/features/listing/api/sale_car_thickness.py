@@ -8,17 +8,17 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from app.features.listing.deps import get_thickness_map_service
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
+from app.features.listing.services.listing_lifecycle_service import ListingLifecycleService
 
 from app.features.listing.deps import get_listing_lifecycle_service
-from app.features.listing.panels import BodyPanel
+from app.features.listing.domain.panels import BodyPanel
 from app.features.listing.schemas.thickness import GaugeReading, ThicknessMap
 from app.features.listing.services.photo_image import read_limited, require_image
-from app.features.listing.services.listing_thickness import ThicknessMapService
+from app.features.listing.services.thickness_map_service import ThicknessMapService
 from app.ml.gauge_reader import read_panel_photo
 from app.features.auth.deps import get_current_user, get_current_user_or_none
 
-from app.features.listing.services.listing_access_service import listing_of, visible_listing
+from app.features.listing.services.listing_access import listing_of, visible_listing
 from app.features.listing.api.image_upload import image_upload
 from app.features.listing.api.sale_car_thickness_view import to_thickness_map
 

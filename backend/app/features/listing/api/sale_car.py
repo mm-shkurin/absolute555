@@ -10,22 +10,22 @@ from fastapi import APIRouter, Depends, status
 from app.features.listing.deps import get_listing_feed_service
 from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.deps import get_sale_car_service
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
-from app.features.listing.services.listing_records import SaleCarService
+from app.features.listing.services.listing_lifecycle_service import ListingLifecycleService
+from app.features.listing.services.sale_car_service import SaleCarService
 
 from app.core.exceptions import AuthorizationError, ResourceNotFoundError, ValidationError
 from app.features.listing.deps import get_listing_lifecycle_service, get_sale_car_service
-from app.features.listing.statuses import ListingKind, SaleCarStatus
+from app.features.listing.domain.statuses import ListingKind, SaleCarStatus
 from app.permissions.dependencies import has_permission
 from app.permissions.ownership import can_manage_sale_car
 from app.permissions.permissions import Permission
 from app.features.listing.schemas.feed import FeedPage, FeedQuery, PhoneRevealed
 from app.features.listing.schemas.sale_cars import DraftKind, SaleCarResponse, SaleCarUpdate
-from app.features.listing.services.listing_feed import ListingFeedService
+from app.features.listing.services.listing_feed_service import ListingFeedService
 from app.features.auth.deps import get_current_user, get_current_user_or_none
 
 from .sale_car_feed_query import feed_query
-from app.features.listing.services.listing_access_service import PUBLIC_STATUSES, listing_of, visible_listing
+from app.features.listing.services.listing_access import PUBLIC_STATUSES, listing_of, visible_listing
 from .sale_car_document import document_router
 from .sale_car_lifecycle import lifecycle_router
 from .sale_car_photos import photos_router
