@@ -45,6 +45,13 @@
           "regex": "^\\s*(from|import)\\s+.*\\bapp\\.((features\\.\\w+\\.)?(services|api)|tasks|shared)\\b|\\bfastapi\\b"
         },
         {
+          "name": "domain holds pure rules",
+          "in": [
+            "backend/app/features/*/domain"
+          ],
+          "regex": "^\\s*(from|import)\\s+.*(\\bapp\\.((features\\.\\w+\\.)?(services|api|models)|tasks|shared)\\b|\\bfastapi\\b|\\bsqlalchemy\\b)"
+        },
+        {
           "name": "services stay off transport detail",
           "in": [
             "backend/app/features/*/services",

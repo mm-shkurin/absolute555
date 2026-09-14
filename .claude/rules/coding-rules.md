@@ -23,7 +23,13 @@ above all of them. The map here is the real one:
   - `api/` — routers, plus the view and error-mapping modules they use. HTTP in, HTTP out:
     parse the request, call a service, shape the response. No SQL, no business rules.
   - `services/` — business logic. Owns the rules and the transaction. Talks to models, S3,
-    Redis, external APIs.
+    Redis, external APIs. A module holding a service class is `<noun>_service.py`, named
+    for its class (`SaleCarService` → `sale_car_service.py`); domain errors are
+    `<noun>_errors.py`; any other module here is a stateless helper or a collaborator
+    without its own session and never carries the `_service` suffix.
+  - `domain/` — pure rules of the area: enums, status tables, value calculations. Imports
+    nothing from `api`, `services`, `models`, `app.shared`, `app.tasks`, `fastapi` or
+    `sqlalchemy`; every other layer of the area may import it.
   - `models/` — SQLAlchemy models. Columns, relationships, and behaviour that belongs to
     the row itself. No service or API imports.
   - `schemas/` — Pydantic request and response types. The wire contract.
