@@ -63,4 +63,4 @@ class ListingDocumentService:
             await s3_service.delete_document(key)
         except (BotoCoreError, ClientError) as error:
             # The row no longer points at it. An object nothing references is waste.
-            logger.warning(f"could not delete document {key}: {error}")
+            logger.warning("could not delete document {}: {}", key, error)

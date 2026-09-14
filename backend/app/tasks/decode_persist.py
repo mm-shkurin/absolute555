@@ -49,7 +49,7 @@ def _copy_numbers(sale_car: SaleCars, result: dict) -> None:
         try:
             setattr(sale_car, field, int(raw))
         except (TypeError, ValueError):
-            logger.warning(f"a reader returned a non-numeric {field}: {raw!r}")
+            logger.warning("a reader returned a non-numeric {}: {!r}", field, raw)
 
 
 async def persist_decoded(sale_car_id: str, result: dict) -> bool:
@@ -58,7 +58,7 @@ async def persist_decoded(sale_car_id: str, result: dict) -> bool:
         found = await db.execute(select(SaleCars).where(SaleCars.sale_car_id == sale_car_id))
         sale_car = found.scalar_one_or_none()
         if sale_car is None:
-            logger.warning(f"a reading finished for a listing that no longer exists: {sale_car_id}")
+            logger.warning("a reading finished for a listing that no longer exists: {}", sale_car_id)
             return False
 
         apply_decoded(sale_car, result)

@@ -191,4 +191,4 @@ class ListingLifecycleService:
                 new_status=listing.status,
             )
         except Exception as error:  # noqa: BLE001 - a notification never undoes the action it reports
-            logger.warning(f"status webhook failed for {listing.sale_car_id}: {error}")
+            logger.warning("status webhook failed for {}: {}", listing.sale_car_id, error)

@@ -27,8 +27,8 @@ async def _read_scan(sale_car_id: str, sts_key: str) -> dict:
     await _report(sale_car_id, TaskStatus.OcrStarted)
     try:
         return await decode_vin(file_bytes=file_bytes, car_id=sale_car_id)
-    except Exception as e:
-        logger.exception(f"Exception in decode_vin for sale_car_id={sale_car_id}: {e}")
+    except Exception:
+        logger.exception("decode_vin failed for sale_car_id={}", sale_car_id)
         await _report(sale_car_id, TaskStatus.OcrFailed)
         raise
 
@@ -51,8 +51,7 @@ async def _run_stages(sale_car_id: str, sts_key: str) -> tuple[str | None, dict]
     if result.get("error"):
         stopped_at = failed_at(result.get("error"))
         logger.error(
-            f"decode_vin failed for sale_car_id={sale_car_id} at {stopped_at}: "
-            f"{result.get('error')} {result.get('message', '')}"
+            "decode_vin failed for sale_car_id={} at {}: {} {}", sale_car_id, stopped_at, result.get('error'), result.get('message', '')
         )
         return stopped_at, result
     await _report(sale_car_id, TaskStatus.OcrSuccess)
@@ -76,8 +75,8 @@ async def decode_vin_from_sts(ctx: dict, sale_car_id: str, sts_key: str):
     """
     try:
         stopped_at, result = await _run_stages(sale_car_id, sts_key)
-    except Exception as e:
-        logger.exception(f"decode_vin_from_sts failed for sale_car_id={sale_car_id}: {e}")
+    except Exception:
+        logger.exception("decode_vin_from_sts failed for sale_car_id={}", sale_car_id)
         await _report(sale_car_id, TaskStatus.FAILURE)
         raise
     # Outside the try: a failure already being recorded must not be recorded twice.

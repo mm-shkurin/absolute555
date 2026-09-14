@@ -14,7 +14,7 @@ from app.shared.storage.s3_service import s3_service
 async def announce_when_ready(webhooks, sale_car: SaleCars) -> bool:
     """Tell the channel about a listing, once it has at least one photo."""
     if not (sale_car.photos or []):
-        logger.debug(f"Sale car {sale_car.sale_car_id} has no photos, skipping webhook")
+        logger.debug("Sale car {} has no photos, skipping webhook", sale_car.sale_car_id)
         return False
 
     try:
@@ -24,7 +24,7 @@ async def announce_when_ready(webhooks, sale_car: SaleCars) -> bool:
         )
         return True
     except Exception as error:  # noqa: BLE001 - a notification never undoes the action it reports
-        logger.error(f"Failed to send webhook for sale_car_id={sale_car.sale_car_id}: {error}")
+        logger.error("Failed to send webhook for sale_car_id={}: {}", sale_car.sale_car_id, error)
         return False
 
 

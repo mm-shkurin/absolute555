@@ -158,7 +158,7 @@ class ListingAutofillService:
         # this spelling occurred and how it was settled.
         suggestion.status = SuggestionStatus.RESOLVED.value
         suggestion.resolved_at = datetime.utcnow()
-        logger.info(f"catalog: seller settled the {kind.value} spelling {raw!r}")
+        logger.info("catalog: seller settled the {} spelling {!r}", kind.value, raw)
 
     async def _still_wanted(self, listing: SaleCars, kind: SuggestionKind, raw) -> bool:
         """Whether another listing is still waiting on this spelling."""

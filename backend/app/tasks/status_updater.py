@@ -17,11 +17,11 @@ async def _publish_status(entity_id: str, status: str) -> None:
             "timestamp": asyncio.get_event_loop().time(),
             "type": "status_update",
         }
-        logger.info(f"Sending SSE message to sale_car_id={entity_id}: {message}")
+        logger.info("Sending SSE message to sale_car_id={}: {}", entity_id, message)
         await sse_manager.send_message(entity_id, message)
-        logger.info(f"SSE message sent successfully to sale_car_id={entity_id}")
+        logger.info("SSE message sent successfully to sale_car_id={}", entity_id)
     except (redis.RedisError, RuntimeError) as sse_error:
-        logger.error(f"Failed to send SSE message to sale_car_id={entity_id}: {sse_error}")
+        logger.error("Failed to send SSE message to sale_car_id={}: {}", entity_id, sse_error)
 
 
 async def update_task_status(entity_id: str, status: str, entity_type: str = "sale_car"):
@@ -30,7 +30,7 @@ async def update_task_status(entity_id: str, status: str, entity_type: str = "sa
     The listing is the only entity a background task touches; any other entity_type is refused.
     """
     if entity_type != "sale_car":
-        logger.warning(f"update_task_status called with an unknown entity_type: {entity_type!r}")
+        logger.warning("update_task_status called with an unknown entity_type: {!r}", entity_type)
         return
 
     try:
@@ -38,7 +38,7 @@ async def update_task_status(entity_id: str, status: str, entity_type: str = "sa
             res = await db.execute(select(SaleCars).where(SaleCars.sale_car_id == entity_id))
             entity = res.scalar_one_or_none()
             if entity is None:
-                logger.warning(f"SaleCar not found for sale_car_id={entity_id}")
+                logger.warning("SaleCar not found for sale_car_id={}", entity_id)
                 return
 
             entity.task_status = status
@@ -47,10 +47,10 @@ async def update_task_status(entity_id: str, status: str, entity_type: str = "sa
             # failed and whose outcome still said it was running.
             await build_listing_autofill_service(db).note_task_status(entity, status)
             await db.commit()
-            logger.info(f"Updated task status for sale_car_id={entity_id}: {status}")
+            logger.info("Updated task status for sale_car_id={}: {}", entity_id, status)
             await _publish_status(entity_id, status)
     except Exception as e:
-        logger.error(f"Failed to update task status for {entity_type}_id={entity_id}: {e}")
+        logger.error("Failed to update task status for {}_id={}: {}", entity_type, entity_id, e)
         raise
 
 

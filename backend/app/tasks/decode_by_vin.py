@@ -20,7 +20,7 @@ def _decoded(vin: str) -> dict | None:
     try:
         fields = read_vin(vin)
     except VisionUnavailable as error:
-        logger.error(f"vin provider unavailable: {error}")
+        logger.error("vin provider unavailable: {}", error)
         return None
     except Exception:  # noqa: BLE001 - a failed decode is recorded, not raised
         logger.exception("decoding a VIN failed")

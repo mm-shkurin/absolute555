@@ -20,5 +20,5 @@ async def held_task_status(sale_car_id: str) -> str:
             if sale_car and sale_car.task_status:
                 return sale_car.task_status
     except SQLAlchemyError as e:
-        logger.warning(f"Could not fetch listing status from DB: {e}, using PENDING")
+        logger.warning("Could not fetch listing status from DB: {}, using PENDING", e)
     return TaskStatus.PENDING

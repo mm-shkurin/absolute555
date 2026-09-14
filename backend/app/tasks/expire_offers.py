@@ -32,5 +32,5 @@ async def expire_stale_offers(ctx: dict) -> dict:
         await db.commit()
 
     if lapsed.rowcount:
-        logger.info(f"offers expired: {lapsed.rowcount}")
+        logger.info("offers expired: {}", lapsed.rowcount)
     return {"expired": lapsed.rowcount}
