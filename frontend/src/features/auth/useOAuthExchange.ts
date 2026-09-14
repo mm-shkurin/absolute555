@@ -24,22 +24,22 @@ export function useOAuthExchange(): string | null {
       return
     }
     let cancelled = false
+    const toFeed = () => navigate(ROUTES.feed, { replace: true })
     exchangeCode(outcome.code)
       .then(startSessionFrom)
-      .then(() => {
-        if (!cancelled) navigate(ROUTES.feed, { replace: true })
-      })
-      .catch(() => {
-        if (cancelled) return
-        // Повторный вход этой же вкладкой мог уже состояться — тогда отказ по потраченному
-        // коду не повод выкидывать вошедшего человека на экран ошибки.
-        if (isSignedIn()) navigate(ROUTES.feed, { replace: true })
-        else setFailure('Код входа не подошёл — возможно, он уже использован или истёк.')
-      })
+      .then(() => !cancelled && toFeed())
+      .catch(() => !cancelled && refusedExchange(toFeed, setFailure))
     return () => {
       cancelled = true
     }
   }, [params, navigate])
 
   return failure
+}
+
+// Повторный вход этой же вкладкой мог уже состояться — тогда отказ по потраченному коду
+// не повод выкидывать вошедшего человека на экран ошибки.
+function refusedExchange(toFeed: () => void, setFailure: (text: string) => void): void {
+  if (isSignedIn()) toFeed()
+  else setFailure('Код входа не подошёл — возможно, он уже использован или истёк.')
 }

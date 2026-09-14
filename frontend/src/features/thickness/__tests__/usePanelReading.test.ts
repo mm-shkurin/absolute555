@@ -1,9 +1,22 @@
 import { act, renderHook } from '@testing-library/react'
 import { describe, expect, it, vi } from 'vitest'
+import type { PanelCode } from '../../../shared/thicknessMap/logic/bodyPanels'
 import type { PanelDetail } from '../../../shared/thicknessMap/logic/thicknessMap'
 import { usePanelReading } from '../usePanelReading'
 
-const panel = (code: string) => ({ code, valueUm: null }) as unknown as PanelDetail
+const panel = (code: PanelCode): PanelDetail => ({
+  code,
+  label: code,
+  grade: 'none',
+  color: '',
+  value: '',
+  measured: false,
+  valueUm: null,
+  photoUrl: null,
+  ocrValueUm: null,
+  corrected: false,
+  note: '',
+})
 
 describe('usePanelReading', () => {
   it('ignores a gauge result that arrives after the panel changed', async () => {
