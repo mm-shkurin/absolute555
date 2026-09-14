@@ -12,13 +12,12 @@ on one and returned to another must still be found (`.claude/rules/coding-rules.
 import secrets
 from typing import Optional
 
-from app.core.config import OAuthSettings
+from app.core.config_getters import get_oauth_settings
 from app.shared.storage.cache_service import cache_service
 
 STATE_PREFIX = "oauth_state"
 HANDOFF_PREFIX = "oauth_handoff"
 
-oauth_settings = OAuthSettings()
 
 
 class OAuthStore:
@@ -28,7 +27,7 @@ class OAuthStore:
     async def mint_state(self, provider: str) -> str:
         state = secrets.token_urlsafe(32)
         await self.cache.set(
-            STATE_PREFIX, state, {"provider": provider}, ttl=oauth_settings.oauth_state_ttl_seconds
+            STATE_PREFIX, state, {"provider": provider}, ttl=get_oauth_settings().oauth_state_ttl_seconds
         )
         return state
 
@@ -49,7 +48,7 @@ class OAuthStore:
             HANDOFF_PREFIX,
             code,
             {"user_id": user_id},
-            ttl=oauth_settings.oauth_handoff_ttl_seconds,
+            ttl=get_oauth_settings().oauth_handoff_ttl_seconds,
         )
         return code
 

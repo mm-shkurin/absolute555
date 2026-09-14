@@ -17,7 +17,7 @@ import asyncio
 
 from loguru import logger
 
-from app.core.config_ml import RecognitionSettings
+from app.core.config_ml import get_recognition_settings
 from app.ml.sts_number_ocr import read_number
 from app.ml.sts_reader import read_document
 from app.ml.sts_vision import VisionUnavailable, read_sts
@@ -27,7 +27,7 @@ def _read(file_bytes: bytes) -> dict:
     # Второе мнение по номеру — по настройке. На настоящих фотографиях оно за двенадцать
     # документов подтвердило один и стоило втрое больше времени, чем само чтение; на
     # чистом скане соотношение обратное, поэтому выключатель, а не удаление.
-    confirm = read_number if RecognitionSettings().confirm_number_with_ocr else None
+    confirm = read_number if get_recognition_settings().confirm_number_with_ocr else None
     return read_document(file_bytes, vision=read_sts, second_opinion=confirm)
 
 

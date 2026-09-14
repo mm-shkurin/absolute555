@@ -26,7 +26,7 @@ from typing import Optional
 import requests
 from loguru import logger
 
-from app.core.config_ml import GigaChatSettings
+from app.core.config_ml import GigaChatSettings, get_gigachat_settings
 from app.ml.model_answer import parse_answer
 
 MODEL = "GigaChat-2-Max"
@@ -124,7 +124,7 @@ def valid_vin(value: Optional[str]) -> bool:
 
 def read_sts(body: bytes) -> dict:
     """Поля СТС с картинки. Бросает VisionUnavailable, если провайдер не ответил."""
-    settings = GigaChatSettings()
+    settings = get_gigachat_settings()
     api = str(settings.giga_api_url).rstrip("/")
 
     try:

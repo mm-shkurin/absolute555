@@ -13,11 +13,10 @@ from typing import Dict, List, Optional, Set
 
 from loguru import logger
 
-from app.core.config import JWTSettings
+from app.core.config_getters import get_jwt_settings
 from app.shared.storage.cache_service import cache_service
 from app.utils.security import verify_token
 
-jwt_settings = JWTSettings()
 
 CHANNEL = "chat_messages"
 
@@ -33,7 +32,7 @@ async def listener_of(token: str) -> Optional[str]:
 
     try:
         payload = await verify_token(
-            token.removeprefix("Bearer "), jwt_settings.secret_key, jwt_settings.algorithm
+            token.removeprefix("Bearer "), get_jwt_settings().secret_key, get_jwt_settings().algorithm
         )
     except Exception:
         return None

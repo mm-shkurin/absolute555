@@ -11,9 +11,9 @@ from urllib.parse import urlencode
 
 import httpx
 
-from app.core.config import OAuthSettings, YandexSettings
+from app.core.config import YandexSettings
+from app.core.config_getters import get_oauth_settings, get_yandex_settings
 
-oauth_settings = OAuthSettings()
 
 
 class OAuthFailed(Exception):
@@ -31,7 +31,7 @@ class YandexOAuthProvider:
     name = "yandex"
 
     def __init__(self, settings: Optional[YandexSettings] = None):
-        self.settings = settings or YandexSettings()
+        self.settings = settings or get_yandex_settings()
 
     def authorization_url(self, state: str) -> str:
         return f"{self.settings.yandex_authorize_url}?" + urlencode(
@@ -102,7 +102,7 @@ class FakeOAuthProvider:
     name = "yandex"
 
     def authorization_url(self, state: str) -> str:
-        return f"{oauth_settings.oauth_frontend_callback_url}?fake=1&state={state}"
+        return f"{get_oauth_settings().oauth_frontend_callback_url}?fake=1&state={state}"
 
     async def fetch_identity(self, code: str) -> Identity:
         if code.startswith("refuse"):
@@ -111,7 +111,7 @@ class FakeOAuthProvider:
 
 
 def provider_for(name: Optional[str] = None):
-    chosen = name or oauth_settings.oauth_provider
+    chosen = name or get_oauth_settings().oauth_provider
     if chosen == "fake":
         return FakeOAuthProvider()
     return YandexOAuthProvider()

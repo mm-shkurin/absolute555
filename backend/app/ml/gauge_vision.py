@@ -11,7 +11,7 @@ from typing import Optional
 
 from loguru import logger
 
-from app.core.config_ml import GigaChatSettings
+from app.core.config_ml import get_gigachat_settings
 from app.ml.sts_vision import access_token, ask_about_file, upload_image
 
 PROMPT = """На фотографии — экран толщиномера лакокрасочного покрытия автомобиля.
@@ -70,7 +70,7 @@ def read_gauge_vision(body: bytes) -> Optional[int]:
     Читается дважды: два расходящихся ответа — это «не прочитано», а не выбор одного из
     них. Лишнее чтение дешевле панели, окрашенной на карте покупателя в чужой цвет.
     """
-    settings = GigaChatSettings()
+    settings = get_gigachat_settings()
     api = str(settings.giga_api_url).rstrip("/")
     try:
         access = access_token(settings)

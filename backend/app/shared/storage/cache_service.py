@@ -2,16 +2,15 @@ import json
 import asyncio
 from typing import Optional, Dict, Any
 from loguru import logger
-from app.core.config import RedisSettings
+from app.core.config_getters import get_redis_settings
 from app.shared.redis_client import make_redis_client
 
-redis_settings = RedisSettings()
 
 class CacheService:
-    
+
     def __init__(self):
         try:
-            self.redis_client = make_redis_client(redis_settings)
+            self.redis_client = make_redis_client(get_redis_settings())
             self.redis_client.ping()
         except Exception as e:
             logger.error(f"Failed to connect to Redis for caching: {e}")
@@ -47,7 +46,7 @@ class CacheService:
         
         try:
             key = self._get_key(prefix, document_id)
-            ttl = ttl or redis_settings.redis_ttl
+            ttl = ttl or get_redis_settings().redis_ttl
             payload = json.dumps(data, ensure_ascii=False)
             loop = asyncio.get_event_loop()
             await loop.run_in_executor(

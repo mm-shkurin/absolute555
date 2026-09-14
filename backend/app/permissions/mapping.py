@@ -2,9 +2,7 @@ from typing import Set, Dict
 from .roles import UserRole
 from .permissions import Permission
 
-# Service-domain permissions (services, repairs, reviews) went with story 1, and so did
-# the SERVICE_OWNER and OWNER roles. ADMIN is now the top role and holds every
-# permission — OWNER used to be that, one rung above an admin who could not touch it.
+# ADMIN is the top role and holds every permission.
 ROLE_PERMISSIONS: Dict[UserRole, Set[Permission]] = {
     UserRole.GUEST: {
         Permission.VIEW_GUEST_OWN_DATA,

@@ -17,7 +17,7 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from urllib.parse import urlencode
 
-from app.core.config import OAuthSettings
+from app.core.config_getters import get_oauth_settings
 from app.core.exceptions import AuthenticationError
 from app.db.database import get_db
 from app.features.auth.schemas.token import Token
@@ -27,7 +27,6 @@ from app.features.account.services.user_service import UserService
 from app.utils.security import create_access_token, create_refresh_token
 
 yandex_router = APIRouter()
-oauth_settings = OAuthSettings()
 
 
 @yandex_router.get("/oauth/yandex/start")
@@ -89,6 +88,7 @@ async def exchange_handoff_code(code: str = Body(..., embed=True)):
 
 
 def _back_to_frontend(**params) -> RedirectResponse:
+    oauth_settings = get_oauth_settings()
     separator = "&" if "?" in oauth_settings.oauth_frontend_callback_url else "?"
     return RedirectResponse(
         f"{oauth_settings.oauth_frontend_callback_url}{separator}{urlencode(params)}",

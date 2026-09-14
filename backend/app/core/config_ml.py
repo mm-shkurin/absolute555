@@ -5,6 +5,7 @@
 и меняются они вместе с ним, а не вместе с приложением.
 """
 
+from functools import lru_cache
 from typing import Optional, Union
 
 from pydantic import Field, HttpUrl
@@ -59,5 +60,14 @@ class GigaChatSettings(BaseSettings):
     def tls_verify(self) -> Union[str, bool]:
         return self.giga_ca_bundle or True
 
-
     model_config = BaseConfig.model_config
+
+
+@lru_cache
+def get_recognition_settings() -> RecognitionSettings:
+    return RecognitionSettings()
+
+
+@lru_cache
+def get_gigachat_settings() -> GigaChatSettings:
+    return GigaChatSettings()

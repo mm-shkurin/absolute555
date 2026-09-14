@@ -7,35 +7,32 @@ import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.core.exceptions import AuthenticationError, AuthorizationError
-from app.core.config import JWTSettings
-from app.core.config import CookieSettings
+from app.core.config_getters import get_cookie_settings, get_jwt_settings
 from app.db.database import get_db
 from app.features.account.models.users import Users
 
 auth_scheme = APIKeyHeader(name="Authorization", scheme_name="Bearer", auto_error=False)
 
-jwt_settings = JWTSettings()
-cookie_settings = CookieSettings()
 async def create_access_token(to_encode: dict):
     expire = datetime.utcnow() + timedelta(
-        minutes=jwt_settings.access_token_expire_minutes
+        minutes=get_jwt_settings().access_token_expire_minutes
     )
     payload = dict(to_encode)
     payload.update({"exp": expire, "type": "access"})
     encoded_jwt = jwt.encode(
-        payload, jwt_settings.secret_key, algorithm=jwt_settings.algorithm
+        payload, get_jwt_settings().secret_key, algorithm=get_jwt_settings().algorithm
     )
 
     return encoded_jwt
 
 async def create_refresh_token(to_encode: dict):
     expire = datetime.utcnow() + timedelta(
-        minutes=jwt_settings.refresh_token_expire_minutes
+        minutes=get_jwt_settings().refresh_token_expire_minutes
     )
     payload = dict(to_encode)
     payload.update({"exp": expire, "type": "refresh"})
     encoded_jwt = jwt.encode(
-        payload, jwt_settings.refresh_token_secret_key, algorithm=jwt_settings.algorithm
+        payload, get_jwt_settings().refresh_token_secret_key, algorithm=get_jwt_settings().algorithm
     )
 
     return encoded_jwt
@@ -56,7 +53,7 @@ async def refresh_access_token(refresh_token: str, db: AsyncSession | None = Non
 
     try:
         payload = await verify_token(
-            refresh_token, jwt_settings.refresh_token_secret_key, jwt_settings.algorithm
+            refresh_token, get_jwt_settings().refresh_token_secret_key, get_jwt_settings().algorithm
         )
         if payload.get("type") != "refresh":
             raise AuthenticationError("Invalid token type", code="TOKEN_WRONG_TYPE")
@@ -102,7 +99,7 @@ def _credentials_invalid() -> AuthenticationError:
 
 
 def _bearer(request: Request, token: str | None) -> str:
-    token = token or request.cookies.get(cookie_settings.access_cookie_name)
+    token = token or request.cookies.get(get_cookie_settings().access_cookie_name)
     if not token:
         raise _credentials_invalid()
     return token[7:] if token.startswith("Bearer ") else token
@@ -115,7 +112,7 @@ async def _access_subject(token: str):
     defect of the token answers CREDENTIALS_INVALID.
     """
     try:
-        payload = await verify_token(token, jwt_settings.secret_key, jwt_settings.algorithm)
+        payload = await verify_token(token, get_jwt_settings().secret_key, get_jwt_settings().algorithm)
         revoked = await _is_revoked(token)
     except AuthenticationError as error:
         if error.code == "TOKEN_EXPIRED":

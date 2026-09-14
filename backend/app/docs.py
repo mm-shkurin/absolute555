@@ -4,12 +4,11 @@ from app.core.exceptions import AuthenticationError
 from fastapi.responses import RedirectResponse
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.templating import Jinja2Templates
-from app.core.config import DocsSettings
+from app.core.config_getters import get_docs_settings
 from app.features.account.services.session_service import session_service
 
 
 docs_router = APIRouter()
-docs_settings = DocsSettings()
 templates = Jinja2Templates(directory="app/templates")
 
 @docs_router.get("/docs", include_in_schema=False)
@@ -21,7 +20,7 @@ async def docs_login_page(request: Request):
 
 @docs_router.post("/docs/auth", include_in_schema=False)
 async def docs_auth(request: Request, api_key: str = Form()):
-    if api_key == docs_settings.docs_api_key:
+    if api_key == get_docs_settings().docs_api_key:
         session_token = session_service.create_session_token()
         session_service.add_session(session_token)
         response = RedirectResponse(url="/docs/swagger", status_code=302)
@@ -54,7 +53,7 @@ async def redoc_login_page(request: Request):
 
 @docs_router.post("/redoc/auth", include_in_schema=False)
 async def redoc_auth(request: Request, api_key: str = Form()):
-    if api_key == docs_settings.docs_api_key:
+    if api_key == get_docs_settings().docs_api_key:
         session_token = session_service.create_session_token()
         session_service.add_session(session_token)
         response = RedirectResponse(url="/redoc/view", status_code=302)
@@ -95,7 +94,7 @@ async def get_openapi_schema(request: Request):
         )
     
     api_key = request.headers.get("X-API-Key")
-    if api_key and api_key == docs_settings.docs_api_key:
+    if api_key and api_key == get_docs_settings().docs_api_key:
         from fastapi.openapi.utils import get_openapi
         from app.main import app
         

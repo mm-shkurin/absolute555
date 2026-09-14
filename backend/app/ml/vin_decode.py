@@ -12,7 +12,7 @@
 
 import requests
 
-from app.core.config_ml import GigaChatSettings
+from app.core.config_ml import get_gigachat_settings
 from app.ml.model_answer import parse_answer
 from app.ml.sts_vision import MODEL, VisionUnavailable, access_token
 
@@ -54,7 +54,7 @@ def _ask(api: str, access: str, vin: str, timeout: int, verify) -> str:
 
 def read_vin(vin: str) -> dict:
     """Характеристики по VIN. Бросает VisionUnavailable, если провайдер не ответил."""
-    settings = GigaChatSettings()
+    settings = get_gigachat_settings()
     api = str(settings.giga_api_url).rstrip("/")
 
     try:

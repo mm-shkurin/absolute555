@@ -11,9 +11,9 @@ import numpy as np
 from PIL import ExifTags, Image
 from loguru import logger
 
-from app.core.config_ml import RecognitionSettings
+from app.core.config_ml import get_recognition_settings
 
-_recognition = RecognitionSettings()
+_recognition = get_recognition_settings()
 MAX_PROCESSING_SIZE = _recognition.sts_max_processing_px
 MAX_OCR_SIZE = _recognition.sts_max_ocr_px
 MIN_SIZE = _recognition.sts_min_px

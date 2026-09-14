@@ -22,11 +22,11 @@ from app.db.database import get_db
 from app.features.auth.schemas.token import Token
 from app.features.account.services.user_service import UserService
 from app.features.auth.services import token_revocation
+from app.core.config_getters import get_jwt_settings
 from app.utils.security import (
     auth_scheme,
     create_access_token,
     create_refresh_token,
-    jwt_settings,
     refresh_access_token,
     verify_token,
 )
@@ -57,14 +57,14 @@ async def logout(
     «жив ли этот токен» кому угодно, кто его подобрал.
     """
     if token:
-        await _revoke(token.removeprefix("Bearer "), jwt_settings.secret_key)
+        await _revoke(token.removeprefix("Bearer "), get_jwt_settings().secret_key)
     if refresh_token:
-        await _revoke(refresh_token, jwt_settings.refresh_token_secret_key)
+        await _revoke(refresh_token, get_jwt_settings().refresh_token_secret_key)
 
 
 async def _revoke(token: str, secret: str) -> None:
     try:
-        payload = await verify_token(token, secret, jwt_settings.algorithm)
+        payload = await verify_token(token, secret, get_jwt_settings().algorithm)
     except Exception:
         # Истёкший или подделанный отзывать нечего: он и так не пройдёт проверку подписи.
         return

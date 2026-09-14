@@ -153,7 +153,7 @@ class MinioSettings(BaseSettings):
     # registration document silently; the wrong bucket is visible at once.
     minio_documents_bucket: str = Field("absolute-documents", alias="MINIO_DOCUMENTS_BUCKET")
 
-    # Where a browser reaches the gallery. Hardcoded in s3_service until story 5.
+    # Where a browser reaches the gallery.
     public_photo_base_url: str = Field(..., alias="PUBLIC_PHOTO_BASE_URL")
 
     model_config = BaseConfig.model_config

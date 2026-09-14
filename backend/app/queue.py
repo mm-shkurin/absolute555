@@ -11,12 +11,12 @@ the life of the worker, both the bridge and that workaround go away.
 from arq import create_pool
 from arq.connections import RedisSettings as ArqRedis
 
-from app.core.config import RedisSettings
+from app.core.config_getters import get_redis_settings
 
-redis_settings = RedisSettings()
 
 
 def queue_settings() -> ArqRedis:
+    redis_settings = get_redis_settings()
     return ArqRedis(
         host=redis_settings.redis_network_name,
         port=redis_settings.redis_port,
