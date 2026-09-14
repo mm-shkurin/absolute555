@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, File, Query, UploadFile
 from app.shared.http.paging import page_size as page_size_query
 from app.features.importing.deps import get_supplier_cover_service
-from app.features.importing.deps import get_supplier_profile_service
+from app.features.importing.deps import get_supplier_moderation_service, get_supplier_profile_service
 
 from app.core.exceptions import ValidationError
 from app.features.importing.schemas.supplier import (
@@ -15,6 +15,7 @@ from app.features.importing.schemas.supplier import (
     SupplierRejection,
 )
 from app.features.importing.services.supplier_cover_service import SupplierCoverService
+from app.features.importing.services.supplier_moderation_service import SupplierModerationService
 from app.features.importing.services.supplier_profile_service import SupplierProfileService
 from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import require_permission
@@ -89,16 +90,16 @@ moderation_supplier_router = APIRouter()
 
 
 @moderation_supplier_router.get("/suppliers", response_model=SupplierQueue)
-async def read_queue(supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service), moderator=Depends(MODERATOR)):
-    waiting = await supplier_profile_service.queue()
+async def read_queue(moderation: SupplierModerationService = Depends(get_supplier_moderation_service), moderator=Depends(MODERATOR)):
+    waiting = await moderation.queue()
     return {"items": waiting, "total": len(waiting)}
 
 
 @moderation_supplier_router.post(
     "/suppliers/{user_id}/approve", response_model=SupplierOwnProfileResponse
 )
-async def approve(user_id: str, supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service), moderator=Depends(MODERATOR)):
-    return await supplier_profile_service.approve(user_id)
+async def approve(user_id: str, moderation: SupplierModerationService = Depends(get_supplier_moderation_service), moderator=Depends(MODERATOR)):
+    return await moderation.approve(user_id)
 
 
 @moderation_supplier_router.post(
@@ -107,7 +108,7 @@ async def approve(user_id: str, supplier_profile_service: SupplierProfileService
 async def reject(
     user_id: str,
     rejection: SupplierRejection,
-    supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service),
+    moderation: SupplierModerationService = Depends(get_supplier_moderation_service),
     moderator=Depends(MODERATOR),
 ):
-    return await supplier_profile_service.reject(user_id, rejection.reason)
+    return await moderation.reject(user_id, rejection.reason)
