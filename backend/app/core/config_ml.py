@@ -24,6 +24,11 @@ class RecognitionSettings(BaseSettings):
 
     confirm_number_with_ocr: bool = Field(False, alias="CONFIRM_NUMBER_WITH_OCR")
     gauge_cache_ttl_seconds: int = Field(default=3600, gt=0, alias="GAUGE_CACHE_TTL_SECONDS")
+    # Пиксели по длинной стороне: больше — снимок телефона держит сотню мегабайт на воркер,
+    # меньше минимума — tesseract не различает символы.
+    sts_max_processing_px: int = Field(default=2500, gt=0, alias="STS_MAX_PROCESSING_PX")
+    sts_max_ocr_px: int = Field(default=2000, gt=0, alias="STS_MAX_OCR_PX")
+    sts_min_px: int = Field(default=800, gt=0, alias="STS_MIN_PX")
 
     model_config = BaseConfig.model_config
 

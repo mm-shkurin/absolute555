@@ -11,6 +11,8 @@
 
 from enum import Enum
 
+from app.core.config import ThicknessSettings
+
 
 class BodyPanel(str, Enum):
     HOOD = "hood"
@@ -36,15 +38,13 @@ class PanelStatus(str, Enum):
 
 TOTAL_PANELS = len(BodyPanel)
 
-# Заводское покрытие держится в сотне с небольшим микрон; всё, что выше двухсот, —
-# слой поверх заводского, а полтысячи и выше набирает только шпаклёвка.
-REPAINT_FROM_UM = 200
-FILLER_FROM_UM = 500
+_thickness = ThicknessSettings()
+REPAINT_FROM_UM = _thickness.repaint_from_um
+FILLER_FROM_UM = _thickness.filler_from_um
 
-# Ноль и отрицательное прибор не показывает, а три тысячи выше любой шпаклёвки: за этими
-# границами число пришло не от прибора.
+# Ноль и отрицательное прибор не показывает.
 MIN_VALUE_UM = 1
-MAX_VALUE_UM = 3000
+MAX_VALUE_UM = _thickness.max_value_um
 
 
 def status_of(value_um: int) -> PanelStatus:

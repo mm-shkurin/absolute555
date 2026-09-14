@@ -79,11 +79,9 @@ class YandexSettings(BaseSettings):
     yandex_client_secret: str = Field(..., min_length=32, alias="YANDEX_CLIENT_SECRET")
     yandex_redirect_uri: HttpUrl = Field(..., alias="YANDEX_REDIRECT_URI")
     yandex_redirect_uri_web: HttpUrl = Field(..., alias="YANDEX_REDIRECT_URI_WEB")
-    yandex_authorize_url: HttpUrl = Field(
-        default="https://oauth.yandex.ru/authorize", alias="YANDEX_AUTHORIZE_URL"
-    )
-    yandex_token_url: HttpUrl = Field(default="https://oauth.yandex.ru/token", alias="YANDEX_TOKEN_URL")
-    yandex_info_url: HttpUrl = Field(default="https://login.yandex.ru/info", alias="YANDEX_INFO_URL")
+    yandex_authorize_url: HttpUrl = Field(..., alias="YANDEX_AUTHORIZE_URL")
+    yandex_token_url: HttpUrl = Field(..., alias="YANDEX_TOKEN_URL")
+    yandex_info_url: HttpUrl = Field(..., alias="YANDEX_INFO_URL")
     model_config = BaseConfig.model_config
 
 class OAuthSettings(BaseSettings):
@@ -167,6 +165,24 @@ class PhotoSettings(BaseSettings):
     min_photos_to_submit: int = Field(3, alias="MIN_PHOTOS_TO_SUBMIT")
     preview_max_edge: int = Field(800, alias="PREVIEW_MAX_EDGE")
     document_link_ttl_seconds: int = Field(300, alias="DOCUMENT_LINK_TTL_SECONDS")
+
+    model_config = BaseConfig.model_config
+
+
+class ThicknessSettings(BaseSettings):
+    """Микроны. Заводское покрытие держится в сотне с небольшим; выше порога перекраса —
+    слой поверх заводского, выше порога шпаклёвки — только шпаклёвка. За пределом
+    допустимого число пришло не от прибора."""
+
+    repaint_from_um: int = Field(200, gt=0, alias="THICKNESS_REPAINT_FROM_UM")
+    filler_from_um: int = Field(500, gt=0, alias="THICKNESS_FILLER_FROM_UM")
+    max_value_um: int = Field(3000, gt=0, alias="THICKNESS_MAX_VALUE_UM")
+
+    model_config = BaseConfig.model_config
+
+
+class AdminSettings(BaseSettings):
+    admin_max_page_size: int = Field(100, gt=0, alias="ADMIN_MAX_PAGE_SIZE")
 
     model_config = BaseConfig.model_config
 

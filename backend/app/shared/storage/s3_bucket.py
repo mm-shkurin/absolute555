@@ -8,6 +8,7 @@ place rather than inside a constructor.
 import json
 import uuid
 from typing import Optional
+from urllib.parse import urlsplit
 
 import boto3
 
@@ -25,10 +26,11 @@ def build_client(settings: MinioSettings):
 
 def public_base_url(settings: MinioSettings) -> str:
     # Photo links are handed to browsers over https; the internal endpoint is plain http.
-    endpoint = str(settings.minio_endpoint_url)
-    if endpoint.startswith("http://"):
-        return endpoint.replace("http://", "https://").rstrip("/")
-    return endpoint.rstrip("/")
+    return as_https(str(settings.minio_endpoint_url)).rstrip("/")
+
+
+def as_https(url: str) -> str:
+    return urlsplit(url)._replace(scheme="https").geturl()
 
 
 def ensure_bucket_exists(client, bucket: str, public: bool) -> None:

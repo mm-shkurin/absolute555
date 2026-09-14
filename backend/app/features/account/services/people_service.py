@@ -11,11 +11,12 @@ from uuid import UUID
 from sqlalchemy import Text, desc, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import AdminSettings
 from app.features.account.models.users import Users
 from app.features.listing.models.sale_car import SaleCars
 from app.features.moderation.models.complaint import Complaint
 
-MAX_PAGE_SIZE = 100
+MAX_PAGE_SIZE = AdminSettings().admin_max_page_size
 
 
 class PeopleService:

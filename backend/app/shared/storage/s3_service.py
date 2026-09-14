@@ -6,6 +6,7 @@ from typing import Optional
 from loguru import logger
 
 from app.shared.storage.s3_bucket import (
+    as_https,
     build_client,
     ensure_bucket_exists,
     generate_key,
@@ -129,10 +130,7 @@ class S3Service:
                 ExpiresIn=expires_in
             )
         )
-        if url.startswith('http://'):
-            url = url.replace('http://', 'https://')
-        url = url.replace(':9000', '')
-        return url
+        return as_https(url).replace(f":{minio_settings.minio_port}", "")
 
     def get_public_photo_url(self, key: str) -> str:
         # The address a browser reaches the gallery at, which is not the address this
