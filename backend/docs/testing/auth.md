@@ -9,12 +9,12 @@
 |---|---|
 | ID | TC-AUTH-001 |
 | Название | Гостевой вход выдаёт пару токенов, повторный вход — того же пользователя |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| История | базовая функциональность (до историй) |
 | Описание | Один `device_id` — одна учётная запись; гостевой токен помечен как гостевой |
 | Приоритет | High |
 | Предусловия | Стек поднят |
 | Тестовые данные | `device_id`: `qa-auth-001` |
-| Шаги | 1. POST /auth/guest/login, Content-Type: application/json, body {"device_id":"qa-auth-001"}<br>2. Повторить шаг 1 с тем же телом<br>3. Декодировать оба `access_token` (jwt.io) |
+| Шаги | 1. POST /auth/guest/login, Content-Type: application/json, body {"device_id":"qa-auth-001"}<br>2. POST /auth/guest/login, Content-Type: application/json, body {"device_id":"qa-auth-001"}<br>3. Декодировать оба `access_token` (jwt.io) |
 | Ожидаемый результат | Шаги 1–2: `200`, тело `{access_token, refresh_token, token_type:"bearer"}`<br>Шаг 3: `id` в обоих токенах совпадает; в payload `is_guest: true`, `type: "access"` |
 | Статус | Not run |
 | Фактический результат | |
@@ -25,7 +25,7 @@
 |---|---|
 | ID | TC-AUTH-002 |
 | Название | Разные устройства получают разные учётные записи |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| История | базовая функциональность (до историй) |
 | Описание | Второй участник не должен оказаться в чужой записи |
 | Приоритет | High |
 | Предусловия | Стек поднят |
@@ -41,7 +41,7 @@
 |---|---|
 | ID | TC-AUTH-003 |
 | Название | Вход без device_id отклоняется |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| История | базовая функциональность (до историй) |
 | Описание | `device_id` обязателен |
 | Приоритет | Medium |
 | Предусловия | Стек поднят |
@@ -57,7 +57,7 @@
 |---|---|
 | ID | TC-AUTH-004 |
 | Название | Refresh-токен обменивается на новый access-токен |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| История | базовая функциональность (до историй) |
 | Описание | Клиент продлевает сессию без повторного входа |
 | Приоритет | High |
 | Предусловия | Получена пара токенов SELLER_A |
@@ -73,7 +73,7 @@
 |---|---|
 | ID | TC-AUTH-005 |
 | Название | Access-токен вместо refresh-токена не принимается |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| История | базовая функциональность (до историй) |
 | Описание | Refresh подписан отдельным ключом; токен другого вида не продлевает сессию |
 | Приоритет | High |
 | Предусловия | Получена пара токенов SELLER_A |
@@ -89,7 +89,7 @@
 |---|---|
 | ID | TC-AUTH-006 |
 | Название | Защищённая ручка отклоняет запрос без токена и с поддельным токеном |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| История | базовая функциональность (до историй) |
 | Описание | Отказ даёт зависимость авторизации, а не падение глубже (не `500`) |
 | Приоритет | High |
 | Предусловия | Стек поднят |
@@ -110,7 +110,7 @@
 | Приоритет | High |
 | Предусловия | Гостевой вход с `device_id` `qa-auth-007`, получены `<ACCESS>` и `<REFRESH>` |
 | Тестовые данные | `<ACCESS>`, `<REFRESH>` |
-| Шаги | 1. POST /auth/logout, Authorization: Bearer <ACCESS>, body {"refresh_token":"<REFRESH>"}<br>2. GET /user/profile, Authorization: Bearer <ACCESS><br>3. POST /auth/refresh, body {"refresh_token":"<REFRESH>"}<br>4. Повторить шаг 1 |
+| Шаги | 1. POST /auth/logout, Authorization: Bearer <ACCESS>, body {"refresh_token":"<REFRESH>"}<br>2. GET /user/profile, Authorization: Bearer <ACCESS><br>3. POST /auth/refresh, body {"refresh_token":"<REFRESH>"}<br>4. POST /auth/logout, Authorization: Bearer <ACCESS>, body {"refresh_token":"<REFRESH>"} |
 | Ожидаемый результат | Шаг 1: `204`, без тела<br>Шаг 2: `401`, `code` = `CREDENTIALS_INVALID`<br>Шаг 3: `401`, `code` = `TOKEN_INVALID`<br>Шаг 4: `204` |
 | Статус | Not run |
 | Фактический результат | |
@@ -121,13 +121,13 @@
 |---|---|
 | ID | TC-AUTH-008 |
 | Название | Вход через Яндекс: колбэк отдаёт одноразовый код, а не токен |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| История | вне историй |
 | Описание | Токен не попадает в URL; код обмена действует ровно один раз |
 | Приоритет | High |
-| Предусловия | Настроены ключи Яндекс OAuth; есть учётная запись Яндекса; браузер |
-| Тестовые данные | — |
-| Шаги | 1. GET /auth/oauth/yandex/start (без следования редиректу)<br>2. Открыть `Location` в браузере, дать согласие<br>3. Взять из итогового URL фронтенда параметр `code`<br>4. POST /auth/oauth/exchange, body {"code":"<code>"}<br>5. GET /user/profile, Authorization: Bearer <access_token из шага 4><br>6. Повторить шаг 4 |
-| Ожидаемый результат | Шаг 1: `302`, `Location` начинается с `https://oauth.yandex.ru/authorize?`, содержит `response_type=code` и `state=`<br>Шаг 3: в URL есть `code` и `provider=yandex`, нет `access_token`<br>Шаг 4: `200`, `token_type` = `bearer`<br>Шаг 5: `200`, `is_guest` = false, `yandex_id` заполнен<br>Шаг 6: `401`, `code` = `HANDOFF_INVALID` |
+| Предусловия | В `infra/.env` заданы настоящие ключи Яндекс OAuth; есть учётная запись Яндекса; браузер. Без настоящих ключей кейс — `Blocked` |
+| Тестовые данные | `<code>` — параметр `code` из итогового URL фронтенда (шаг 3); `<access_token из шага 4>` — поле ответа шага 4 |
+| Шаги | 1. `GET /auth/oauth/yandex/start` без следования редиректу<br>2. Открыть `Location` из шага 1 в браузере, дать согласие<br>3. Взять из итогового URL фронтенда параметр `code`<br>4. `POST /auth/oauth/exchange`, `Content-Type: application/json`, тело `{"code": "<code>"}`<br>5. `GET /user/profile`, `Authorization: Bearer <access_token из шага 4>`<br>6. `POST /auth/oauth/exchange`, `Content-Type: application/json`, тело `{"code": "<code>"}` (тот же код) |
+| Ожидаемый результат | Шаг 1: `302`, `Location` начинается с `https://oauth.yandex.ru/authorize?`, содержит `response_type=code` и `state=`<br>Шаг 3: в URL присутствуют `code` и `provider=yandex`, `access_token` отсутствует<br>Шаг 4: `200`; `access_token` и `refresh_token` присутствуют, `token_type` = `bearer`<br>Шаг 5: `200`; `is_guest` = `false`, `yandex_id` присутствует (не `null`)<br>Шаг 6: `401`, `code` = `HANDOFF_INVALID` |
 | Статус | Not run |
 | Фактический результат | |
 
@@ -137,23 +137,23 @@
 |---|---|
 | ID | TC-AUTH-009 |
 | Название | Колбэк с чужим state или без code возвращает ошибку редиректом |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| История | вне историй |
 | Описание | Защита от подделанного колбэка; браузер получает редирект, а не страницу ошибки |
 | Приоритет | High |
-| Предусловия | Настроен Яндекс OAuth |
+| Предусловия | В `infra/.env` заданы ключи Яндекс OAuth. Без них кейс — `Blocked` |
 | Тестовые данные | `state`: `forged-state`; валидный `state` из `Location` ответа /auth/oauth/yandex/start |
 | Шаги | 1. GET /auth/oauth/yandex/callback?code=x&state=forged-state (без следования редиректу)<br>2. GET /auth/oauth/yandex/start, взять `state` из `Location`<br>3. GET /auth/oauth/yandex/callback?code=&state=<state из шага 2> |
 | Ожидаемый результат | Шаг 1: `302`, в query `Location` — `error=state_invalid`<br>Шаг 3: `302`, в query `Location` — `error=code_missing` |
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-AUTH-010 — Обмен кода, который никто не выдавал
+### TC-AUTH-010 — Обмен кода, который никто не выдавал, — 401 HANDOFF_INVALID
 
 | Поле | Значение |
 |---|---|
 | ID | TC-AUTH-010 |
-| Название | Обмен кода, который никто не выдавал |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| Название | Обмен кода, который никто не выдавал, — 401 HANDOFF_INVALID |
+| История | вне историй |
 | Описание | Выдумать код обмена нельзя |
 | Приоритет | Medium |
 | Предусловия | Стек поднят |

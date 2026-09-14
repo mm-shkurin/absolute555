@@ -3,19 +3,19 @@
 Чтение своего профиля, смена имени, аватар и удаление учётной записи. Окружение, учётные записи
 и формат ошибки — в [README.md](README.md).
 
-### TC-ACC-001 — Профиль гостя
+### TC-ACC-001 — Гость читает свой профиль с `is_guest` = true
 
 | Поле | Значение |
 |---|---|
 | ID | TC-ACC-001 |
-| Название | Профиль гостя |
-| История | 01 — Вырезать сервисный контур из бэкенда |
+| Название | Гость читает свой профиль с `is_guest` = true |
+| История | 21 — Аккаунт: имя, фотография, выход, удаление |
 | Описание | Вошедший видит свою запись; гость отмечен флагом `is_guest` |
 | Приоритет | High |
 | Предусловия | GUEST_G выполнил вход |
-| Тестовые данные | — |
+| Тестовые данные | `<TOKEN_GUEST_G>` — `access_token` из `POST /auth/guest/login` с `device_id` `qa-guest-g` (README, §2) |
 | Шаги | 1. GET /user/profile, Authorization: Bearer <TOKEN_GUEST_G> |
-| Ожидаемый результат | `200`; `is_guest` = true, `user_type` = `guest`, `device_id` = `qa-guest-g`; есть поля `id`, `name`, `avatar_url`, `role`, `is_verified`, `created_at` |
+| Ожидаемый результат | `200`; `is_guest` = true, `user_type` = `guest`, `device_id` = `qa-guest-g`, `role` = `guest`, `name` = `null`, `avatar_url` = `null`; `id` и `created_at` присутствуют; `is_verified` присутствует (boolean) |
 | Статус | Not run |
 | Фактический результат | |
 
@@ -31,7 +31,7 @@
 | Предусловия | SELLER_A выполнил вход |
 | Тестовые данные | body `{"name":"Пётр Кузнецов"}` |
 | Шаги | 1. PATCH /user/profile, Authorization: Bearer <TOKEN_SELLER_A>, Content-Type: application/json, body {"name":"Пётр Кузнецов"}<br>2. GET /user/profile, Authorization: Bearer <TOKEN_SELLER_A> |
-| Ожидаемый результат | Шаг 1: `200`, `name` = `Пётр Кузнецов`; тело содержит `id`, `name`, `avatar_url`, `role`, `is_guest`, `is_verified`, `rating`, `reviews_count`, `deals_count`, `created_at`<br>Шаг 2: `name` = `Пётр Кузнецов` |
+| Ожидаемый результат | Шаг 1: `200`, `name` = `Пётр Кузнецов`; `role` = `user`, `is_guest` = `false`; `id`, `avatar_url`, `is_verified`, `rating`, `reviews_count`, `deals_count`, `created_at` присутствуют<br>Шаг 2: `name` = `Пётр Кузнецов` |
 | Статус | Not run |
 | Фактический результат | |
 
@@ -67,12 +67,12 @@
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-ACC-005 — Правка профиля без токена
+### TC-ACC-005 — Правка профиля и удаление учётной записи без токена — 401
 
 | Поле | Значение |
 |---|---|
 | ID | TC-ACC-005 |
-| Название | Правка профиля без токена |
+| Название | Правка профиля и удаление учётной записи без токена — 401 |
 | История | 21 — Аккаунт: имя, фотография, выход, удаление |
 | Описание | Анонимный вызов отклоняется до обращения к данным |
 | Приоритет | High |
@@ -83,19 +83,19 @@
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-ACC-006 — Загрузка и снятие аватара
+### TC-ACC-006 — Загруженный аватар виден в профиле, снятие обнуляет `avatar_url`
 
 | Поле | Значение |
 |---|---|
 | ID | TC-ACC-006 |
-| Название | Загрузка и снятие аватара |
+| Название | Загруженный аватар виден в профиле, снятие обнуляет `avatar_url` |
 | История | 21 — Аккаунт: имя, фотография, выход, удаление |
 | Описание | Загруженная фотография видна в профиле; снятие возвращает `avatar_url` = null |
 | Приоритет | High |
 | Предусловия | SELLER_A выполнил вход; MinIO поднят |
 | Тестовые данные | Файл `face.png` — настоящее PNG-изображение до 10 МБ |
 | Шаги | 1. PUT /user/avatar, Authorization: Bearer <TOKEN_SELLER_A>, multipart/form-data, поле `file` = face.png (image/png)<br>2. GET /user/profile, Authorization: Bearer <TOKEN_SELLER_A><br>3. DELETE /user/avatar, Authorization: Bearer <TOKEN_SELLER_A> |
-| Ожидаемый результат | Шаг 1: `200`, `avatar_url` не пустой<br>Шаг 2: `avatar_url` равен значению из шага 1<br>Шаг 3: `200`, `avatar_url` = null |
+| Ожидаемый результат | Шаг 1: `200`, `avatar_url` присутствует и не `null`<br>Шаг 2: `avatar_url` равен значению из шага 1<br>Шаг 3: `200`, `avatar_url` = null |
 | Статус | Not run |
 | Фактический результат | |
 

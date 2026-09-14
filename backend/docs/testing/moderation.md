@@ -9,61 +9,61 @@
 TC-LST-001 (listings-1.md), прикладывает фото и отправляет на проверку шагом submit из
 listings-2.md (`POST /sale_car/{id}/submit`). «Опубликованное» — то же плюс TC-MOD-002.
 
-### TC-MOD-001 — Очередь «waiting» отдаёт отправленное объявление
+### TC-MOD-001 — Модератор видит объявление на проверке в очереди и в счётчике
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-001 |
 | Название | Модератор видит объявление на проверке в очереди и в счётчике |
-| История | 09 — Очередь модерации |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы |
 | Описание | Очередь — рабочий экран модератора; объявление после submit должно попасть во вкладку `waiting`, счётчик `waiting` растёт |
 | Приоритет | High |
 | Предусловия | `MODERATOR_M`; `SELLER_A` готов отправить заполненное объявление `<SALE_CAR_ID>` |
 | Тестовые данные | `tab=waiting`, `size=60` |
 | Шаги | 1. `GET /moderation/counts`, `Authorization: Bearer <TOKEN_MODERATOR_M>` — запомнить `waiting`<br>2. `POST /sale_car/<SALE_CAR_ID>/submit`, `Authorization: Bearer <TOKEN_SELLER_A>`<br>3. `GET /moderation/counts`, `Authorization: Bearer <TOKEN_MODERATOR_M>`<br>4. `GET /moderation/queue?tab=waiting&size=60`, `Authorization: Bearer <TOKEN_MODERATOR_M>` (листать `page`, если `total` > 60) |
-| Ожидаемый результат | 1, 3: `200`, `{waiting, complained, handled_today}` — целые; в шаге 3 `waiting` на 1 больше<br>2: `200`, `status` = `moderation`<br>4: `200`, `{items, total, page, size}`; в `items` есть строка с `sale_car_id` = `<SALE_CAR_ID>`, поля `seller`, `open_complaints` = 0, `submitted_at`; порядок — старые первыми |
+| Ожидаемый результат | 1, 3: `200`, `{waiting, complained, handled_today}` — целые; в шаге 3 `waiting` на 1 больше<br>2: `200`, `status` = `moderation`<br>4: `200`, `{items, total, page, size}`; в `items` есть строка с `sale_car_id` = `<SALE_CAR_ID>`, `seller` и `submitted_at` присутствуют (не `null`), `open_complaints` = 0; порядок — старые первыми |
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-MOD-002 — Одобрение публикует объявление и записывает «кто решил»
+### TC-MOD-002 — `approve` переводит в `published`; момент решения видит продавец, имя решившего — только модератор
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-002 |
 | Название | `approve` переводит в `published`; момент решения видит продавец, имя решившего — только модератор |
-| История | 09 — Очередь модерации; 22 — Кто решил |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы; 22 — Кто решил: модератор в выдаче объявления |
 | Описание | Продавцу нужен момент решения, но не имя модератора; модератору — оба |
 | Приоритет | High |
 | Предусловия | Объявление `<SALE_CAR_ID>` в статусе `moderation` |
-| Тестовые данные | — |
+| Тестовые данные | `<SALE_CAR_ID>` — `sale_car_id` объявления, отправленного `submit` в TC-LST-010 |
 | Шаги | 1. `POST /sale_car/<SALE_CAR_ID>/approve`, `Authorization: Bearer <TOKEN_MODERATOR_M>`<br>2. `GET /sale_car/<SALE_CAR_ID>`, `Authorization: Bearer <TOKEN_SELLER_A>`<br>3. `GET /sale_car/<SALE_CAR_ID>`, `Authorization: Bearer <TOKEN_MODERATOR_M>`<br>4. `GET /sale_car/list` без заголовков |
-| Ожидаемый результат | 1: `200`, `{sale_car_id, status: "published", updated_at}`<br>2: `200`, `moderation.decided_at` заполнено, `moderation.decided_by` = `null`<br>3: `200`, `moderation.decided_by.user_id` заполнено, ключ `name` присутствует<br>4: `200`, ни в одной карточке `items[]` нет ключа `moderation`; объявление больше не в `tab=waiting` |
+| Ожидаемый результат | 1: `200`, `{sale_car_id, status: "published", updated_at}`<br>2: `200`, `moderation.decided_at` присутствует (не `null`), `moderation.decided_by` = `null`<br>3: `200`, `moderation.decided_by.user_id` присутствует (не `null`), ключ `name` присутствует<br>4: `200`, ни в одной карточке `items[]` нет ключа `moderation`; объявление больше не в `tab=waiting` |
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-MOD-003 — Отклонение с меткой
+### TC-MOD-003 — `reject` с меткой из списка переводит объявление в `rejected` и сохраняет метку
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-003 |
 | Название | `reject` с меткой из списка переводит объявление в `rejected` и сохраняет метку |
-| История | 09 — Очередь модерации; 22 — Кто решил |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы; 22 — Кто решил: модератор в выдаче объявления |
 | Описание | Метка говорит продавцу, что исправить; решение попадает во вкладку `handled_today` решившего модератора |
 | Приоритет | High |
 | Предусловия | Объявление `<SALE_CAR_ID>` в статусе `moderation` |
 | Тестовые данные | `{"label": "too_few_photos", "comment": "переснимите салон"}`. Допустимые `label`: `plate_or_face_visible`, `photos_of_another_car`, `bait_price`, `too_few_photos`, `contacts_in_description` |
 | Шаги | 1. `POST /sale_car/<SALE_CAR_ID>/reject`, `Authorization: Bearer <TOKEN_MODERATOR_M>`, `Content-Type: application/json`, тело из данных<br>2. `GET /sale_car/<SALE_CAR_ID>`, `Authorization: Bearer <TOKEN_SELLER_A>`<br>3. `GET /moderation/queue?tab=handled_today&size=60`, `Authorization: Bearer <TOKEN_MODERATOR_M>` |
-| Ожидаемый результат | 1: `200`, `status` = `rejected`<br>2: `200`, `status` = `rejected`, `reject_label` = `too_few_photos`, `moderation.decided_at` заполнено, `moderation.decided_by` = `null`<br>3: `200`, объявление есть в `items` |
+| Ожидаемый результат | 1: `200`, `status` = `rejected`<br>2: `200`, `status` = `rejected`, `reject_label` = `too_few_photos`, `moderation.decided_at` присутствует (не `null`), `moderation.decided_by` = `null`<br>3: `200`, объявление есть в `items` |
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-MOD-004 — Отклонение без метки или с чужой меткой
+### TC-MOD-004 — Без `label` или с неизвестной меткой — `422`, статус не меняется
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-004 |
 | Название | Без `label` или с неизвестной меткой — `422`, статус не меняется |
-| История | 09 — Очередь модерации |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы |
 | Описание | Метка обязательна и берётся из фиксированного списка |
 | Приоритет | Medium |
 | Предусловия | Объявление `<SALE_CAR_ID>` в статусе `moderation` |
@@ -73,13 +73,13 @@ listings-2.md (`POST /sale_car/{id}/submit`). «Опубликованное» �
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-MOD-005 — Модераторские ручки закрыты для обычного пользователя и анонима
+### TC-MOD-005 — `user` получает `403 PERMISSION_DENIED`, без токена — `401`
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-005 |
 | Название | `user` получает `403 PERMISSION_DENIED`, без токена — `401` |
-| История | 09 — Очередь модерации |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы |
 | Описание | Очередь — список непроверенного; решения принимает только модератор (`manager`/`admin`) |
 | Приоритет | High |
 | Предусловия | Опубликованное объявление `<PUB_ID>`; объявление `<MOD_ID>` в статусе `moderation`; открытая жалоба `<COMPLAINT_ID>` |
@@ -89,13 +89,13 @@ listings-2.md (`POST /sale_car/{id}/submit`). «Опубликованное» �
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-MOD-006 — Неверные параметры очереди
+### TC-MOD-006 — Неизвестная вкладка и `size` > 60 — `422`
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-006 |
 | Название | Неизвестная вкладка и `size` > 60 — `422` |
-| История | 09 — Очередь модерации |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы |
 | Описание | `tab` ∈ `waiting`, `complained`, `handled_today`; `size` от 1 до 60 |
 | Приоритет | Low |
 | Предусловия | `MODERATOR_M` |
@@ -105,13 +105,13 @@ listings-2.md (`POST /sale_car/{id}/submit`). «Опубликованное» �
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-MOD-007 — Жалоба на опубликованное объявление
+### TC-MOD-007 — Жалоба создаётся со статусом `open` и видна модератору во вкладке `complained`
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-007 |
 | Название | Жалоба создаётся со статусом `open` и видна модератору во вкладке `complained` |
-| История | 09 — Очередь модерации |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы |
 | Описание | Любой вошедший может пожаловаться; жалобы группируются по объявлению; сами по себе объявление не снимают |
 | Приоритет | High |
 | Предусловия | Опубликованное объявление `<PUB_ID>` продавца `SELLER_A` |
@@ -121,13 +121,13 @@ listings-2.md (`POST /sale_car/{id}/submit`). «Опубликованное» �
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-MOD-008 — Отказы при жалобе
+### TC-MOD-008 — Повторная жалоба и жалоба на своё — 409, на черновик — 404, без токена — 401
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-008 |
-| Название | Повторная жалоба, жалоба на своё, на черновик и без токена |
-| История | 09 — Очередь модерации |
+| Название | Повторная жалоба и жалоба на своё — 409, на черновик — 404, без токена — 401 |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы |
 | Описание | Одна жалоба от человека на объявление; на неопубликованное — «не найдено», чтобы не выдать его существование |
 | Приоритет | Medium |
 | Предусловия | Выполнен TC-MOD-007 (жалоба `BUYER_B` на `<PUB_ID>`); черновик `<DRAFT_ID>` у `SELLER_A` |
@@ -137,29 +137,29 @@ listings-2.md (`POST /sale_car/{id}/submit`). «Опубликованное» �
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-MOD-009 — Отклонение жалобы модератором
+### TC-MOD-009 — `dismiss` закрывает жалобу один раз; объявление остаётся опубликованным
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-009 |
 | Название | `dismiss` закрывает жалобу один раз; объявление остаётся опубликованным |
-| История | 09 — Очередь модерации |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы |
 | Описание | Модератор не согласен с жалобой; повторное решение и несуществующая жалоба отклоняются |
 | Приоритет | Medium |
 | Предусловия | Открытая жалоба `<COMPLAINT_ID>` на `<PUB_ID>` |
 | Тестовые данные | Случайный UUID `<RANDOM_UUID>` |
-| Шаги | 1. `POST /moderation/complaints/<COMPLAINT_ID>/dismiss`, `Authorization: Bearer <TOKEN_MODERATOR_M>`<br>2. Повторить шаг 1<br>3. `POST /moderation/complaints/<RANDOM_UUID>/dismiss`, `Authorization: Bearer <TOKEN_MODERATOR_M>`<br>4. `GET /sale_car/<PUB_ID>` без заголовков |
+| Шаги | 1. `POST /moderation/complaints/<COMPLAINT_ID>/dismiss`, `Authorization: Bearer <TOKEN_MODERATOR_M>`<br>2. `POST /moderation/complaints/<COMPLAINT_ID>/dismiss`, `Authorization: Bearer <TOKEN_MODERATOR_M>`<br>3. `POST /moderation/complaints/<RANDOM_UUID>/dismiss`, `Authorization: Bearer <TOKEN_MODERATOR_M>`<br>4. `GET /sale_car/<PUB_ID>` без заголовков |
 | Ожидаемый результат | 1: `200`, `status` = `handled`; жалобы нет в `GET /moderation/complaints?status=open`<br>2: `409`, `code` = `COMPLAINT_ALREADY_HANDLED`<br>3: `404`, `code` = `COMPLAINT_NOT_FOUND`<br>4: `200`, `status` = `published` |
 | Статус | Not run |
 | Фактический результат | |
 
-### TC-MOD-010 — Снятие с публикации закрывает все жалобы
+### TC-MOD-010 — `unpublish` переводит в `rejected` с меткой и закрывает открытые жалобы
 
 | Поле | Значение |
 |---|---|
 | ID | TC-MOD-010 |
 | Название | `unpublish` переводит в `rejected` с меткой и закрывает открытые жалобы |
-| История | 09 — Очередь модерации |
+| История | 09 — Модерация: очередь, отклонение с причиной, жалобы |
 | Описание | Снятие — одно решение: объявление уходит из ленты, продавец видит метку, жалобы закрыты |
 | Приоритет | High |
 | Предусловия | Опубликованное `<PUB_ID>` с двумя открытыми жалобами; объявление `<MOD_ID>` в статусе `moderation` |

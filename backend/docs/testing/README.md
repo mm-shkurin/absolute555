@@ -58,8 +58,15 @@ curl -X POST http://localhost:8000/api/v1/auth/guest/login \
 поэтому тестовые роли назначаются в БД. `user_id` берётся из поля `id` payload токена
 (jwt.io) или из `GET /user/profile`:
 
+Имя пользователя и базы берутся из переменных `POSTGRES_USER` и `POSTGRES_DB` файла
+`infra/.env` (в `infra/.env.example` обе равны `absolute`); compose передаёт их в контейнер `postgres`:
+
+```bash
+docker compose -f infra/docker-compose.yml --env-file infra/.env exec postgres \
+  sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'
+```
+
 ```sql
--- docker compose exec postgres psql -U <POSTGRES_USER> <POSTGRES_DB>
 UPDATE users SET role = 'manager', is_guest = false WHERE id = '<user_id>';
 ```
 
@@ -78,7 +85,8 @@ UPDATE users SET role = 'manager', is_guest = false WHERE id = '<user_id>';
 | `ADMIN_X` | `qa-admin-x` | `admin` |
 | `IMPORTER_I` | `qa-importer-i` | `importer` |
 
-`<TOKEN_SELLER_A>` и т. п. в шагах — `access_token` соответствующей записи.
+`<TOKEN_SELLER_A>` и т. п. — `access_token` соответствующей записи. В шагах токен всегда
+записан полным заголовком: `Authorization: Bearer <TOKEN_SELLER_A>`.
 
 ## 3. Формат ошибки
 
@@ -109,7 +117,7 @@ UPDATE users SET role = 'manager', is_guest = false WHERE id = '<user_id>';
 |---|---|
 | **ID** | `TC-<ОБЛАСТЬ>-NNN`, уникален во всём наборе |
 | **Название** | какой результат проверяется |
-| **История** | номер и название истории из `ProductSpecification/stories/` |
+| **История** | `NN — <название из ProductSpecification/stories.md>`; `базовая функциональность (до историй)` или `вне историй` — поведение, не принадлежащее ни одной истории |
 | **Описание** | зачем кейс существует, какое требование он защищает |
 | **Приоритет** | High — основной сценарий или безопасность; Medium — важное правило; Low — граничный случай |
 | **Предусловия** | учётные записи и состояние данных до шага 1 |
@@ -131,20 +139,29 @@ UPDATE users SET role = 'manager', is_guest = false WHERE id = '<user_id>';
 
 | Файл | Область | Истории |
 |---|---|---|
-| [auth.md](auth.md) | Вход гостя, обновление и отзыв токенов, Яндекс OAuth | 01, 19 |
+| [auth.md](auth.md) | Вход гостя, обновление и отзыв токенов, Яндекс OAuth | до историй, 21, вне историй |
 | [account.md](account.md) | Профиль, аватар, удаление учётной записи | 21 |
-| [catalog.md](catalog.md) | Каталог марок и моделей | 06 |
-| [listings-1.md](listings-1.md) | Создание, чтение, правка, удаление объявления | 04, 07 |
-| [listings-2.md](listings-2.md) | Жизненный цикл объявления, телефон продавца | 04, 07 |
+| [catalog.md](catalog.md) | Каталог марок и моделей | 03 |
+| [listings-1.md](listings-1.md) | Создание, чтение, правка, удаление объявления | 04, 08, 17 |
+| [listings-2.md](listings-2.md) | Жизненный цикл объявления, телефон продавца | 04, 08 |
 | [recognition.md](recognition.md) | СТС: загрузка документа, автозаполнение, VIN, SSE | 06, 20 |
 | [photos.md](photos.md) | Галерея фото объявления | 05 |
 | [feed.md](feed.md) | Лента объявлений, фильтры, пагинация | 07 |
 | [moderation.md](moderation.md) | Очередь модерации, счётчики, жалобы, «кто решил» | 09, 22 |
 | [offers.md](offers.md) | Предложения цены | 10 |
-| [chat.md](chat.md) | Диалоги, сообщения, непрочитанные, WebSocket | 11 |
-| [reviews.md](reviews.md) | Отзывы и рейтинг продавца | 12 |
+| [chat.md](chat.md) | Диалоги, сообщения, непрочитанные, WebSocket | 11, вне историй |
+| [reviews.md](reviews.md) | Отзывы и рейтинг продавца | 12, вне историй |
 | [roles.md](roles.md) | Роли и заявки на роль | 13 |
 | [admin.md](admin.md) | Консоль администратора: карточка, журнал, блокировка | 23, 24 |
 | [thickness-map.md](thickness-map.md) | Карта толщины ЛКП и распознавание толщиномера | 14, 15, 26 |
 | [supplier-import.md](supplier-import.md) | Профиль поставщика, модерация, объявления под заказ | 16, 17 |
 | [buyer-requests.md](buyer-requests.md) | Заявки покупателей и ответы поставщиков | 18 |
+
+### Вне ручного тестирования
+
+- **02 — Подключить api_router — API становится доступным**: монтирование роутеров
+  отдельно не проверяется — его неявно проходит каждый кейс набора.
+- **19 — Гигиена слоёв: HTTPException из сервисов, ORM из роутеров**: внутреннее
+  устройство кода, наблюдаемого через HTTP поведения не меняет.
+- **26 — Карта окрасов: настоящий кузов, пять проекций**: только фронтенд; контракт
+  бэкенда по толщине ЛКП покрыт [thickness-map.md](thickness-map.md).
