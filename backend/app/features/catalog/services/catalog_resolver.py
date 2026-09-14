@@ -34,16 +34,10 @@ class CatalogResolver:
     async def resolve_into(self, sale_car: SaleCars, mark_raw: str | None, model_raw: str | None) -> ResolveOutcome:
         """Write what OCR read onto the listing, resolving what can be resolved.
 
-        The raw spellings are always stored, even when both matched. Without them a bad
-        fuzzy hit is invisible and unrecoverable: the row says `Toyota Camry` with
-        nothing to say the document said `Carina`.
-
-        A listing is never rejected for an unknown make or model. It keeps the raw text,
-        publishes, and simply does not appear under that filter until a moderator
-        resolves the spelling.
-
-        A field the seller filled in themselves is left alone, and no spelling is queued
-        for it: they have seen the car, and this has seen a photograph of a document.
+        Raw spellings are always stored: without them a bad fuzzy hit (`Camry` for a
+        document saying `Carina`) is invisible. An unknown make or model never rejects a
+        listing; it publishes outside that filter until a moderator resolves the spelling.
+        A seller-filled field is left alone and queues nothing: they have seen the car.
         """
         sale_car.mark_raw = mark_raw
         sale_car.model_raw = model_raw
@@ -55,30 +49,38 @@ class CatalogResolver:
 
         brand_match = await self.catalog.match_brand(mark_raw)
         if brand_match.value is None and not brand_owned:
-            sale_car.brand_id = None
-            sale_car.brand_source = None
-            if not model_owned:
-                sale_car.model_id = None
-                sale_car.model_source = None
-            if normalize(mark_raw):
-                await self._suggest(SuggestionKind.BRAND, None, mark_raw)
-                return ResolveOutcome(None, sale_car.model_id, "brand")
-            return ResolveOutcome(None, sale_car.model_id, None)
+            return await self._brand_unresolved(sale_car, mark_raw, model_owned)
 
         if brand_owned:
             # The model is looked up under the make the seller stands behind, not under
             # the one the document was read as: a model only means anything inside a make.
             brand_id = sale_car.brand_id
         else:
-            brand = brand_match.value
-            brand_id = brand.brand_id
-            sale_car.brand_id = brand_id
-            sale_car.brand_source = FieldSource.OCR.value
-            logger.info(f"catalog: brand {mark_raw!r} -> {brand.slug} via {brand_match.step}")
+            brand_id = self._apply_brand(sale_car, mark_raw, brand_match)
 
         if model_owned:
             return ResolveOutcome(brand_id, sale_car.model_id, None)
+        return await self._resolve_model(sale_car, brand_id, model_raw)
 
+    async def _brand_unresolved(self, sale_car: SaleCars, mark_raw: str | None, model_owned: bool) -> ResolveOutcome:
+        sale_car.brand_id = None
+        sale_car.brand_source = None
+        if not model_owned:
+            sale_car.model_id = None
+            sale_car.model_source = None
+        if normalize(mark_raw):
+            await self._suggest(SuggestionKind.BRAND, None, mark_raw)
+            return ResolveOutcome(None, sale_car.model_id, "brand")
+        return ResolveOutcome(None, sale_car.model_id, None)
+
+    def _apply_brand(self, sale_car: SaleCars, mark_raw: str | None, brand_match) -> UUID:
+        brand = brand_match.value
+        sale_car.brand_id = brand.brand_id
+        sale_car.brand_source = FieldSource.OCR.value
+        logger.info(f"catalog: brand {mark_raw!r} -> {brand.slug} via {brand_match.step}")
+        return brand.brand_id
+
+    async def _resolve_model(self, sale_car: SaleCars, brand_id: Optional[UUID], model_raw: str | None) -> ResolveOutcome:
         model_match = await self.catalog.match_model(brand_id, model_raw)
         if model_match.value is None:
             sale_car.model_id = None

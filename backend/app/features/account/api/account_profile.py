@@ -7,11 +7,11 @@
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import PayloadTooLarge, ValidationError
+from app.core.exceptions import ValidationError
 from app.db.database import get_db
 from app.features.account.schemas.profile import Profile, ProfilePatch
 from app.features.account.services.profile_service import NameNotAllowed, ProfileService
-from app.features.listing.services.photo_errors import NotAnImage, PhotoTooLarge
+from app.features.listing.api.photo_http import image_upload
 from app.permissions.dependencies import CurrentUser
 
 from .account_view import profile_view
@@ -39,18 +39,10 @@ async def upload_avatar(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_db),
 ):
-    try:
+    with image_upload("avatar"):
         updated = await ProfileService(db).set_avatar(
             current_user, await file.read(), file.content_type or "image/jpeg"
         )
-    except PhotoTooLarge as error:
-        raise PayloadTooLarge(
-            str(error),
-            code="PHOTO_TOO_LARGE",
-            details={"limit_bytes": error.limit, "size_bytes": error.size},
-        )
-    except NotAnImage as error:
-        raise ValidationError(str(error), code="NOT_AN_IMAGE", details={"filename": "avatar"})
     return profile_view(updated)
 
 

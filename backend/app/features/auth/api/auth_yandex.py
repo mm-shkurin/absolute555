@@ -48,15 +48,12 @@ async def finish_yandex_sign_in(
     to say about `error`.
     """
     provider = provider_for()
-
     if not await OAuthStore().take_state(state, provider.name):
         # Covers a forged state, a replayed one, one minted for another provider, and one
         # that expired while the person sat on the consent screen.
         return _back_to_frontend(error="state_invalid", provider=provider.name)
-
     if not code:
         return _back_to_frontend(error="code_missing", provider=provider.name)
-
     try:
         identity = await provider.fetch_identity(code)
     except OAuthFailed as failure:

@@ -86,11 +86,6 @@ class PeopleService:
             # кто переименовал себя сам, — а это ровно тот человек, которого ищут
             # руками. Кандидат на индексируемую колонку, когда список станет горячим.
             like = f"%{query.lower()}%"
-            conditions.append(
-                or_(
-                    func.lower(Users.profile_name).like(like),
-                    func.lower(Users.yandex_json.cast(Text)).like(like),
-                    func.lower(Users.vk_json.cast(Text)).like(like),
-                )
-            )
+            names = (Users.profile_name, Users.yandex_json.cast(Text), Users.vk_json.cast(Text))
+            conditions.append(or_(*(func.lower(name).like(like) for name in names)))
         return conditions

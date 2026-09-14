@@ -11,6 +11,12 @@ class RoleRequestNotFound(RoleRequestError):
         super().__init__("заявки нет")
 
 
+class UserNotFound(RoleRequestError):
+    def __init__(self, user_id):
+        self.user_id = user_id
+        super().__init__("пользователя нет")
+
+
 class DuplicateLiveRequest(RoleRequestError):
     def __init__(self, role: str):
         self.role = role

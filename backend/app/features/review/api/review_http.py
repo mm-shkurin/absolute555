@@ -13,39 +13,26 @@ from app.features.review.services.review_errors import (
 )
 
 
+# (domain error, HTTP error, code, details as (key, attribute) or None)
+_MAPPING = (
+    (OfferNotReviewable, ResourceNotFoundError, "OFFER_NOT_REVIEWABLE", None),
+    (DialogNotReviewable, ResourceNotFoundError, "DIALOG_NOT_REVIEWABLE", None),
+    (ReviewNotFound, ResourceNotFoundError, "REVIEW_NOT_FOUND", None),
+    (SellerNotFound, ResourceNotFoundError, "SELLER_NOT_FOUND", None),
+    (MalformedIdentifier, ValidationError, "MALFORMED_IDENTIFIER", ("field", "field")),
+    (DealNotClosed, BusinessRuleError, "DEAL_NOT_CLOSED", ("current_status", "current")),
+    # The identifier travels with the refusal so the screen moves to correcting the
+    # review instead of offering to write a second one.
+    (ReviewAlreadyWritten, BusinessRuleError, "REVIEW_ALREADY_WRITTEN", ("review_id", "review_id")),
+    (EditWindowClosed, BusinessRuleError, "REVIEW_EDIT_WINDOW_CLOSED", ("hours", "hours")),
+)
+
+
 def to_http(error: Exception):
-    if isinstance(error, OfferNotReviewable):
-        return ResourceNotFoundError(str(error), code="OFFER_NOT_REVIEWABLE")
-
-    if isinstance(error, DialogNotReviewable):
-        return ResourceNotFoundError(str(error), code="DIALOG_NOT_REVIEWABLE")
-
-    if isinstance(error, ReviewNotFound):
-        return ResourceNotFoundError(str(error), code="REVIEW_NOT_FOUND")
-
-    if isinstance(error, SellerNotFound):
-        return ResourceNotFoundError(str(error), code="SELLER_NOT_FOUND")
-
-    if isinstance(error, MalformedIdentifier):
-        return ValidationError(
-            str(error), code="MALFORMED_IDENTIFIER", details={"field": error.field}
-        )
-
-    if isinstance(error, DealNotClosed):
-        return BusinessRuleError(
-            str(error), code="DEAL_NOT_CLOSED", details={"current_status": error.current}
-        )
-
-    if isinstance(error, ReviewAlreadyWritten):
-        # The identifier travels with the refusal so the screen moves to correcting the
-        # review instead of offering to write a second one.
-        return BusinessRuleError(
-            str(error), code="REVIEW_ALREADY_WRITTEN", details={"review_id": error.review_id}
-        )
-
-    if isinstance(error, EditWindowClosed):
-        return BusinessRuleError(
-            str(error), code="REVIEW_EDIT_WINDOW_CLOSED", details={"hours": error.hours}
-        )
-
+    for error_type, http_error, code, detail in _MAPPING:
+        if isinstance(error, error_type):
+            if detail is None:
+                return http_error(str(error), code=code)
+            key, attribute = detail
+            return http_error(str(error), code=code, details={key: getattr(error, attribute)})
     raise error
