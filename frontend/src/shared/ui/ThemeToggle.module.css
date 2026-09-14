@@ -23,7 +23,7 @@
 .option[aria-pressed='true'] {
   background: var(--bg-card);
   color: var(--text-primary);
-  box-shadow: 0 1px 2px rgb(13 20 31 / 8%);
+  box-shadow: var(--shadow-control);
 }
 
 @media (max-width: 767px) {

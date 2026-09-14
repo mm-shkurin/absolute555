@@ -1,6 +1,7 @@
 // Живой поток диалогов. WebSocket, а не SSE: по нему приходят чужие сообщения, пока
 // человек смотрит на экран, и второе соединение ради отправки не нужно — отправка идёт
 // обычным POST, а сюда возвращается уже записанное сервером.
+import { browserWindow } from '../../lib/browser'
 import { currentSession } from '../../session/authSession'
 import { messageFromFrame } from './chatFrame'
 import type { MessageWire } from './chatContract'
@@ -15,9 +16,10 @@ export interface ChatSocketHandlers {
  *  закрыл бы его сразу, а немой открытый сокет выглядит как работающий. */
 export function openChatSocket(handlers: ChatSocketHandlers): () => void {
   const session = currentSession()
-  if (!session) return () => undefined
+  const origin = browserWindow()?.location.origin
+  if (!session || !origin) return () => undefined
 
-  const url = new URL(BACKEND.chat.socket(session.accessToken), window.location.origin)
+  const url = new URL(BACKEND.chat.socket(session.accessToken), origin)
   url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
   const socket = new WebSocket(url)
 
