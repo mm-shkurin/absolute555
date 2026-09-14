@@ -16,8 +16,8 @@
   background-image:
     repeating-linear-gradient(to bottom, var(--glass-grid-line) 0 1px, transparent 1px 60px),
     repeating-linear-gradient(to right, var(--glass-grid-line) 0 1px, transparent 1px 60px);
-  mask-image: radial-gradient(ellipse at 50% 30%, #000 26%, transparent 70%);
-  -webkit-mask-image: radial-gradient(ellipse at 50% 30%, #000 26%, transparent 70%);
+  mask-image: radial-gradient(ellipse at 50% 30%, var(--mask-solid) 26%, transparent 70%);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 30%, var(--mask-solid) 26%, transparent 70%);
 }
 
 .intro {

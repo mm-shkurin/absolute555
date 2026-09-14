@@ -8,7 +8,7 @@
   flex-direction: column;
   gap: 12px;
   padding: 16px;
-  background: rgba(8, 12, 22, 0.94);
+  background: var(--scrim-strong);
   color: var(--neutral-000);
 }
 
@@ -29,7 +29,7 @@
   height: 44px;
   border-radius: 50%;
   border: 0;
-  background: rgba(255, 255, 255, 0.12);
+  background: var(--on-scrim-control);
   color: var(--neutral-000);
   font-size: 19px;
 }
@@ -117,7 +117,7 @@
     top: 50%;
     transform: translateY(-50%);
     z-index: 1;
-    background: rgba(8, 12, 22, 0.55);
+    background: var(--scrim);
   }
   .stage > .round:first-child {
     left: 8px;
