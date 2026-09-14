@@ -22,3 +22,13 @@
 - magic values: `callbackOutcome.ts:25` 512, placeholder years in `FilterPanel.tsx:47-62`
 - `useDraftSync.ts:41` bare `window.location`; one author under two git identities
 - Stage A holds at 2.5 — confirmed.
+
+## Stage B follow-up — 2026-09-14 — 6faa682..939c743
+### Fixed Issues:
+- all functions ≤ 30 lines (77 blocks), no duplicated blocks, file naming per folder
+- one error-translation path, no peer chaining in `send`/`sendPublic`, no pass-through `api/`
+- labels out of `shared/domain`, slice layout per README, memoized list rows
+- `QueryClient` built in `main.tsx`; response shape guards; unmount guards in hooks
+### Outstanding Blockers:
+- access token in WebSocket URL (`shared/api/backend/paths.ts:87`) — needs backend
+- GIT-BULK: six commits over 40 files; GIT-DIRECT-MAIN (history)
