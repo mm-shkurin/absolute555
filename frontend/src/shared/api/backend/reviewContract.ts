@@ -1,6 +1,7 @@
 // Отзывы и публичный профиль продавца — контракт истории 12,
 // `ProductSpecification/api-specs/seller_rating.yaml`.
 import type { FeedCardWire } from './feedContract'
+import type { SellerWire } from './saleCarContract'
 
 export interface ReviewAuthorWire {
   user_id: string
@@ -40,14 +41,8 @@ export interface ReviewCreate {
 /** Поле, которого нет в теле, остаётся прежним: правка — не переписывание. */
 export type ReviewPatch = Partial<ReviewCreate>
 
-export interface SellerProfileWire {
-  user_id: string
-  name: string | null
-  avatar_url: string | null
-  rating: number | null
-  reviews_count: number
-  /** Принятые офферы, а не отзывы. */
-  deals_count: number
+/** Тот же продавец, что в карточке объявления, плюс то, что есть только на его странице. */
+export interface SellerProfileWire extends SellerWire {
   listings_count: number
   member_since: string | null
 }

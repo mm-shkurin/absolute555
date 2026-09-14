@@ -4,7 +4,7 @@
 // что рисует лента. Пока они не сошлись, перевод живёт здесь, в одном месте, и здесь же
 // видно, каких полей на сервере ещё нет.
 import type { SaleCarWire } from '../../api/backend/saleCarContract'
-import type { ListingWire } from './listingWire'
+import type { ListingCoreWire, ListingWire } from './listingWire'
 
 /** Марка из справочника, если распознавание её связало; иначе — как прочиталось
  *  с документа; иначе пусто. Прочерк рисует уже карточка, а не перевод. */
@@ -16,7 +16,8 @@ function modelOf(car: SaleCarWire): string {
   return car.model ?? car.model_raw ?? ''
 }
 
-export function toListingWire(car: SaleCarWire): ListingWire {
+/** Общая часть ленты и карточки: одно и то же объявление не должно переводиться дважды. */
+export function toListingCoreWire(car: SaleCarWire): ListingCoreWire {
   return {
     id: car.sale_car_id,
     brand: brandOf(car),
@@ -29,6 +30,12 @@ export function toListingWire(car: SaleCarWire): ListingWire {
     // Города на сервере нет: площадка пока одногородняя, и подставлять «Омск» значило бы
     // выдумать поле, которого в ответе не было.
     city: null,
+  }
+}
+
+export function toListingWire(car: SaleCarWire): ListingWire {
+  return {
+    ...toListingCoreWire(car),
     photo_url: car.preview_photo_url,
     // Бейдж обещает полную карту — значит, `is_complete`, а не «есть хоть один замер».
     has_thickness_map: car.thickness?.is_complete ?? false,

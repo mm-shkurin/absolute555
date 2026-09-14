@@ -5,6 +5,7 @@
 // чтобы, когда ручки появятся, было видно, что именно менять.
 import type { OfferWire as BackendOffer } from '../../../shared/api/backend/offerContract'
 import type { SaleCarWire } from '../../../shared/api/backend/saleCarContract'
+import { toListingCoreWire } from '../../../shared/domain/listing/fromSaleCar'
 import { maskVin } from '../../../shared/domain/listing/vinMask'
 import type { ListingDetailWire, OfferWire } from '../api/listingApi'
 
@@ -23,15 +24,7 @@ export function toListingDetailWire(
   const owned = context.viewerId !== null && context.viewerId === car.user_id
   const sold = car.status === 'sold'
   return {
-    id: car.sale_car_id,
-    brand: car.brand ?? car.mark_raw ?? '',
-    model: car.model ?? car.model_raw ?? '',
-    year: car.year ?? 0,
-    price: car.price ?? 0,
-    mileage_km: car.milleage,
-    engine_power_hp: car.engine_power,
-    transmission: car.transmission,
-    city: null,
+    ...toListingCoreWire(car),
     vin_masked: maskVin(car.vin),
     description: car.description,
     photo_urls: car.photos.map((photo) => photo.url),

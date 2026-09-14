@@ -107,6 +107,47 @@ function summary(wire: ListingDetailWire): string {
 
 const TIME = new Intl.DateTimeFormat('ru-RU', { hour: '2-digit', minute: '2-digit' })
 
+function sellerFields(wire: ListingDetailWire) {
+  return {
+    sellerId: wire.seller.id,
+    sellerName: wire.seller.name,
+    sellerAvatar: wire.seller.avatar_url,
+    sellerStars: stars(wire.seller.rating),
+    sellerRating:
+      wire.seller.rating === null
+        ? 'пока без отзывов'
+        : `${wire.seller.rating.toFixed(1).replace('.', ',')} · ${dealsLabel(wire.seller.deals_count)}`,
+  }
+}
+
+function thicknessFields(wire: ListingDetailWire) {
+  return {
+    hasThicknessMap: wire.has_thickness_map,
+    thicknessBadge: wire.thickness_map_complete
+      ? 'полная карта'
+      : wire.has_thickness_map
+        ? 'частичная карта'
+        : null,
+    measuredPanels: wire.measured_panels,
+    totalPanels: wire.total_panels,
+    thicknessPercent:
+      wire.total_panels === 0 ? 0 : Math.round((wire.measured_panels / wire.total_panels) * 100),
+  }
+}
+
+function ownerFields(wire: ListingDetailWire) {
+  return {
+    publishedOn: dayAndMonth(wire.published_at) || null,
+    decidedOn: dayAndMonth(wire.moderation?.decided_at) || null,
+    decidedBy: wire.moderation?.decided_by?.name ?? null,
+    stats: [
+      { label: 'показов', value: formatAmount(wire.views_count) },
+      { label: 'открытий', value: formatAmount(wire.opens_count) },
+      { label: 'офферов', value: formatAmount(wire.offers_count) },
+    ],
+  }
+}
+
 export function toListingDetailView(wire: ListingDetailWire): ListingDetailView {
   return {
     id: wire.id,
@@ -117,36 +158,13 @@ export function toListingDetailView(wire: ListingDetailWire): ListingDetailView 
     photosTotal: wire.photos_total,
     description: wire.description,
     specs: specs(wire),
-    hasThicknessMap: wire.has_thickness_map,
-    thicknessBadge: wire.thickness_map_complete
-      ? 'полная карта'
-      : wire.has_thickness_map
-        ? 'частичная карта'
-        : null,
-    sellerId: wire.seller.id,
-    sellerName: wire.seller.name,
-    sellerAvatar: wire.seller.avatar_url,
-    sellerStars: stars(wire.seller.rating),
-    sellerRating:
-      wire.seller.rating === null
-        ? 'пока без отзывов'
-        : `${wire.seller.rating.toFixed(1).replace('.', ',')} · ${dealsLabel(wire.seller.deals_count)}`,
     soldOn: dayAndMonth(wire.sold_at) || null,
     phoneAvailable: wire.phone_available,
     chatAllowed: wire.chat_allowed,
     offersVisible: wire.offers_visible,
-    publishedOn: dayAndMonth(wire.published_at) || null,
-    decidedOn: dayAndMonth(wire.moderation?.decided_at) || null,
-    decidedBy: wire.moderation?.decided_by?.name ?? null,
-    stats: [
-      { label: 'показов', value: formatAmount(wire.views_count) },
-      { label: 'открытий', value: formatAmount(wire.opens_count) },
-      { label: 'офферов', value: formatAmount(wire.offers_count) },
-    ],
-    measuredPanels: wire.measured_panels,
-    totalPanels: wire.total_panels,
-    thicknessPercent:
-      wire.total_panels === 0 ? 0 : Math.round((wire.measured_panels / wire.total_panels) * 100),
+    ...thicknessFields(wire),
+    ...sellerFields(wire),
+    ...ownerFields(wire),
   }
 }
 

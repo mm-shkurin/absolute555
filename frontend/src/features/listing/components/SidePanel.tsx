@@ -2,9 +2,9 @@
 // поэтому ветка одна и живёт здесь, а не расходится по трём копиям экрана.
 import { Button } from '../../../shared/ui/Button'
 import type { ListingDetailView, ViewerMode } from '../logic/listingDetail'
-import { PriceActions } from './PriceActions'
 import { OffersBlock } from './OffersBlock'
 import { SellerBlock } from './SellerBlock'
+import { SideHead } from './SideHead'
 import styles from './SidePanel.module.css'
 import listing from '../listing.module.css'
 
@@ -16,7 +16,7 @@ export interface SideHandlers {
   onComplain: () => void
 }
 
-interface Props {
+interface SidePanelProps {
   view: ListingDetailView
   mode: ViewerMode
   offers: { id: string; when: string; amount: string }[] | null
@@ -25,46 +25,25 @@ interface Props {
   handlers: SideHandlers
 }
 
-export function SidePanel({ view, mode, offers, phone, handlers }: Props) {
+export function SidePanel({ view, mode, offers, phone, handlers }: SidePanelProps) {
   return (
     <aside className={listing.side} data-testid="listing-side" data-mode={mode}>
-      <div className={`${listing.block} ${listing.blockFirst}`}>
-        <div className={styles.head}>
-          <div>
-            <div className={styles.title}>{view.title}</div>
-            <div className={styles.summary}>{view.summary}</div>
-          </div>
-          <button
-            type="button"
-            className={styles.more}
-            title="Пожаловаться"
-            onClick={handlers.onComplain}
-          >
-            ⋯
-          </button>
-        </div>
-        <div className={styles.price} data-testid="listing-price">
-          {view.price}
-        </div>
-        <PriceActions view={view} mode={mode} handlers={handlers} />
-        {phone ? (
-          <div className={styles.phone} data-testid="revealed-phone">
-            {phone}
-          </div>
-        ) : null}
-      </div>
-
+      <SideHead view={view} mode={mode} phone={phone} handlers={handlers} />
       <div className={listing.block}>
         <h3>Предложения по цене</h3>
         <OffersBlock offers={offers} mode={mode} />
       </div>
-
       <SellerBlock view={view} />
     </aside>
   )
 }
 
-export function MobileActionBar({ mode, handlers }: { mode: ViewerMode; handlers: SideHandlers }) {
+interface MobileActionBarProps {
+  mode: ViewerMode
+  handlers: SideHandlers
+}
+
+export function MobileActionBar({ mode, handlers }: MobileActionBarProps) {
   if (mode === 'sold') {
     return (
       <div className={styles.mobileBar} data-testid="mobile-actions">

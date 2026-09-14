@@ -1,88 +1,40 @@
 // Карточка объявления. Три состояния смотрящего — гость, покупатель, продано — различаются
 // только правой колонкой; левая одинакова, потому что машина от этого не меняется.
-import { useState } from 'react'
-import { useMutation } from '@tanstack/react-query'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { PageShell } from '../../shared/ui/PageShell'
 import { ROUTES } from '../../shared/navigation/routes'
-import { ListingBody } from './components/ListingBody'
-import { MobileActionBar, SidePanel, type SideHandlers } from './components/SidePanel'
-import { OwnerPanel } from './components/OwnerPanel'
+import { ListingColumns } from './components/ListingColumns'
+import { ListingOverlays } from './components/ListingOverlays'
 import { ListingFailure, ListingSkeleton } from './components/ListingStates'
-import { ComplainSheet } from './components/ComplainSheet'
-import { OfferSheet } from './components/OfferSheet'
+import { useComplaintSheet } from './useComplaintSheet'
 import { useListingActions } from './useListingActions'
-import { complain } from '../../shared/api/backend/moderationApi'
-import type { ComplaintReason } from '../../shared/api/backend/moderationContract'
 import { useListing } from './useListing'
+import { useSideHandlers } from './useSideHandlers'
 import styles from './listing.module.css'
 
-export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignIn?: () => void }) {
-  const navigate = useNavigate()
+interface ListingPageProps {
+  signedIn: boolean
+  onSignIn?: () => void
+}
+
+export function ListingPage({ signedIn, onSignIn }: ListingPageProps) {
   const { listingId = '' } = useParams()
   const listing = useListing(listingId, signedIn, new Date())
-  const [complaining, setComplaining] = useState(false)
   const actions = useListingActions(listingId)
-
-  // Повторная жалоба и жалоба на своё объявление — ответ сервера, а не поломка экрана:
-  // текст отказа показывается в шторке, и она остаётся открытой.
-  const complaint = useMutation({
-    mutationFn: ({ reason, text }: { reason: ComplaintReason; text: string }) =>
-      complain(listingId, reason, text),
-  })
-
-  const handlers: SideHandlers = {
-    onOffer: actions.openOffer,
-    // Переписка начинается предложением цены: диалог заводит сервер, отдельной ручки
-    // «написать продавцу» нет, и кнопка ведёт туда, где переписка появится.
-    onMessage: () => navigate(ROUTES.chats),
-    onShowPhone: actions.showPhone,
-    onSignIn: () => onSignIn?.(),
-    onComplain: () => {
-      complaint.reset()
-      setComplaining(true)
-    },
-  }
-
+  const complaint = useComplaintSheet(listingId)
+  const handlers = useSideHandlers(actions, complaint.open, onSignIn)
   const crumbs = (
     <>
       <Link to={ROUTES.feed}>Лента</Link>
       {listing.view ? ` › ${listing.view.title}` : null}
     </>
   )
-  const overlays = (
-    <>
-      {listing.view && listing.mode !== 'owner' ? (
-        <MobileActionBar mode={listing.mode} handlers={handlers} />
-      ) : null}
-      {actions.offering && listing.view ? (
-        <OfferSheet
-          askingPrice={listing.view.price}
-          busy={actions.busy}
-          failure={actions.failure}
-          sent={actions.offerSent}
-          onClose={actions.closeOffer}
-          onSend={actions.sendOffer}
-        />
-      ) : null}
-      {complaining ? (
-        <ComplainSheet
-          busy={complaint.isPending}
-          failure={(complaint.error as Error | null)?.message ?? null}
-          sent={complaint.isSuccess}
-          onClose={() => setComplaining(false)}
-          onSend={(reason, text) => complaint.mutate({ reason, text })}
-        />
-      ) : null}
-    </>
-  )
+  const overlays = <ListingOverlays {...{ listing, actions, complaint, handlers }} />
 
   return (
     <PageShell
-      signedIn={signedIn}
-      onSignIn={onSignIn}
+      {...{ signedIn, onSignIn, crumbs }}
       testId="listing"
-      crumbs={crumbs}
       crumbsClassName={styles.crumbs}
       outside={overlays}
     >
@@ -91,37 +43,7 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
         <ListingFailure message={listing.error.message} onRetry={listing.retry} />
       ) : null}
       {listing.view ? (
-        <div className={styles.layout}>
-          <ListingBody
-            listing={listing.view}
-            onComplain={listing.mode === 'owner' ? undefined : handlers.onComplain}
-          />
-          {listing.mode === 'owner' ? (
-            <OwnerPanel
-              view={listing.view}
-              sold={listing.sold}
-              // В мастер этого объявления, а не в новое: `/sell` заводил бы новый черновик.
-              onEdit={() => navigate(ROUTES.sellingDraft(listing.view?.id ?? ''))}
-              busy={actions.busy}
-              onUnpublish={() => actions.owner('withdraw')}
-              onMarkSold={() => actions.owner('sold')}
-              onSetting={(key, value) =>
-                actions.setting(
-                  key === 'phone' ? { phone_visible: value } : { chat_allowed: value },
-                )
-              }
-              onOffersVisible={(value) => actions.setting({ offers_visible: value })}
-            />
-          ) : (
-            <SidePanel
-              view={listing.view}
-              mode={listing.mode}
-              offers={listing.offers}
-              phone={actions.phone}
-              handlers={handlers}
-            />
-          )}
-        </div>
+        <ListingColumns view={listing.view} {...{ listing, actions, handlers }} />
       ) : null}
     </PageShell>
   )

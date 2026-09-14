@@ -36,7 +36,13 @@ const wire: ListingDetailWire = {
   offers_count: 4,
   measured_panels: 11,
   total_panels: 13,
-  seller: { id: 'u1', name: 'Михаил', avatar_url: 'https://s3/mihail.jpg', rating: 4.8, deals_count: 12 },
+  seller: {
+    id: 'u1',
+    name: 'Михаил',
+    avatar_url: 'https://s3/mihail.jpg',
+    rating: 4.8,
+    deals_count: 12,
+  },
   offers: null,
 }
 
@@ -97,15 +103,13 @@ describe('карточка объявления', () => {
   })
 
   it('привоз дописывает к характеристикам страну, срок и цену под ключ', () => {
-    const view = toListingDetailView(
-      {
-        ...wire,
-        is_import: true,
-        import_country: 'Япония',
-        delivery_days: 60,
-        turnkey_price: 6690000,
-      },
-    )
+    const view = toListingDetailView({
+      ...wire,
+      is_import: true,
+      import_country: 'Япония',
+      delivery_days: 60,
+      turnkey_price: 6690000,
+    })
     expect(view.specs.map((row) => row.label)).toContain('Откуда везут')
     expect(view.specs.find((row) => row.label === 'Срок доставки')?.value).toBe('60 дней')
     expect(view.specs.find((row) => row.label === 'Цена под ключ')?.value).toContain('690')
