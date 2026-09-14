@@ -9,11 +9,9 @@ from typing import List
 
 from fastapi import APIRouter, Depends, Query, WebSocket, WebSocketDisconnect
 from app.shared.http.paging import page_size as page_size_query
-from app.features.chat.deps import get_chat_service
+from app.features.chat.deps import get_chat_reader, get_chat_service
 from app.features.review.deps import get_dialog_review_service
-from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.database import get_db
 from app.features.chat.schemas.chat import (
     DialogResponse,
     MessagePage,
@@ -28,7 +26,7 @@ from app.features.chat.services.chat_reader import ChatReader
 from app.features.chat.services.chat_service import ChatService
 from app.features.review.services.review_dialog import DialogReviewService
 from app.shared.realtime.chat_socket import chat_hub, listener_of
-from app.utils.security import get_current_user
+from app.features.auth.deps import get_current_user
 
 from app.shared.http.chat_view import dialog_view, message_view
 
@@ -37,11 +35,10 @@ chat_router = APIRouter()
 
 @chat_router.get("/dialogs", response_model=List[DialogResponse])
 async def list_dialogs(
-    db: AsyncSession = Depends(get_db),
+    reader: ChatReader = Depends(get_chat_reader),
     dialog_review_service: DialogReviewService = Depends(get_dialog_review_service),
     current_user=Depends(get_current_user),
 ):
-    reader = ChatReader(db)
     dialogs = await reader.mine(str(current_user.id))
     last = await reader.last_messages(dialogs)
     unread = await reader.unread_by_dialog(dialogs, str(current_user.id))
@@ -63,7 +60,7 @@ async def list_dialogs(
 @chat_router.post("/dialogs/direct/{user_id}", response_model=DialogResponse)
 async def open_direct(
     user_id: str,
-    db: AsyncSession = Depends(get_db),
+    reader: ChatReader = Depends(get_chat_reader),
     chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
@@ -73,17 +70,17 @@ async def open_direct(
         dialog = await chat_service.dialog_of(str(opened.dialog_id), str(current_user.id))
     except (ChatError, ValueError) as refused:
         raise DialogNotFound(user_id) from refused
-    storefronts = await ChatReader(db).storefronts([dialog])
+    storefronts = await reader.storefronts([dialog])
     return dialog_view(dialog, current_user.id, 0, storefront=storefronts.get(str(dialog.seller_id)))
 
 
 @chat_router.get("/unread", response_model=UnreadCount)
 async def unread_badge(
-    db: AsyncSession = Depends(get_db),
+    reader: ChatReader = Depends(get_chat_reader),
     current_user=Depends(get_current_user),
 ):
     """One number, because the badge is drawn on every screen."""
-    return {"unread": await ChatReader(db).unread_total(str(current_user.id))}
+    return {"unread": await reader.unread_total(str(current_user.id))}
 
 
 @chat_router.get("/dialogs/{dialog_id}/messages", response_model=MessagePage)
@@ -91,13 +88,13 @@ async def read_messages(
     dialog_id: str,
     page: int = Query(default=1, ge=1),
     size: int = Depends(page_size_query(default=50, most=100)),
-    db: AsyncSession = Depends(get_db),
+    reader: ChatReader = Depends(get_chat_reader),
     chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
     dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
 
-    messages, total = await ChatReader(db).messages(dialog, page, size)
+    messages, total = await reader.messages(dialog, page, size)
     return {
         "items": [message_view(message) for message in messages],
         "total": total,
@@ -110,15 +107,13 @@ async def read_messages(
 async def write_message(
     dialog_id: str,
     body: MessageWrite,
-    db: AsyncSession = Depends(get_db),
+    reader: ChatReader = Depends(get_chat_reader),
     chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
     """The kind is not a field a client may set: a system line has no human author."""
     dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
-    message = await chat_service.say(dialog, body.text, author_id=current_user.id)
-
-    await db.commit()
+    message = await chat_service.post(dialog, body.text, author_id=current_user.id)
     written = message_view(message)
 
     # Serialised through the schema before it goes down the socket: a WebSocket frame is
@@ -134,7 +129,7 @@ async def write_message(
 async def mark_read(
     dialog_id: str,
     body: ReadRequest,
-    db: AsyncSession = Depends(get_db),
+    reader: ChatReader = Depends(get_chat_reader),
     chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
@@ -143,7 +138,7 @@ async def mark_read(
     marked = await chat_service.mark_read(dialog, str(current_user.id), body.message_ids)
     return {
         "marked": marked,
-        "unread": await ChatReader(db).unread_in(dialog, str(current_user.id)),
+        "unread": await reader.unread_in(dialog, str(current_user.id)),
     }
 
 

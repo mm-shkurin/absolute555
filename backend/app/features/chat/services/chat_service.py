@@ -135,6 +135,11 @@ class ChatService:
         await self.db.flush()
         return message
 
+    async def post(self, dialog: Dialog, text: str, author_id) -> Message:
+        message = await self.say(dialog, text, author_id=author_id)
+        await self.db.commit()
+        return message
+
     async def dialog_of(self, dialog_id: str, user_id: str) -> Dialog:
         try:
             key = uuid.UUID(dialog_id)

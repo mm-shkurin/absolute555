@@ -1,11 +1,10 @@
 from typing import List
 
 from fastapi import APIRouter, Depends, Query, status
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.exceptions import AuthorizationError
-from app.db.database import get_db
-from app.features.offer.deps import get_offer_service
+from app.features.offer.deps import get_offer_access_service, get_offer_service
+from app.features.offer.services.offer_access_service import OfferAccessService
 from app.features.offer.schemas.offer import (
     OfferCreate,
     OfferResponse,
@@ -17,9 +16,8 @@ from app.features.offer.statuses import OfferStatus as OfferStatusEnum
 from app.features.review.deps import get_review_service
 from app.features.review.services.review_service import ReviewService
 from app.permissions.guests import forbid_guest
-from app.permissions.ownership import can_manage_offer, can_manage_offer_as_owner
 from app.shared.http.review_view import offer_view
-from app.utils.security import get_current_user
+from app.features.auth.deps import get_current_user
 
 offer_router = APIRouter()
 
@@ -80,11 +78,11 @@ async def withdraw_offer(
 @offer_router.get("/car/{sale_car_id}", response_model=List[OfferResponse])
 async def get_offers_for_car(
     sale_car_id: str,
-    db: AsyncSession = Depends(get_db),
+    access: OfferAccessService = Depends(get_offer_access_service),
     offer_service: OfferService = Depends(get_offer_service),
     current_user=Depends(forbid_guest)
 ):
-    if not await can_manage_offer_as_owner(current_user, sale_car_id, db):
+    if not await access.manages_as_owner(current_user, sale_car_id):
         # Не владелец видит торг, только если продавец сам его открыл: до появления этой
         # настройки предложения были закрыты всем, и решение показать их принадлежит
         # тому, чью машину обсуждают.
@@ -99,12 +97,12 @@ async def get_offers_for_car(
 @offer_router.get("/{offer_id}", response_model=OfferResponse)
 async def get_offer_by_id(
     offer_id: str,
-    db: AsyncSession = Depends(get_db),
+    access: OfferAccessService = Depends(get_offer_access_service),
     offer_service: OfferService = Depends(get_offer_service),
     current_user=Depends(get_current_user)
 ):
     offer = await offer_service.offer_of(offer_id)
-    if not await can_manage_offer(current_user, offer, db):
+    if not await access.manages(current_user, offer):
         raise NotOfferParty()
     return offer
 
@@ -113,12 +111,12 @@ async def get_offer_by_id(
 async def update_offer_status(
     offer_id: str,
     status_update: OfferStatusUpdate,
-    db: AsyncSession = Depends(get_db),
+    access: OfferAccessService = Depends(get_offer_access_service),
     offer_service: OfferService = Depends(get_offer_service),
     current_user=Depends(get_current_user)
 ):
     offer = await offer_service.offer_of(offer_id)
-    if not await can_manage_offer_as_owner(current_user, str(offer.sale_car_id), db):
+    if not await access.manages_as_owner(current_user, str(offer.sale_car_id)):
         raise AuthorizationError("Only the car owner may change an offer's status", code="NOT_CAR_OWNER")
 
     return await offer_service.update_offer_status(
