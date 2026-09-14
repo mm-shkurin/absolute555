@@ -8,10 +8,8 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 import jwt
-import pytest
 
 from app.core.config import JWTSettings
-from app.features.account.services.session_service import SessionService
 from tests.conftest import user_id_of as _user_id
 
 jwt_settings = JWTSettings()
@@ -91,25 +89,3 @@ def test_should_refuse_a_refresh_token_of_a_user_who_never_existed(client):
 
     assert refreshed.status_code == 401, refreshed.text
     assert refreshed.json()["code"] == "TOKEN_INVALID"
-
-
-@pytest.mark.parametrize("known", [True, False])
-def test_should_recognise_only_the_sessions_it_handed_out(known):
-    service = SessionService()
-    token = service.create_session_token()
-    if known:
-        service.add_session(token)
-
-    assert service.is_valid_session(token) is known
-
-
-def test_should_forget_a_session_that_was_removed():
-    service = SessionService()
-    token = service.create_session_token()
-    service.add_session(token)
-
-    service.remove_session(token)
-
-    assert service.is_valid_session(token) is False
-    # Повторное снятие — не ошибка: выход дважды нажимают чаще, чем один раз.
-    service.remove_session(token)

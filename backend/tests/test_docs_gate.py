@@ -98,3 +98,19 @@ def test_should_gate_redoc_the_same_way(client, api_key):
     assert uninvited.status_code == 302 and uninvited.headers["location"] == "/redoc"
     assert accepted.status_code == 302
     assert accepted.headers["location"] == "/redoc/view"
+
+
+def test_should_mark_the_session_cookie_secure_and_same_site(client, api_key):
+    cookie = _sign_in(client, api_key).headers["set-cookie"].lower()
+
+    assert "secure" in cookie
+    assert "samesite=strict" in cookie
+
+
+def test_should_refuse_a_session_it_never_handed_out(client):
+    swagger = client.get(
+        "/docs/swagger", cookies={"docs_session": "forged-token"}, follow_redirects=False
+    )
+
+    assert swagger.status_code == 302, swagger.text
+    assert swagger.headers["location"] == "/docs"

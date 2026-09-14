@@ -63,7 +63,7 @@ class DatabaseSettings(BaseSettings):
     
 class DocsSettings(BaseSettings):
     docs_api_key: str = Field(..., alias="DOCS_API_KEY")
-    
+    docs_session_ttl_seconds: int = Field(default=3600, ge=60, alias="DOCS_SESSION_TTL_SECONDS")
     model_config = BaseConfig.model_config
 class JWTSettings(BaseSettings):
     secret_key: str = Field(..., min_length=32, alias="SECRET_KEY")
