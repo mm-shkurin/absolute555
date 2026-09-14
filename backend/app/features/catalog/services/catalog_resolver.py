@@ -16,7 +16,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.features.catalog.models.catalog import CatalogSuggestion, SuggestionKind, SuggestionStatus
 from app.features.listing.models.sale_car import FieldSource, SaleCars
 from app.features.catalog.services.catalog_normalize import normalize
-from app.features.catalog.services.catalog_service import CatalogService
 
 
 @dataclass(frozen=True)
@@ -27,9 +26,9 @@ class ResolveOutcome:
 
 
 class CatalogResolver:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, catalog):
         self.db = db
-        self.catalog = CatalogService(db)
+        self.catalog = catalog
 
     async def resolve_into(self, sale_car: SaleCars, mark_raw: str | None, model_raw: str | None) -> ResolveOutcome:
         """Write what OCR read onto the listing, resolving what can be resolved.

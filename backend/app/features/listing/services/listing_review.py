@@ -11,17 +11,17 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.listing.models.sale_car import RejectionLabel, SaleCars, SaleCarStatus
-from app.features.listing.services.listing_document import ListingDocumentService
 from app.features.listing.services.listing_errors import RejectionNeedsReason, TransitionNotAllowed
 
 LABELS = {label.value for label in RejectionLabel}
 
 
 class ListingReviewService:
-    def __init__(self, db: AsyncSession, lifecycle, complaints):
+    def __init__(self, db: AsyncSession, lifecycle, complaints, documents):
         self.db = db
         self.lifecycle = lifecycle
         self.complaints = complaints
+        self.documents = documents
 
     async def approve(self, listing_id: str, moderator_id: str) -> SaleCars:
         listing = await self.lifecycle.get(listing_id)
@@ -31,7 +31,7 @@ class ListingReviewService:
         listing.reject_label = None
         self._stamp(listing, moderator_id)
         # The scan has done its work: a moderator has now compared it with what OCR read.
-        await ListingDocumentService(self.db).discard(listing)
+        await self.documents.discard(listing)
         await self.db.commit()
         return await self.lifecycle.get(listing_id)
 
@@ -76,7 +76,7 @@ class ListingReviewService:
         listing.reject_label = label
         listing.reject_reason = (comment or "").strip() or None
         self._stamp(listing, moderator_id)
-        await ListingDocumentService(self.db).discard(listing)
+        await self.documents.discard(listing)
         await self.db.commit()
         return await self.lifecycle.get(listing_id)
 

@@ -10,7 +10,7 @@ from loguru import logger
 from sqlalchemy import select
 
 from app.db.database import get_db_session
-from app.features.catalog.services.catalog_resolver import CatalogResolver
+from app.features.catalog.deps import build_catalog_resolver
 from app.features.listing.models.sale_car import SaleCars
 
 
@@ -62,6 +62,6 @@ async def persist_decoded(sale_car_id: str, result: dict) -> bool:
             return False
 
         apply_decoded(sale_car, result)
-        await CatalogResolver(db).resolve_into(sale_car, result.get("mark"), result.get("model"))
+        await build_catalog_resolver(db).resolve_into(sale_car, result.get("mark"), result.get("model"))
         await db.commit()
     return True

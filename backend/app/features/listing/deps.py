@@ -16,20 +16,27 @@ from app.features.moderation.services.complaint_service import ComplaintService
 from app.features.recognition.services.webhook_service import WebhookService
 
 
+def build_listing_autofill_service(db: AsyncSession) -> ListingAutofillService:
+    return ListingAutofillService(db, ListingDocumentService(db))
+
+
 def get_listing_lifecycle_service(db: AsyncSession = Depends(get_db)) -> ListingLifecycleService:
-    return ListingLifecycleService(db, WebhookService(db))
+    return ListingLifecycleService(db, WebhookService(db), build_listing_autofill_service(db))
 
 
 def get_sale_car_service(db: AsyncSession = Depends(get_db)) -> SaleCarService:
     return SaleCarService(db, WebhookService(db))
 
 
-def get_listing_review_service(db: AsyncSession = Depends(get_db)) -> ListingReviewService:
-    return ListingReviewService(db, get_listing_lifecycle_service(db), ComplaintService(db))
+def get_listing_review_service(
+    db: AsyncSession = Depends(get_db),
+    lifecycle: ListingLifecycleService = Depends(get_listing_lifecycle_service),
+) -> ListingReviewService:
+    return ListingReviewService(db, lifecycle, ComplaintService(db), ListingDocumentService(db))
 
 
 def get_listing_autofill_service(db: AsyncSession = Depends(get_db)) -> ListingAutofillService:
-    return ListingAutofillService(db)
+    return build_listing_autofill_service(db)
 
 
 def get_listing_document_service(db: AsyncSession = Depends(get_db)) -> ListingDocumentService:

@@ -15,8 +15,8 @@ from app.features.catalog.models.catalog import Brand, CatalogSuggestion, Sugges
 from app.features.listing.models.sale_car import AutofillState, FieldSource, SaleCars, SaleCarStatus
 from app.features.account.models.users import Users
 from app.features.catalog.services.catalog_normalize import normalize
-from app.features.catalog.services.catalog_resolver import CatalogResolver
-from app.features.listing.services.listing_autofill import ListingAutofillService
+from app.features.catalog.deps import build_catalog_resolver
+from app.features.listing.deps import build_listing_autofill_service
 from tests.conftest import test_session
 
 pytestmark = pytest.mark.asyncio
@@ -67,7 +67,7 @@ async def _spelling(db, kind, brand_id, raw_norm):
 async def test_should_show_the_seller_the_outcome_behind_each_step(db, task_status, expected):
     listing = await _listing(db)
 
-    await ListingAutofillService(db).note_task_status(listing, task_status)
+    await build_listing_autofill_service(db).note_task_status(listing, task_status)
 
     assert listing.autofill_state == expected.value
     assert listing.autofill_updated_at is not None
@@ -75,9 +75,9 @@ async def test_should_show_the_seller_the_outcome_behind_each_step(db, task_stat
 
 async def test_should_leave_the_outcome_alone_on_a_step_that_is_not_one(db):
     listing = await _listing(db)
-    await ListingAutofillService(db).note_task_status(listing, "DecodeSuccess")
+    await build_listing_autofill_service(db).note_task_status(listing, "DecodeSuccess")
 
-    await ListingAutofillService(db).note_task_status(listing, "SUCCESS")
+    await build_listing_autofill_service(db).note_task_status(listing, "SUCCESS")
 
     assert listing.autofill_state == AutofillState.DONE.value
 
@@ -85,7 +85,7 @@ async def test_should_leave_the_outcome_alone_on_a_step_that_is_not_one(db):
 async def test_should_keep_the_document_spelling_beside_a_make_it_resolved(db):
     listing = await _listing(db)
 
-    outcome = await CatalogResolver(db).resolve_into(listing, "TOYOTA", "CAMRY")
+    outcome = await build_catalog_resolver(db).resolve_into(listing, "TOYOTA", "CAMRY")
 
     assert outcome.brand_id is not None
     assert listing.mark_raw == "TOYOTA"
@@ -96,7 +96,7 @@ async def test_should_not_stop_a_listing_over_a_make_it_never_heard_of(db):
     listing = await _listing(db)
     spelling = f"MARQUE {uuid.uuid4().hex[:6].upper()}"
 
-    outcome = await CatalogResolver(db).resolve_into(listing, spelling, "SOMETHING")
+    outcome = await build_catalog_resolver(db).resolve_into(listing, spelling, "SOMETHING")
     await db.commit()
 
     assert outcome.brand_id is None and outcome.suggested == "brand"
@@ -108,9 +108,9 @@ async def test_should_ask_a_moderator_about_one_spelling_once(db):
     first, second = await _listing(db), await _listing(db)
     spelling = f"MARQUE {uuid.uuid4().hex[:6].upper()}"
 
-    await CatalogResolver(db).resolve_into(first, spelling, None)
+    await build_catalog_resolver(db).resolve_into(first, spelling, None)
     await db.commit()
-    await CatalogResolver(db).resolve_into(second, spelling, None)
+    await build_catalog_resolver(db).resolve_into(second, spelling, None)
     await db.commit()
 
     queued = await db.execute(
@@ -122,12 +122,12 @@ async def test_should_ask_a_moderator_about_one_spelling_once(db):
 
 async def test_should_leave_what_the_seller_chose_untouched_by_a_later_reading(db):
     listing = await _listing(db)
-    await CatalogResolver(db).resolve_into(listing, "TOYOTA", "CAMRY")
+    await build_catalog_resolver(db).resolve_into(listing, "TOYOTA", "CAMRY")
     chosen_brand, chosen_model = listing.brand_id, listing.model_id
-    await ListingAutofillService(db).claim(listing, {"brand_id": chosen_brand, "model_id": chosen_model})
+    await build_listing_autofill_service(db).claim(listing, {"brand_id": chosen_brand, "model_id": chosen_model})
     await db.commit()
 
-    await CatalogResolver(db).resolve_into(listing, "NISSAN", "SKYLINE")
+    await build_catalog_resolver(db).resolve_into(listing, "NISSAN", "SKYLINE")
     await db.commit()
 
     assert listing.brand_id == chosen_brand
@@ -138,11 +138,11 @@ async def test_should_leave_what_the_seller_chose_untouched_by_a_later_reading(d
 async def test_should_close_a_question_the_seller_has_already_answered(db):
     listing = await _listing(db)
     spelling = f"MARQUE {uuid.uuid4().hex[:6].upper()}"
-    await CatalogResolver(db).resolve_into(listing, spelling, None)
+    await build_catalog_resolver(db).resolve_into(listing, spelling, None)
     await db.commit()
 
     brand = (await db.execute(select(Brand).limit(1))).scalar_one()
-    await ListingAutofillService(db).claim(listing, {"brand_id": brand.brand_id})
+    await build_listing_autofill_service(db).claim(listing, {"brand_id": brand.brand_id})
     listing.brand_id = brand.brand_id
     await db.commit()
 
@@ -153,12 +153,12 @@ async def test_should_close_a_question_the_seller_has_already_answered(db):
 async def test_should_keep_a_question_another_listing_still_needs(db):
     mine, theirs = await _listing(db), await _listing(db)
     spelling = f"MARQUE {uuid.uuid4().hex[:6].upper()}"
-    await CatalogResolver(db).resolve_into(mine, spelling, None)
-    await CatalogResolver(db).resolve_into(theirs, spelling, None)
+    await build_catalog_resolver(db).resolve_into(mine, spelling, None)
+    await build_catalog_resolver(db).resolve_into(theirs, spelling, None)
     await db.commit()
 
     brand = (await db.execute(select(Brand).limit(1))).scalar_one()
-    await ListingAutofillService(db).claim(mine, {"brand_id": brand.brand_id})
+    await build_listing_autofill_service(db).claim(mine, {"brand_id": brand.brand_id})
     mine.brand_id = brand.brand_id
     await db.commit()
 

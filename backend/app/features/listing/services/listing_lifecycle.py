@@ -34,7 +34,6 @@ from app.features.listing.services.listing_errors import (
     TooManyDrafts,
     TransitionNotAllowed,
 )
-from app.features.listing.services.listing_autofill import ListingAutofillService
 
 EDITABLE_IN = frozenset({SaleCarStatus.DRAFT, SaleCarStatus.REJECTED})
 # What the seller opens to a buyer, as opposed to what the listing says. A moderator
@@ -44,9 +43,10 @@ VISIBILITY_FIELDS = frozenset({"phone_visible", "chat_allowed", "offers_visible"
 
 
 class ListingLifecycleService:
-    def __init__(self, db: AsyncSession, webhooks):
+    def __init__(self, db: AsyncSession, webhooks, autofill):
         self.db = db
         self.webhooks = webhooks
+        self.autofill = autofill
 
     async def create_draft(self, user_id: str, kind: str = ListingKind.STOCK.value) -> SaleCars:
         owner = uuid.UUID(user_id)
@@ -94,7 +94,7 @@ class ListingLifecycleService:
 
         # A make or model in the payload is the seller's own answer: it outranks the
         # reading from here on, and it settles the spelling a moderator was queued.
-        await ListingAutofillService(self.db).claim(listing, fields)
+        await self.autofill.claim(listing, fields)
         await self.db.commit()
         await self._reload(listing)
         return listing

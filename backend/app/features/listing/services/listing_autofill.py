@@ -16,7 +16,6 @@ from app.features.catalog.models.catalog import CatalogSuggestion, SuggestionKin
 from app.features.listing.models.sale_car import AutofillState, FieldSource, SaleCars
 from app.features.catalog.services.catalog_normalize import normalize
 from app.features.listing.services.listing_errors import ListingFrozen, VinMalformed
-from app.features.listing.services.listing_document import ListingDocumentService
 from app.ml.vin_shape import NumberKind, classify, normalise
 from app.queue import enqueue
 
@@ -36,8 +35,9 @@ EDITABLE_IN = frozenset({"draft", "rejected"})
 
 
 class ListingAutofillService:
-    def __init__(self, db: AsyncSession):
+    def __init__(self, db: AsyncSession, documents):
         self.db = db
+        self.documents = documents
 
     async def attach_scan(self, listing: SaleCars, body: bytes, content_type: str) -> SaleCars:
         """Store a new registration scan and put the listing back in the reading state.
@@ -48,7 +48,7 @@ class ListingAutofillService:
         if listing.status not in EDITABLE_IN:
             raise ListingFrozen(listing.status)
 
-        await ListingDocumentService(self.db).attach(listing, body, content_type)
+        await self.documents.attach(listing, body, content_type)
         listing.autofill_state = AutofillState.PENDING.value
         listing.autofill_updated_at = datetime.utcnow()
         await self.db.commit()
