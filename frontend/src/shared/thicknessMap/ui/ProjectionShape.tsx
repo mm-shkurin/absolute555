@@ -1,5 +1,5 @@
-import type { PanelCode } from './bodyPanels'
-import type { Projection } from './geometry/types'
+import type { PanelCode } from '../logic/bodyPanels'
+import type { Projection } from '../logic/geometry/types'
 import styles from './BodySchematic.module.css'
 
 interface Props {

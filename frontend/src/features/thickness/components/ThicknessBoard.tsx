@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
-import { BodySchematic } from '../../../shared/thicknessMap/BodySchematic'
-import type { PanelCode } from '../../../shared/thicknessMap/bodyPanels'
-import type { ThicknessView } from '../../../shared/thicknessMap/thicknessMap'
+import { BodySchematic } from '../../../shared/thicknessMap/ui/BodySchematic'
+import type { PanelCode } from '../../../shared/thicknessMap/logic/bodyPanels'
+import type { ThicknessView } from '../../../shared/thicknessMap/logic/thicknessMap'
 import { PanelList } from './PanelList'
 import styles from '../thickness.module.css'
 

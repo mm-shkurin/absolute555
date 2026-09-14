@@ -1,7 +1,7 @@
 // Легенда шкалы. Пороги подписаны числами: цвет без числа — это мнение, а с числом — замер.
 // Границы принадлежат серверу — здесь они подпись, а не правило (`panels.ts`).
-import type { Grade } from './bodyPanels'
-import { GRADE_COLOR, GRADE_RANGE, GRADE_WORD } from './gradeLabels'
+import type { Grade } from '../logic/bodyPanels'
+import { GRADE_COLOR, GRADE_RANGE, GRADE_WORD } from '../logic/gradeLabels'
 import styles from './BodySchematic.module.css'
 
 const ITEMS: Grade[] = ['factory', 'repaint', 'filler', 'none']

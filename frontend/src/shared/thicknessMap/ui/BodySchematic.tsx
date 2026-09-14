@@ -1,8 +1,8 @@
 // Схема кузова: пять проекций в одном SVG, панель залита цветом своего замера.
 // Одна панель встречается в нескольких проекциях — выбор подсвечивает все её вхождения.
-import type { PanelCode } from './bodyPanels'
-import type { PanelRow } from './thicknessMap'
-import { PROJECTIONS, VIEW_BOX } from './geometry'
+import type { PanelCode } from '../logic/bodyPanels'
+import type { PanelRow } from '../logic/thicknessMap'
+import { PROJECTIONS, VIEW_BOX } from '../logic/geometry'
 import { Legend } from './Legend'
 import { ProjectionShape } from './ProjectionShape'
 import styles from './BodySchematic.module.css'

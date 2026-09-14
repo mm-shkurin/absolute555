@@ -3,7 +3,7 @@
 // Порогов здесь нет намеренно: статус (`factory` / `repaint` / `filler`) считает сервер
 // и присылает готовым. Копия порога на клиенте — это вторая копия в вебе и третья в
 // мобилке, и однажды они разойдутся на одном и том же замере.
-import type { BodyPanel, PanelStatus } from '../api/backend/thicknessContract'
+import type { BodyPanel, PanelStatus } from '../../api/backend/thicknessContract'
 
 export type PanelCode = BodyPanel
 

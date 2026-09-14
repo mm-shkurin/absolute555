@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { fireEvent, render } from '@testing-library/react'
 import { BodySchematic } from '../BodySchematic'
-import { toThicknessView } from '../thicknessMap'
-import type { ThicknessMapWire } from '../../api/backend/thicknessContract'
+import { toThicknessView } from '../../logic/thicknessMap'
+import type { ThicknessMapWire } from '../../../api/backend/thicknessContract'
 
 // Форма `GET /sale-cars/{id}/thickness`: сервер присылает только замеренные панели.
 const wire: ThicknessMapWire = {

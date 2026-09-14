@@ -1,4 +1,4 @@
-import type { PanelDetail } from '../../../shared/thicknessMap/thicknessMap'
+import type { PanelDetail } from '../../../shared/thicknessMap/logic/thicknessMap'
 import type { ThicknessEditor } from '../useThicknessEditor'
 import { PanelEditor } from './PanelEditor'
 import styles from '../thickness.module.css'

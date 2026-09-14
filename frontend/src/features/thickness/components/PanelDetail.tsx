@@ -1,6 +1,9 @@
 // Разбор выбранной панели: снимок экрана прибора, число, вывод.
 import { Placeholder } from '../../../shared/ui/Placeholder'
-import { gradeCaption, type PanelDetail as Detail } from '../../../shared/thicknessMap/thicknessMap'
+import {
+  gradeCaption,
+  type PanelDetail as Detail,
+} from '../../../shared/thicknessMap/logic/thicknessMap'
 import styles from '../thickness.module.css'
 
 export function PanelDetail({ detail }: { detail: Detail }) {

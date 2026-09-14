@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { PanelDetail } from '../../shared/thicknessMap/thicknessMap'
+import type { PanelDetail } from '../../shared/thicknessMap/logic/thicknessMap'
 
 export type ReadingState = 'idle' | 'busy' | 'read' | 'unread'
 
@@ -17,14 +17,27 @@ export function usePanelReading(
   // Замер уже отправлен — подсказке, пришедшей после, в поле делать нечего.
   const sent = useRef(false)
 
-  useEffect(() => setState('idle'), [detail.code, detail.valueUm])
+  // Ответ на снимок прежней панели или после размонтирования опаздывает: сверяем жетон.
+  const token = useRef(0)
+  useEffect(() => {
+    token.current += 1
+    setState('idle')
+  }, [detail.code, detail.valueUm])
+  useEffect(
+    () => () => {
+      token.current += 1
+    },
+    [],
+  )
 
   const read = (chosen: File) => {
     if (!onRead) return
     setState('busy')
     const beforeRead = typed.current
     sent.current = false
+    const mine = ++token.current
     void onRead(chosen).then((result) => {
+      if (mine !== token.current) return
       if (result === null) return setState('unread')
       // Пока читался снимок, продавец мог вписать число сам. Подсказка его не
       // затирает: она приходит через секунды, человек этого не ждёт, и увидел бы

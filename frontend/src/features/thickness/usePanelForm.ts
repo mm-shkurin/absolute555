@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import type { PanelDetail } from '../../shared/thicknessMap/thicknessMap'
+import type { PanelDetail } from '../../shared/thicknessMap/logic/thicknessMap'
 import { checkMeasurement } from './logic/measurementForm'
 import { usePanelReading } from './usePanelReading'
 

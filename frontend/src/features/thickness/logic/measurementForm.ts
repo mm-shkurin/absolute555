@@ -5,8 +5,7 @@
 import { VALUE_UM_MAX, VALUE_UM_MIN } from '../../../shared/api/backend/thicknessContract'
 
 export type FormCheck =
-  | { ok: true; valueUm: number | null; photo: File }
-  | { ok: false; reason: string }
+  { ok: true; valueUm: number | null; photo: File } | { ok: false; reason: string }
 
 export function checkMeasurement(value: string, photo: File | null): FormCheck {
   if (!photo) return { ok: false, reason: 'Нужна фотография экрана прибора.' }
@@ -16,7 +15,8 @@ export function checkMeasurement(value: string, photo: File | null): FormCheck {
   if (trimmed === '') return { ok: true, valueUm: null, photo }
   // Приборы показывают десятые (97.3): число принимается с точкой или запятой и
   // округляется до целых мкм — так его хранит карта.
-  if (!/^\d+([.,]\d{1,2})?$/.test(trimmed)) return { ok: false, reason: 'Только число, без знаков.' }
+  if (!/^\d+([.,]\d{1,2})?$/.test(trimmed))
+    return { ok: false, reason: 'Только число, без знаков.' }
   const valueUm = Math.round(Number(trimmed.replace(',', '.')))
   if (valueUm < VALUE_UM_MIN || valueUm > VALUE_UM_MAX) {
     return { ok: false, reason: `Прибор показывает от ${VALUE_UM_MIN} до ${VALUE_UM_MAX} мкм.` }

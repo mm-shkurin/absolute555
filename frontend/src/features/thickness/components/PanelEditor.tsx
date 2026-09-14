@@ -2,7 +2,7 @@
 //
 // Фотография обязательна и здесь, и в контракте: замер без неё — те же слова
 // «не бит не крашен», только цифрами.
-import type { PanelDetail } from '../../../shared/thicknessMap/thicknessMap'
+import type { PanelDetail } from '../../../shared/thicknessMap/logic/thicknessMap'
 import { usePanelForm } from '../usePanelForm'
 import { PanelEditorActions, ReadingNote, RefusedNote } from './PanelEditorParts'
 import styles from '../thickness.module.css'
