@@ -261,7 +261,7 @@
 | B3 ✅ | `PeopleService._conditions` | Поиск шёл по `yandex_json` и `vk_json` мимо колонки `profile_name` — переименовавшегося консоль не находила. Ищет по трём местам | `test_admin_users_page.py::test_should_find_a_person_by_name` |
 
 Мёртвый код удалён: `create_sale_car`, `get_all_sale_cars` и `update_vin` в
-`sale_cars_service` не вызывал никто (файл со 123 строк до 80), закомментированные
+`listing_records` не вызывал никто (файл со 123 строк до 80), закомментированные
 тройными кавычками `DELETE /offer/{id}` и `/{id}/with-details` убраны из роутера —
 он читался так, будто ручки есть.
 
@@ -289,7 +289,7 @@
 | `webhook_service.py` | 36% | приём отчёта распознавания |
 | `review_service.py` | 40% | ветки отказов отзыва |
 | `offer_service.py` | 44% | переходы статусов предложения |
-| `sale_cars_service.py` | 39% | чтение и фильтры объявлений |
+| `listing_records.py` | 39% | чтение и фильтры объявлений |
 | `complaint_service.py` | 46% | группировка и разбор жалоб |
 
 Порядок добивки: сначала сервисы (`offer`, `review`, `complaint`, `sale_cars`) — они

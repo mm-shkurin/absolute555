@@ -58,7 +58,7 @@
 - `app/db/` — движок и `registry.py` (все модели разом); `app/core/` — `config.py` и `exceptions/`.
 - `app/shared/storage/` — S3/MinIO и кэш в Redis.
 - `app/permissions/` — роли, права и зависимости FastAPI, которые их проверяют.
-- `app/sse/` — поток событий объявлений и websocket чата.
+- `app/shared/realtime/` — поток событий объявлений и websocket чата.
 - `app/ml/` — чтение СТС и экрана толщиномера (tesseract, модель зрения, GigaChat), разбор VIN.
 - `app/tasks/` — задачи ARQ; `app/queue.py` — постановка в очередь; `app/worker.py` —
   процесс воркера (распознавание СТС, расшифровка по VIN, cron истечения офферов раз в 15 минут).

@@ -12,7 +12,7 @@ from fastapi.responses import StreamingResponse
 
 from app.features.listing.deps import get_listing_lifecycle_service
 from app.shared.http.listing_http import owned_listing
-from app.sse.listing_stream import listing_events
+from app.shared.realtime.listing_stream import listing_events
 from app.utils.security import get_current_user
 
 task_router = APIRouter()

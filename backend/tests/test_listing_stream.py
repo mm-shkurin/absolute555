@@ -11,8 +11,8 @@ import uuid
 
 import pytest
 
-from app.sse.listing_stream import listing_events
-from app.sse.manager import sse_manager
+from app.shared.realtime.listing_stream import listing_events
+from app.shared.realtime.manager import sse_manager
 
 # Генератор читает статус объявления через общий движок приложения, из цикла теста.
 # Без сброса пула эти соединения достаются первому запросу следующего модуля.

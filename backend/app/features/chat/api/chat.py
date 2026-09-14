@@ -26,7 +26,7 @@ from app.features.chat.services.chat_errors import ChatError, DialogNotFound
 from app.features.chat.services.chat_reader import ChatReader
 from app.features.chat.services.chat_service import ChatService
 from app.features.review.services.review_dialog import DialogReviewService
-from app.sse.chat_socket import chat_hub, listener_of
+from app.shared.realtime.chat_socket import chat_hub, listener_of
 from app.utils.security import get_current_user
 
 from .chat_http import to_http

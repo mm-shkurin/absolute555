@@ -7,7 +7,7 @@
 
 import asyncio
 
-from app.sse.manager import SSEManager
+from app.shared.realtime.manager import SSEManager
 
 CAR = "44444444-4444-4444-4444-444444444444"
 OTHER_CAR = "55555555-5555-5555-5555-555555555555"

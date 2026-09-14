@@ -16,14 +16,14 @@ from sqlalchemy import select
 
 from app.db.database import get_db_session
 from app.features.listing.models.sale_car import SaleCars
-from app.sse.listing_redis import (
+from app.shared.realtime.listing_redis import (
     close_subscription,
     get_redis_message,  # noqa: F401 -- kept importable from its old home
     open_pubsub,
     read_channel_frame,
     subscribe,
 )
-from app.sse.manager import sse_manager
+from app.shared.realtime.manager import sse_manager
 from app.tasks.status_updater import TaskStatus
 
 HEARTBEAT_SECONDS = 30.0

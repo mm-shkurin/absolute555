@@ -15,7 +15,7 @@ from app.features.listing.panels import BodyPanel
 from app.features.listing.schemas.thickness import GaugeReading, ThicknessMap
 from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.photo_image import read_limited, require_image
-from app.features.listing.services.thickness_service import ThicknessMapService
+from app.features.listing.services.listing_thickness import ThicknessMapService
 from app.ml.gauge_reader import read_panel_photo
 from app.utils.security import get_current_user, get_current_user_or_none
 

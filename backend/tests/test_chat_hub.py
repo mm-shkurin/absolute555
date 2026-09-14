@@ -12,7 +12,7 @@ import jwt
 import pytest
 
 from app.core.config import JWTSettings
-from app.sse.chat_socket import ChatHub, listener_of
+from app.shared.realtime.chat_socket import ChatHub, listener_of
 from tests.conftest import sign_token
 
 jwt_settings = JWTSettings()

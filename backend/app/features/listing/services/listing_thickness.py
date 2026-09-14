@@ -14,7 +14,7 @@ from app.features.listing.models.sale_car import SaleCars
 from app.features.listing.models.thickness import ThicknessMeasurement
 from app.features.listing.panels import BodyPanel, MIN_VALUE_UM, ValueSource, max_value_um
 from app.features.listing.services.photo_image import require_image
-from app.features.listing.services.object_cleanup import discard_objects
+from app.features.listing.services.listing_cleanup import discard_objects
 from app.features.listing.services.thickness_errors import (
     GaugeUnreadable,
     MeasurementNotFound,

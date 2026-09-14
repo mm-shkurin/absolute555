@@ -4,7 +4,7 @@ from loguru import logger
 from app.db.database import get_db_session
 from app.features.listing.models.sale_car import SaleCars
 from app.features.listing.services.listing_autofill import ListingAutofillService
-from app.sse.manager import sse_manager
+from app.shared.realtime.manager import sse_manager
 
 
 async def _publish_status(entity_id: str, status: str) -> None:

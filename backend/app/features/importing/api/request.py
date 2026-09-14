@@ -18,7 +18,7 @@ from app.features.chat.schemas.chat import MessageResponse
 from app.features.importing.services.supplier_errors import SupplierError
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
-from app.sse.chat_socket import chat_hub
+from app.shared.realtime.chat_socket import chat_hub
 from app.utils.security import get_current_user
 
 from .request_http import to_http
