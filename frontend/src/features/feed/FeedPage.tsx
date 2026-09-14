@@ -1,6 +1,5 @@
-// Лента: рабочий экран площадки. Тонкий оркестратор — состояние фильтров держит здесь,
-// переходы состояния берёт из `logic/feedQuery`, данные из `useFeed`, рисуют дети.
-import { useState } from 'react'
+// Лента: рабочий экран площадки. Тонкий оркестратор — состояние фильтров держит
+// `useFeedScreen`, переходы состояния — `logic/feedQuery`, рисуют дети.
 import { Container } from '../../shared/ui/Container'
 import { SiteHeader } from '../../shared/ui/SiteHeader'
 import { FeedHead } from './components/FeedHead'
@@ -9,8 +8,7 @@ import { MobileFilterBar } from './components/MobileFilterBar'
 import { FeedResults } from './components/FeedResults'
 import { FeedOverlays } from './components/FeedOverlays'
 import { EMPTY_QUERY, isFiltered, type FeedQuery } from './logic/feedQuery'
-import { countLabel } from '../../shared/domain/listing/listingView'
-import { useFeed } from './useFeed'
+import { useFeedScreen } from './useFeedScreen'
 import styles from './feed.module.css'
 
 interface FeedPageProps {
@@ -20,13 +18,7 @@ interface FeedPageProps {
 }
 
 export function FeedPage({ signedIn, onSignIn, initialQuery = EMPTY_QUERY }: FeedPageProps) {
-  const [query, setQuery] = useState<FeedQuery>(initialQuery)
-  const feed = useFeed(query)
-  const [sheetOpen, setSheetOpen] = useState(false)
-  const [brandOpen, setBrandOpen] = useState(false)
-  const reset = () => setQuery({ ...EMPTY_QUERY, tab: query.tab, sort: query.sort })
-  const countText = feed.isLoading ? 'ищем…' : countLabel(feed.total)
-  const filters = { query, total: feed.total, onChange: setQuery, onReset: reset }
+  const { query, setQuery, feed, reset, countText, filters, overlays } = useFeedScreen(initialQuery)
   return (
     <>
       <SiteHeader signedIn={signedIn} onSignIn={onSignIn} />
@@ -36,23 +28,17 @@ export function FeedPage({ signedIn, onSignIn, initialQuery = EMPTY_QUERY }: Fee
           <MobileFilterBar
             query={query}
             onChange={setQuery}
-            onOpenSheet={() => setSheetOpen(true)}
+            onOpenSheet={() => overlays.setSheetOpen(true)}
           />
           <div className={styles.grid}>
-            <FilterPanel {...filters} onPickBrand={() => setBrandOpen(true)} />
+            <FilterPanel {...filters} onPickBrand={() => overlays.setBrandOpen(true)} />
             <div>
               <FeedResults feed={feed} filtered={isFiltered(query)} onReset={reset} />
             </div>
           </div>
         </Container>
       </main>
-      <FeedOverlays
-        {...filters}
-        brandOpen={brandOpen}
-        sheetOpen={sheetOpen}
-        setBrandOpen={setBrandOpen}
-        setSheetOpen={setSheetOpen}
-      />
+      <FeedOverlays {...filters} {...overlays} />
     </>
   )
 }
