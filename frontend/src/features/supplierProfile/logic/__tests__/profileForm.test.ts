@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { EMPTY_FORM, missingForSubmit, toForm, toUpdate } from '../profileForm'
-import { isEditable } from '../profileStatus'
+import { isEditable } from '../profileRules'
 import { profileFailureText } from '../profileFailure'
 import type { SupplierProfileWire } from '../../../../shared/api/backend/supplierContract'
 
@@ -80,7 +80,7 @@ describe('отказы профиля', () => {
 
 describe('правка опубликованной витрины', () => {
   it('форма показывает правку поверх опубликованного, статус — по правке', async () => {
-    const { shownStatus } = await import('../profileStatus')
+    const { shownStatus } = await import('../profileRules')
     const published = {
       ...wire,
       status: 'published' as const,

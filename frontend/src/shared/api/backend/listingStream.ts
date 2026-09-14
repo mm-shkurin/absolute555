@@ -102,9 +102,28 @@ function emit(chunk: string, handlers: ListingStreamHandlers): void {
     .join('\n')
   if (!payload) return
 
+  let parsed: unknown
   try {
-    handlers.onEvent(JSON.parse(payload) as ListingEvent)
+    parsed = JSON.parse(payload)
   } catch {
     handlers.onEvent({ type: 'error', message: payload })
+    return
   }
+  if (isListingEvent(parsed)) handlers.onEvent(parsed)
+}
+
+const EVENT_FIELD_TYPES: [keyof ListingEvent, string][] = [
+  ['type', 'string'],
+  ['sale_car_id', 'string'],
+  ['status', 'string'],
+  ['message', 'string'],
+  ['timestamp', 'number'],
+]
+
+function isListingEvent(value: unknown): value is ListingEvent {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) return false
+  const record = value as Record<string, unknown>
+  return EVENT_FIELD_TYPES.every(
+    ([field, kind]) => record[field] === undefined || typeof record[field] === kind,
+  )
 }

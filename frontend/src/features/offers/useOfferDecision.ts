@@ -1,6 +1,7 @@
 import { useCallback } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { acceptOffer, rejectOffer, withdrawOffer } from './api/offersApi'
+import { withdrawOffer } from '../../shared/api/backend/offerApi'
+import { acceptOffer, rejectOffer } from './api/offersApi'
 
 export type OfferDecision = 'accept' | 'reject' | 'withdraw'
 

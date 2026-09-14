@@ -1,7 +1,7 @@
 import { Button } from '../../../shared/ui/Button'
 import { FormCard, NavSpacer } from '../../../shared/ui/FormCard'
 import { PanelNote } from '../../../shared/ui/Panel'
-import { requestFailureText } from '../logic/requestFailure'
+import { failureText } from '../../../shared/api/failureText'
 import { useNewRequest } from '../useNewRequest'
 import { RequestFormFields } from './RequestFormFields'
 import styles from '../request.module.css'
@@ -47,7 +47,7 @@ function NewRequestFeedback({ gaps, error }: NewRequestFeedbackProps) {
       {gaps.length > 0 ? <p className={styles.gaps}>Не хватает: {gaps.join(', ')}.</p> : null}
       {error ? (
         <p className={styles.refused} role="alert" data-testid="request-error">
-          {requestFailureText(error)}
+          {failureText(error)}
         </p>
       ) : null}
       <PanelNote>

@@ -28,7 +28,7 @@ export function useOffers(direction: OfferDirection, now: Date): OffersResult {
     incomingTotal: result.data?.incoming_total ?? 0,
     outgoingTotal: result.data?.outgoing_total ?? 0,
     isLoading: result.isPending,
-    error: ((result.error ?? answer.error) as Error | null) ?? null,
+    error: result.error ?? answer.error,
     retry: () => {
       answer.reset()
       void result.refetch()

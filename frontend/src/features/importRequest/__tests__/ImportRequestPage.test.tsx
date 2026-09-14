@@ -54,7 +54,9 @@ describe('страница заявки на привоз', () => {
     // When он открывает заявку
     open()
     // Then условия заявки видны, откликов два, дешевле остальных — один
-    expect(await screen.findByRole('heading', { name: 'Toyota Land Cruiser 300' })).toBeInTheDocument()
+    expect(
+      await screen.findByRole('heading', { name: 'Toyota Land Cruiser 300' }),
+    ).toBeInTheDocument()
     expect(screen.getByText('от 2022')).toBeInTheDocument()
     expect(await screen.findAllByTestId('bid')).toHaveLength(2)
     expect(screen.getAllByText('дешевле остальных')).toHaveLength(1)
@@ -65,7 +67,10 @@ describe('страница заявки на привоз', () => {
     signedIn('buyer')
     server.on('GET', BACKEND.request.mine, { status: 200, body: [request()] })
     server.on('GET', BACKEND.request.responses('r1'), { status: 200, body: [] })
-    server.on('POST', BACKEND.request.close('r1'), { status: 200, body: request({ status: 'closed' }) })
+    server.on('POST', BACKEND.request.close('r1'), {
+      status: 200,
+      body: request({ status: 'closed' }),
+    })
     open()
 
     fireEvent.click(await screen.findByTestId('close-request'))
@@ -76,9 +81,15 @@ describe('страница заявки на привоз', () => {
   it('Scenario: поставщик откликается ценой с пробелами и попадает в переписку', async () => {
     // Given поставщик нашёл заявку в ленте спроса
     signedIn('s1', 'importer')
-    server.on('GET', BACKEND.request.collection, { status: 200, body: { items: [request()], total: 1, page: 1, size: 20 } })
+    server.on('GET', BACKEND.request.collection, {
+      status: 200,
+      body: { items: [request()], total: 1, page: 1, size: 20 },
+    })
     server.on('GET', BACKEND.request.responses('r1'), { status: 200, body: [] })
-    server.on('PUT', BACKEND.request.response('r1'), { status: 200, body: { ...response('a', 's1', 6690000, 40), dialog_id: 'd1' } })
+    server.on('PUT', BACKEND.request.response('r1'), {
+      status: 200,
+      body: { ...response('a', 's1', 6690000, 40), dialog_id: 'd1' },
+    })
     open()
     // When вписывает цену «6 690 000» и срок 40 дней
     fireEvent.change(await screen.findByTestId('bid-price'), { target: { value: '6 690 000' } })
@@ -86,15 +97,24 @@ describe('страница заявки на привоз', () => {
     fireEvent.click(screen.getByTestId('bid-send'))
     // Then покупателю уходит число и срок, а поставщика уводят в переписку
     await waitFor(() =>
-      expect(server.callsTo('PUT', BACKEND.request.response('r1'))[0]?.body).toEqual({ price: 6690000, delivery_days: 40 }),
+      expect(server.callsTo('PUT', BACKEND.request.response('r1'))[0]?.body).toEqual({
+        price: 6690000,
+        delivery_days: 40,
+      }),
     )
     await waitFor(() => expect(screen.queryByTestId('import-request')).toBeNull())
   })
 
   it('Scenario: повторный отклик правит свой — форма заполнена прежним', async () => {
     signedIn('s1', 'importer')
-    server.on('GET', BACKEND.request.collection, { status: 200, body: { items: [request()], total: 1, page: 1, size: 20 } })
-    server.on('GET', BACKEND.request.responses('r1'), { status: 200, body: [response('a', 's1', 6690000, 40)] })
+    server.on('GET', BACKEND.request.collection, {
+      status: 200,
+      body: { items: [request()], total: 1, page: 1, size: 20 },
+    })
+    server.on('GET', BACKEND.request.responses('r1'), {
+      status: 200,
+      body: [response('a', 's1', 6690000, 40)],
+    })
     open()
 
     expect(await screen.findByRole('button', { name: 'Изменить отклик' })).toBeInTheDocument()
@@ -119,6 +139,8 @@ describe('страница заявки на привоз', () => {
     open()
 
     expect(await screen.findByText('Заявка не найдена — возможно, её закрыли.')).toBeInTheDocument()
-    expect(server.calls.some((call) => call.path.startsWith(`${BACKEND.request.collection}?`))).toBe(false)
+    expect(
+      server.calls.some((call) => call.path.startsWith(`${BACKEND.request.collection}?`)),
+    ).toBe(false)
   })
 })

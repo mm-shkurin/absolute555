@@ -3,6 +3,7 @@
 // Правило одно: текст говорит, что произошло и что делать. «Ошибка 500» не сообщает
 // ни того, ни другого — человек всё равно нажмёт ту же кнопку ещё раз.
 import { httpErrorIn, isRequestTimeout } from './httpClient'
+import { limitReachedText } from './limitReached'
 
 const BY_CODE: Record<string, string> = {
   LISTING_NOT_FOUND: 'Объявление не найдено — возможно, его сняли с публикации.',
@@ -29,6 +30,10 @@ const BY_CODE: Record<string, string> = {
   FORBIDDEN: 'Для этого действия не хватает прав.',
 }
 
+const BY_DETAILS: Record<string, (details: Record<string, unknown> | undefined) => string> = {
+  REQUEST_LIMIT_REACHED: limitReachedText,
+}
+
 const BY_STATUS: Record<number, string> = {
   403: 'Для этого действия не хватает прав.',
   404: 'Не нашли то, что вы открыли. Возможно, это удалили.',
@@ -43,6 +48,8 @@ export function failureText(error: unknown): string {
   }
   const failure = httpErrorIn(error)
   if (failure) {
+    const withDetails = failure.errorCode ? BY_DETAILS[failure.errorCode] : undefined
+    if (withDetails) return withDetails(failure.details)
     const byCode = failure.errorCode ? BY_CODE[failure.errorCode] : undefined
     if (byCode) return byCode
     const byStatus = BY_STATUS[failure.status]

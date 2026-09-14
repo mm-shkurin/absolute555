@@ -3,7 +3,7 @@
 // Повторный отклик правит свой, а не заводит второй — поэтому кнопка называется
 // «Изменить отклик», когда он уже есть.
 import { Button } from '../../../shared/ui/Button'
-import type { SupplierResponseWire } from '../api/requestApi'
+import type { SupplierResponseWire } from '../../../shared/api/backend/requestContract'
 import { useRespondDraft } from '../useRespondDraft'
 import { RespondFields } from './RespondFields'
 import styles from '../request.module.css'

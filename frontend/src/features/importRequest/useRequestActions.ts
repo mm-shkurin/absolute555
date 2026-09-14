@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { ROUTES } from '../../shared/navigation/routes'
-import { closeRequest, putResponse } from './api/requestApi'
+import { closeRequest, putResponse } from '../../shared/api/backend/requestApi'
 
 interface ResponseBody {
   price: number

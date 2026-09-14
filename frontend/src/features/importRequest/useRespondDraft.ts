@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import type { SupplierResponseWire } from './api/requestApi'
+import type { SupplierResponseWire } from '../../shared/api/backend/requestContract'
 
 // Цену пишут так, как её читают, — с пробелами между разрядами, как в подсказке поля.
 // `Number` на «6 690 000» даёт NaN, и кнопка молча не нажималась.

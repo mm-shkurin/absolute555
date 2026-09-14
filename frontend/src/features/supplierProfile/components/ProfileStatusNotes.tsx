@@ -1,6 +1,7 @@
 import { PanelNote } from '../../../shared/ui/Panel'
 import type { SupplierProfileWire } from '../../../shared/api/backend/supplierContract'
-import { STATUS_WORD, shownStatus } from '../logic/profileStatus'
+import { shownStatus } from '../logic/profileRules'
+import { STATUS_WORD } from '../logic/profileStatusLabels'
 import styles from '../supplierProfile.module.css'
 
 interface ProfileStatusNotesProps {

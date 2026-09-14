@@ -13,7 +13,6 @@ export interface ReviewView {
   body: string
 }
 
-
 export function sellerLine(wire: SellerProfileWire): string {
   // Сделки, а не отзывы: сделка бывает без отзыва, и подменять одно другим значит
   // приписывать продавцу молчание покупателей как отсутствие опыта.

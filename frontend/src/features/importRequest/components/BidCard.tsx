@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Link } from 'react-router-dom'
 import { Avatar } from '../../../shared/ui/Avatar'
 import { ROUTES } from '../../../shared/navigation/routes'
@@ -10,7 +11,7 @@ interface BidCardProps {
   bid: BidView
 }
 
-export function BidCard({ bid }: BidCardProps) {
+export const BidCard = memo(function BidCard({ bid }: BidCardProps) {
   return (
     <div className={styles.bid} data-testid="bid">
       <Avatar size={40} />
@@ -38,4 +39,4 @@ export function BidCard({ bid }: BidCardProps) {
       </div>
     </div>
   )
-}
+})

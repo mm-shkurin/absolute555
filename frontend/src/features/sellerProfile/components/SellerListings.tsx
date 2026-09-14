@@ -1,5 +1,5 @@
 import { Panel } from '../../../shared/ui/Panel'
-import { ListingGrid } from '../../../shared/domain/listing/ListingCard'
+import { ListingGrid } from '../../../shared/ui/listingCard/ListingCard'
 import { toListingView } from '../../../shared/domain/listing/listingView'
 import type { useSellerQueries } from '../useSellerQueries'
 

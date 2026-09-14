@@ -6,8 +6,8 @@ import {
   fetchMyRequests,
   fetchOpenRequests,
   fetchResponses,
-  type BuyerRequestWire,
-} from './api/requestApi'
+} from '../../shared/api/backend/requestApi'
+import type { BuyerRequestWire } from '../../shared/api/backend/requestContract'
 import { currentRole } from '../../shared/session/authSession'
 
 async function findRequest(requestId: string, signal?: AbortSignal): Promise<BuyerRequestWire> {

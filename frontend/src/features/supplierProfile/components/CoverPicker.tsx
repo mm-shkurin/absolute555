@@ -7,7 +7,13 @@ import { dropMyCover, uploadMyCover } from '../../../shared/api/backend/supplier
 import type { SupplierProfileWire } from '../../../shared/api/backend/supplierContract'
 import styles from '../supplierProfile.module.css'
 
-export function CoverPicker({ coverUrl, pending = false }: { coverUrl: string | null; pending?: boolean }) {
+export function CoverPicker({
+  coverUrl,
+  pending = false,
+}: {
+  coverUrl: string | null
+  pending?: boolean
+}) {
   const client = useQueryClient()
   const input = useRef<HTMLInputElement>(null)
   const saved = (profile: SupplierProfileWire) => {

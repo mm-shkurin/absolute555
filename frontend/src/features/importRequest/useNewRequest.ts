@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useMutation } from '@tanstack/react-query'
 import { ROUTES } from '../../shared/navigation/routes'
-import { openRequest } from './api/requestApi'
+import { openRequest } from '../../shared/api/backend/requestApi'
 import { emptyRequestDraft, missingForRequest, toRequestBody } from './logic/requestDraft'
 import type { RequestDraft } from './logic/requestDraft'
 
