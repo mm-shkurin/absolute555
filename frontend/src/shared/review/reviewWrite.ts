@@ -19,12 +19,12 @@ export function invalidateReviewed(client: QueryClient) {
 }
 
 export function handleReviewFailure(
-  error: unknown,
+  error: Error,
   target: ReviewTarget | null,
   setTarget: (next: ReviewTarget) => void,
   setEditable: (editable: boolean) => void,
 ) {
-  const cause = (error as Error).cause
+  const cause = error.cause
   if (!isHttpError(cause)) return
   // Отзыв уже написан: сервер называет его идентификатор, и экран переходит к правке
   // вместо второй попытки, которую он отвергнет так же.

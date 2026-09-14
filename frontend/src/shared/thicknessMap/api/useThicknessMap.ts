@@ -27,7 +27,7 @@ export function useThicknessMap(saleCarId: string): ThicknessResult {
     view: wire ? toThicknessView(wire) : null,
     detailOf: (code) => (wire ? toPanelDetail(wire, code) : null),
     isLoading: result.isPending,
-    error: (result.error as Error | null) ?? null,
+    error: result.error,
     retry: () => void result.refetch(),
   }
 }

@@ -3,8 +3,8 @@
 // объявления: `autofill` повторяет то, что приходило по SSE.
 import { openListingStream } from '../../../shared/api/backend/listingStream'
 import type { AutofillState } from '../../../shared/api/backend/saleCarContract'
-import { loadDraft } from '../api/draftApi'
-import { isFinal, outcomeOf } from './recognition'
+import { fetchListing } from '../../../shared/api/backend/saleCarApi'
+import { isFinal, outcomeOf } from '../logic/recognition'
 
 // Перечитывание — страховка, а не основной канал: первая проверка через 4 с, каждая
 // следующая в полтора раза реже, но не реже раза в 30 с. Распознавание, не закончившееся
@@ -25,7 +25,7 @@ function pollOutcome(saleCarId: string, signal: AbortSignal, settled: Flag, sett
   let timer: ReturnType<typeof setTimeout> | undefined
   const checkAfter = (delay: number) => {
     timer = setTimeout(() => {
-      void loadDraft(saleCarId, signal)
+      void fetchListing(saleCarId, signal)
         .then((car) => {
           const state = car.autofill?.state
           if (state && isFinal(state)) settle(state)

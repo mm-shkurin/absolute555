@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { approveListing, rejectListing } from './api/moderationApi'
+import { approveListing, rejectListing } from '../../shared/api/backend/saleCarApi'
 import type { RejectionLabel } from '../../shared/api/backend/moderationContract'
 
 export type QueueDecision =

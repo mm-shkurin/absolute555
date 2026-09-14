@@ -2,7 +2,12 @@
 // локальный список — это просто последний ответ сервера, а не своя копия, которую надо
 // сводить с ним после каждой операции.
 import type { PhotoWire } from '../../shared/api/backend/saleCarContract'
-import { addPhotos, loadDraft, removePhoto, setPhotoOrder } from './api/draftApi'
+import {
+  deletePhoto,
+  fetchListing,
+  reorderPhotos,
+  uploadPhotos,
+} from '../../shared/api/backend/saleCarApi'
 import { DEFAULT_LIMIT, useGalleryRequest } from './useGalleryRequest'
 
 export interface Gallery {
@@ -22,13 +27,13 @@ export function useGallery(saleCarId: string | null): Gallery {
   const { run, ...shown } = useGalleryRequest(saleCarId)
   return {
     ...shown,
-    add: (files) => run((id) => addPhotos(id, files)),
+    add: (files) => run((id) => uploadPhotos(id, files)),
     refresh: () =>
       run(async (id) => {
-        const car = await loadDraft(id)
+        const car = await fetchListing(id)
         return { sale_car_id: id, photos: car.photos, limit: DEFAULT_LIMIT }
       }),
-    remove: (photoId) => run((id) => removePhoto(id, photoId)),
-    reorder: (photoIds) => run((id) => setPhotoOrder(id, photoIds)),
+    remove: (photoId) => run((id) => deletePhoto(id, photoId)),
+    reorder: (photoIds) => run((id) => reorderPhotos(id, photoIds)),
   }
 }

@@ -50,20 +50,11 @@ import {
   fetchQueue as fetchQueuePage,
   fetchCounts,
   fetchComplaints as fetchComplaintPage,
-  dismissComplaint as dismissComplaintCall,
-  unpublishListing as unpublishListingCall,
   type QueueTabWire,
 } from '../../../shared/api/backend/moderationApi'
-import { answerRoleRequest, fetchRoleRequests } from '../../../shared/api/backend/accountApi'
-import type { RoleRequestDecision } from '../../../shared/api/backend/accountContract'
-import {
-  approveListing as approveListingCall,
-  rejectListing as rejectListingCall,
-} from '../../../shared/api/backend/saleCarApi'
 import type {
   ComplaintGroupWire,
   QueueItemWire as WireQueueItem,
-  RejectionLabel,
 } from '../../../shared/api/backend/moderationContract'
 import { complaintReasonText } from '../../../shared/domain/moderationReasonLabels'
 
@@ -152,29 +143,3 @@ export async function fetchComplaints(
 }
 
 export type RoleTab = 'pending' | 'approved' | 'rejected'
-
-/** Заявки одной вкладки. Фильтрует сервер: клиентский фильтр по всей выдаче показывал бы
- *  число заявок на кнопке и другое число под ней. */
-export function fetchRoleApplications(tab: RoleTab, signal?: AbortSignal) {
-  return fetchRoleRequests(tab, signal)
-}
-
-export function answerRoleApplication(requestId: string, decision: RoleRequestDecision) {
-  return answerRoleRequest(requestId, decision)
-}
-
-export function approveListing(saleCarId: string) {
-  return approveListingCall(saleCarId)
-}
-
-export function rejectListing(saleCarId: string, label: RejectionLabel, comment?: string) {
-  return rejectListingCall(saleCarId, label, comment)
-}
-
-export function dismissComplaint(complaintId: string) {
-  return dismissComplaintCall(complaintId)
-}
-
-export function unpublishListing(saleCarId: string, label: RejectionLabel, comment?: string) {
-  return unpublishListingCall(saleCarId, label, comment)
-}

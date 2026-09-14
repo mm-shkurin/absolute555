@@ -1,13 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import {
-  approveListing,
-  dismissComplaint,
-  fetchComplaints,
-  rejectListing,
-  unpublishListing,
-} from '../moderationApi'
+import { fetchComplaints } from '../moderationApi'
+import { approveListing, rejectListing } from '../../../../shared/api/backend/saleCarApi'
 import { toComplaintCase } from '../../logic/complaintView'
-import { complain } from '../../../../shared/api/backend/moderationApi'
+import {
+  complain,
+  dismissComplaint,
+  unpublishListing,
+} from '../../../../shared/api/backend/moderationApi'
 import { BACKEND } from '../../../../shared/api/backend/paths'
 import { fakeServer, resetServer, signedIn, type FakeServer } from '../../../../test/fakeServer'
 

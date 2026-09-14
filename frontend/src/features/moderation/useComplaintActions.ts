@@ -1,6 +1,6 @@
 import { useCallback, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { dismissComplaint, unpublishListing } from './api/moderationApi'
+import { dismissComplaint, unpublishListing } from '../../shared/api/backend/moderationApi'
 import type { RejectionLabel } from '../../shared/api/backend/moderationContract'
 
 export function useComplaintActions() {

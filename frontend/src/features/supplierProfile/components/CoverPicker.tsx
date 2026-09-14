@@ -23,7 +23,7 @@ export function CoverPicker({
   const upload = useMutation({ mutationFn: uploadMyCover, onSuccess: saved })
   const drop = useMutation({ mutationFn: dropMyCover, onSuccess: saved })
   const busy = upload.isPending || drop.isPending
-  const failure = (upload.error ?? drop.error) as Error | null
+  const failure = upload.error ?? drop.error
 
   return (
     <div className={styles.cover} data-testid="supplier-cover">

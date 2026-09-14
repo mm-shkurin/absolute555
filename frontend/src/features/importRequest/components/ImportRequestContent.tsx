@@ -18,10 +18,7 @@ export function ImportRequestContent({ requestId }: ImportRequestContentProps) {
     <>
       {request.isPending ? <ListSkeleton rows={3} /> : null}
       {!request.isPending && request.error ? (
-        <FailureNotice
-          message={(request.error as Error).message}
-          onRetry={() => void request.refetch()}
-        />
+        <FailureNotice message={request.error.message} onRetry={() => void request.refetch()} />
       ) : null}
       {view ? (
         <RequestDetails

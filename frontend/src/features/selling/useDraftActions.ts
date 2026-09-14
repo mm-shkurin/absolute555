@@ -1,10 +1,21 @@
 import { useCallback, useState } from 'react'
-import { isEmptyPatch, loadDraft, saveDraft, sendSts, sendVin, toDraft } from './api/draftApi'
+import { attachSts, decodeVin, fetchListing } from '../../shared/api/backend/saleCarApi'
+import { isEmptyPatch, saveDraft, toDraft } from './api/draftApi'
 import { toPatch } from './logic/draftWire'
 import type { Draft } from './logic/draft'
 
 interface IdRef {
   current: string | null
+}
+
+async function reloadDraft(id: string | null) {
+  if (!id) return null
+  try {
+    return toDraft(await fetchListing(id))
+  } catch {
+    // Недоступный черновик мастер открывает пустым: причина отказа продавцу ничего не даёт.
+    return null
+  }
 }
 
 export function useDraftSave(idRef: IdRef) {
@@ -26,16 +37,7 @@ export function useDraftSave(idRef: IdRef) {
     [idRef],
   )
 
-  const reload = useCallback(async () => {
-    const id = idRef.current
-    if (!id) return null
-    try {
-      return toDraft(await loadDraft(id))
-    } catch {
-      // Недоступный черновик мастер открывает пустым: причина отказа продавцу ничего не даёт.
-      return null
-    }
-  }, [idRef])
+  const reload = useCallback(() => reloadDraft(idRef.current), [idRef])
 
   return { saved, save, reload }
 }
@@ -58,8 +60,8 @@ export function useRecognitionStart(draftId: () => Promise<string | null>) {
     [draftId],
   )
 
-  const attachDocument = useCallback((file: File) => start((id) => sendSts(id, file)), [start])
-  const decodeByVin = useCallback((vin: string) => start((id) => sendVin(id, vin)), [start])
+  const attachDocument = useCallback((file: File) => start((id) => attachSts(id, file)), [start])
+  const decodeByVin = useCallback((vin: string) => start((id) => decodeVin(id, vin)), [start])
 
   return { attachDocument, decodeByVin }
 }

@@ -5,7 +5,7 @@ import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { QueryStates } from '../../shared/ui/QueryStates'
 import { fetchCounts } from '../../shared/api/backend/moderationApi'
-import { fetchRoleApplications } from './api/moderationApi'
+import { fetchRoleRequests } from '../../shared/api/backend/accountApi'
 import { ModerationPage } from './components/ModerationPage'
 import { buildSummaryTiles, type SummaryTile } from './logic/summaryTiles'
 import styles from './summary.module.css'
@@ -19,7 +19,7 @@ export function AdminSummaryPage() {
   // заявок единицы — страница за ними всё равно уже загружается на соседнем разделе.
   const applications = useQuery({
     queryKey: ['role-applications', 'pending'],
-    queryFn: ({ signal }) => fetchRoleApplications('pending', signal),
+    queryFn: ({ signal }) => fetchRoleRequests('pending', signal),
   })
 
   return (

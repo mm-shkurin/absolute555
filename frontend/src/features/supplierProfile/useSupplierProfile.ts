@@ -53,7 +53,7 @@ export function useSupplierProfile(): SupplierProfileHandle {
     busy: save.isPending || submit.isPending,
     error,
     isLoading: query.isPending,
-    loadError: (query.error as Error | null) ?? null,
+    loadError: query.error,
     reload: () => void query.refetch(),
   }
 }

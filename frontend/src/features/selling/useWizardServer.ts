@@ -5,7 +5,7 @@
 // распознавания и чем кончается отправка. Вместе они не помещались ни в голове, ни в
 // двухсотстрочный предел.
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { submitDraft } from './api/draftApi'
+import { changeStatus } from '../../shared/api/backend/saleCarApi'
 import type { Draft } from './logic/draft'
 import { stageFor } from './logic/recognition'
 import { submitFailureText } from './logic/submitFailure'
@@ -140,7 +140,7 @@ export function useWizardServer(
       return
     }
     try {
-      await submitDraft(sync.saleCarId)
+      await changeStatus(sync.saleCarId, 'submit')
     } catch (failure) {
       if (!mounted.current) return
       // Отказ «не хватает полей» называет их поимённо: общий текст отправил бы продавца

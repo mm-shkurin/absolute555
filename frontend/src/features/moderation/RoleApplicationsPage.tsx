@@ -5,7 +5,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { EmptyNotice } from '../../shared/ui/ListStates'
 import { PillTabs } from '../../shared/ui/PillTabs'
 import { MutationFailure, QueryStates } from '../../shared/ui/QueryStates'
-import { answerRoleApplication, fetchRoleApplications, type RoleTab } from './api/moderationApi'
+import { answerRoleRequest, fetchRoleRequests } from '../../shared/api/backend/accountApi'
+import type { RoleTab } from './api/moderationApi'
 import type { RoleRequestDecision } from '../../shared/api/backend/accountContract'
 import { toRoleApplication, type RoleApplicationView } from './logic/roleView'
 import { canReviewRoleRequests } from '../../shared/session/authSession'
@@ -32,7 +33,7 @@ export function RoleApplicationsPage() {
   const [tab, setTab] = useState<RoleTab>('pending')
   const query = useQuery({
     queryKey: ['role-applications', tab],
-    queryFn: ({ signal }) => fetchRoleApplications(tab, signal),
+    queryFn: ({ signal }) => fetchRoleRequests(tab, signal),
   })
   const applications = (query.data ?? []).map(toRoleApplication)
   // Роль здесь для показа, а не для запрета: право проверяет сервер. Кнопка у того, кто
@@ -91,7 +92,7 @@ function useRoleAnswer() {
   const client = useQueryClient()
   const answer = useMutation({
     mutationFn: ({ id, decision }: { id: string; decision: RoleRequestDecision }) =>
-      answerRoleApplication(id, decision),
+      answerRoleRequest(id, decision),
     onSuccess: () => void client.invalidateQueries({ queryKey: ['role-applications'] }),
   })
   const { mutate } = answer
