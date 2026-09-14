@@ -5,7 +5,7 @@
 // клиент, который её обновляет, — цикл, и обновление, способное уйти в рекурсию через
 // собственный 401. Авторизация живёт ровно слоем выше, в `shared/session/authorizedRequest`,
 // а запросы без токена (старт OAuth, обмен кода, обновление) зовут этот модуль напрямую.
-import { readSuccessBody, toHttpError, type ResponseType } from './httpResponse'
+import { readSuccessBody, toHttpError, type BodyGuard, type ResponseType } from './httpResponse'
 import { REQUEST_TIMEOUT_MS, withTimeout } from './requestTimeout'
 
 export { httpErrorIn, isHttpError, type HttpError } from './httpResponse'
@@ -20,6 +20,7 @@ export interface RequestOptions {
   body?: unknown
   responseType?: ResponseType
   signal?: AbortSignal
+  guard?: BodyGuard
 }
 
 export async function request<T>(path: string, options: RequestOptions = {}): Promise<T> {
@@ -63,7 +64,7 @@ async function performRequest<T>(
 ): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, buildInit(options, signal))
   if (!res.ok) throw await toHttpError(res)
-  return readSuccessBody<T>(res, options.responseType ?? 'json')
+  return readSuccessBody<T>(res, options.responseType ?? 'json', options.guard)
 }
 
 export async function postJson<T>(path: string, body: unknown): Promise<T> {

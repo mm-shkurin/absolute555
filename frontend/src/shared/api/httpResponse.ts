@@ -61,18 +61,59 @@ export async function toHttpError(res: Response): Promise<HttpError> {
 }
 
 async function readErrorBody(res: Response): Promise<ErrorBody | undefined> {
+  let raw: unknown
   try {
-    return (await res.json()) as ErrorBody
+    raw = await res.json()
   } catch {
     // Пустое тело или не-JSON — обычный случай для 502 от прокси. Статуса достаточно.
     return undefined
   }
+  return toErrorBody(raw)
 }
 
-export async function readSuccessBody<T>(res: Response, type: ResponseType): Promise<T> {
+// Прокси и чужие шлюзы отвечают чем угодно; поле неверного типа отбрасывается, а не
+// попадает в текст ошибки или в ветвление по коду.
+function toErrorBody(raw: unknown): ErrorBody | undefined {
+  if (!isRecord(raw)) return undefined
+  return {
+    code: stringField(raw.code),
+    error_code: stringField(raw.error_code),
+    detail: stringField(raw.detail),
+    message: stringField(raw.message),
+    details: isRecord(raw.details) ? raw.details : undefined,
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function stringField(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
+export type BodyGuard = (value: unknown) => boolean
+
+export class UnexpectedBodyError extends Error {
+  readonly body: unknown
+
+  constructor(body: unknown) {
+    super('Сервер вернул ответ неожиданной формы')
+    this.name = 'UnexpectedBodyError'
+    this.body = body
+  }
+}
+
+export async function readSuccessBody<T>(
+  res: Response,
+  type: ResponseType,
+  guard?: BodyGuard,
+): Promise<T> {
   if (type === 'blob') return (await res.blob()) as T
   if (type === 'text') return (await res.text()) as T
   // 204 без тела — законный ответ на удаление и на подтверждение действия.
   if (res.status === 204) return undefined as T
-  return (await res.json()) as T
+  const body: unknown = await res.json()
+  if (guard && !guard(body)) throw new UnexpectedBodyError(body)
+  return body as T
 }
