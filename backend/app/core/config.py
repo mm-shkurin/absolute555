@@ -1,4 +1,4 @@
-from typing import Optional, ClassVar
+from typing import Optional
 from pydantic import Field, HttpUrl
 from pydantic_settings import BaseSettings
 from enum import Enum
@@ -79,6 +79,11 @@ class YandexSettings(BaseSettings):
     yandex_client_secret: str = Field(..., min_length=32, alias="YANDEX_CLIENT_SECRET")
     yandex_redirect_uri: HttpUrl = Field(..., alias="YANDEX_REDIRECT_URI")
     yandex_redirect_uri_web: HttpUrl = Field(..., alias="YANDEX_REDIRECT_URI_WEB")
+    yandex_authorize_url: HttpUrl = Field(
+        default="https://oauth.yandex.ru/authorize", alias="YANDEX_AUTHORIZE_URL"
+    )
+    yandex_token_url: HttpUrl = Field(default="https://oauth.yandex.ru/token", alias="YANDEX_TOKEN_URL")
+    yandex_info_url: HttpUrl = Field(default="https://login.yandex.ru/info", alias="YANDEX_INFO_URL")
     model_config = BaseConfig.model_config
 
 class OAuthSettings(BaseSettings):
@@ -99,11 +104,6 @@ class OAuthSettings(BaseSettings):
     oauth_handoff_ttl_seconds: int = Field(default=120, alias="OAUTH_HANDOFF_TTL_SECONDS")
 
     model_config = BaseConfig.model_config
-
-
-# VKSettings lived here. VK OAuth left the repository with its router: the flow needs a
-# VK business account this project does not have, so the settings only demanded secrets
-# for a provider nothing could call.
 class OfferSettings(BaseSettings):
     """How long a price offer stands.
 

@@ -13,10 +13,6 @@ import httpx
 
 from app.core.config import OAuthSettings, YandexSettings
 
-AUTHORIZE_URL = "https://oauth.yandex.ru/authorize"
-TOKEN_URL = "https://oauth.yandex.ru/token"
-INFO_URL = "https://login.yandex.ru/info"
-
 oauth_settings = OAuthSettings()
 
 
@@ -38,7 +34,7 @@ class YandexOAuthProvider:
         self.settings = settings or YandexSettings()
 
     def authorization_url(self, state: str) -> str:
-        return f"{AUTHORIZE_URL}?" + urlencode(
+        return f"{self.settings.yandex_authorize_url}?" + urlencode(
             {
                 "response_type": "code",
                 "client_id": self.settings.yandex_clientid,
@@ -61,7 +57,7 @@ class YandexOAuthProvider:
 
     async def _exchange(self, http: httpx.AsyncClient, code: str) -> str:
         answer = await http.post(
-            TOKEN_URL,
+            str(self.settings.yandex_token_url),
             data={
                 "grant_type": "authorization_code",
                 "code": code,
@@ -80,9 +76,10 @@ class YandexOAuthProvider:
             raise OAuthFailed("the token response carried no access token")
         return token
 
-    @staticmethod
-    async def _read_identity(http: httpx.AsyncClient, token: str) -> Identity:
-        answer = await http.get(INFO_URL, headers={"Authorization": f"OAuth {token}"})
+    async def _read_identity(self, http: httpx.AsyncClient, token: str) -> Identity:
+        answer = await http.get(
+            str(self.settings.yandex_info_url), headers={"Authorization": f"OAuth {token}"}
+        )
         if answer.status_code != 200:
             raise OAuthFailed(f"the info endpoint answered {answer.status_code}")
 
