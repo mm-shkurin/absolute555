@@ -62,7 +62,7 @@ async def _relay(sale_car_id: str, queue: asyncio.Queue, pubsub):
             await asyncio.sleep(0.01)
         except asyncio.CancelledError:
             raise
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001 - one bad frame must not end the stream
             logger.error(f"Error in message loop for sale_car_id={sale_car_id}: {e}")
             await asyncio.sleep(0.1)
 
@@ -89,7 +89,7 @@ async def listing_events(sale_car_id: str, held_status: Callable[[str], Awaitabl
             yield frame
     except asyncio.CancelledError:
         logger.info(f"SSE connection cancelled for sale_car_id={sale_car_id}")
-    except Exception as e:
+    except Exception as e:  # noqa: BLE001 - the client is told with an error frame
         logger.error(f"Error in SSE stream for sale_car_id={sale_car_id}: {e}")
         yield _frame({"type": "error", "message": str(e), "sale_car_id": sale_car_id})
     finally:

@@ -5,6 +5,7 @@ A stream outlives the request that opened it, so it cannot borrow the request's 
 
 from loguru import logger
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from app.db.database import get_db_session
 from app.features.listing.models.sale_car import SaleCars
@@ -18,6 +19,6 @@ async def held_task_status(sale_car_id: str) -> str:
             sale_car = result.scalar_one_or_none()
             if sale_car and sale_car.task_status:
                 return sale_car.task_status
-    except Exception as e:
+    except SQLAlchemyError as e:
         logger.warning(f"Could not fetch listing status from DB: {e}, using PENDING")
     return TaskStatus.PENDING

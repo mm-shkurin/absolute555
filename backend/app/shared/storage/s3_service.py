@@ -1,5 +1,7 @@
 import asyncio
 
+from botocore.exceptions import BotoCoreError, ClientError
+
 from loguru import logger
 
 from app.core.config_getters import get_minio_settings
@@ -72,7 +74,7 @@ class S3Service:
         try:
             await self._run(lambda: self.s3_client.delete_object(Bucket=self.bucket, Key=key))
             return True
-        except Exception as e:
+        except (BotoCoreError, ClientError) as e:
             logger.error(f"Error deleting file {key} from S3: {e}")
             return False
 

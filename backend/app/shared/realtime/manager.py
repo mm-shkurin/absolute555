@@ -1,5 +1,7 @@
 import asyncio
 import json
+
+import redis
 from typing import Dict, List, Any
 from loguru import logger
 from app.shared.redis_client import make_redis_client
@@ -17,7 +19,7 @@ class SSEManager:
         try:
             self.redis_client.ping()
             logger.info("Redis connection test successful")
-        except Exception as e:
+        except redis.RedisError as e:
             logger.error(f"Redis connection test failed: {e}")
 
     def add_connection(self, car_id:str, queue:asyncio.Queue):
@@ -44,7 +46,7 @@ class SSEManager:
             message_json = json.dumps(message)
             self.redis_client.publish(channel, message_json)
             logger.info(f"Published SSE message to Redis channel {channel}")
-        except Exception as e:
+        except (redis.RedisError, TypeError) as e:
             logger.error(f"Error publishing to Redis for car_id={car_id}: {e}")
         
         if car_id in self.active_connections:
@@ -53,7 +55,7 @@ class SSEManager:
                 try:
                     await queue.put(message)
                     logger.info(f"Sent message locally to car_id={car_id}")
-                except Exception as e:
+                except RuntimeError as e:
                     logger.error(f"Error sending local message to car_id={car_id}: {e}")
                     self.remove_connection(car_id, queue)
 

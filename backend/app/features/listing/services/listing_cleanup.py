@@ -11,8 +11,7 @@ async def discard_objects(keys: Iterable) -> None:
     alive = [key for key in keys if key]
     if not alive:
         return
-    try:
-        await s3_service.delete_files(alive)
-    except Exception as error:
+    failed = (await s3_service.delete_files(alive))["failed"]
+    if failed:
         # The row is already right. An orphan in the bucket is waste, not corruption.
-        logger.warning(f"could not discard {len(alive)} object(s): {error}")
+        logger.warning("could not discard {} object(s)", len(failed))

@@ -3,6 +3,8 @@
 import asyncio
 import json
 
+import redis
+
 from loguru import logger
 
 from app.shared.redis_client import make_redis_client
@@ -37,7 +39,7 @@ async def subscribe(pubsub, sale_car_id: str) -> None:
             logger.info(f"Redis subscription confirmed for channel: {confirmed}")
             if confirmed != channel:
                 logger.warning(f"Subscribed to different channel! Expected: {channel}, Got: {confirmed}")
-    except Exception as e:
+    except redis.RedisError as e:
         logger.warning(f"Could not confirm Redis subscription: {e}")
 
 
@@ -46,7 +48,7 @@ async def read_channel_frame(pubsub, sale_car_id: str) -> str | None:
     try:
         loop = asyncio.get_event_loop()
         message = await loop.run_in_executor(None, get_redis_message, pubsub, 0.01)
-    except Exception as e:
+    except redis.RedisError as e:
         logger.debug(f"Error getting Redis message: {e}")
         return None
     if not message:
@@ -70,7 +72,7 @@ def _frame_from(message: dict, sale_car_id: str) -> str | None:
     except json.JSONDecodeError as e:
         logger.warning(f"Failed to parse Redis message: {e}, raw: {message.get('data', '')}")
         return None
-    except Exception as e:
+    except (KeyError, TypeError) as e:
         logger.error(f"Error processing Redis message: {e}")
         return None
     logger.info(f"Received Redis message for sale_car_id={sale_car_id}: status={data.get('status', 'unknown')}")
@@ -85,5 +87,5 @@ def close_subscription(pubsub, sale_car_id: str) -> None:
         pubsub.unsubscribe(channel)
         pubsub.close()
         logger.info(f"Unsubscribed from Redis channel: {channel}")
-    except Exception as e:
+    except redis.RedisError as e:
         logger.error(f"Error unsubscribing from Redis: {e}")

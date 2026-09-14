@@ -1,4 +1,6 @@
 import asyncio
+
+import redis
 from sqlalchemy import select
 from loguru import logger
 from app.db.database import get_db_session
@@ -18,7 +20,7 @@ async def _publish_status(entity_id: str, status: str) -> None:
         logger.info(f"Sending SSE message to sale_car_id={entity_id}: {message}")
         await sse_manager.send_message(entity_id, message)
         logger.info(f"SSE message sent successfully to sale_car_id={entity_id}")
-    except Exception as sse_error:
+    except (redis.RedisError, RuntimeError) as sse_error:
         logger.error(f"Failed to send SSE message to sale_car_id={entity_id}: {sse_error}")
 
 

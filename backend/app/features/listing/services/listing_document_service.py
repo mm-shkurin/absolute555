@@ -8,6 +8,7 @@ where it travels.
 
 from datetime import datetime, timedelta
 
+from botocore.exceptions import BotoCoreError, ClientError
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -60,6 +61,6 @@ class ListingDocumentService:
     async def _discard(key: str) -> None:
         try:
             await s3_service.delete_document(key)
-        except Exception as error:
+        except (BotoCoreError, ClientError) as error:
             # The row no longer points at it. An object nothing references is waste.
             logger.warning(f"could not delete document {key}: {error}")

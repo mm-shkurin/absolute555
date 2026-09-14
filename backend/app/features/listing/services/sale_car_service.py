@@ -6,6 +6,7 @@ from app.features.listing.services.listing_errors import ListingNotFound
 
 from typing import List, Optional
 from app.shared.storage.s3_service import s3_service
+from botocore.exceptions import BotoCoreError, ClientError
 from loguru import logger
 import uuid
 
@@ -49,7 +50,7 @@ class SaleCarService:
     async def _forget_document(sale_car: SaleCars) -> None:
         try:
             await s3_service.delete_document(sale_car.sts_key)
-        except Exception as error:
+        except (BotoCoreError, ClientError) as error:
             logger.warning(f"Failed to delete document for {sale_car.sale_car_id}: {error}")
 
     async def delete_sale_car(self, sale_car_id: str) -> bool:
@@ -67,10 +68,9 @@ class SaleCarService:
         if sale_car.sts_key:
             await self._forget_document(sale_car)
         if keys:
-            try:
-                await s3_service.delete_files(keys)
-            except Exception as e:
-                logger.warning(f"Failed to delete photos from S3 for sale_car_id={sale_car_id}: {e}")
+            failed = (await s3_service.delete_files(keys))["failed"]
+            if failed:
+                logger.warning("{} photo(s) of {} stayed in S3", len(failed), sale_car_id)
 
         await self.db.execute(
             delete(SaleCars).where(SaleCars.sale_car_id == uuid.UUID(sale_car_id))

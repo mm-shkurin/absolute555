@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Set
 from loguru import logger
 
 from app.core.config_getters import get_jwt_settings
+from app.core.exceptions import AuthenticationError
 from app.shared.storage.cache_service import cache_service
 from app.utils.security import verify_token
 
@@ -34,7 +35,7 @@ async def listener_of(token: str) -> Optional[str]:
         payload = await verify_token(
             token.removeprefix("Bearer "), get_jwt_settings().secret_key, get_jwt_settings().algorithm
         )
-    except Exception:
+    except AuthenticationError:
         return None
 
     if payload.get("type") != "access":
