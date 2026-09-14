@@ -43,7 +43,9 @@ export function fakeServer(): FakeServer {
         authorization: headers.Authorization,
       }
       calls.push(call)
-      const route = routes.find((one) => one.method === call.method && one.path === call.path)
+      // Маршрут — путь без строки запроса: фильтры и вкладки проверяет тест по `calls`.
+      const bare = call.path.split('?')[0]
+      const route = routes.find((one) => one.method === call.method && one.path === bare)
       const reply = route ? route.handler(call) : { status: 404, body: { code: 'NOT_FOUND' } }
       return new Response(reply.body === undefined ? null : JSON.stringify(reply.body), {
         status: reply.status,

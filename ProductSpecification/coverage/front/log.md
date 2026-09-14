@@ -15,3 +15,12 @@
 2026-09-14 16:05 | #2 | audit | shared/api, shared/session | authorizedRequest, sendPublic, requestTimeout, httpResponse — строки без тестов | стыки: 401→refresh один раз, USER_BLOCKED, гость без токена, таймаут против отмены
 2026-09-14 16:15 | #2 | cover | shared/session/authorizedRequest | 6 сценариев зелёные сразу | обновление токена, один refresh на три 401, истёкший refresh, закрытый доступ, запрет, без сессии
 2026-09-14 16:15 | #2 | cover | shared/api/transport | 9 сценариев зелёные сразу | гость без токена, 502, нет сети, таймаут, отмена экраном, 204, отказ на blob
+2026-09-14 16:20 | #2 | suite | front | tsc exit 0; Test Files 48 passed; Tests 267 passed | lines 31.83% (+1.7)
+2026-09-14 16:21 | #2 | commit| shared/session, shared/api | test(frontend): покрыть сессию и транспорт запросов |
+2026-09-14 16:25 | #3 | audit | moderation | moderationApi.toQueueItem подставляет константы вместо полей FeedCard | подозрение: thickness и listing_kind с провода не читаются, total_panels 11 при 13
+2026-09-14 16:35 | #3 | test  | moderation/queue | «продавец заполнил карту — модератор видит полную карту», «под заказ» | red: expected '… отправлено 12…' to contain 'карта 13 из 13'; expected 'ждёт' to be 'под заказ'
+2026-09-14 16:36 | #3 | fix   | moderation/api/moderationApi | toQueueItem читает thickness и listing_kind из FeedCard | вместо констант 0/11/false
+2026-09-14 16:36 | #3 | skip  | moderation/queueView | VIN «нет — машина под заказ» у машины в наличии | сервер VIN в очереди не отдаёт; текст подписи — решение продукта
+2026-09-14 16:40 | #3 | cover | moderation/queue | 4 сценария зелёные сразу | без карты, вкладки и числа, новый продавец, жалобы в строке
+2026-09-14 16:45 | #3 | cover | moderation/decisions | 6 сценариев зелёные сразу | жалоба с причиной словами, отклонение жалобы, снятие с причиной, отклонение без комментария, публикация, повторная жалоба
+2026-09-14 16:50 | #3 | suite | front | tsc exit 0; Test Files 50 passed; Tests 279 passed | lines 33.08% (+1.3), branches 26.27%, functions 25.33%
