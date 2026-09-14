@@ -29,7 +29,7 @@ STATUS_CODES = {
 
 
 async def app_error_handler(request: Request, exc: BaseErrorApp):
-    logger.warning(f"{exc.code}: {exc.message} details={exc.details}")
+    logger.warning("{}: {} details={}", exc.code, exc.message, exc.details)
     return JSONResponse(status_code=exc.http_status, content=exc.to_payload())
 
 
@@ -63,7 +63,7 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
         }
         for error in exc.errors()
     ]
-    logger.warning(f"VALIDATION_ERROR: {len(errors)} problems in {request.url.path}")
+    logger.warning("VALIDATION_ERROR: {} problems in {}", len(errors), request.url.path)
 
     return JSONResponse(
         status_code=422,

@@ -30,9 +30,9 @@ class WebhookService:
 
         try:
             await _post(payload)
-            logger.info(f"Webhook sent successfully for sale_car_id={sale_car_id}")
+            logger.info("Webhook sent successfully for sale_car_id={}", sale_car_id)
         except httpx.HTTPError as e:
-            logger.error(f"Failed to send webhook for sale_car_id={sale_car_id}: {e}")
+            logger.error("Failed to send webhook for sale_car_id={}: {}", sale_car_id, e)
 
     async def send_tg_webhook_delete(
         self,
@@ -51,9 +51,9 @@ class WebhookService:
 
         try:
             await _post(payload)
-            logger.info(f"Delete webhook sent successfully for sale_car_id={sale_car_id}")
+            logger.info("Delete webhook sent successfully for sale_car_id={}", sale_car_id)
         except httpx.HTTPError as e:
-            logger.error(f"Failed to send delete webhook for sale_car_id={sale_car_id}: {e}")
+            logger.error("Failed to send delete webhook for sale_car_id={}: {}", sale_car_id, e)
 
     async def send_tg_webhook_status_change(
         self,
@@ -80,11 +80,10 @@ class WebhookService:
         try:
             await _post(payload)
             logger.info(
-                f"Status change webhook sent successfully for sale_car_id={sale_car_id}: "
-                f"{old_status} -> {new_status}"
+                "Status change webhook sent successfully for sale_car_id={}: {} -> {}", sale_car_id, old_status, new_status
             )
         except httpx.HTTPError as e:
-            logger.error(f"Failed to send status change webhook for sale_car_id={sale_car_id}: {e}")
+            logger.error("Failed to send status change webhook for sale_car_id={}: {}", sale_car_id, e)
 
 
 async def _post(payload: dict) -> None:

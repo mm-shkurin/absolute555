@@ -14,44 +14,44 @@ class UserService:
         self.db = db
 
     async def create_or_get_yandex_user(self, yandex_id: str, yandex_json: dict):
-        logger.info(f"Looking for user with yandex_id: {yandex_id}")
+        logger.info("Looking for user with yandex_id: {}", yandex_id)
         logger.debug("yandex_json received")
         exists = await self.db.execute(select(Users).where(Users.yandex_id == yandex_id))
         user = exists.scalar_one_or_none()
 
-        logger.debug(f"Looking for user with yandex_id again: {yandex_id}")
+        logger.debug("Looking for user with yandex_id again: {}", yandex_id)
         if not user:
             logger.info("Creating new user (yandex)")
             new_user = Users(yandex_id=yandex_id, yandex_json=yandex_json, role=UserRole.USER.value, is_verified=False)
             self.db.add(new_user)
             await self.db.commit()
             await self.db.refresh(new_user)
-            logger.info(f"New user created with id: {new_user.id}")
+            logger.info("New user created with id: {}", new_user.id)
             return new_user.id
         else:
-            logger.info(f"Updating existing user: {user.id}")
+            logger.info("Updating existing user: {}", user.id)
             user.yandex_json = yandex_json
             await self.db.commit()
             logger.debug("User yandex_json updated")
             return user.id
 
     async def create_or_get_vk_user(self, vk_id: str, vk_json: dict):
-        logger.info(f"Looking for user with vk_id: {vk_id}")
+        logger.info("Looking for user with vk_id: {}", vk_id)
         logger.debug("vk_json received")
         exists = await self.db.execute(select(Users).where(Users.vk_id == vk_id))
         user = exists.scalar_one_or_none()
 
-        logger.debug(f"Looking for user with vk_id again: {vk_id}")
+        logger.debug("Looking for user with vk_id again: {}", vk_id)
         if not user:
             logger.info("Creating new user (vk)")
             new_user = Users(vk_id=vk_id, vk_json=vk_json, role=UserRole.USER.value, is_verified=False)
             self.db.add(new_user)
             await self.db.commit()
             await self.db.refresh(new_user)
-            logger.info(f"New user created with id: {new_user.id}")
+            logger.info("New user created with id: {}", new_user.id)
             return new_user.id
         else:
-            logger.info(f"Updating existing user: {user.id}")
+            logger.info("Updating existing user: {}", user.id)
             user.vk_json = vk_json
             await self.db.commit()
             logger.debug("User vk_json updated")

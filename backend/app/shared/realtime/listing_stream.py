@@ -38,9 +38,9 @@ def _take_local(queue: asyncio.Queue, sale_car_id: str) -> tuple[bool, str | Non
         return False, None
     named = message.get("sale_car_id")
     if named is None or str(named) == str(sale_car_id):
-        logger.info(f"Sending local queue message for sale_car_id={sale_car_id}: {message.get('status', 'unknown')}")
+        logger.info("Sending local queue message for sale_car_id={}: {}", sale_car_id, message.get('status', 'unknown'))
         return True, _frame(message)
-    logger.debug(f"Skipping local message for different sale_car_id: {named} != {sale_car_id}")
+    logger.debug("Skipping local message for different sale_car_id: {} != {}", named, sale_car_id)
     return True, None
 
 
@@ -64,7 +64,7 @@ async def _relay(sale_car_id: str, queue: asyncio.Queue, pubsub):
         except asyncio.CancelledError:
             raise
         except Exception as e:  # noqa: BLE001 - one bad frame must not end the stream
-            logger.error(f"Error in message loop for sale_car_id={sale_car_id}: {e}")
+            logger.error("Error in message loop for sale_car_id={}: {}", sale_car_id, e)
             await asyncio.sleep(RETRY_PAUSE_SECONDS)
 
 
@@ -83,15 +83,15 @@ async def listing_events(sale_car_id: str, held_status: Callable[[str], Awaitabl
         pubsub = open_pubsub()
         await subscribe(pubsub, sale_car_id)
         status = await held_status(sale_car_id)
-        logger.info(f"Sending initial SSE message for sale_car_id={sale_car_id}, status={status}")
+        logger.info("Sending initial SSE message for sale_car_id={}, status={}", sale_car_id, status)
         yield _frame({"sale_car_id": sale_car_id, "status": status, "type": "initial", "timestamp": time.time()})
         relay = _relay(sale_car_id, queue, pubsub)
         async for frame in relay:
             yield frame
     except asyncio.CancelledError:
-        logger.info(f"SSE connection cancelled for sale_car_id={sale_car_id}")
+        logger.info("SSE connection cancelled for sale_car_id={}", sale_car_id)
     except Exception as e:  # noqa: BLE001 - the client is told with an error frame
-        logger.error(f"Error in SSE stream for sale_car_id={sale_car_id}: {e}")
+        logger.error("Error in SSE stream for sale_car_id={}: {}", sale_car_id, e)
         yield _frame({"type": "error", "message": str(e), "sale_car_id": sale_car_id})
     finally:
         if relay is not None:

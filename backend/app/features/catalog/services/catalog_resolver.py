@@ -77,7 +77,7 @@ class CatalogResolver:
         brand = brand_match.value
         sale_car.brand_id = brand.brand_id
         sale_car.brand_source = FieldSource.OCR.value
-        logger.info(f"catalog: brand {mark_raw!r} -> {brand.slug} via {brand_match.step}")
+        logger.info("catalog: brand {!r} -> {} via {}", mark_raw, brand.slug, brand_match.step)
         return brand.brand_id
 
     async def _resolve_model(self, sale_car: SaleCars, brand_id: Optional[UUID], model_raw: str | None) -> ResolveOutcome:
@@ -92,7 +92,7 @@ class CatalogResolver:
 
         sale_car.model_id = model_match.value.model_id
         sale_car.model_source = FieldSource.OCR.value
-        logger.info(f"catalog: model {model_raw!r} -> {model_match.value.slug} via {model_match.step}")
+        logger.info("catalog: model {!r} -> {} via {}", model_raw, model_match.value.slug, model_match.step)
         return ResolveOutcome(brand_id, model_match.value.model_id, None)
 
     async def _suggest(self, kind: SuggestionKind, brand_id: Optional[UUID], raw: str) -> None:

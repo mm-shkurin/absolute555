@@ -73,7 +73,7 @@ class ChatHub:
             try:
                 queue.put_nowait(payload)
             except Exception as error:  # noqa: BLE001 - a full or closed queue is one lost message
-                logger.warning(f"chat delivery to {user_id} failed: {error}")
+                logger.warning("chat delivery to {} failed: {}", user_id, error)
 
     @staticmethod
     async def _publish(user_ids: List[str], payload: dict) -> None:
@@ -87,7 +87,7 @@ class ChatHub:
                 lambda: client.publish(CHANNEL, json.dumps({"to": user_ids, "payload": payload}, default=str)),
             )
         except Exception as error:  # noqa: BLE001 - a lost fan-out is a message the other worker misses
-            logger.warning(f"chat fan-out failed: {error}")
+            logger.warning("chat fan-out failed: {}", error)
 
 
 chat_hub = ChatHub()

@@ -70,11 +70,11 @@ class RoleService:
                 if request.requested_role == new_role.value:
                     request.status = RoleRequestStatus.APPROVED
                     request.review_comment = "Роль выдана администратором"
-                    logger.info(f"Role request {request.id} auto-approved for user {id}")
+                    logger.info("Role request {} auto-approved for user {}", request.id, id)
                 else:
                     request.status = RoleRequestStatus.REJECTED
                     request.review_comment = "Роль изменена на другую"
-                    logger.info(f"Role request {request.id} auto-rejected for user {id}")
+                    logger.info("Role request {} auto-rejected for user {}", request.id, id)
 
                 request.reviewed_at = datetime.now()
 

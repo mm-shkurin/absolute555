@@ -75,7 +75,7 @@ class S3Service:
             await self._run(lambda: self.s3_client.delete_object(Bucket=self.bucket, Key=key))
             return True
         except (BotoCoreError, ClientError) as e:
-            logger.error(f"Error deleting file {key} from S3: {e}")
+            logger.error("Error deleting file {} from S3: {}", key, e)
             return False
 
     async def delete_files(self, keys: list[str]) -> dict:

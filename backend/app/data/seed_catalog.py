@@ -92,7 +92,7 @@ async def seed() -> None:
             new_models += await _sync_models(db, brand, entry)
         await db.commit()
 
-    logger.info(f"catalog seeded: {len(brands)} brands, {new_models} models added")
+    logger.info("catalog seeded: {} brands, {} models added", len(brands), new_models)
 
 
 if __name__ == "__main__":

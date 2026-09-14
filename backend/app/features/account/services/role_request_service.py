@@ -70,7 +70,7 @@ class RoleRequestService:
         self.db.add(role_request)
         await self.db.commit()
         await self.db.refresh(role_request)
-        logger.info(f"Role request created for user {user_id}, role: {requested}")
+        logger.info("Role request created for user {}, role: {}", user_id, requested)
         return role_request
 
     async def _refuse_duplicate(self, user_id: UUID, requested: str) -> None:
@@ -124,7 +124,7 @@ class RoleRequestService:
 
         await self.db.commit()
         await self.db.refresh(role_request)
-        logger.info(f"Role request {request_id} updated to status: {update_data.status}")
+        logger.info("Role request {} updated to status: {}", request_id, update_data.status)
         return role_request
 
     async def _pending_request(self, request_id: UUID) -> RoleRequest:
@@ -140,7 +140,7 @@ class RoleRequestService:
         user = await self.roles.get_user_by_id(role_request.user_id)
         if user:
             user.role = role_request.requested_role
-            logger.info(f"User {user.id} role updated to {role_request.requested_role}")
+            logger.info("User {} role updated to {}", user.id, role_request.requested_role)
 
     def name_of(self, user: Users) -> str:
         return user.display_name if user is not None else "Неизвестный пользователь"

@@ -15,7 +15,7 @@ class CacheService:
             self.redis_client = make_redis_client(get_redis_settings())
             self.redis_client.ping()
         except redis.RedisError as e:
-            logger.error(f"Failed to connect to Redis for caching: {e}")
+            logger.error("Failed to connect to Redis for caching: {}", e)
             self.redis_client = None
 
     def _get_key(self, prefix: str, document_id: str) -> str:
@@ -37,7 +37,7 @@ class CacheService:
             if cached_data:
                 return json.loads(cached_data)
         except (redis.RedisError, ValueError, TypeError) as e:
-            logger.warning(f"Failed to get from cache: {e}")
+            logger.warning("Failed to get from cache: {}", e)
 
         return None
 
@@ -57,7 +57,7 @@ class CacheService:
             )
             return True
         except (redis.RedisError, ValueError, TypeError) as e:
-            logger.warning(f"Failed to set cache: {e}")
+            logger.warning("Failed to set cache: {}", e)
             return False
 
     async def delete(self, prefix: str, document_id: str) -> bool:
@@ -75,7 +75,7 @@ class CacheService:
             )
             return True
         except (redis.RedisError, ValueError, TypeError) as e:
-            logger.warning(f"Failed to delete from cache: {e}")
+            logger.warning("Failed to delete from cache: {}", e)
             return False
 
     async def take(self, prefix: str, document_id: str) -> Optional[Dict[str, Any]]:
@@ -94,7 +94,7 @@ class CacheService:
             if taken:
                 return json.loads(taken)
         except (redis.RedisError, ValueError, TypeError) as e:
-            logger.warning(f"Failed to take from cache: {e}")
+            logger.warning("Failed to take from cache: {}", e)
 
         return None
 
@@ -112,7 +112,7 @@ class CacheService:
             )
             return deleted
         except (redis.RedisError, ValueError, TypeError) as e:
-            logger.warning(f"Failed to delete many from cache: {e}")
+            logger.warning("Failed to delete many from cache: {}", e)
             return 0
 
 cache_service = CacheService()

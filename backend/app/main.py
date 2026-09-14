@@ -23,7 +23,7 @@ def add_cors(app: FastAPI) -> None:
     try:
         cors_settings = CORSSettings()
     except ValidationError as error:
-        logger.warning(f"CORS is not configured, cross-origin requests are refused: {error}")
+        logger.warning("CORS is not configured, cross-origin requests are refused: {}", error)
         return
     origins = [o.strip() for o in cors_settings.cors_origins.split(",") if o.strip()]
     if origins:
