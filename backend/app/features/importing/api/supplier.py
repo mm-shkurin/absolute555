@@ -16,7 +16,6 @@ from app.features.importing.schemas.supplier import (
 )
 from app.features.importing.services.supplier_cover_service import SupplierCoverService
 from app.features.importing.services.supplier_profile_service import SupplierProfileService
-from app.features.listing.api.image_upload import image_upload
 from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
@@ -56,8 +55,7 @@ async def upload_cover(
     supplier_cover_service: SupplierCoverService = Depends(get_supplier_cover_service),
     importer=Depends(IMPORTER),
 ):
-    with image_upload("cover"):
-        return await supplier_cover_service.set(str(importer.id), await read_limited(file))
+    return await supplier_cover_service.set(str(importer.id), await read_limited(file))
 
 
 @supplier_router.delete("/me/cover", response_model=SupplierOwnProfileResponse)

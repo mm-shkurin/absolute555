@@ -81,7 +81,10 @@ class ChatService:
         Спрашивающий — `buyer_id`, как и в остальных переписках: отзыв по разговору
         оставляет тот, кто начал, о том, кому писали.
         """
-        asker, other = uuid.UUID(str(asker_id)), uuid.UUID(str(other_id))
+        try:
+            asker, other = uuid.UUID(str(asker_id)), uuid.UUID(str(other_id))
+        except ValueError as malformed:
+            raise DialogNotFound(str(other_id)) from malformed
         if asker == other:
             raise DialogNotFound(str(other_id))
         # Собеседник проверяется до вставки: без этого внешний ключ падает

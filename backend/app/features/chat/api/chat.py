@@ -21,7 +21,6 @@ from app.features.chat.schemas.chat import (
     ReadResult,
     UnreadCount,
 )
-from app.features.chat.services.chat_errors import ChatError, DialogNotFound
 from app.features.chat.services.chat_reader import ChatReader
 from app.features.chat.services.chat_service import ChatService
 from app.features.review.services.dialog_review_service import DialogReviewService
@@ -65,11 +64,8 @@ async def open_direct(
     current_user=Depends(get_current_user),
 ):
     """Открыть или найти прямую переписку с человеком — со страницы поставщика."""
-    try:
-        opened = await chat_service.open_direct(current_user.id, user_id)
-        dialog = await chat_service.dialog_of(str(opened.dialog_id), str(current_user.id))
-    except (ChatError, ValueError) as refused:
-        raise DialogNotFound(user_id) from refused
+    opened = await chat_service.open_direct(current_user.id, user_id)
+    dialog = await chat_service.dialog_of(str(opened.dialog_id), str(current_user.id))
     storefronts = await reader.storefronts([dialog])
     return dialog_view(dialog, current_user.id, 0, storefront=storefronts.get(str(dialog.seller_id)))
 

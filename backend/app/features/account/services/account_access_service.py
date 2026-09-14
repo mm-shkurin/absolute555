@@ -12,7 +12,6 @@ from uuid import UUID
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import AuthorizationError, ConflictError, ResourceNotFoundError
 from app.features.account.models.account_audit import (
     BLOCKED,
     ROLE_CHANGED,
@@ -20,27 +19,16 @@ from app.features.account.models.account_audit import (
     AccountAudit,
 )
 from app.features.account.models.users import Users
+from app.features.account.services.account_access_errors import (
+    AccessConflict,
+    AccessRefused,
+    AccountMissing,
+)
 from app.permissions.roles import UserRole
 
 # Роли, над которыми модератор не властен. Власть над равным — тот же тихий путь наверх,
 # который история 13 закрыла у заявок на роль.
 PROTECTED_FROM_MODERATOR = {UserRole.MANAGER.value, UserRole.ADMIN.value}
-
-
-class AccessRefused(AuthorizationError):
-    """Действие запрещено этому исполнителю."""
-
-
-class AccessConflict(ConflictError):
-    """Доступ уже в том состоянии, которого просят, или цель — сам исполнитель."""
-
-    default_code = "ACCESS_UNCHANGED"
-
-
-class AccountMissing(ResourceNotFoundError):
-    """Такой учётной записи нет."""
-
-    default_code = "USER_NOT_FOUND"
 
 
 class AccountAccessService:

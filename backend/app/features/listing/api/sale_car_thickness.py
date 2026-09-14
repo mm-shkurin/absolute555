@@ -19,7 +19,6 @@ from app.ml.gauge_reader import read_panel_photo
 from app.features.auth.deps import get_current_user, get_current_user_or_none
 
 from app.features.listing.services.listing_access import listing_of, visible_listing
-from app.features.listing.api.image_upload import image_upload
 from app.features.listing.api.sale_car_thickness_view import to_thickness_map
 
 thickness_router = APIRouter()
@@ -51,9 +50,8 @@ async def read_gauge_photo(
     панель у покупателя в чужой цвет. Тот же снимок при сохранении читается из кэша.
     """
     await listing_of(listing_lifecycle_service, sale_car_id, current_user)
-    with image_upload(photo.filename):
-        body = await read_limited(photo)
-        require_image(photo.filename, body)
+    body = await read_limited(photo)
+    require_image(photo.filename, body)
     return {"value_um": await read_panel_photo(body)}
 
 

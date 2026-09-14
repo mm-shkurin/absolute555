@@ -19,7 +19,8 @@ This backend is feature-major: the four layers live inside each domain area rath
 above all of them. The map here is the real one:
 
 - `app/features/<area>/` — one domain area: `account`, `auth`, `catalog`, `listing`,
-  `offer`, `chat`, `moderation`, `review`, `recognition`. Each holds the same four layers:
+  `offer`, `chat`, `moderation`, `review`, `recognition`, `importing`. Each holds the same
+  layers:
   - `api/` — routers, plus the view and error-mapping modules they use. HTTP in, HTTP out:
     parse the request, call a service, shape the response. No SQL, no business rules.
   - `services/` — business logic. Owns the rules and the transaction. Talks to models, S3,
@@ -28,8 +29,10 @@ above all of them. The map here is the real one:
     `<noun>_errors.py`; any other module here is a stateless helper or a collaborator
     without its own session and never carries the `_service` suffix.
   - `domain/` — pure rules of the area: enums, status tables, value calculations. Imports
-    nothing from `api`, `services`, `models`, `app.shared`, `app.tasks`, `fastapi` or
-    `sqlalchemy`; every other layer of the area may import it.
+    nothing from `api`, `services`, `models`, `app.core`, `app.shared`, `app.tasks`,
+    `fastapi` or `sqlalchemy`; a threshold from settings arrives as an argument. Every
+    other layer of the area may import it. An area gets `domain/` once it has a rule
+    worth testing without a database; an area whose only enum sits on its model has none.
   - `models/` — SQLAlchemy models. Columns, relationships, and behaviour that belongs to
     the row itself. No service or API imports.
   - `schemas/` — Pydantic request and response types. The wire contract.

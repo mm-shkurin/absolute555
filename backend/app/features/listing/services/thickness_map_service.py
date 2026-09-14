@@ -11,8 +11,9 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.listing.models.sale_car import SaleCars
+from app.core.config_getters import get_thickness_settings
 from app.features.listing.models.thickness import ThicknessMeasurement
-from app.features.listing.domain.panels import BodyPanel, MIN_VALUE_UM, ValueSource, max_value_um
+from app.features.listing.domain.panels import BodyPanel, MIN_VALUE_UM, ValueSource
 from app.features.listing.services.photo_image import require_image
 from app.features.listing.services.listing_cleanup import discard_objects
 from app.features.listing.services.thickness_errors import (
@@ -25,7 +26,7 @@ from app.shared.storage.s3_service import s3_service
 
 
 def _within(value) -> bool:
-    return value is not None and MIN_VALUE_UM <= value <= max_value_um()
+    return value is not None and MIN_VALUE_UM <= value <= get_thickness_settings().max_value_um
 
 
 def _chosen_value(panel: BodyPanel, value_um, read):

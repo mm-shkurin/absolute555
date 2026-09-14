@@ -8,7 +8,6 @@ from fastapi import APIRouter, Depends, File, UploadFile, status
 from app.features.account.deps import get_profile_service
 from app.features.account.schemas.profile import Profile, ProfilePatch
 from app.features.account.services.profile_service import ProfileService
-from app.features.listing.api.image_upload import image_upload
 from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import CurrentUser
 
@@ -33,8 +32,7 @@ async def upload_avatar(
     file: UploadFile = File(...),
     profile_service: ProfileService = Depends(get_profile_service),
 ):
-    with image_upload("avatar"):
-        updated = await profile_service.set_avatar(current_user, await read_limited(file))
+    updated = await profile_service.set_avatar(current_user, await read_limited(file))
     return profile_view(updated)
 
 

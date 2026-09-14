@@ -9,9 +9,8 @@
 разойдутся на первой же правке.
 """
 
+from dataclasses import dataclass
 from enum import Enum
-
-from app.core.config_getters import get_thickness_settings
 
 
 class BodyPanel(str, Enum):
@@ -42,15 +41,16 @@ TOTAL_PANELS = len(BodyPanel)
 MIN_VALUE_UM = 1
 
 
-def max_value_um() -> int:
-    return get_thickness_settings().max_value_um
+@dataclass(frozen=True)
+class Thresholds:
+    repaint_from_um: int
+    filler_from_um: int
 
 
-def status_of(value_um: int) -> PanelStatus:
-    thickness = get_thickness_settings()
-    if value_um >= thickness.filler_from_um:
+def status_of(value_um: int, thresholds: Thresholds) -> PanelStatus:
+    if value_um >= thresholds.filler_from_um:
         return PanelStatus.FILLER
-    if value_um >= thickness.repaint_from_um:
+    if value_um >= thresholds.repaint_from_um:
         return PanelStatus.REPAINT
     return PanelStatus.FACTORY
 
