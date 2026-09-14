@@ -1,8 +1,14 @@
 [
   {
-    "id": "EXAMPLE-ID",
-    "reason": "why this violation is accepted — link the decision doc",
-    "expires": "2026-01-01",
-    "owner": "who agreed"
+    "id": "SEC-FETCHER@back",
+    "reason": "backend renders and parses no remote documents: images arrive as uploaded bytes (PIL/cv2), outbound HTTP goes only to configured hosts (GigaChat, Yandex OAuth, TG webhook). The SSRF marker has no sink to guard.",
+    "expires": "2026-10-14",
+    "owner": "project owner, approved in sprint-check 2026-09-14"
+  },
+  {
+    "id": "SMELL-ENDPOINT-LITERAL@back",
+    "reason": "the only hit is the version prefix /api/v1 at the single router mount in app/main.py create_app; every route hangs off app/api.py, which is the route map.",
+    "expires": "2026-10-14",
+    "owner": "project owner, approved in sprint-check 2026-09-14"
   }
 ]

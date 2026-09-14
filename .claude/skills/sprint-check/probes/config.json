@@ -5,7 +5,8 @@
       "root": "backend",
       "kind": "service",
       "code": [
-        "backend/app"
+        "backend/app",
+        "backend/tests"
       ],
       "src": [
         "*.py"
@@ -14,7 +15,9 @@
         "backend/README.md"
       ],
       "config": [
-        "backend/requirements.txt"
+        "backend/requirements.txt",
+        "backend/requirements-dev.txt",
+        "backend/ruff.toml"
       ],
       "styles": [],
       "changelog": [
