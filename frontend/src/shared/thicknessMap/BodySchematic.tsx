@@ -1,9 +1,10 @@
 // Схема кузова: пять проекций в одном SVG, панель залита цветом своего замера.
 // Одна панель встречается в нескольких проекциях — выбор подсвечивает все её вхождения.
-import type { PanelCode } from './panels'
+import type { PanelCode } from './bodyPanels'
 import type { PanelRow } from './thicknessMap'
 import { PROJECTIONS, VIEW_BOX } from './geometry'
 import { Legend } from './Legend'
+import { ProjectionShape } from './ProjectionShape'
 import styles from './BodySchematic.module.css'
 
 interface Props {
@@ -28,37 +29,13 @@ export function BodySchematic({ rows, selected, onSelect }: Props) {
               {projection.label}
             </text>
             {/* Подпись остаётся вне преобразования: отражённый борт перевернул бы и её. */}
-            <g transform={projection.transform}>
-              {projection.zones.map((zone, index) => (
-                <path
-                  key={`${zone.code}-${index}`}
-                  className={[styles.zone, zone.code === selected ? styles.selected : ''].join(' ')}
-                  d={zone.d}
-                  fill={colorOf(zone.code)}
-                  fillRule="evenodd"
-                  onClick={() => onSelect(zone.code)}
-                  data-panel={zone.code}
-                  data-selected={zone.code === selected}
-                >
-                  <title>{labelOf(zone.code)}</title>
-                </path>
-              ))}
-              {projection.cutouts.map((d) => (
-                <path key={d} className={styles.cutout} d={d} />
-              ))}
-              {projection.outline.map((d) => (
-                <path key={d} className={styles.line} d={d} />
-              ))}
-              {projection.wheels.map((wheel) => (
-                <circle
-                  key={`${wheel.cx}-${wheel.r}`}
-                  className={styles.line}
-                  cx={wheel.cx}
-                  cy={wheel.cy}
-                  r={wheel.r}
-                />
-              ))}
-            </g>
+            <ProjectionShape
+              projection={projection}
+              selected={selected}
+              onSelect={onSelect}
+              colorOf={colorOf}
+              labelOf={labelOf}
+            />
           </g>
         ))}
       </svg>

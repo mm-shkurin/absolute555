@@ -1,9 +1,6 @@
 // Сборка экрана карты: строка на панель, покрытие и разбор выбранной панели.
-import type {
-  ThicknessMapWire,
-  ThicknessMeasurementWire,
-} from '../api/backend/thicknessContract'
-import { GRADE_COLOR, GRADE_WORD, PANELS, type Grade, type PanelCode } from './panels'
+import type { ThicknessMapWire, ThicknessMeasurementWire } from '../api/backend/thicknessContract'
+import { GRADE_COLOR, GRADE_WORD, PANELS, type Grade, type PanelCode } from './bodyPanels'
 
 export interface PanelRow {
   code: PanelCode

@@ -1,7 +1,7 @@
 // Схема врёт молча: панель без зоны просто не подсвечивается, и заметить это можно
 // только глазами на одном из тринадцати кликов. Отсюда проверки на полноту.
 import { describe, expect, it } from 'vitest'
-import { PANELS } from '../panels'
+import { PANELS } from '../bodyPanels'
 import { PROJECTIONS } from '../geometry'
 import { mirrorCode } from '../geometry/types'
 import { LEFT_SIDE, RIGHT_SIDE } from '../geometry/sides'

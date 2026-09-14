@@ -3,8 +3,7 @@
 import { useState } from 'react'
 import { useMutation } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { Container } from '../../shared/ui/Container'
-import { SiteHeader } from '../../shared/ui/SiteHeader'
+import { PageShell } from '../../shared/ui/PageShell'
 import { ROUTES } from '../../shared/navigation/routes'
 import { ListingBody } from './components/ListingBody'
 import { MobileActionBar, SidePanel, type SideHandlers } from './components/SidePanel'
@@ -45,54 +44,14 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
     },
   }
 
-  return (
+  const crumbs = (
     <>
-      <SiteHeader signedIn={signedIn} onSignIn={onSignIn} />
-      <main data-testid="listing">
-        <Container>
-          <div className={styles.crumbs}>
-            <Link to={ROUTES.feed}>Лента</Link>
-            {listing.view ? ` › ${listing.view.title}` : null}
-          </div>
-          {listing.isLoading ? <ListingSkeleton /> : null}
-          {!listing.isLoading && listing.error ? (
-            <ListingFailure message={listing.error.message} onRetry={listing.retry} />
-          ) : null}
-          {listing.view ? (
-            <div className={styles.layout}>
-              <ListingBody
-                listing={listing.view}
-                onComplain={listing.mode === 'owner' ? undefined : handlers.onComplain}
-              />
-              {listing.mode === 'owner' ? (
-                <OwnerPanel
-                  view={listing.view}
-                  sold={listing.sold}
-                  // В мастер этого объявления, а не в новое: `/sell` заводил бы новый черновик.
-                  onEdit={() => navigate(ROUTES.sellingDraft(listing.view?.id ?? ''))}
-                  busy={actions.busy}
-                  onUnpublish={() => actions.owner('withdraw')}
-                  onMarkSold={() => actions.owner('sold')}
-                  onSetting={(key, value) =>
-                    actions.setting(
-                      key === 'phone' ? { phone_visible: value } : { chat_allowed: value },
-                    )
-                  }
-                  onOffersVisible={(value) => actions.setting({ offers_visible: value })}
-                />
-              ) : (
-                <SidePanel
-                  view={listing.view}
-                  mode={listing.mode}
-                  offers={listing.offers}
-                  phone={actions.phone}
-                  handlers={handlers}
-                />
-              )}
-            </div>
-          ) : null}
-        </Container>
-      </main>
+      <Link to={ROUTES.feed}>Лента</Link>
+      {listing.view ? ` › ${listing.view.title}` : null}
+    </>
+  )
+  const overlays = (
+    <>
       {listing.view && listing.mode !== 'owner' ? (
         <MobileActionBar mode={listing.mode} handlers={handlers} />
       ) : null}
@@ -116,5 +75,54 @@ export function ListingPage({ signedIn, onSignIn }: { signedIn: boolean; onSignI
         />
       ) : null}
     </>
+  )
+
+  return (
+    <PageShell
+      signedIn={signedIn}
+      onSignIn={onSignIn}
+      testId="listing"
+      crumbs={crumbs}
+      crumbsClassName={styles.crumbs}
+      outside={overlays}
+    >
+      {listing.isLoading ? <ListingSkeleton /> : null}
+      {!listing.isLoading && listing.error ? (
+        <ListingFailure message={listing.error.message} onRetry={listing.retry} />
+      ) : null}
+      {listing.view ? (
+        <div className={styles.layout}>
+          <ListingBody
+            listing={listing.view}
+            onComplain={listing.mode === 'owner' ? undefined : handlers.onComplain}
+          />
+          {listing.mode === 'owner' ? (
+            <OwnerPanel
+              view={listing.view}
+              sold={listing.sold}
+              // В мастер этого объявления, а не в новое: `/sell` заводил бы новый черновик.
+              onEdit={() => navigate(ROUTES.sellingDraft(listing.view?.id ?? ''))}
+              busy={actions.busy}
+              onUnpublish={() => actions.owner('withdraw')}
+              onMarkSold={() => actions.owner('sold')}
+              onSetting={(key, value) =>
+                actions.setting(
+                  key === 'phone' ? { phone_visible: value } : { chat_allowed: value },
+                )
+              }
+              onOffersVisible={(value) => actions.setting({ offers_visible: value })}
+            />
+          ) : (
+            <SidePanel
+              view={listing.view}
+              mode={listing.mode}
+              offers={listing.offers}
+              phone={actions.phone}
+              handlers={handlers}
+            />
+          )}
+        </div>
+      ) : null}
+    </PageShell>
   )
 }

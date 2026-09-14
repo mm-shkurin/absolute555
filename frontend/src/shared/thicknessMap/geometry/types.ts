@@ -1,6 +1,6 @@
 // Формы, из которых собрана схема кузова. Проекция — не картинка, а данные: одна панель
 // встречается в нескольких проекциях, и подсветка обязана зажечься во всех сразу.
-import type { PanelCode } from '../panels'
+import type { PanelCode } from '../bodyPanels'
 
 export interface Zone {
   code: PanelCode

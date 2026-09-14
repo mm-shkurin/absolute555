@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { fetchThicknessMap } from './thicknessApi'
-import type { PanelCode } from './panels'
+import type { PanelCode } from './bodyPanels'
 import {
   toPanelDetail,
   toThicknessView,
