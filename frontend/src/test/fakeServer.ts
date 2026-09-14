@@ -44,8 +44,9 @@ export function fakeServer(): FakeServer {
       }
       calls.push(call)
       // Маршрут — путь без строки запроса: фильтры и вкладки проверяет тест по `calls`.
+      // Побеждает последний объявленный: тест переопределяет ответ из `beforeEach`.
       const bare = call.path.split('?')[0]
-      const route = routes.find((one) => one.method === call.method && one.path === bare)
+      const route = routes.findLast((one) => one.method === call.method && one.path === bare)
       const reply = route ? route.handler(call) : { status: 404, body: { code: 'NOT_FOUND' } }
       return new Response(reply.body === undefined ? null : JSON.stringify(reply.body), {
         status: reply.status,
