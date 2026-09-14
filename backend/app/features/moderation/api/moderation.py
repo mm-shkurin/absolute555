@@ -22,14 +22,10 @@ from app.features.moderation.schemas.moderation import (
     RejectionReason,
 )
 from app.features.listing.schemas.sale_cars import SaleCarStatusChanged
-from app.features.moderation.services.complaint_errors import ComplaintError
 from app.features.moderation.services.complaint_service import ComplaintService
-from app.features.listing.services.listing_errors import ListingError
 from app.features.moderation.services.moderation_service import ModerationService
 
-from app.shared.http.listing_http import to_http
 from app.shared.http.moderation_view import complaint_view, group_view, queue_item
-from app.shared.http.moderation_http import to_http as complaint_to_http
 
 moderation_router = APIRouter()
 
@@ -85,10 +81,7 @@ async def dismiss_complaint(
     complaint_service: ComplaintService = Depends(get_complaint_service),
     moderator=Depends(MODERATOR),
 ):
-    try:
-        settled = await complaint_service.dismiss(complaint_id, str(moderator.id))
-    except ComplaintError as error:
-        raise complaint_to_http(error)
+    settled = await complaint_service.dismiss(complaint_id, str(moderator.id))
     return complaint_view(settled)
 
 
@@ -100,12 +93,9 @@ async def unpublish_listing(
     moderator=Depends(MODERATOR),
 ):
     """Take a published listing down and settle its complaints in the same decision."""
-    try:
-        listing = await listing_review_service.take_down(
-            sale_car_id, reason.label.value, reason.comment, str(moderator.id)
-        )
-    except ListingError as error:
-        raise to_http(error)
+    listing = await listing_review_service.take_down(
+        sale_car_id, reason.label.value, reason.comment, str(moderator.id)
+    )
     return SaleCarStatusChanged(
         sale_car_id=listing.sale_car_id, status=listing.status, updated_at=listing.updated_at
     )

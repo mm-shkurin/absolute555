@@ -30,7 +30,6 @@ from app.features.review.services.review_dialog import DialogReviewService
 from app.shared.realtime.chat_socket import chat_hub, listener_of
 from app.utils.security import get_current_user
 
-from .chat_http import to_http
 from app.shared.http.chat_view import dialog_view, message_view
 
 chat_router = APIRouter()
@@ -72,8 +71,8 @@ async def open_direct(
     try:
         opened = await chat_service.open_direct(current_user.id, user_id)
         dialog = await chat_service.dialog_of(str(opened.dialog_id), str(current_user.id))
-    except (ChatError, ValueError):
-        raise to_http(DialogNotFound(user_id))
+    except (ChatError, ValueError) as refused:
+        raise DialogNotFound(user_id) from refused
     storefronts = await ChatReader(db).storefronts([dialog])
     return dialog_view(dialog, current_user.id, 0, storefront=storefronts.get(str(dialog.seller_id)))
 
@@ -96,10 +95,7 @@ async def read_messages(
     chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
-    try:
-        dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
-    except ChatError as error:
-        raise to_http(error)
+    dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
 
     messages, total = await ChatReader(db).messages(dialog, page, size)
     return {
@@ -119,11 +115,8 @@ async def write_message(
     current_user=Depends(get_current_user),
 ):
     """The kind is not a field a client may set: a system line has no human author."""
-    try:
-        dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
-        message = await chat_service.say(dialog, body.text, author_id=current_user.id)
-    except ChatError as error:
-        raise to_http(error)
+    dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
+    message = await chat_service.say(dialog, body.text, author_id=current_user.id)
 
     await db.commit()
     written = message_view(message)
@@ -145,10 +138,7 @@ async def mark_read(
     chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
 ):
-    try:
-        dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
-    except ChatError as error:
-        raise to_http(error)
+    dialog = await chat_service.dialog_of(dialog_id, str(current_user.id))
 
     marked = await chat_service.mark_read(dialog, str(current_user.id), body.message_ids)
     return {

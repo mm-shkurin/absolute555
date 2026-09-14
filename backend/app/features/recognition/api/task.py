@@ -5,7 +5,7 @@ from app.features.listing.services.listing_lifecycle import ListingLifecycleServ
 from fastapi.responses import StreamingResponse
 
 from app.features.listing.deps import get_listing_lifecycle_service
-from app.shared.http.listing_http import owned_listing
+from app.features.listing.services.listing_access_service import listing_of
 from app.shared.realtime.listing_stream import listing_events
 from app.utils.security import get_current_user
 
@@ -23,7 +23,7 @@ async def sse_endpoint(
     Ownership is checked, not just authentication: the stream carries what a private
     document was read as, and a listing identifier is in every URL its owner has shared.
     """
-    await owned_listing(listing_lifecycle_service, sale_car_id, current_user)
+    await listing_of(listing_lifecycle_service, sale_car_id, current_user)
 
     return StreamingResponse(
         listing_events(sale_car_id),

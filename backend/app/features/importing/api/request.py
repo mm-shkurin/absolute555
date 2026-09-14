@@ -16,13 +16,11 @@ from app.features.importing.schemas.request import (
 )
 from app.shared.http.chat_view import message_view
 from app.features.chat.schemas.chat import MessageResponse
-from app.features.importing.services.supplier_errors import SupplierError
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 from app.shared.realtime.chat_socket import chat_hub
 from app.utils.security import get_current_user
 
-from .request_http import to_http
 from .request_view import request_view, request_views
 
 request_router = APIRouter()
@@ -36,12 +34,9 @@ async def open_request(
     buyer_request_service: BuyerRequestService = Depends(get_buyer_request_service),
     current_user=Depends(get_current_user),
 ):
-    try:
-        opened = await buyer_request_service.open(
-            str(current_user.id), body.model_dump(exclude_unset=True)
-        )
-    except SupplierError as error:
-        raise to_http(error)
+    opened = await buyer_request_service.open(
+        str(current_user.id), body.model_dump(exclude_unset=True)
+    )
     return request_view(opened)
 
 
@@ -70,10 +65,7 @@ async def close_request(
     buyer_request_service: BuyerRequestService = Depends(get_buyer_request_service),
     current_user=Depends(get_current_user),
 ):
-    try:
-        closed = await buyer_request_service.close(str(current_user.id), request_id)
-    except SupplierError as error:
-        raise to_http(error)
+    closed = await buyer_request_service.close(str(current_user.id), request_id)
     return request_view(closed)
 
 
@@ -85,12 +77,9 @@ async def respond(
     importer=Depends(IMPORTER),
 ):
     """Идемпотентно: один отклик на поставщика, повторный вызов правит свой."""
-    try:
-        answered, dialog, said = await buyer_request_service.respond(
-            str(importer.id), request_id, body.model_dump()
-        )
-    except SupplierError as error:
-        raise to_http(error)
+    answered, dialog, said = await buyer_request_service.respond(
+        str(importer.id), request_id, body.model_dump()
+    )
 
     # Автор заявки читает отклик в переписке, а не в списке заявок: если он смотрит на
     # чаты прямо сейчас, строка должна прийти без перезагрузки.
@@ -107,7 +96,4 @@ async def read_responses(
     buyer_request_service: BuyerRequestService = Depends(get_buyer_request_service),
     current_user=Depends(get_current_user),
 ):
-    try:
-        return await buyer_request_service.responses_for(str(current_user.id), request_id)
-    except SupplierError as error:
-        raise to_http(error)
+    return await buyer_request_service.responses_for(str(current_user.id), request_id)

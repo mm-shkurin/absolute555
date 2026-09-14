@@ -14,15 +14,13 @@ from app.features.importing.schemas.supplier import (
     SupplierQueue,
     SupplierRejection,
 )
-from app.features.importing.services.supplier_errors import SupplierError
 from app.features.importing.services.supplier_cover import SupplierCoverService
 from app.features.importing.services.supplier_service import SupplierProfileService
-from app.shared.http.image_upload import image_upload
+from app.features.listing.api.image_upload import image_upload
 from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 
-from .supplier_http import to_http
 
 supplier_router = APIRouter()
 
@@ -44,18 +42,12 @@ async def edit_my_profile(
     fields = update.model_dump(exclude_unset=True)
     if not fields:
         raise ValidationError("No data to update", code="EMPTY_PATCH")
-    try:
-        return await supplier_profile_service.edit(str(importer.id), fields)
-    except SupplierError as error:
-        raise to_http(error)
+    return await supplier_profile_service.edit(str(importer.id), fields)
 
 
 @supplier_router.post("/me/submit", response_model=SupplierOwnProfileResponse)
 async def submit_my_profile(supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service), importer=Depends(IMPORTER)):
-    try:
-        return await supplier_profile_service.submit(str(importer.id))
-    except SupplierError as error:
-        raise to_http(error)
+    return await supplier_profile_service.submit(str(importer.id))
 
 
 @supplier_router.put("/me/cover", response_model=SupplierOwnProfileResponse)
@@ -92,10 +84,7 @@ async def list_storefronts(
 @supplier_router.get("/{user_id}", response_model=SupplierProfileResponse)
 async def read_public_profile(user_id: str, supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service)):
     """Публичная витрина: гость читает опубликованный профиль, остальные — 404."""
-    try:
-        return await supplier_profile_service.published(user_id)
-    except SupplierError as error:
-        raise to_http(error)
+    return await supplier_profile_service.published(user_id)
 
 
 moderation_supplier_router = APIRouter()
@@ -111,10 +100,7 @@ async def read_queue(supplier_profile_service: SupplierProfileService = Depends(
     "/suppliers/{user_id}/approve", response_model=SupplierOwnProfileResponse
 )
 async def approve(user_id: str, supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service), moderator=Depends(MODERATOR)):
-    try:
-        return await supplier_profile_service.approve(user_id)
-    except SupplierError as error:
-        raise to_http(error)
+    return await supplier_profile_service.approve(user_id)
 
 
 @moderation_supplier_router.post(
@@ -126,7 +112,4 @@ async def reject(
     supplier_profile_service: SupplierProfileService = Depends(get_supplier_profile_service),
     moderator=Depends(MODERATOR),
 ):
-    try:
-        return await supplier_profile_service.reject(user_id, rejection.reason)
-    except SupplierError as error:
-        raise to_http(error)
+    return await supplier_profile_service.reject(user_id, rejection.reason)
