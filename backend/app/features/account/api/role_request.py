@@ -8,17 +8,14 @@ from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Query, status
-from app.features.account.deps import get_role_request_service
-from app.features.account.services.role_request_service import RoleRequestService
 
-from app.features.account.api.role_http import to_http
+from app.features.account.deps import get_role_request_service
 from app.features.account.schemas.role import (
     RoleRequestCreate,
     RoleRequestListResponse,
     RoleRequestResponse,
     RoleRequestUpdate,
 )
-from app.features.account.services.role_errors import RoleRequestError
 from app.features.account.services.role_request_service import (
     RoleRequestService,
     RoleRequestStatus,
@@ -41,12 +38,7 @@ async def create_role_request(
     role_request_service: RoleRequestService = Depends(get_role_request_service),
 ):
     """Гость заявок не подаёт: у него нет ни профиля, ни того, что роль открывает."""
-    try:
-        role_request = await role_request_service.create_role_request(
-            current_user.id, request_data
-        )
-    except RoleRequestError as error:
-        raise to_http(error)
+    role_request = await role_request_service.create_role_request(current_user.id, request_data)
     return RoleRequestResponse.from_orm(role_request)
 
 
@@ -88,8 +80,5 @@ async def decide_role_request(
     role_request_service: RoleRequestService = Depends(get_role_request_service),
 ):
     """Одобрение выдаёт роль в той же транзакции, что меняет статус заявки."""
-    try:
-        role_request = await role_request_service.decide(request_id, current_user, update_data)
-    except RoleRequestError as error:
-        raise to_http(error)
+    role_request = await role_request_service.decide(request_id, current_user, update_data)
     return RoleRequestResponse.from_orm(role_request)

@@ -8,6 +8,7 @@ from datetime import datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import ValidationError
 from app.features.account.models.users import Users
 from app.features.listing.services.photo_image import require_image
 from app.shared.storage.s3_service import s3_service
@@ -15,8 +16,10 @@ from app.shared.storage.s3_service import s3_service
 NAME_LIMIT = 60
 
 
-class NameNotAllowed(Exception):
+class NameNotAllowed(ValidationError):
     """Имя пустое после обрезки пробелов или длиннее допустимого."""
+
+    default_code = "NAME_NOT_ALLOWED"
 
 
 class ProfileService:

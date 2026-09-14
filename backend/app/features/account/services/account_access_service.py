@@ -12,6 +12,7 @@ from uuid import UUID
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.exceptions import AuthorizationError, ConflictError, ResourceNotFoundError
 from app.features.account.models.account_audit import (
     BLOCKED,
     ROLE_CHANGED,
@@ -26,16 +27,20 @@ from app.permissions.roles import UserRole
 PROTECTED_FROM_MODERATOR = {UserRole.MANAGER.value, UserRole.ADMIN.value}
 
 
-class AccessRefused(Exception):
+class AccessRefused(AuthorizationError):
     """Действие запрещено этому исполнителю."""
 
 
-class AccessConflict(Exception):
+class AccessConflict(ConflictError):
     """Доступ уже в том состоянии, которого просят, или цель — сам исполнитель."""
 
+    default_code = "ACCESS_UNCHANGED"
 
-class AccountMissing(Exception):
+
+class AccountMissing(ResourceNotFoundError):
     """Такой учётной записи нет."""
+
+    default_code = "USER_NOT_FOUND"
 
 
 class AccountAccessService:

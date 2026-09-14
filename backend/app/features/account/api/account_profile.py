@@ -1,17 +1,14 @@
 """Свой профиль: имя, фотография, удаление.
 
 Отдельно от `user.py` — тот про чтение профиля и наследие входа через провайдеров, здесь
-про то, что человек меняет сам. Роутер решает только статус: правила живут в сервисе.
+про то, что человек меняет сам.
 """
 
 from fastapi import APIRouter, Depends, File, UploadFile, status
 from app.features.account.deps import get_profile_service
-from app.features.account.services.profile_service import ProfileService
-
-from app.core.exceptions import ValidationError
 from app.features.account.schemas.profile import Profile, ProfilePatch
-from app.features.account.services.profile_service import NameNotAllowed, ProfileService
-from app.shared.http.image_upload import image_upload
+from app.features.account.services.profile_service import ProfileService
+from app.features.listing.api.image_upload import image_upload
 from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import CurrentUser
 
@@ -27,11 +24,7 @@ async def rename(
     profile_service: ProfileService = Depends(get_profile_service),
 ):
     """Своё имя перекрывает имя провайдера; пустая строка возвращает провайдерское."""
-    try:
-        renamed = await profile_service.rename(current_user, body.name)
-    except NameNotAllowed as error:
-        raise ValidationError(str(error), code="NAME_NOT_ALLOWED")
-    return profile_view(renamed)
+    return profile_view(await profile_service.rename(current_user, body.name))
 
 
 @profile_router.put("/avatar", response_model=Profile)
