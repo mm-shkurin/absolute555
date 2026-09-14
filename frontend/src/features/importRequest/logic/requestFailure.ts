@@ -12,8 +12,5 @@ export function requestFailureText(error: unknown): string {
     const count = typeof limit === 'number' ? limit : 3
     return `Открытых заявок уже ${count}. Закройте одну — и заведите новую.`
   }
-  if (failure.errorCode === 'REQUEST_CLOSED') {
-    return 'Заявка закрыта — откликов она больше не принимает.'
-  }
   return failureText(error)
 }

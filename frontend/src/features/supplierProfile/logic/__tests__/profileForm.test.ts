@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { EMPTY_FORM, missingForSubmit, toForm, toUpdate } from '../profileForm'
-import { isEditable, profileFailureText } from '../profileStatus'
+import { isEditable } from '../profileStatus'
+import { profileFailureText } from '../profileFailure'
 import type { SupplierProfileWire } from '../../../../shared/api/backend/supplierContract'
 
 const wire: SupplierProfileWire = {
@@ -89,7 +90,8 @@ describe('правка опубликованной витрины', () => {
     }
     expect(toForm(published).terms).toBe('Новые условия')
     expect(shownStatus(published)).toBe('pending')
-    expect(shownStatus({ ...published, pending_changes: null, revision_status: null })).toBe('published')
+    expect(shownStatus({ ...published, pending_changes: null, revision_status: null })).toBe(
+      'published',
+    )
   })
 })
-
