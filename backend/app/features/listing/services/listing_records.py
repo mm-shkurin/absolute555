@@ -2,6 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
 from sqlalchemy.orm import selectinload
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
+from app.features.listing.services.listing_errors import ListingNotFound
 
 from typing import List, Optional
 from app.shared.storage.s3_service import s3_service
@@ -54,7 +55,7 @@ class SaleCarService:
     async def delete_sale_car(self, sale_car_id: str) -> bool:
         sale_car = await self.get_sale_car_by_id(sale_car_id)
         if not sale_car:
-            raise ValueError("Sale car not found")
+            raise ListingNotFound(sale_car_id)
 
         try:
             await self.webhooks.send_tg_webhook_delete(sale_car_id)
