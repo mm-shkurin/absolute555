@@ -1,4 +1,5 @@
 from typing import Optional
+from app.core.config_getters import get_admin_settings
 from uuid import UUID
 from fastapi import APIRouter, Depends, Query
 from app.shared.http.paging import page_size as page_size_query
@@ -30,7 +31,7 @@ async def get_all_users(
     blocked: Optional[bool] = Query(None, description="Только закрытые или только открытые"),
     deleted: Optional[bool] = Query(None, description="Только ушедшие или только живые"),
     page: int = Query(1, ge=1),
-    page_size: int = Depends(page_size_query(most=100, name="page_size")),
+    page_size: int = Depends(page_size_query(most=get_admin_settings().admin_max_page_size, name="page_size")),
     current_user=Depends(require_permission(Permission.VIEW_USERS)),
     people_service: PeopleService = Depends(get_people_service),
 ):

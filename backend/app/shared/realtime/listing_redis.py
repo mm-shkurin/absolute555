@@ -10,7 +10,10 @@ from loguru import logger
 from app.shared.redis_client import make_redis_client
 
 
-def get_redis_message(pubsub, timeout=0.1):
+POLL_SECONDS = 0.1
+
+
+def get_redis_message(pubsub, timeout=POLL_SECONDS):
     """Blocking read, run in an executor: redis-py's pubsub has no async client here."""
     return pubsub.get_message(timeout=timeout)
 

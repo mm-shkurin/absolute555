@@ -17,6 +17,9 @@ from app.features.moderation.models.complaint import Complaint
 
 
 
+DEFAULT_PAGE_SIZE = 20
+
+
 class PeopleService:
     def __init__(self, db: AsyncSession):
         self.db = db
@@ -28,7 +31,7 @@ class PeopleService:
         blocked: Optional[bool] = None,
         deleted: Optional[bool] = None,
         page: int = 1,
-        page_size: int = 20,
+        page_size: int = DEFAULT_PAGE_SIZE,
     ) -> Tuple[List[Users], int, int, int]:
         page = max(page, 1)
         page_size = min(max(page_size, 1), get_admin_settings().admin_max_page_size)

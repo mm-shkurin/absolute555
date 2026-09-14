@@ -23,6 +23,7 @@ from app.shared.realtime.listing_redis import (
 from app.shared.realtime.manager import sse_manager
 
 HEARTBEAT_SECONDS = 30.0
+RETRY_PAUSE_SECONDS = 0.1
 
 
 def _frame(payload: dict) -> str:
@@ -64,7 +65,7 @@ async def _relay(sale_car_id: str, queue: asyncio.Queue, pubsub):
             raise
         except Exception as e:  # noqa: BLE001 - one bad frame must not end the stream
             logger.error(f"Error in message loop for sale_car_id={sale_car_id}: {e}")
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(RETRY_PAUSE_SECONDS)
 
 
 async def listing_events(sale_car_id: str, held_status: Callable[[str], Awaitable[str]]):

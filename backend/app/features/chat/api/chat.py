@@ -29,6 +29,11 @@ from app.features.auth.deps import get_current_user
 
 from app.features.chat.api.chat_view import dialog_view, message_view
 
+MESSAGES_PER_PAGE = 50
+MESSAGES_PER_PAGE_MAX = 100
+# Application close codes live in 4000-4999; 4403 mirrors HTTP 403.
+CLOSE_UNAUTHORIZED = 4403
+
 chat_router = APIRouter()
 
 
@@ -83,7 +88,7 @@ async def unread_badge(
 async def read_messages(
     dialog_id: str,
     page: int = Query(default=1, ge=1),
-    size: int = Depends(page_size_query(default=50, most=100)),
+    size: int = Depends(page_size_query(default=MESSAGES_PER_PAGE, most=MESSAGES_PER_PAGE_MAX)),
     reader: ChatReader = Depends(get_chat_reader),
     chat_service: ChatService = Depends(get_chat_service),
     current_user=Depends(get_current_user),
@@ -148,7 +153,7 @@ async def chat_socket(socket: WebSocket, token: str = Query(default="")):
     """
     listener = await listener_of(token)
     if listener is None:
-        await socket.close(code=4403)
+        await socket.close(code=CLOSE_UNAUTHORIZED)
         return
 
     await socket.accept()

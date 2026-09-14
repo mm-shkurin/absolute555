@@ -22,6 +22,10 @@ from app.features.importing.services.request_errors import (
 )
 
 
+# A buyer's own requests come back whole; a hundred is far past what one person files.
+OWN_REQUESTS_LIMIT = 100
+
+
 class BuyerRequestService:
     def __init__(self, db: AsyncSession, chat):
         self.db = db
@@ -144,7 +148,7 @@ class BuyerRequestService:
         )
         return found.scalar_one_or_none()
 
-    async def _page(self, condition, page: int = 1, size: int = 100) -> List[BuyerRequest]:
+    async def _page(self, condition, page: int = 1, size: int = OWN_REQUESTS_LIMIT) -> List[BuyerRequest]:
         found = await self.db.execute(
             select(BuyerRequest)
             .where(condition)

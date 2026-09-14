@@ -3,9 +3,10 @@
 from fastapi import Query
 
 DEFAULT_PAGE_SIZE = 20
+MAX_PAGE_SIZE = 60
 
 
-def page_size(default: int = DEFAULT_PAGE_SIZE, most: int = 60, name: str = "size"):
+def page_size(default: int = DEFAULT_PAGE_SIZE, most: int = MAX_PAGE_SIZE, name: str = "size"):
     """A dependency reading the page size, bounded to 1..`most`, under query name `name`."""
 
     def dependency(value: int = Query(default, ge=1, le=most, alias=name)) -> int:
