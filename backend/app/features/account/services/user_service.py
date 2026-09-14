@@ -87,11 +87,7 @@ class UserService:
     async def check_guest_limits(self, user_id: UUID) -> dict[str, bool]:
         """How many more listings this user may create.
 
-        Was `guest_limits`, and nothing could call it: the two call sites in
-        permissions/dependencies.py ask for `check_guest_limits`, and the body read
-        `user_id` while the parameter was named `id` and counted a `Car` class that was
-        never imported. It counted garage cars and spare parts, both of which went with
-        story 1; a guest's one allowed object is now the one listing they may publish.
+        A guest's one allowed object is the one listing they may publish.
         """
         result = await self.db.execute(
             select(Users).where(Users.id == user_id)

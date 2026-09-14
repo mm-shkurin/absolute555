@@ -149,8 +149,8 @@ class ListingLifecycleService:
         )
         missing = [name for name in required if getattr(listing, name) in (None, "")]
         if len(listing.photos or []) < get_photo_settings().min_photos_to_submit:
-            # One photograph is nearly useless to a buyer, so the gate asks for three
-            # (story 5). It reports the same "photos" either way: the wizard highlights a
+            # One photograph is nearly useless to a buyer, so the gate asks for three.
+            # It reports the same "photos" either way: the wizard highlights a
             # step, not a count.
             missing.append("photos")
         return missing

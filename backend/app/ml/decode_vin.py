@@ -66,7 +66,7 @@ def _decoded(fields: dict) -> dict:
         "mark": fields.get("mark"),
         "model": fields.get("model"),
         "year": fields.get("year"),
-        # Коробки в СТС нет вовсе — прежний промпт угадывал её по модели автомобиля.
+        # Коробки в СТС нет вовсе: угадывать её по модели автомобиля нельзя.
         "transmission": None,
         "engine_power": fields.get("power"),
     }

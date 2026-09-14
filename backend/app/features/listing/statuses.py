@@ -71,8 +71,8 @@ class SaleCarStatus(str, PyEnum):
 ALLOWED_TRANSITIONS: dict[str, frozenset[str]] = {
     SaleCarStatus.DRAFT: frozenset({SaleCarStatus.MODERATION}),
     SaleCarStatus.MODERATION: frozenset({SaleCarStatus.PUBLISHED, SaleCarStatus.REJECTED}),
-    # published -> rejected is the moderator taking a listing down over complaints
-    # (story 9). Not withdrawn: that reads as the seller's own doing, and they would
+    # published -> rejected is the moderator taking a listing down over complaints.
+    # Not withdrawn: that reads as the seller's own doing, and they would
     # never learn what to correct.
     SaleCarStatus.PUBLISHED: frozenset(
         {SaleCarStatus.WITHDRAWN, SaleCarStatus.SOLD, SaleCarStatus.REJECTED}

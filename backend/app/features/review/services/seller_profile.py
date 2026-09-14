@@ -2,7 +2,7 @@
 
 Open to a visitor who has not signed in. The rating is part of deciding whether to buy,
 and a wall on that screen would stop the reader coming from the feed. The phone number
-is not here: it stays behind the reveal on the card (story 8).
+is not here: it stays behind the reveal on the card.
 """
 
 from typing import List, Optional, Tuple

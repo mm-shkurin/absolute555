@@ -15,8 +15,8 @@ class Offer(Base):
     sale_car_id = Column(UUID(as_uuid=True), ForeignKey("sale_cars.sale_car_id"),nullable=False)
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     price = Column(Float,nullable=False)
-    # A plain string rather than a database enum: the set grew from three values to six
-    # in story 10, and an enum type would need its own migration each time it does.
+    # A plain string rather than a database enum: the set of values changes,
+    # and an enum type would need its own migration each time it does.
     status = Column(String, default=OfferStatus.PENDING.value, nullable=False, index=True)
 
     # When this offer stops standing. Written at creation rather than derived at read

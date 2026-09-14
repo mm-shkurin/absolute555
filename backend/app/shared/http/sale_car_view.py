@@ -120,7 +120,7 @@ async def to_view(listing, viewer=None) -> dict:
 
     The phone number is the one field that depends on who is asking: it is the seller's
     personal number, and a payload carrying it to everyone is one scrape away from every
-    number on the platform (story 8).
+    number on the platform.
     """
     view = {name: getattr(listing, name) for name in _FIELDS}
     view["brand"] = listing.brand.name_ru if listing.brand else None

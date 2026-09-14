@@ -1,10 +1,4 @@
-"""The live stream of a listing's background reading.
-
-Two debug endpoints stood beside this one: POST /task/test-update, which wrote any task
-status onto any listing with no authentication at all, and GET /task/test-page, an HTML
-harness for it. Story 6 removed both -- the first was a write to a stranger's listing
-wearing the word "test".
-"""
+"""The live stream of a listing's background reading."""
 
 from fastapi import APIRouter, Depends
 from app.features.listing.services.listing_lifecycle import ListingLifecycleService

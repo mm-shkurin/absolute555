@@ -31,9 +31,6 @@ class SaleCars(Base):
     # Make and model resolved against the catalogue, null until they resolve. A make or
     # model the catalogue does not know does not stop a listing — it simply does not
     # appear under that filter until a moderator resolves the spelling (CatalogResolver).
-    # Story 1 moved these off ChromaDB, where the row held only a document id and so
-    # nothing could filter or sort on them; story 3 turned the two name columns into
-    # these keys.
     brand_id = Column(UUID(as_uuid=True), ForeignKey("brands.brand_id", ondelete="SET NULL"), nullable=True, index=True)
     model_id = Column(UUID(as_uuid=True), ForeignKey("car_models.model_id", ondelete="SET NULL"), nullable=True, index=True)
 

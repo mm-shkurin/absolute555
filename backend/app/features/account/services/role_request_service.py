@@ -1,6 +1,6 @@
 """Role requests: a user asking to become a manager or an importer.
 
-Split out of RoleService when that file passed the 200-line limit. The two are separate
+Kept apart from RoleService because they are separate
 subjects -- one is the role a user has, the other is the application to change it -- and
 the router constructs whichever it needs.
 """

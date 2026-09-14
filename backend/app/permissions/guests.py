@@ -75,8 +75,7 @@ async def check_guest_car_limit(
     if not current_user.is_guest:
         return current_user
     
-    # Counts listings, not garage entries: the Cars model went with story 1, and a
-    # guest's one allowed object is now the one listing they may publish.
+    # A guest's one allowed object is the one listing they may publish.
     result = await db.execute(
         select(func.count()).where(SaleCars.user_id == current_user.id)
     )

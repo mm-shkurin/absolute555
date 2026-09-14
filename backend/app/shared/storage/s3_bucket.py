@@ -1,6 +1,6 @@
 """Getting to the bucket: the client, the bucket itself, and object keys.
 
-Split out of S3Service when that file passed the 200-line limit. None of it needs the
+None of it needs the
 service's state, and the public-read policy is the kind of thing worth finding in one
 place rather than inside a constructor.
 """

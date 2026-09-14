@@ -172,7 +172,7 @@ class OfferService(OfferListingReader):
 
         # The deal counter moves here rather than being counted per read: the number sits
         # beside the rating on every card, and an accepted offer is the only thing that
-        # moves it (story 12).
+        # moves it.
         seller = await self.db.get(Users, car.user_id)
         if seller is not None:
             seller.deals_count = (seller.deals_count or 0) + 1
