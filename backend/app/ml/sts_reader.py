@@ -52,6 +52,10 @@ def combine_number(vision_value, ocr_value) -> dict:
         # свидетельствах он предлагал именно их.
         return {"value": vision, "kind": NumberKind.BODY, "agreed": not ocr_ok, "source": "vision"}
 
+    return _by_valid_readings(vision, vision_kind, vision_ok, ocr, ocr_kind, ocr_ok)
+
+
+def _by_valid_readings(vision, vision_kind, vision_ok, ocr, ocr_kind, ocr_ok) -> dict:
     if vision_ok and ocr_ok:
         if vision == ocr:
             return {"value": vision, "kind": vision_kind, "agreed": True, "source": "both"}
@@ -61,7 +65,6 @@ def combine_number(vision_value, ocr_value) -> dict:
         # серию бланка и обрывки строк документа. Его слово оставлено подтверждением, а
         # не решением: совпали — номер принят молча, разошлись — подтверждает продавец.
         return {"value": vision, "kind": vision_kind, "agreed": False, "source": "vision"}
-
     if vision_ok:
         return {"value": vision, "kind": vision_kind, "agreed": False, "source": "vision"}
     if ocr_ok:
@@ -81,30 +84,36 @@ def read_document(
     не срывается. Так конвейер переживает выключенный tesseract и наоборот.
     """
     fields = dict(vision(body))
-
-    ocr_number = None
-    if second_opinion is not None:
-        try:
-            ocr_number = second_opinion(body)
-        except Exception as error:
-            # Второй читатель — уточнение, а не условие. Его падение не должно уносить
-            # уже прочитанный документ.
-            logger.warning(f"second opinion on the number failed: {error}")
-
-    verdict = combine_number(fields.get("vin"), ocr_number)
+    verdict = combine_number(fields.get("vin"), _ask_second_opinion(second_opinion, body))
     if verdict["kind"] in (NumberKind.ABSENT, NumberKind.UNREADABLE):
-        # В строке VIN пусто или написано «ОТСУТСТВУЕТ» — у японской машины номер стоит
-        # строкой ниже, в «Кузов (кабина, прицеп) №». Это и есть номер этой машины.
-        from_body = classify(fields.get("body_number"))
-        if from_body is NumberKind.BODY:
-            verdict = {
-                "value": normalise(fields["body_number"]),
-                "kind": NumberKind.BODY,
-                "agreed": True,
-                "source": "vision",
-            }
+        verdict = _body_number_verdict(fields) or verdict
     fields["vin"] = verdict["value"] if verdict["kind"] == NumberKind.VIN else None
     fields["body_number"] = verdict["value"] if verdict["kind"] == NumberKind.BODY else None
     fields["number_kind"] = verdict["kind"].value
     fields["number_agreed"] = verdict["agreed"]
     return fields
+
+
+def _ask_second_opinion(second_opinion, body: bytes):
+    if second_opinion is None:
+        return None
+    try:
+        return second_opinion(body)
+    except Exception as error:
+        # Второй читатель — уточнение, а не условие. Его падение не должно уносить
+        # уже прочитанный документ.
+        logger.warning(f"second opinion on the number failed: {error}")
+        return None
+
+
+def _body_number_verdict(fields: dict) -> Optional[dict]:
+    # В строке VIN пусто или написано «ОТСУТСТВУЕТ» — у японской машины номер стоит
+    # строкой ниже, в «Кузов (кабина, прицеп) №». Это и есть номер этой машины.
+    if classify(fields.get("body_number")) is not NumberKind.BODY:
+        return None
+    return {
+        "value": normalise(fields["body_number"]),
+        "kind": NumberKind.BODY,
+        "agreed": True,
+        "source": "vision",
+    }

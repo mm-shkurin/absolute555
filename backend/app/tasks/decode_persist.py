@@ -32,6 +32,13 @@ def apply_decoded(sale_car: SaleCars, result: dict) -> None:
     if result.get("body_number"):
         sale_car.body_number = result["body_number"]
 
+    _copy_numbers(sale_car, result)
+
+    if result.get("transmission"):
+        sale_car.transmission = result["transmission"]
+
+
+def _copy_numbers(sale_car: SaleCars, result: dict) -> None:
     # year and engine_power come back as numbers most of the time and as strings the
     # rest, depending on whether the model obeyed the prompt. int() on a stray "2018 г."
     # would kill the task after the expensive part already succeeded.
@@ -43,9 +50,6 @@ def apply_decoded(sale_car: SaleCars, result: dict) -> None:
             setattr(sale_car, field, int(raw))
         except (TypeError, ValueError):
             logger.warning(f"a reader returned a non-numeric {field}: {raw!r}")
-
-    if result.get("transmission"):
-        sale_car.transmission = result["transmission"]
 
 
 async def persist_decoded(sale_car_id: str, result: dict) -> bool:

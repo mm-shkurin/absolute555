@@ -52,6 +52,10 @@ async def decode_vin(file_bytes: bytes, car_id: str = None) -> dict:
     if not any(fields.get(name) for name in ("vin", "body_number", "mark", "model")):
         return {"error": "VIN not found", "reason": "документ не распознан"}
 
+    return _decoded(fields)
+
+
+def _decoded(fields: dict) -> dict:
     return {
         "vin": fields.get("vin"),
         # Номер кузова японской машины: у неё VIN не выдавали вовсе, и пустое поле здесь

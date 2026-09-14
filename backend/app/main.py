@@ -36,6 +36,16 @@ def add_cors(app: FastAPI) -> None:
         )
 
 
+def add_probes(app: FastAPI) -> None:
+    @app.get("/")
+    def read_root():
+        return {"message": "Welcome to API Absolute"}
+
+    @app.get("/health")
+    async def health_check():
+        return {"status": "ok"}
+
+
 def create_app() -> FastAPI:
     settings = AppSettings()
     app = FastAPI(
@@ -53,14 +63,7 @@ def create_app() -> FastAPI:
     # client branches on a code instead of parsing prose. Registered before the routers
     # so nothing can answer in another shape.
     register_exception_handlers(app)
-
-    @app.get("/")
-    def read_root():
-        return {"message": "Welcome to API Absolute"}
-
-    @app.get("/health")
-    async def health_check():
-        return {"status": "ok"}
+    add_probes(app)
 
     # /api/v1 is the prefix ProductSpecification/technology.md declares and the frontend
     # nginx proxies. OAuth redirect URIs registered with Yandex must match it.

@@ -50,51 +50,44 @@ async def verify_token(token:str, secret_key:str, algorithm:str):
         raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
 async def refresh_access_token(refresh_token: str, db: AsyncSession | None = None):
-    from app.features.auth.services.token_revocation import is_revoked
-
-    if await is_revoked(refresh_token):
+    if await _is_revoked(refresh_token):
         # Вышедший не обновляется: иначе «выйти» означало бы «выйти до конца часа».
         raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
     try:
-        refresh_token_payload = await verify_token(
-            refresh_token,
-            jwt_settings.refresh_token_secret_key,
-            jwt_settings.algorithm
+        payload = await verify_token(
+            refresh_token, jwt_settings.refresh_token_secret_key, jwt_settings.algorithm
         )
-        if refresh_token_payload.get("type") != "refresh":
+        if payload.get("type") != "refresh":
             raise AuthenticationError("Invalid token type", code="TOKEN_WRONG_TYPE")
 
         # Подписи мало: она говорит, что токен наш, и молчит о том, жив ли человек.
         # Без этой проверки ушедшая запись обновлялась бесконечно — вход был закрыт
         # только для access-токена, а рядом стоял механизм выдачи новых.
         if db is not None:
-            await _still_allowed(db, refresh_token_payload.get("id"))
+            await _still_allowed(db, payload.get("id"))
 
-        access_token_payload = {
-            "id": refresh_token_payload.get("id"),
-        }
-
-        new_access_token = await create_access_token(access_token_payload)
-        return new_access_token
-
+        return await create_access_token({"id": payload.get("id")})
     except AuthenticationError:
         raise
     except Exception:
         raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
 
-async def _still_allowed(db: AsyncSession, user_id) -> None:
+async def _still_allowed(db: AsyncSession, user_id, code: str = "TOKEN_INVALID") -> Users:
     """Человек за токеном: существует, не ушёл и не закрыт."""
     found = await db.execute(select(Users).where(Users.id == user_id))
     user = found.scalar_one_or_none()
 
     if user is None or user.deleted_at is not None:
-        raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
+        # Удалённая запись неотличима от несуществующей: обратной дороги нет, и ответ,
+        # приглашающий написать в поддержку, обещал бы её.
+        raise AuthenticationError("Could not validate credentials", code=code)
 
     if user.is_blocked:
-        # Тот же ответ, что и на обычном запросе: 403, потому что токен подлинный, а
-        # закрыта учётная запись. 401 отправил бы клиента обновлять токен по кругу.
+        # 403, а не 401: токен подлинный, закрыта учётная запись. На 401 клиент пошёл
+        # бы обновлять исправный токен по кругу и показал бы сбой входа вместо закрытой двери.
         raise AuthorizationError(user.blocked_reason or "Доступ закрыт", code="USER_BLOCKED")
+    return user
 
 
 async def _is_revoked(token: str) -> bool:
@@ -104,52 +97,42 @@ async def _is_revoked(token: str) -> bool:
     return await is_revoked(token)
 
 
-async def get_current_user(request: Request, token: str = Depends(auth_scheme), db: AsyncSession = Depends(get_db)):
-    credentials_exception = AuthenticationError(
-        "Could not validate credentials",
-        code="CREDENTIALS_INVALID",
-    )
-    
+def _credentials_invalid() -> AuthenticationError:
+    return AuthenticationError("Could not validate credentials", code="CREDENTIALS_INVALID")
+
+
+def _bearer(request: Request, token: str | None) -> str:
+    token = token or request.cookies.get(cookie_settings.access_cookie_name)
     if not token:
-        # Try to read access token from HttpOnly cookie
-        token = request.cookies.get(cookie_settings.access_cookie_name)
-        if not token:
-            raise credentials_exception
-    
+        raise _credentials_invalid()
+    return token[7:] if token.startswith("Bearer ") else token
+
+
+async def _access_subject(token: str):
+    """The user id an access token names.
+
+    An expired token keeps TOKEN_EXPIRED so the client knows to refresh; every other
+    defect of the token answers CREDENTIALS_INVALID.
+    """
     try:
-        if token.startswith("Bearer "):
-            token = token[7:]
-        
         payload = await verify_token(token, jwt_settings.secret_key, jwt_settings.algorithm)
-        if await _is_revoked(token):
-            raise credentials_exception
-        id: str = payload.get("id")
-        if id is None:
-            raise credentials_exception
-        if payload.get("type") != "access":
-            raise credentials_exception
-    except Exception:
-        raise credentials_exception
-    
-    result = await db.execute(select(Users).where(Users.id == id))
-    user = result.scalar_one_or_none()
-    
-    if user is None or user.deleted_at is not None:
-        # Удалённая запись неотличима от несуществующей: обратной дороги нет, и ответ,
-        # приглашающий написать в поддержку, обещал бы её.
-        raise credentials_exception
+        revoked = await _is_revoked(token)
+    except AuthenticationError as error:
+        if error.code == "TOKEN_EXPIRED":
+            raise
+        raise _credentials_invalid() from error
+    except Exception as error:
+        raise _credentials_invalid() from error
+    if revoked or payload.get("id") is None or payload.get("type") != "access":
+        raise _credentials_invalid()
+    return payload.get("id")
 
-    if user.is_blocked:
-        # 403, а не 401: токен подлинный, дело не в нём. На 401 клиент пошёл бы
-        # обновлять исправный токен по кругу и показал бы человеку сбой входа вместо
-        # закрытой двери. Проверка стоит здесь, а не в каждой пишущей ручке: их
-        # полтора десятка, и пропущенная — дыра, которую находит нарушитель.
-        raise AuthorizationError(
-            user.blocked_reason or "Доступ закрыт",
-            code="USER_BLOCKED",
-        )
 
-    return user
+async def get_current_user(request: Request, token: str = Depends(auth_scheme), db: AsyncSession = Depends(get_db)):
+    # Проверка стоит здесь, а не в каждой пишущей ручке: их полтора десятка, и
+    # пропущенная — дыра, которую находит нарушитель.
+    user_id = await _access_subject(_bearer(request, token))
+    return await _still_allowed(db, user_id, code="CREDENTIALS_INVALID")
 
 
 async def get_current_user_or_none(
