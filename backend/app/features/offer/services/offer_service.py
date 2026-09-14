@@ -4,9 +4,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
 from app.core.config_getters import get_offer_settings
-from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import SaleCarStatus
 from app.features.offer.services.offer_listing import OfferListingReader
-from app.features.offer.models.offer import LIVE, Offer, OfferStatus
+from app.features.offer.models.offer import Offer
+from app.features.offer.domain.statuses import LIVE, OfferStatus
 from app.features.account.models.users import Users
 from app.features.offer.services.offer_errors import (
     DuplicatePendingOffer,

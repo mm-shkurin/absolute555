@@ -9,7 +9,8 @@ import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
+from app.features.listing.models.sale_car import SaleCars
+from app.features.listing.domain.statuses import SaleCarStatus
 from app.features.offer.services.offer_errors import MalformedIdentifier, SaleCarNotFound
 
 

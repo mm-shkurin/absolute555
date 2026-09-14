@@ -12,7 +12,8 @@ from typing import Dict, List, Optional
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.features.offer.models.offer import Offer, OfferStatus
+from app.features.offer.models.offer import Offer
+from app.features.offer.domain.statuses import OfferStatus
 from app.features.review.models.review import EDIT_WINDOW_HOURS, Review
 from app.features.listing.models.sale_car import SaleCars
 from app.features.account.models.users import Users
