@@ -10,13 +10,12 @@ to the model reached whichever of the five somebody remembered.
 
 from typing import Iterable, List, Optional
 
-from app.core.config import PhotoSettings
+from app.core.config_getters import get_photo_settings
 from app.features.account.api.account_view import avatar_url, name_of
 from app.shared.storage.s3_service import s3_service
 
 from .sale_car_thickness_view import thickness_summary
 
-photo_settings = PhotoSettings()
 
 _FIELDS = (
     "sale_car_id",
@@ -145,7 +144,7 @@ def to_gallery(listing) -> dict:
     return {
         "sale_car_id": listing.sale_car_id,
         "photos": [_photo_view(photo) for photo in (listing.photos or [])],
-        "limit": photo_settings.max_photos_per_listing,
+        "limit": get_photo_settings().max_photos_per_listing,
     }
 
 

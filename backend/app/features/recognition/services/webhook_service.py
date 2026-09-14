@@ -1,10 +1,11 @@
 import httpx
 from loguru import logger
-from app.core.config import WebhookSettings
+from app.core.config_getters import get_webhook_settings
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
-webhook_settings = WebhookSettings()
+# The tests patch this name; it is the same object `get_webhook_settings()` returns.
+webhook_settings = get_webhook_settings()
 
 class WebhookService:
     def __init__(self, db: AsyncSession):

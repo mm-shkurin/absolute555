@@ -19,15 +19,13 @@ class SupplierCoverService:
     def __init__(self, db: AsyncSession):
         self.db = db
 
-    async def set(self, user_id: str, body: bytes, content_type: str) -> SupplierProfile:
-        require_image("cover", body)
+    async def set(self, user_id: str, body: bytes) -> SupplierProfile:
+        content_type = require_image("cover", body)
         held = await SupplierProfileService(self.db).mine(user_id)
         if held.revision_status == SupplierStatus.PENDING.value:
             raise ProfileFrozen(SupplierStatus.PENDING.value)
 
-        key = await s3_service.upload_file_get_key_from_bytes(
-            user_id, body, filename="cover", content_type=content_type, folder="storefronts"
-        )
+        key = await s3_service.put_public(user_id, body, content_type, folder="storefronts")
         if held.status == SupplierStatus.PUBLISHED.value:
             previous = (held.pending_changes or {}).get("cover_key")
             # Новый словарь, а не правка на месте: JSONB не замечает изменений внутри.

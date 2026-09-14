@@ -12,7 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.features.listing.models.sale_car import SaleCars
 from app.features.listing.models.thickness import ThicknessMeasurement
-from app.features.listing.panels import BodyPanel, MAX_VALUE_UM, MIN_VALUE_UM, ValueSource
+from app.features.listing.panels import BodyPanel, MIN_VALUE_UM, ValueSource, max_value_um
 from app.features.listing.services.photo_image import require_image
 from app.features.listing.services.object_cleanup import discard_objects
 from app.features.listing.services.thickness_errors import (
@@ -25,7 +25,7 @@ from app.shared.storage.s3_service import s3_service
 
 
 def _within(value) -> bool:
-    return value is not None and MIN_VALUE_UM <= value <= MAX_VALUE_UM
+    return value is not None and MIN_VALUE_UM <= value <= max_value_um()
 
 
 def _chosen_value(panel: BodyPanel, value_um, read):
@@ -128,8 +128,8 @@ class ThicknessMapService:
     @staticmethod
     async def _store(listing: SaleCars, photo: tuple) -> str:
         filename, content_type, body = photo
-        return await s3_service.upload_file_get_key_from_bytes(
-            str(listing.sale_car_id), body, content_type=content_type, folder="thickness"
+        return await s3_service.put_public(
+            str(listing.sale_car_id), body, content_type, folder="thickness"
         )
 
     _discard = staticmethod(discard_objects)

@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, and_
 
-from app.core.config import OfferSettings
+from app.core.config_getters import get_offer_settings
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
 from app.features.offer.services.offer_listing import OfferListingReader
 from app.features.offer.models.offer import LIVE, Offer, OfferStatus
@@ -22,7 +22,6 @@ from app.features.offer.services.offer_errors import (
 from typing import List
 import uuid
 
-offer_settings = OfferSettings()
 
 
 class OfferService(OfferListingReader):
@@ -41,7 +40,7 @@ class OfferService(OfferListingReader):
             sale_car_id=car.sale_car_id,
             price=price,
             status=OfferStatus.PENDING.value,
-            expires_at=datetime.utcnow() + timedelta(hours=offer_settings.offer_life_hours),
+            expires_at=datetime.utcnow() + timedelta(hours=get_offer_settings().offer_life_hours),
         )
         self.db.add(offer)
 

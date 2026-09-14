@@ -17,7 +17,7 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import PhotoSettings
+from app.core.config_getters import get_photo_settings
 from app.features.listing.models.sale_car import (
     ALLOWED_TRANSITIONS,
     MAX_DRAFTS_PER_USER,
@@ -42,7 +42,6 @@ EDITABLE_IN = frozenset({SaleCarStatus.DRAFT, SaleCarStatus.REJECTED})
 # reads the text, never these, so freezing them would leave the seller of a published
 # listing unable to close a phone number or a chat.
 VISIBILITY_FIELDS = frozenset({"phone_visible", "chat_allowed", "offers_visible"})
-MIN_PHOTOS_TO_SUBMIT = PhotoSettings().min_photos_to_submit
 
 
 class ListingLifecycleService:
@@ -149,7 +148,7 @@ class ListingLifecycleService:
             else REQUIRED_TO_SUBMIT
         )
         missing = [name for name in required if getattr(listing, name) in (None, "")]
-        if len(listing.photos or []) < MIN_PHOTOS_TO_SUBMIT:
+        if len(listing.photos or []) < get_photo_settings().min_photos_to_submit:
             # One photograph is nearly useless to a buyer, so the gate asks for three
             # (story 5). It reports the same "photos" either way: the wizard highlights a
             # step, not a count.

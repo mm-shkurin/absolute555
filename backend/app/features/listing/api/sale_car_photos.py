@@ -15,6 +15,7 @@ from app.features.listing.schemas.sale_cars import GalleryResponse, PhotoOrder
 from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_lifecycle import ListingLifecycleService
 from app.features.listing.services.listing_photos import ListingGalleryService
+from app.features.listing.services.photo_image import read_limited
 from app.utils.security import get_current_user
 
 from .listing_http import listing_of, to_http
@@ -36,7 +37,7 @@ async def upload_photos(
 ):
     try:
         listing = await _own_listing(db, sale_car_id, current_user)
-        payload = [(file.filename, file.content_type, await file.read()) for file in files]
+        payload = [(file.filename, file.content_type, await read_limited(file)) for file in files]
         updated = await ListingGalleryService(db).add(listing, payload)
     except ListingError as error:
         raise to_http(error)

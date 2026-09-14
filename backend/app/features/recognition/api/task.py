@@ -26,9 +26,8 @@ async def sse_endpoint(
 ):
     """The reading of one listing's document, to the person it belongs to.
 
-    Until story 11 this answered anyone who could spell an identifier: the stream carries
-    what a private document was read as, and a listing identifier is in every URL its
-    owner has ever shared.
+    Ownership is checked, not just authentication: the stream carries what a private
+    document was read as, and a listing identifier is in every URL its owner has shared.
     """
     await owned_listing(db, sale_car_id, current_user)
 

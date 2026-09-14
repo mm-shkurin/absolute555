@@ -94,9 +94,8 @@ class SaleCars(Base):
     # truth, and the two would disagree the first time a reorder half-applied.
     photos = Column(JSONB, default=list)
 
-    # The СТС scan lives in the closed bucket; the row keeps only its key. It used to be
-    # base64 in this table, which put a document in every dump and in any SELECT * a
-    # developer ran. Cleared once a moderator has decided (story 5).
+    # The СТС scan lives in the closed bucket; the row keeps only its key, so a
+    # document never lands in a dump or in a SELECT *. Cleared once a moderator has decided.
     sts_key = Column(String, nullable=True)
 
     # The outcome of the reading, and who filled the two catalogue fields. task_status is

@@ -11,7 +11,7 @@
 
 from enum import Enum
 
-from app.core.config import ThicknessSettings
+from app.core.config_getters import get_thickness_settings
 
 
 class BodyPanel(str, Enum):
@@ -38,19 +38,19 @@ class PanelStatus(str, Enum):
 
 TOTAL_PANELS = len(BodyPanel)
 
-_thickness = ThicknessSettings()
-REPAINT_FROM_UM = _thickness.repaint_from_um
-FILLER_FROM_UM = _thickness.filler_from_um
-
 # Ноль и отрицательное прибор не показывает.
 MIN_VALUE_UM = 1
-MAX_VALUE_UM = _thickness.max_value_um
+
+
+def max_value_um() -> int:
+    return get_thickness_settings().max_value_um
 
 
 def status_of(value_um: int) -> PanelStatus:
-    if value_um >= FILLER_FROM_UM:
+    thickness = get_thickness_settings()
+    if value_um >= thickness.filler_from_um:
         return PanelStatus.FILLER
-    if value_um >= REPAINT_FROM_UM:
+    if value_um >= thickness.repaint_from_um:
         return PanelStatus.REPAINT
     return PanelStatus.FACTORY
 

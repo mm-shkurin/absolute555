@@ -15,7 +15,7 @@ from typing import List, Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import PhotoSettings
+from app.core.config_getters import get_photo_settings
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
 from app.features.listing.services.listing_errors import ListingFrozen
 from app.features.listing.services.object_cleanup import discard_objects
@@ -28,7 +28,6 @@ from app.features.listing.services.photo_errors import (
 from app.features.listing.services.photo_image import build_preview, require_image
 from app.shared.storage.s3_service import s3_service
 
-photo_settings = PhotoSettings()
 
 EDITABLE_IN = frozenset({SaleCarStatus.DRAFT, SaleCarStatus.REJECTED})
 
@@ -76,9 +75,9 @@ class ListingGalleryService:
 
     @staticmethod
     def _require_room(listing: SaleCars, offered: int, held: int) -> None:
-        if held + offered > photo_settings.max_photos_per_listing:
+        if held + offered > get_photo_settings().max_photos_per_listing:
             raise GalleryLimitReached(
-                limit=photo_settings.max_photos_per_listing, held=held, offered=offered
+                limit=get_photo_settings().max_photos_per_listing, held=held, offered=offered
             )
 
     async def remove(self, listing: SaleCars, photo_id: str) -> SaleCars:
@@ -117,11 +116,11 @@ class ListingGalleryService:
         require_image(filename, body)
 
         listing_id = str(listing.sale_car_id)
-        key = await s3_service.upload_file_get_key_from_bytes(listing_id, body, content_type=content_type)
+        key = await s3_service.put_public(listing_id, body, content_type)
         stored.append(key)
 
-        preview_key = await s3_service.upload_file_get_key_from_bytes(
-            listing_id, build_preview(body), content_type="image/jpeg", folder="previews"
+        preview_key = await s3_service.put_public(
+            listing_id, build_preview(body), "image/jpeg", folder="previews"
         )
         stored.append(preview_key)
 

@@ -6,12 +6,11 @@ is the announcement path; nothing in the request cycle depends on it.
 
 from loguru import logger
 
-from app.core.config import FrontendSettings
+from app.core.config_getters import get_frontend_settings
 from app.features.listing.models.sale_car import SaleCars
 from app.shared.storage.s3_service import s3_service
 from app.features.recognition.services.webhook_service import WebhookService
 
-frontend_settings = FrontendSettings()
 
 
 async def announce_when_ready(db, sale_car: SaleCars) -> bool:
@@ -43,9 +42,8 @@ def to_payload(sale_car: SaleCars) -> dict:
         "description": sale_car.description,
         "photo_count": len(keys),
         "photo_urls": [s3_service.get_public_photo_url(key) for key in keys],
-        "listing_url": f"{str(frontend_settings.frontend_url).rstrip('/')}/cars/{sale_car.sale_car_id}",
-        # The decoded СТС fields used to be fetched from ChromaDB by document id and
-        # nested under a "car_data" key. They are columns now, so they are flat here.
+        "listing_url": f"{str(get_frontend_settings().frontend_url).rstrip('/')}/cars/{sale_car.sale_car_id}",
+        # The decoded СТС fields are columns on the listing, so they are flat here.
         "brand": sale_car.brand.name_ru if sale_car.brand else None,
         "model": sale_car.model.name if sale_car.model else None,
         "year": sale_car.year,

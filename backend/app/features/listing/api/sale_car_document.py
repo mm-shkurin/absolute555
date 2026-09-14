@@ -14,6 +14,7 @@ from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_autofill import ListingAutofillService
 from app.features.listing.services.listing_document import ListingDocumentService
 from app.features.listing.services.listing_lifecycle import ListingLifecycleService
+from app.features.listing.services.photo_image import read_limited, require_image
 from app.utils.security import get_current_user
 
 from .listing_http import listing_of, to_http
@@ -58,9 +59,9 @@ async def attach_document(
     """
     try:
         listing = await listing_of(ListingLifecycleService(db), sale_car_id, current_user)
-        updated = await ListingAutofillService(db).attach_scan(
-            listing, await file.read(), file.content_type or "image/jpeg"
-        )
+        body = await read_limited(file)
+        detected = require_image(file.filename, body)
+        updated = await ListingAutofillService(db).attach_scan(listing, body, detected)
     except ListingError as error:
         raise to_http(error)
     return {"sale_car_id": updated.sale_car_id, "autofill": autofill_view(updated)}

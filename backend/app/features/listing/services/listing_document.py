@@ -11,12 +11,11 @@ from datetime import datetime, timedelta
 from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.config import PhotoSettings
+from app.core.config_getters import get_photo_settings
 from app.features.listing.models.sale_car import SaleCars
 from app.features.listing.services.photo_errors import DocumentNotFound
 from app.shared.storage.s3_service import s3_service
 
-photo_settings = PhotoSettings()
 
 
 class ListingDocumentService:
@@ -37,7 +36,7 @@ class ListingDocumentService:
         if not listing.sts_key:
             raise DocumentNotFound()
 
-        ttl = photo_settings.document_link_ttl_seconds
+        ttl = get_photo_settings().document_link_ttl_seconds
         url = await s3_service.sign_document_url(listing.sts_key, expires_in=ttl)
         return {"url": url, "expires_at": datetime.utcnow() + timedelta(seconds=ttl)}
 
