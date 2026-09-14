@@ -10,12 +10,12 @@ class SSEManager:
 
     def __init__(self):
         self.active_connections: Dict[str,List[asyncio.Queue]] = {}
-        
+
         self.redis_client = make_redis_client()
-        
+
         self.pubsub = self.redis_client.pubsub()
         logger.info("SSE Manager initialized with Redis support")
-        
+
         try:
             self.redis_client.ping()
             logger.info("Redis connection test successful")
@@ -40,7 +40,7 @@ class SSEManager:
 
     async def send_message(self, car_id: str, message: Dict[str, Any]):
         logger.info(f"Attempting to send SSE message to car_id={car_id}")
-        
+
         try:
             channel = f"sse_messages:{car_id}"
             message_json = json.dumps(message)
@@ -48,7 +48,7 @@ class SSEManager:
             logger.info(f"Published SSE message to Redis channel {channel}")
         except (redis.RedisError, TypeError) as e:
             logger.error(f"Error publishing to Redis for car_id={car_id}: {e}")
-        
+
         if car_id in self.active_connections:
             connections = self.active_connections[car_id].copy()
             for queue in connections:

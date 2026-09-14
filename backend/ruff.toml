@@ -4,11 +4,12 @@ line-length = 100
 extend-exclude = ["alembic/versions"]
 
 [lint]
-# Pyflakes, syntax errors, print() calls, bare and blind except clauses.
-select = ["F", "E9", "T20", "E722", "BLE"]
+# Pyflakes, syntax errors, whitespace, print() calls, bare and blind except clauses,
+# bugbear. B008 is off: FastAPI declares dependencies as calls in default arguments.
+select = ["F", "E9", "W", "T20", "E722", "BLE", "B"]
 # F811: tests import shared pytest fixtures by name and receive them as parameters of the
 # same name, which pyflakes reads as a redefinition.
-ignore = ["F811"]
+ignore = ["F811", "B008"]
 
 [format]
 quote-style = "double"

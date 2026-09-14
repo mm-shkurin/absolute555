@@ -24,7 +24,7 @@ async def require_guest_can_create_car(
         return current_user
 
     limits = await user_service.check_guest_limits(current_user.id)
-    
+
     if not limits["can_create_car"]:
         raise AuthorizationError(
             "Guest limit reached: only 1 car allowed. Verify your account to create more.",

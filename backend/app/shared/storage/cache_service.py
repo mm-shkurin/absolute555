@@ -17,15 +17,15 @@ class CacheService:
         except redis.RedisError as e:
             logger.error(f"Failed to connect to Redis for caching: {e}")
             self.redis_client = None
-    
+
     def _get_key(self, prefix: str, document_id: str) -> str:
         return f"cache:{prefix}:{document_id}"
-    
+
     async def get(self, prefix: str, document_id: str) -> Optional[Dict[str, Any]]:
-        
+
         if not self.redis_client:
             return None
-        
+
         try:
             key = self._get_key(prefix, document_id)
             loop = asyncio.get_event_loop()
@@ -38,14 +38,14 @@ class CacheService:
                 return json.loads(cached_data)
         except (redis.RedisError, ValueError, TypeError) as e:
             logger.warning(f"Failed to get from cache: {e}")
-        
+
         return None
-    
+
     async def set(self, prefix: str, document_id: str, data: Dict[str, Any], ttl: Optional[int] = None) -> bool:
-        
+
         if not self.redis_client:
             return False
-        
+
         try:
             key = self._get_key(prefix, document_id)
             ttl = ttl or get_redis_settings().redis_ttl
@@ -59,12 +59,12 @@ class CacheService:
         except (redis.RedisError, ValueError, TypeError) as e:
             logger.warning(f"Failed to set cache: {e}")
             return False
-    
+
     async def delete(self, prefix: str, document_id: str) -> bool:
-        
+
         if not self.redis_client:
             return False
-        
+
         try:
             key = self._get_key(prefix, document_id)
             loop = asyncio.get_event_loop()
@@ -77,7 +77,7 @@ class CacheService:
         except (redis.RedisError, ValueError, TypeError) as e:
             logger.warning(f"Failed to delete from cache: {e}")
             return False
-    
+
     async def take(self, prefix: str, document_id: str) -> Optional[Dict[str, Any]]:
         """Read a key and delete it in the same round trip.
 
@@ -99,10 +99,10 @@ class CacheService:
         return None
 
     async def delete_many(self, prefix: str, document_ids: list[str]) -> int:
-       
+
         if not self.redis_client or not document_ids:
             return 0
-        
+
         try:
             keys = [self._get_key(prefix, doc_id) for doc_id in document_ids]
             loop = asyncio.get_event_loop()

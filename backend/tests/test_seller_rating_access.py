@@ -8,6 +8,7 @@ the card.
 import uuid
 
 import pytest
+from sqlalchemy.exc import IntegrityError
 
 from tests.conftest import run_sql
 from tests.seller_rating_fixtures import (  # noqa: F401 -- fixtures used by name
@@ -86,7 +87,7 @@ def test_should_ignore_a_seller_named_in_the_body(client, parties, closed_deal, 
 def test_should_keep_one_review_per_offer_in_storage(client, review):
     _, buyer, written = review
 
-    with pytest.raises(Exception):
+    with pytest.raises(IntegrityError):
         run_sql(
             "INSERT INTO reviews (review_id, offer_id, seller_id, author_id, rating)"
             " VALUES (:review_id, :offer_id, :seller_id, :author_id, 1)",

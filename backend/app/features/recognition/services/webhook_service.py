@@ -20,7 +20,7 @@ class WebhookService:
         if not webhook_settings.tg_webhook_url:
             logger.warning("Telegram webhook URL not configured")
             return
-        
+
         payload = {
             "event": "sale_car_ready",
             "sale_car_id": sale_car_id,
@@ -42,7 +42,7 @@ class WebhookService:
         if not webhook_settings.tg_webhook_url:
             logger.warning("Telegram webhook URL not configured")
             return
-        
+
         payload = {
             "event": "sale_car_deleted",
             "sale_car_id": sale_car_id,

@@ -23,26 +23,26 @@ from .roles import UserRole
 async def can_manage_sale_car(current_user: Users, sale_car_user_id: str) -> bool:
     if str(current_user.id) == sale_car_user_id:
         return True
-    
+
     try:
         user_role = UserRole(current_user.role)
     except ValueError:
         return False
-    
+
     can_edit_any = await has_permission(user_role, Permission.EDIT_ANY_SALE_CAR)
     can_delete_any = await has_permission(user_role, Permission.DELETE_ANY_SALE_CAR)
-    
+
     return can_edit_any or can_delete_any
 
 async def can_delete_sale_car_photos(current_user: Users, sale_car_user_id: str) -> bool:
     if str(current_user.id) == sale_car_user_id:
         return True
-    
+
     try:
         user_role = UserRole(current_user.role)
     except ValueError:
         return False
-    
+
     return await has_permission(user_role, Permission.DELETE_ANY_SALE_CAR_PHOTOS)
 
 async def can_manage_offer_as_owner(
@@ -59,10 +59,10 @@ async def can_manage_offer_as_owner(
         user_role = UserRole(current_user.role)
     except ValueError:
         return False
-    
+
     if await has_permission(user_role, Permission.EDIT_ANY_SALE_CAR):
         return True
-    
+
     result = await db.execute(
         select(SaleCars).where(SaleCars.sale_car_id == sale_car_id)
     )
@@ -84,5 +84,5 @@ async def can_manage_offer(
     """
     if str(offer.user_id) == str(current_user.id):
         return True
-    
+
     return await can_manage_offer_as_owner(current_user, str(offer.sale_car_id), db)

@@ -10,7 +10,7 @@
 import io
 
 import pytest
-from PIL import Image
+from PIL import Image, UnidentifiedImageError
 
 from app.ml.sts_image import MAX_OCR_SIZE, MAX_PROCESSING_SIZE, MIN_SIZE, prepare_candidates
 
@@ -101,5 +101,5 @@ def test_should_take_a_document_shot_in_any_light(brightness):
 
 
 def test_should_refuse_bytes_that_are_not_a_picture():
-    with pytest.raises(Exception):
+    with pytest.raises(UnidentifiedImageError):
         prepare_candidates("это не изображение".encode("utf-8"))

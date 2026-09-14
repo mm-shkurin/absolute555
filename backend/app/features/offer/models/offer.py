@@ -26,5 +26,5 @@ class Offer(Base):
     sale_car = relationship("SaleCars", back_populates="offers")
     user = relationship("Users", back_populates="offers")
 
-    created_at = Column(DateTime, server_default=func.now()) 
+    created_at = Column(DateTime, server_default=func.now())
     updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())

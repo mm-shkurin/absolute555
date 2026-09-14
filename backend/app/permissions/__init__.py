@@ -4,6 +4,6 @@ from .mapping import ROLE_PERMISSIONS
 
 __all__ = [
     'UserRole',
-    'Permission', 
+    'Permission',
     'ROLE_PERMISSIONS'
 ]

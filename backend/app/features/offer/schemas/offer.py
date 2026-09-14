@@ -47,9 +47,9 @@ class OfferResponse(BaseModel):
     review_id: UUID4 | None = None
 
     model_config = {
-        "from_attributes": True  
+        "from_attributes": True
     }
 
 class OfferWithCarResponse(OfferResponse):
-    car: Optional[dict] = None  
+    car: Optional[dict] = None
     model_config = {"from_attributes": True}

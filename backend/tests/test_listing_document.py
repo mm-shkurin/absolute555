@@ -8,6 +8,7 @@ import time
 import uuid
 
 import pytest
+from botocore.exceptions import ClientError
 from sqlalchemy import text
 
 from app.core.config import MinioSettings, PhotoSettings
@@ -60,7 +61,7 @@ def test_should_keep_the_document_out_of_the_public_gallery_bucket(client, selle
     settings = MinioSettings()
     assert settings.minio_documents_bucket != settings.minio_bucket_name
     # Reading it without a signature is what a stranger with the URL would try.
-    with pytest.raises(Exception):
+    with pytest.raises(ClientError):
         s3_service.s3_client.get_object(Bucket=settings.minio_bucket_name, Key=key)
 
 
