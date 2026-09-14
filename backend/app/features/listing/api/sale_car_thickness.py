@@ -20,7 +20,7 @@ from app.features.auth.deps import get_current_user, get_current_user_or_none
 
 from app.features.listing.services.listing_access_service import listing_of, visible_listing
 from app.features.listing.api.image_upload import image_upload
-from app.shared.http.sale_car_thickness_view import to_thickness_map
+from app.features.listing.api.sale_car_thickness_view import to_thickness_map
 
 thickness_router = APIRouter()
 

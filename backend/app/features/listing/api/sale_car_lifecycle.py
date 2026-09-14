@@ -18,7 +18,7 @@ from app.features.listing.schemas.sale_cars import SaleCarStatusChanged
 from app.features.moderation.services.complaint_service import ComplaintService
 from app.features.auth.deps import get_current_user
 from app.features.listing.services.listing_access_service import listing_of
-from app.shared.http.moderation_view import complaint_view
+from app.features.moderation.api.moderation_view import complaint_view
 
 lifecycle_router = APIRouter()
 

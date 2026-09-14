@@ -11,6 +11,7 @@ import uuid
 
 import pytest
 
+from app.features.listing.services.task_status_service import held_task_status
 from app.shared.realtime.listing_stream import listing_events
 from app.shared.realtime.manager import sse_manager
 
@@ -29,7 +30,7 @@ async def _next(stream, timeout=5.0) -> dict:
 
 
 async def test_should_refuse_an_identifier_that_is_not_one():
-    stream = listing_events("не-uuid")
+    stream = listing_events("не-uuid", held_task_status)
 
     first = await _next(stream)
 
@@ -41,7 +42,7 @@ async def test_should_refuse_an_identifier_that_is_not_one():
 
 async def test_should_open_with_the_status_the_listing_holds_now():
     listing_id = str(uuid.uuid4())
-    stream = listing_events(listing_id)
+    stream = listing_events(listing_id, held_task_status)
 
     try:
         first = await _next(stream)
@@ -56,7 +57,7 @@ async def test_should_open_with_the_status_the_listing_holds_now():
 
 async def test_should_pass_on_what_the_task_reported():
     listing_id = str(uuid.uuid4())
-    stream = listing_events(listing_id)
+    stream = listing_events(listing_id, held_task_status)
 
     try:
         await _next(stream)
@@ -69,7 +70,7 @@ async def test_should_pass_on_what_the_task_reported():
 
 async def test_should_skip_a_message_about_another_listing():
     listing_id = str(uuid.uuid4())
-    stream = listing_events(listing_id)
+    stream = listing_events(listing_id, held_task_status)
 
     try:
         await _next(stream)
@@ -85,7 +86,7 @@ async def test_should_skip_a_message_about_another_listing():
 
 async def test_should_deliver_a_message_that_names_no_listing():
     listing_id = str(uuid.uuid4())
-    stream = listing_events(listing_id)
+    stream = listing_events(listing_id, held_task_status)
 
     try:
         await _next(stream)
@@ -98,7 +99,7 @@ async def test_should_deliver_a_message_that_names_no_listing():
 
 async def test_should_subscribe_while_open_and_let_go_at_the_end():
     listing_id = str(uuid.uuid4())
-    stream = listing_events(listing_id)
+    stream = listing_events(listing_id, held_task_status)
     await _next(stream)
 
     assert listing_id in sse_manager.active_connections
@@ -109,7 +110,7 @@ async def test_should_subscribe_while_open_and_let_go_at_the_end():
 
 
 async def test_should_let_go_even_when_the_identifier_was_never_valid():
-    stream = listing_events("не-uuid")
+    stream = listing_events("не-uuid", held_task_status)
     await _next(stream)
 
     with pytest.raises(StopAsyncIteration):

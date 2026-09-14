@@ -6,6 +6,7 @@ from fastapi.responses import StreamingResponse
 
 from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.services.listing_access_service import listing_of
+from app.features.listing.services.task_status_service import held_task_status
 from app.shared.realtime.listing_stream import listing_events
 from app.features.auth.deps import get_current_user
 
@@ -26,7 +27,7 @@ async def sse_endpoint(
     await listing_of(listing_lifecycle_service, sale_car_id, current_user)
 
     return StreamingResponse(
-        listing_events(sale_car_id),
+        listing_events(sale_car_id, held_task_status),
         media_type="text/event-stream",
         headers={
             "Cache-Control": "no-cache",

@@ -18,7 +18,7 @@ from app.features.listing.services.photo_image import read_limited
 from app.features.auth.deps import get_current_user
 
 from app.features.listing.services.listing_access_service import listing_of
-from app.shared.http.sale_car_view import to_gallery
+from app.features.listing.api.sale_car_view import to_gallery
 
 photos_router = APIRouter()
 

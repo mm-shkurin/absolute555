@@ -12,10 +12,8 @@ import time
 import uuid
 
 from loguru import logger
-from sqlalchemy import select
+from typing import Awaitable, Callable
 
-from app.db.database import get_db_session
-from app.features.listing.models.sale_car import SaleCars
 from app.shared.realtime.listing_redis import (
     close_subscription,
     open_pubsub,
@@ -23,25 +21,12 @@ from app.shared.realtime.listing_redis import (
     subscribe,
 )
 from app.shared.realtime.manager import sse_manager
-from app.tasks.status_updater import TaskStatus
 
 HEARTBEAT_SECONDS = 30.0
 
 
 def _frame(payload: dict) -> str:
     return f"data: {json.dumps(payload)}\n\n"
-
-
-async def _held_status(sale_car_id: str) -> str:
-    try:
-        async with get_db_session() as db:
-            result = await db.execute(select(SaleCars).where(SaleCars.sale_car_id == sale_car_id))
-            sale_car = result.scalar_one_or_none()
-            if sale_car and sale_car.task_status:
-                return sale_car.task_status
-    except Exception as e:
-        logger.warning(f"Could not fetch listing status from DB: {e}, using PENDING")
-    return TaskStatus.PENDING
 
 
 def _take_local(queue: asyncio.Queue, sale_car_id: str) -> tuple[bool, str | None]:
@@ -82,8 +67,8 @@ async def _relay(sale_car_id: str, queue: asyncio.Queue, pubsub):
             await asyncio.sleep(0.1)
 
 
-async def listing_events(sale_car_id: str):
-    """Server-sent events for one listing's OCR task."""
+async def listing_events(sale_car_id: str, held_status: Callable[[str], Awaitable[str]]):
+    """Server-sent events for one listing's OCR task, opened with the status it holds."""
     try:
         uuid.UUID(sale_car_id)
     except ValueError:
@@ -96,7 +81,7 @@ async def listing_events(sale_car_id: str):
         sse_manager.add_connection(sale_car_id, queue)
         pubsub = open_pubsub()
         await subscribe(pubsub, sale_car_id)
-        status = await _held_status(sale_car_id)
+        status = await held_status(sale_car_id)
         logger.info(f"Sending initial SSE message for sale_car_id={sale_car_id}, status={status}")
         yield _frame({"sale_car_id": sale_car_id, "status": status, "type": "initial", "timestamp": time.time()})
         relay = _relay(sale_car_id, queue, pubsub)

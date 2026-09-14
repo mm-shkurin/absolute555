@@ -31,7 +31,7 @@ from .sale_car_lifecycle import lifecycle_router
 from .sale_car_photos import photos_router
 from .sale_car_thickness import thickness_router
 from .sale_car_vin import vin_router
-from app.shared.http.sale_car_view import to_card, to_view, to_views
+from app.features.listing.api.sale_car_view import to_card, to_view, to_views
 
 sale_car_router = APIRouter()
 
