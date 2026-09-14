@@ -1,8 +1,7 @@
 """The matching ladder against the seeded catalogue.
 
-Needs a database with the catalogue in it, unlike the normalisation tests. Run through
-`make test` with the stack up; the whole module skips when Postgres is unreachable
-rather than failing, because a missing database says nothing about the ladder.
+Needs a database with the catalogue in it, unlike the normalisation tests. A missing
+database or an empty catalogue fails the module: a suite that skips looks green.
 """
 
 import pytest
@@ -18,14 +17,11 @@ pytestmark = pytest.mark.asyncio
 
 @pytest_asyncio.fixture
 async def service():
-    try:
-        async with test_session()() as db:
-            seeded = await db.execute(select(Brand).limit(1))
-            if seeded.scalar_one_or_none() is None:
-                pytest.skip("catalogue is empty; run python -m app.data.seed_catalog")
-            yield CatalogService(db)
-    except Exception as exc:  # noqa: BLE001 - any connection failure means "no database"
-        pytest.skip(f"no database: {exc}")
+    async with test_session()() as db:
+        seeded = await db.execute(select(Brand).limit(1))
+        if seeded.scalar_one_or_none() is None:
+            pytest.fail("catalogue is empty; run python -m app.data.seed_catalog")
+        yield CatalogService(db)
 
 
 async def _brand(service, raw):

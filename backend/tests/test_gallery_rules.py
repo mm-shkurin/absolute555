@@ -1,12 +1,8 @@
 """Rules that guard the gallery rather than describe it.
 
 Story 5, Tier 2: the order that must match, the upload that leaves nothing behind, the
-preview, and the two hazards -- two uploads racing on one gallery, and a request that
-could never fit.
+preview, and a request that could never fit. The upload race is in test_listing_race.py.
 """
-
-from concurrent.futures import ThreadPoolExecutor
-
 
 from tests.conftest import make_image
 from tests.test_listing_gallery import _gallery, _upload
@@ -114,18 +110,6 @@ def test_should_return_the_gallery_in_order_to_anyone(
 
     assert [photo["photo_id"] for photo in listing["photos"]] == expected
     assert listing["preview_photo_url"] == listing["photos"][0]["preview_url"]
-
-
-def test_should_not_overfill_the_gallery_when_two_uploads_race(client, seller, attach_photo):
-    listing_id = _create(client, seller)
-    attach_photo(listing_id, seller, count=14)
-
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        calls = [pool.submit(_upload, client, seller, listing_id) for _ in range(2)]
-        outcomes = sorted(call.result().status_code for call in calls)
-
-    assert outcomes == [200, 409]
-    assert len(_gallery(client, seller, listing_id)) == 15
 
 
 def test_should_refuse_a_request_larger_than_the_gallery_could_ever_hold(client, seller):

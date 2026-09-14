@@ -18,7 +18,7 @@ pytestmark = pytest.mark.asyncio
 def cache():
     service = CacheService()
     if service.redis_client is None:
-        pytest.skip("no redis")
+        pytest.fail("Redis is unreachable; the suite needs the stack (see README, Тесты)")
     return service
 
 

@@ -1,11 +1,9 @@
 """The rules that guard the lifecycle rather than describe it.
 
 Story 4, Tier 2: the draft limit, the frozen listing under review, the correction of a
-rejected listing, the mistaken sale, and the three hazards -- a price that must survive a
-round trip, a submit sent twice, and two actions racing on one listing.
+rejected listing, the mistaken sale, and two hazards -- a price that must survive a round
+trip and a submit sent twice. Racing actions are in test_listing_race.py.
 """
-
-from concurrent.futures import ThreadPoolExecutor
 
 from app.features.listing.models.sale_car import MAX_DRAFTS_PER_USER
 from tests.test_listing_lifecycle import _create, _fill, _publish, _status
@@ -124,26 +122,6 @@ def test_should_enter_review_once_when_a_draft_is_sent_twice(
     assert second.status_code == 409, second.text
     assert second.json()["details"]["current_status"] == "moderation"
     assert _status(client, seller, listing_id) == "moderation"
-
-
-def test_should_leave_one_status_when_two_actions_race(
-    client, seller, moderator, catalogue, attach_photo
-):
-    listing_id = _create(client, seller)
-    _publish(client, seller, moderator, listing_id, *catalogue, attach_photo)
-
-    # Two threads, one listing: the point is that the second action reads a status the
-    # first has already changed, which sequential calls would demonstrate by construction.
-    with ThreadPoolExecutor(max_workers=2) as pool:
-        calls = [
-            pool.submit(client.post, f"/api/v1/sale_car/{listing_id}/withdraw", headers=seller),
-            pool.submit(client.post, f"/api/v1/sale_car/{listing_id}/sold", headers=seller),
-        ]
-        responses = [call.result() for call in calls]
-
-    outcomes = sorted(response.status_code for response in responses)
-    assert outcomes == [200, 409]
-    assert _status(client, seller, listing_id) in ("withdrawn", "sold")
 
 
 def test_should_record_when_a_listing_was_published(

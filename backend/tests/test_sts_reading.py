@@ -1,8 +1,8 @@
 """What the reading of a scan does to a listing, and what it refuses to touch.
 
 Story 6. These run below HTTP because the reading is a background job: the seller sees
-its result, never the job. Needs the database and the seeded catalogue; the module skips
-when either is missing, because their absence says nothing about these rules.
+its result, never the job. Needs the database and the seeded catalogue; the module fails
+when either is missing, because a suite that skips looks green.
 """
 
 import uuid
@@ -24,14 +24,11 @@ pytestmark = pytest.mark.asyncio
 
 @pytest_asyncio.fixture
 async def db():
-    try:
-        async with test_session()() as session:
-            seeded = await session.execute(select(Brand).limit(1))
-            if seeded.scalar_one_or_none() is None:
-                pytest.skip("catalogue is empty; run python -m app.data.seed_catalog")
-            yield session
-    except Exception as exc:  # noqa: BLE001 - any connection failure means "no database"
-        pytest.skip(f"no database: {exc}")
+    async with test_session()() as session:
+        seeded = await session.execute(select(Brand).limit(1))
+        if seeded.scalar_one_or_none() is None:
+            pytest.fail("catalogue is empty; run python -m app.data.seed_catalog")
+        yield session
 
 
 async def _listing(db) -> SaleCars:

@@ -79,13 +79,10 @@ def test_should_treat_a_filter_value_as_data(client, hostile):
 
 
 async def test_should_index_every_column_the_feed_filters_on():
-    try:
-        async with test_session()() as db:
-            found = await db.execute(
-                text("SELECT indexname FROM pg_indexes WHERE tablename = 'sale_cars'")
-            )
-            present = {row[0] for row in found}
-    except Exception as exc:  # noqa: BLE001 - no database says nothing about the indexes
-        pytest.skip(f"no database: {exc}")
+    async with test_session()() as db:
+        found = await db.execute(
+            text("SELECT indexname FROM pg_indexes WHERE tablename = 'sale_cars'")
+        )
+        present = {row[0] for row in found}
 
     assert set(INDEXED) <= present, f"missing: {sorted(set(INDEXED) - present)}"
