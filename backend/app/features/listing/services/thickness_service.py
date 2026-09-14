@@ -7,7 +7,6 @@
 
 from typing import List, Optional
 
-from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +14,7 @@ from app.features.listing.models.sale_car import SaleCars
 from app.features.listing.models.thickness import ThicknessMeasurement
 from app.features.listing.panels import BodyPanel, MAX_VALUE_UM, MIN_VALUE_UM, ValueSource
 from app.features.listing.services.photo_image import require_image
+from app.features.listing.services.object_cleanup import discard_objects
 from app.features.listing.services.thickness_errors import (
     GaugeUnreadable,
     MeasurementNotFound,
@@ -26,6 +26,19 @@ from app.shared.storage.s3_service import s3_service
 
 def _within(value) -> bool:
     return value is not None and MIN_VALUE_UM <= value <= MAX_VALUE_UM
+
+
+def _chosen_value(panel: BodyPanel, value_um, read):
+    if value_um is None:
+        if read is None:
+            raise GaugeUnreadable(panel.value)
+        return read, ValueSource.OCR
+    if not _within(value_um):
+        raise ValueOutOfRange(value_um)
+    # Форма присылает число всегда — прочитанное со снимка подставляется в поле
+    # для сверки. Подтверждённое без правки — это чтение прибора, а не ручной ввод:
+    # покупатель должен видеть, что число снято с экрана.
+    return value_um, (ValueSource.OCR if value_um == read else ValueSource.SELLER)
 
 
 class ThicknessMapService:
@@ -45,39 +58,12 @@ class ThicknessMapService:
         read = await read_panel_photo(photo[2])
         if not _within(read):
             read = None
-
-        if value_um is None:
-            if read is None:
-                raise GaugeUnreadable(panel.value)
-            value_um, source = read, ValueSource.OCR
-        else:
-            if not _within(value_um):
-                raise ValueOutOfRange(value_um)
-            # Форма присылает число всегда — прочитанное со снимка подставляется в поле
-            # для сверки. Подтверждённое без правки — это чтение прибора, а не ручной ввод:
-            # покупатель должен видеть, что число снято с экрана.
-            source = ValueSource.OCR if value_um == read else ValueSource.SELLER
+        value_um, source = _chosen_value(panel, value_um, read)
 
         key = await self._store(listing, photo)
         held = await self._panel_of(listing, panel)
         stale_key = held.photo_key if held else None
-
-        if held is None:
-            self.db.add(
-                ThicknessMeasurement(
-                    sale_car_id=listing.sale_car_id,
-                    panel=panel.value,
-                    value_um=value_um,
-                    value_source=source.value,
-                    ocr_value_um=read,
-                    photo_key=key,
-                )
-            )
-        else:
-            held.value_um = value_um
-            held.value_source = source.value
-            held.ocr_value_um = read
-            held.photo_key = key
+        self._write(listing, panel, held, value_um, source, read, key)
 
         try:
             await self.db.commit()
@@ -90,6 +76,24 @@ class ThicknessMapService:
         # потерять доказательство, если запись не прошла.
         await self._discard([stale_key])
         return await self.map_of(listing)
+
+    def _write(self, listing, panel, held, value_um, source, read, key) -> None:
+        if held is None:
+            self.db.add(
+                ThicknessMeasurement(
+                    sale_car_id=listing.sale_car_id,
+                    panel=panel.value,
+                    value_um=value_um,
+                    value_source=source.value,
+                    ocr_value_um=read,
+                    photo_key=key,
+                )
+            )
+            return
+        held.value_um = value_um
+        held.value_source = source.value
+        held.ocr_value_um = read
+        held.photo_key = key
 
     async def remove(self, listing: SaleCars, panel: BodyPanel) -> List[ThicknessMeasurement]:
         held = await self._panel_of(listing, panel)
@@ -128,13 +132,4 @@ class ThicknessMapService:
             str(listing.sale_car_id), body, content_type=content_type, folder="thickness"
         )
 
-    @staticmethod
-    async def _discard(keys) -> None:
-        alive = [key for key in keys if key]
-        if not alive:
-            return
-        try:
-            await s3_service.delete_files(alive)
-        except Exception as error:
-            # Строка уже верна. Осиротевший объект в бакете — мусор, а не порча данных.
-            logger.warning(f"could not discard {len(alive)} object(s): {error}")
+    _discard = staticmethod(discard_objects)

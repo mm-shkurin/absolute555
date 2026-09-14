@@ -12,13 +12,13 @@ and never leaves bytes in the bucket that nothing points at.
 import uuid
 from typing import List, Sequence
 
-from loguru import logger
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import PhotoSettings
 from app.features.listing.models.sale_car import SaleCars, SaleCarStatus
 from app.features.listing.services.listing_errors import ListingFrozen
+from app.features.listing.services.object_cleanup import discard_objects
 from app.features.listing.services.photo_errors import (
     GalleryLimitReached,
     NoFilesGiven,
@@ -136,13 +136,4 @@ class ListingGalleryService:
         if listing.status not in EDITABLE_IN:
             raise ListingFrozen(listing.status)
 
-    @staticmethod
-    async def _discard(keys: Sequence) -> None:
-        alive = [key for key in keys if key]
-        if not alive:
-            return
-        try:
-            await s3_service.delete_files(alive)
-        except Exception as error:
-            # The row is already right. An orphan in the bucket is waste, not corruption.
-            logger.warning(f"could not discard {len(alive)} object(s): {error}")
+    _discard = staticmethod(discard_objects)

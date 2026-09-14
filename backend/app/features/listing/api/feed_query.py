@@ -6,6 +6,7 @@ declared here one by one and the model is built inside a guard: the rules stay i
 schema, and breaking one answers 422 like every other bad request.
 """
 
+import inspect
 from typing import List, Optional
 from uuid import UUID
 
@@ -36,6 +37,30 @@ async def feed_query(
     page: int = 1,
     size: int = 20,
 ) -> FeedQuery:
+    _refuse_unknown(request)
+    try:
+        return FeedQuery(**{name: value for name, value in locals().items() if name in KNOWN})
+    except ValidationError as refusal:
+        raise InvalidRequest(
+            "the feed cannot be asked that",
+            code="FEED_QUERY_INVALID",
+            details={"errors": [{"field": _field(error), "message": error["msg"]} for error in refusal.errors()]},
+        )
+
+
+_PARAMETERS = set(inspect.signature(feed_query).parameters) - {"request"}
+if _PARAMETERS != KNOWN:
+    # feed_query hands its own arguments to FeedQuery by name; a parameter the schema
+    # lacks, or a field with no parameter, would drop a filter without a word.
+    raise RuntimeError(f"feed_query and FeedQuery disagree: {sorted(_PARAMETERS ^ KNOWN)}")
+
+
+def _field(error: dict) -> str:
+    location = error.get("loc") or ()
+    return str(location[0]) if location else "query"
+
+
+def _refuse_unknown(request: Request) -> None:
     unknown = sorted(set(request.query_params) - KNOWN)
     if unknown:
         # Ignoring an unknown filter is the worse answer: the screen would show an
@@ -46,32 +71,3 @@ async def feed_query(
             code="UNKNOWN_FILTER",
             details={"unknown": unknown},
         )
-
-    try:
-        return FeedQuery(
-            brand_id=brand_id,
-            model_id=model_id,
-            year_from=year_from,
-            year_to=year_to,
-            price_from=price_from,
-            price_to=price_to,
-            mileage_from=mileage_from,
-            mileage_to=mileage_to,
-            transmission=transmission,
-            with_thickness_map=with_thickness_map,
-            kind=kind,
-            sort=sort,
-            page=page,
-            size=size,
-        )
-    except ValidationError as refusal:
-        raise InvalidRequest(
-            "the feed cannot be asked that",
-            code="FEED_QUERY_INVALID",
-            details={"errors": [{"field": _field(error), "message": error["msg"]} for error in refusal.errors()]},
-        )
-
-
-def _field(error: dict) -> str:
-    location = error.get("loc") or ()
-    return str(location[0]) if location else "query"

@@ -9,7 +9,6 @@ from typing import Optional
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.exceptions import ResourceNotFoundError
 from app.db.database import get_db
 from app.features.listing.panels import BodyPanel
 from app.features.listing.schemas.thickness import GaugeReading, ThicknessMap
@@ -18,10 +17,9 @@ from app.features.listing.services.listing_lifecycle import ListingLifecycleServ
 from app.features.listing.services.photo_image import require_image
 from app.features.listing.services.thickness_service import ThicknessMapService
 from app.ml.gauge_reader import read_panel_photo
-from app.permissions.ownership import can_manage_sale_car
 from app.utils.security import get_current_user, get_current_user_or_none
 
-from .listing_http import PUBLIC_STATUSES, listing_of, to_http
+from .listing_http import listing_of, owned_listing, to_http, visible_listing
 from .sale_car_thickness_view import to_thickness_map
 
 thickness_router = APIRouter()
@@ -34,18 +32,7 @@ async def read_map(
     current_user=Depends(get_current_user_or_none),
 ):
     """Карта видна тем же, кому видно объявление."""
-    try:
-        listing = await ListingLifecycleService(db).get(sale_car_id)
-    except ListingError as error:
-        raise to_http(error)
-
-    if listing.status not in PUBLIC_STATUSES:
-        owner = current_user is not None and await can_manage_sale_car(
-            current_user, str(listing.user_id)
-        )
-        if not owner:
-            raise ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
-
+    listing = await visible_listing(db, sale_car_id, current_user)
     return to_thickness_map(listing, await ThicknessMapService(db).map_of(listing))
 
 
@@ -62,10 +49,7 @@ async def read_gauge_photo(
     ошибается на бликах и срезанных краях экрана, и молча записанная ошибка окрасила бы
     панель у покупателя в чужой цвет. Тот же снимок при сохранении читается из кэша.
     """
-    try:
-        await listing_of(ListingLifecycleService(db), sale_car_id, current_user)
-    except ListingError as error:
-        raise to_http(error)
+    await owned_listing(db, sale_car_id, current_user)
     body = await photo.read()
     require_image(photo.filename, body)
     return {"value_um": await read_panel_photo(body)}

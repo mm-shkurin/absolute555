@@ -90,7 +90,9 @@ class ListingAutofillService:
         listing.autofill_state = AutofillState.PENDING.value
         listing.autofill_updated_at = datetime.utcnow()
         await self.db.commit()
+        return await self._enqueue_vin_decode(listing)
 
+    async def _enqueue_vin_decode(self, listing: SaleCars) -> SaleCars:
         # Imported here for the same reason attach_scan does it: the task reports its
         # progress through status_updater, which asks this service to translate it.
         from app.tasks.decode_by_vin import decode_car_from_vin

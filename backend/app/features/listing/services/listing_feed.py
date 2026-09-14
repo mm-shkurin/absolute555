@@ -56,40 +56,9 @@ class ListingFeedService:
             .where(Users.is_blocked.is_(False))
         )
 
-        if query.brand_id is not None:
-            found = found.where(SaleCars.brand_id == query.brand_id)
-        if query.model_id is not None:
-            found = found.where(SaleCars.model_id.in_(_family_of(query.model_id)))
-
-        # Both ends inclusive: a reader asking for 2010 to 2015 means a car of 2015 too.
-        for column, low, high in (
-            (SaleCars.year, query.year_from, query.year_to),
-            (SaleCars.price, query.price_from, query.price_to),
-            (SaleCars.milleage, query.mileage_from, query.mileage_to),
-        ):
-            if low is not None:
-                found = found.where(column >= low)
-            if high is not None:
-                found = found.where(column <= high)
-
-        if query.transmission:
-            found = found.where(SaleCars.transmission.in_(query.transmission))
-
-        if query.kind is not None:
-            found = found.where(SaleCars.listing_kind == query.kind.value)
-
-        if query.with_thickness_map:
-            # Полная карта — все панели набора. Считается подзапросом, а не хранимым
-            # флагом: флаг разошёлся бы с таблицей на первом же снятом замере.
-            measured = (
-                select(func.count())
-                .select_from(ThicknessMeasurement)
-                .where(ThicknessMeasurement.sale_car_id == SaleCars.sale_car_id)
-                .scalar_subquery()
-            )
-            found = found.where(measured >= TOTAL_PANELS)
-
-        return found
+        found = _by_catalog(found, query)
+        found = _by_ranges(found, query)
+        return _by_traits(found, query)
 
     @staticmethod
     def _ordered(found: Select, sort: FeedSort) -> Select:
@@ -125,3 +94,42 @@ def _family_of(model_id):
         .where(or_(CarModel.name == chosen.c.name, CarModel.name.like(chosen.c.name + " %")))
     )
 
+
+def _by_catalog(found: Select, query: FeedQuery) -> Select:
+    if query.brand_id is not None:
+        found = found.where(SaleCars.brand_id == query.brand_id)
+    if query.model_id is not None:
+        found = found.where(SaleCars.model_id.in_(_family_of(query.model_id)))
+    return found
+
+
+def _by_ranges(found: Select, query: FeedQuery) -> Select:
+    # Both ends inclusive: a reader asking for 2010 to 2015 means a car of 2015 too.
+    for column, low, high in (
+        (SaleCars.year, query.year_from, query.year_to),
+        (SaleCars.price, query.price_from, query.price_to),
+        (SaleCars.milleage, query.mileage_from, query.mileage_to),
+    ):
+        if low is not None:
+            found = found.where(column >= low)
+        if high is not None:
+            found = found.where(column <= high)
+    return found
+
+
+def _by_traits(found: Select, query: FeedQuery) -> Select:
+    if query.transmission:
+        found = found.where(SaleCars.transmission.in_(query.transmission))
+    if query.kind is not None:
+        found = found.where(SaleCars.listing_kind == query.kind.value)
+    if query.with_thickness_map:
+        # Полная карта — все панели набора. Считается подзапросом, а не хранимым
+        # флагом: флаг разошёлся бы с таблицей на первом же снятом замере.
+        measured = (
+            select(func.count())
+            .select_from(ThicknessMeasurement)
+            .where(ThicknessMeasurement.sale_car_id == SaleCars.sale_car_id)
+            .scalar_subquery()
+        )
+        found = found.where(measured >= TOTAL_PANELS)
+    return found

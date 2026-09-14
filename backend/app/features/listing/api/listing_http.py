@@ -14,7 +14,9 @@ from app.core.exceptions import (
 )
 from app.features.listing.statuses import SaleCarStatus
 from app.permissions.ownership import can_manage_sale_car
+from app.features.listing.services.listing_lifecycle import ListingLifecycleService
 from app.features.listing.services.listing_errors import (
+    ListingError,
     ListingFrozen,
     ListingIncomplete,
     ListingNotFound,
@@ -41,88 +43,58 @@ from app.features.listing.services.photo_errors import (
 PUBLIC_STATUSES = frozenset({SaleCarStatus.PUBLISHED, SaleCarStatus.WITHDRAWN, SaleCarStatus.SOLD})
 
 
+_NOT_FOUND = "Sale car not found"
+
+# Checked in order; the first class the error is an instance of decides.
+_TRANSLATIONS = (
+    (ListingNotFound, lambda e: ResourceNotFoundError(_NOT_FOUND, code="LISTING_NOT_FOUND")),
+    (TransitionNotAllowed, lambda e: ConflictError(
+        str(e), code="TRANSITION_NOT_ALLOWED",
+        details={"current_status": e.current, "allowed": e.allowed},
+    )),
+    (ListingFrozen, lambda e: ConflictError(
+        str(e), code="LISTING_FROZEN", details={"current_status": e.current, "allowed": []},
+    )),
+    (TooManyDrafts, lambda e: BusinessRuleError(
+        str(e), code="DRAFT_LIMIT_REACHED", details={"limit": e.limit},
+    )),
+    (ListingIncomplete, lambda e: ValidationError(
+        str(e), code="LISTING_INCOMPLETE", details={"missing_fields": e.missing},
+    )),
+    (VinMalformed, lambda e: ValidationError(str(e), code="VIN_MALFORMED", details={"vin": e.vin})),
+    (RejectionNeedsReason, lambda e: ValidationError(str(e), code="REJECTION_NEEDS_REASON")),
+    (PhotoTooLarge, lambda e: PayloadTooLarge(
+        str(e), code="PHOTO_TOO_LARGE", details={"limit_bytes": e.limit, "size_bytes": e.size},
+    )),
+    (NotAnImage, lambda e: ValidationError(
+        str(e), code="NOT_AN_IMAGE", details={"filename": e.filename},
+    )),
+    (GalleryLimitReached, lambda e: ConflictError(
+        str(e), code="GALLERY_LIMIT_REACHED",
+        details={"limit": e.limit, "current": e.held, "offered": e.offered},
+    )),
+    (NoFilesGiven, lambda e: ValidationError(str(e), code="NO_FILES_GIVEN")),
+    (PhotoNotFound, lambda e: ResourceNotFoundError(str(e), code="PHOTO_NOT_FOUND")),
+    (OrderMismatch, lambda e: ValidationError(
+        str(e), code="ORDER_MISMATCH", details={"missing": e.missing, "unknown": e.unknown},
+    )),
+    (ValueOutOfRange, lambda e: ValidationError(
+        str(e), code="VALUE_OUT_OF_RANGE", details={"value_um": e.value_um},
+    )),
+    (GaugeUnreadable, lambda e: ValidationError(
+        str(e), code="OCR_UNREADABLE", details={"panel": e.panel},
+    )),
+    (MeasurementNotFound, lambda e: ResourceNotFoundError(str(e), code="MEASUREMENT_NOT_FOUND")),
+    # Indistinguishable from a listing that never existed, on purpose.
+    (DocumentNotFound, lambda e: ResourceNotFoundError(_NOT_FOUND, code="LISTING_NOT_FOUND")),
+)
+
+
 def to_http(error: Exception):
     """The custom error that says this refusal on the wire."""
-    if isinstance(error, ListingNotFound):
-        return ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
-
-    if isinstance(error, TransitionNotAllowed):
-        return ConflictError(
-            str(error),
-            code="TRANSITION_NOT_ALLOWED",
-            details={"current_status": error.current, "allowed": error.allowed},
-        )
-
-    if isinstance(error, ListingFrozen):
-        return ConflictError(
-            str(error),
-            code="LISTING_FROZEN",
-            details={"current_status": error.current, "allowed": []},
-        )
-
-    if isinstance(error, TooManyDrafts):
-        return BusinessRuleError(
-            str(error), code="DRAFT_LIMIT_REACHED", details={"limit": error.limit}
-        )
-
-    if isinstance(error, ListingIncomplete):
-        return ValidationError(
-            str(error), code="LISTING_INCOMPLETE", details={"missing_fields": error.missing}
-        )
-
-    if isinstance(error, VinMalformed):
-        return ValidationError(str(error), code="VIN_MALFORMED", details={"vin": error.vin})
-
-    if isinstance(error, RejectionNeedsReason):
-        return ValidationError(str(error), code="REJECTION_NEEDS_REASON")
-
-    if isinstance(error, PhotoTooLarge):
-        return PayloadTooLarge(
-            str(error),
-            code="PHOTO_TOO_LARGE",
-            details={"limit_bytes": error.limit, "size_bytes": error.size},
-        )
-
-    if isinstance(error, NotAnImage):
-        return ValidationError(str(error), code="NOT_AN_IMAGE", details={"filename": error.filename})
-
-    if isinstance(error, GalleryLimitReached):
-        return ConflictError(
-            str(error),
-            code="GALLERY_LIMIT_REACHED",
-            details={"limit": error.limit, "current": error.held, "offered": error.offered},
-        )
-
-    if isinstance(error, NoFilesGiven):
-        return ValidationError(str(error), code="NO_FILES_GIVEN")
-
-    if isinstance(error, PhotoNotFound):
-        return ResourceNotFoundError(str(error), code="PHOTO_NOT_FOUND")
-
-    if isinstance(error, OrderMismatch):
-        return ValidationError(
-            str(error),
-            code="ORDER_MISMATCH",
-            details={"missing": error.missing, "unknown": error.unknown},
-        )
-
-    if isinstance(error, ValueOutOfRange):
-        return ValidationError(
-            str(error), code="VALUE_OUT_OF_RANGE", details={"value_um": error.value_um}
-        )
-
-    if isinstance(error, GaugeUnreadable):
-        return ValidationError(
-            str(error), code="OCR_UNREADABLE", details={"panel": error.panel}
-        )
-
-    if isinstance(error, MeasurementNotFound):
-        return ResourceNotFoundError(str(error), code="MEASUREMENT_NOT_FOUND")
-
-    if isinstance(error, DocumentNotFound):
-        # Indistinguishable from a listing that never existed, on purpose.
-        return ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
-
+    for kind, translate in _TRANSLATIONS:
+        if isinstance(error, kind):
+            return translate(error)
     raise error
 
 
@@ -136,4 +108,25 @@ async def listing_of(service, sale_car_id: str, user):
     listing = await service.get(sale_car_id)
     if not await can_manage_sale_car(user, str(listing.user_id)):
         raise ListingNotFound(sale_car_id)
+    return listing
+
+
+async def owned_listing(db, sale_car_id: str, user):
+    """`listing_of` for a router that has nothing else to translate."""
+    try:
+        return await listing_of(ListingLifecycleService(db), sale_car_id, user)
+    except ListingError as error:
+        raise to_http(error)
+
+
+async def visible_listing(db, sale_car_id: str, user):
+    """The listing, if this reader may see it: public, or managed by the reader."""
+    try:
+        listing = await ListingLifecycleService(db).get(sale_car_id)
+        if listing.status not in PUBLIC_STATUSES and not (
+            user is not None and await can_manage_sale_car(user, str(listing.user_id))
+        ):
+            raise ListingNotFound(sale_car_id)
+    except ListingError as error:
+        raise to_http(error)
     return listing

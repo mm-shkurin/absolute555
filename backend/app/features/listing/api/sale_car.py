@@ -24,7 +24,7 @@ from app.features.listing.services.sale_cars_service import SaleCarService
 from app.utils.security import get_current_user, get_current_user_or_none
 
 from .feed_query import feed_query
-from .listing_http import PUBLIC_STATUSES, listing_of, to_http
+from .listing_http import PUBLIC_STATUSES, listing_of, to_http, visible_listing
 from .sale_car_document import document_router
 from .sale_car_lifecycle import lifecycle_router
 from .sale_car_photos import photos_router
@@ -94,19 +94,7 @@ async def get_sale_car_by_id(
     db: AsyncSession = Depends(get_db),
     current_user=Depends(get_current_user_or_none),
 ):
-    service = ListingLifecycleService(db)
-    try:
-        listing = await service.get(sale_car_id)
-    except ListingError as error:
-        raise to_http(error)
-
-    if listing.status not in PUBLIC_STATUSES:
-        owner = current_user is not None and await can_manage_sale_car(
-            current_user, str(listing.user_id)
-        )
-        if not owner:
-            raise ResourceNotFoundError("Sale car not found", code="LISTING_NOT_FOUND")
-
+    listing = await visible_listing(db, sale_car_id, current_user)
     return await to_view(listing, current_user)
 
 
