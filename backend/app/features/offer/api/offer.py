@@ -12,7 +12,7 @@ from app.features.offer.schemas.offer import (
 )
 from app.features.offer.services.offer_errors import NotOfferParty
 from app.features.offer.services.offer_service import OfferService
-from app.features.offer.statuses import OfferStatus as OfferStatusEnum
+from app.features.offer.domain.statuses import OfferStatus as OfferStatusEnum
 from app.features.review.deps import get_review_service
 from app.features.review.services.review_service import ReviewService
 from app.permissions.guests import forbid_guest

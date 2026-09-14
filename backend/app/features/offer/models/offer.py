@@ -4,9 +4,9 @@ import uuid
 from sqlalchemy import Column,Float, DateTime, ForeignKey, String, func
 from sqlalchemy.dialects.postgresql import UUID
 
-# Словарь состояний живёт отдельно (app/features/offer/statuses.py). Имена продолжают
+# Словарь состояний живёт отдельно (app/features/offer/domain/statuses.py). Имена продолжают
 # читаться отсюда: для сервисов оффер и его статусы — один предмет.
-from app.features.offer.statuses import LIVE, OfferStatus  # noqa: F401
+from app.features.offer.domain.statuses import LIVE, OfferStatus  # noqa: F401
 
 
 class Offer(Base):
