@@ -73,6 +73,12 @@ class OfferService(OfferListingReader):
         result = await self.db.execute(select(Offer).where(Offer.offer_id == uuid_))
         return result.scalar_one_or_none()
 
+    async def offer_of(self, offer_id: str) -> Offer:
+        offer = await self.get_offer_by_id(offer_id)
+        if offer is None:
+            raise OfferNotFound(offer_id)
+        return offer
+
     async def get_offers_by_sale_car(self, sale_car_id: str) -> List[Offer]:
         try:
             car_uuid = uuid.UUID(sale_car_id)

@@ -8,11 +8,9 @@ from fastapi import APIRouter, Depends, status
 from app.features.review.deps import get_dialog_review_service
 from app.features.review.deps import get_review_service
 
-from app.features.review.api.review_http import to_http
 from app.shared.http.review_view import review_view
 from app.permissions.guests import forbid_guest
 from app.features.review.schemas.review import ReviewCreate, ReviewPatch, ReviewResponse
-from app.features.review.services.review_errors import ReviewError
 from app.features.review.services.review_dialog import DialogReviewService
 from app.features.review.services.review_service import ReviewService
 
@@ -32,15 +30,12 @@ async def create_review(
     current_user = Depends(forbid_guest),
 ):
     """A guest leaves no review: a guest does not bargain, so a guest has no deal."""
-    try:
-        review = await review_service.create(
-            offer_id=offer_id,
-            author_id=str(current_user.id),
-            rating=body.rating,
-            text=body.text,
-        )
-    except ReviewError as error:
-        raise to_http(error)
+    review = await review_service.create(
+        offer_id=offer_id,
+        author_id=str(current_user.id),
+        rating=body.rating,
+        text=body.text,
+    )
 
     review.author = current_user
     return review_view(review)
@@ -59,15 +54,12 @@ async def create_dialog_review(
     current_user = Depends(forbid_guest),
 ):
     """Отзыв по переписке: о продавце — по объявлению, о поставщике — по отклику."""
-    try:
-        review = await dialog_review_service.create(
-            dialog_id=dialog_id,
-            author_id=str(current_user.id),
-            rating=body.rating,
-            text=body.text,
-        )
-    except ReviewError as error:
-        raise to_http(error)
+    review = await dialog_review_service.create(
+        dialog_id=dialog_id,
+        author_id=str(current_user.id),
+        rating=body.rating,
+        text=body.text,
+    )
 
     review.author = current_user
     return review_view(review)
@@ -81,14 +73,11 @@ async def update_review(
     current_user = Depends(forbid_guest),
 ):
     """Within a day of writing it. After that the review settles and the rating stands."""
-    try:
-        review = await review_service.update(
-            review_id=review_id,
-            author_id=str(current_user.id),
-            changes=body.model_dump(exclude_unset=True),
-        )
-    except ReviewError as error:
-        raise to_http(error)
+    review = await review_service.update(
+        review_id=review_id,
+        author_id=str(current_user.id),
+        changes=body.model_dump(exclude_unset=True),
+    )
 
     review.author = current_user
     return review_view(review)
