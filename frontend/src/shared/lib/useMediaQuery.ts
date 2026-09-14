@@ -2,15 +2,16 @@
 // перестраивается стилями, а становится другой: список диалогов и переписка — два экрана
 // на телефоне и один на планшете, и `display: none` этого не выражает.
 import { useSyncExternalStore } from 'react'
+import { browserWindow } from './browser'
 
 export function useMediaQuery(query: string): boolean {
   return useSyncExternalStore(
     (listener) => {
-      const media = window.matchMedia(query)
-      media.addEventListener('change', listener)
-      return () => media.removeEventListener('change', listener)
+      const media = browserWindow()?.matchMedia(query)
+      media?.addEventListener('change', listener)
+      return () => media?.removeEventListener('change', listener)
     },
-    () => window.matchMedia(query).matches,
+    () => browserWindow()?.matchMedia(query).matches ?? false,
     // На сервере медиазапросов нет: считаем экран широким, чтобы разметка не мигала
     // после гидратации на десктопе, где её видит большинство.
     () => false,

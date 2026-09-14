@@ -14,6 +14,7 @@ import {
   toDraft,
 } from './api/draftApi'
 import type { ListingKind } from '../../shared/api/backend/saleCarContract'
+import { browserWindow } from '../../shared/lib/browser'
 import { toPatch } from './logic/draftWire'
 import type { Draft } from './logic/draft'
 
@@ -37,10 +38,11 @@ export interface DraftSync {
  *  терялся среди них. Адрес меняется мимо роутера намеренно: навигация перезапустила бы
  *  загрузку черновика с сервера и затёрла бы то, что человек уже ввёл на экране. */
 function rememberInAddress(saleCarId: string) {
-  if (typeof window === 'undefined') return
-  const path = window.location.pathname.replace(/\/+$/, '')
+  const win = browserWindow()
+  if (!win) return
+  const path = win.location.pathname.replace(/\/+$/, '')
   if (path !== '/sell') return
-  window.history.replaceState(window.history.state, '', `/sell/${saleCarId}`)
+  win.history.replaceState(win.history.state, '', `/sell/${saleCarId}`)
 }
 
 /** `existingId` — черновик, начатый раньше: мастер открыт по ссылке из «Моих объявлений»,

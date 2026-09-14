@@ -1,6 +1,7 @@
 // Полноэкранный просмотр. Закрывается по Escape и по клику вне кадра — на телефоне это
 // единственные два жеста, которые человек пробует, не глядя на кнопки.
 import { useEffect, useRef } from 'react'
+import { browserWindow } from '../../../shared/lib/browser'
 import { Cover } from '../../../shared/ui/Cover'
 import { swipeStep } from '../logic/gallerySwipe'
 import styles from './Lightbox.module.css'
@@ -23,8 +24,9 @@ export function Lightbox({ photos, total, current, onCurrent, onClose }: Props) 
       if (event.key === 'ArrowRight') step(1)
       if (event.key === 'ArrowLeft') step(-1)
     }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    const win = browserWindow()
+    win?.addEventListener('keydown', onKey)
+    return () => win?.removeEventListener('keydown', onKey)
   })
 
   return (

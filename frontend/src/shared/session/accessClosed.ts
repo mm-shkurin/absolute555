@@ -4,6 +4,7 @@
 // вообще, и человек, читающий это как сбой, возвращается снова. Сервер называет причину
 // в ответе — она и показывается, потому что оспаривать нечего, если не знаешь за что.
 import { isHttpError } from '../api/httpClient'
+import { browserSessionStorage, browserWindow } from '../lib/browser'
 
 export const ACCESS_CLOSED_CODE = 'USER_BLOCKED'
 
@@ -42,24 +43,21 @@ const CLOSED_EVENT = 'access-closed'
  *  в ответ на любой запрос, и экран, который забыли научить, оставил бы человека с
  *  плашкой «не хватает прав» вместо причины. */
 export function onAccessClosed(listener: () => void): () => void {
-  window.addEventListener(CLOSED_EVENT, listener)
-  return () => window.removeEventListener(CLOSED_EVENT, listener)
+  const win = browserWindow()
+  win?.addEventListener(CLOSED_EVENT, listener)
+  return () => win?.removeEventListener(CLOSED_EVENT, listener)
 }
 
 export function rememberClosedAccess(reason: string): void {
   try {
-    sessionStorage.setItem(REASON_KEY, reason)
+    browserSessionStorage()?.setItem(REASON_KEY, reason)
   } catch {
-    // Хранилище может быть закрыто настройками браузера. Экран покажет общий текст —
+    // Хранилище переполнено или закрыто настройками браузера. Экран покажет общий текст —
     // это хуже, чем с причиной, и лучше, чем поломка на пути к нему.
   }
-  window.dispatchEvent(new Event(CLOSED_EVENT))
+  browserWindow()?.dispatchEvent(new Event(CLOSED_EVENT))
 }
 
 export function closedAccessReason(): string {
-  try {
-    return sessionStorage.getItem(REASON_KEY) || 'Доступ к площадке закрыт.'
-  } catch {
-    return 'Доступ к площадке закрыт.'
-  }
+  return browserSessionStorage()?.getItem(REASON_KEY) || 'Доступ к площадке закрыт.'
 }

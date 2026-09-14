@@ -19,3 +19,11 @@ export function browserStorage(): Storage | undefined {
     return undefined
   }
 }
+
+export function browserSessionStorage(): Storage | undefined {
+  try {
+    return browserWindow()?.sessionStorage
+  } catch {
+    return undefined
+  }
+}
