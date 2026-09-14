@@ -13,6 +13,7 @@ import httpx
 
 from app.core.config import YandexSettings
 from app.core.config_getters import get_oauth_settings, get_yandex_settings
+from app.shared.outbound_http import outbound_client
 
 
 
@@ -49,7 +50,7 @@ class YandexOAuthProvider:
         # отвечал страницей ошибки — а его открывает сам браузер, так что человек
         # оставался в тупике с уже потраченным кодом и без пути назад ко входу.
         try:
-            async with httpx.AsyncClient(timeout=10) as http:
+            async with outbound_client() as http:
                 token = await self._exchange(http, code)
                 return await self._read_identity(http, token)
         except httpx.HTTPError as unreachable:
@@ -65,7 +66,7 @@ class YandexOAuthProvider:
                 "client_secret": self.settings.yandex_client_secret,
             },
         )
-        if answer.status_code != 200:
+        if not answer.is_success:
             raise OAuthFailed(f"the token endpoint answered {answer.status_code}")
 
         try:
@@ -80,7 +81,7 @@ class YandexOAuthProvider:
         answer = await http.get(
             str(self.settings.yandex_info_url), headers={"Authorization": f"OAuth {token}"}
         )
-        if answer.status_code != 200:
+        if not answer.is_success:
             raise OAuthFailed(f"the info endpoint answered {answer.status_code}")
 
         try:

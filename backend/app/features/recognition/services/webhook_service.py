@@ -1,6 +1,7 @@
 import httpx
 from loguru import logger
 from app.core.config_getters import get_webhook_settings
+from app.shared.outbound_http import outbound_client
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
@@ -20,8 +21,6 @@ class WebhookService:
             logger.warning("Telegram webhook URL not configured")
             return
         
-        webhook_url = str(webhook_settings.tg_webhook_url)
-        
         payload = {
             "event": "sale_car_ready",
             "sale_car_id": sale_car_id,
@@ -30,15 +29,9 @@ class WebhookService:
         }
 
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(
-                    webhook_url,
-                    json=payload,
-                    headers={"X-Webhook-Secret": webhook_settings.webhook_secret}
-                )
-                response.raise_for_status()
-                logger.info(f"Webhook sent successfully for sale_car_id={sale_car_id}")
-        except Exception as e:
+            await _post(payload)
+            logger.info(f"Webhook sent successfully for sale_car_id={sale_car_id}")
+        except httpx.HTTPError as e:
             logger.error(f"Failed to send webhook for sale_car_id={sale_car_id}: {e}")
 
     async def send_tg_webhook_delete(
@@ -50,8 +43,6 @@ class WebhookService:
             logger.warning("Telegram webhook URL not configured")
             return
         
-        webhook_url = str(webhook_settings.tg_webhook_url)
-        
         payload = {
             "event": "sale_car_deleted",
             "sale_car_id": sale_car_id,
@@ -59,15 +50,9 @@ class WebhookService:
         }
 
         try:
-            async with httpx.AsyncClient(timeout=10.0) as client:
-                response = await client.post(
-                    webhook_url,
-                    json=payload,
-                    headers={"X-Webhook-Secret": webhook_settings.webhook_secret}
-                )
-                response.raise_for_status()
-                logger.info(f"Delete webhook sent successfully for sale_car_id={sale_car_id}")
-        except Exception as e:
+            await _post(payload)
+            logger.info(f"Delete webhook sent successfully for sale_car_id={sale_car_id}")
+        except httpx.HTTPError as e:
             logger.error(f"Failed to send delete webhook for sale_car_id={sale_car_id}: {e}")
 
     async def send_tg_webhook_status_change(
@@ -98,12 +83,12 @@ class WebhookService:
                 f"Status change webhook sent successfully for sale_car_id={sale_car_id}: "
                 f"{old_status} -> {new_status}"
             )
-        except Exception as e:
+        except httpx.HTTPError as e:
             logger.error(f"Failed to send status change webhook for sale_car_id={sale_car_id}: {e}")
 
 
 async def _post(payload: dict) -> None:
-    async with httpx.AsyncClient(timeout=10.0) as client:
+    async with outbound_client() as client:
         response = await client.post(
             str(webhook_settings.tg_webhook_url),
             json=payload,

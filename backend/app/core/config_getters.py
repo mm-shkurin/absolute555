@@ -15,6 +15,7 @@ from app.core.config import (
     MinioSettings,
     OAuthSettings,
     OfferSettings,
+    OutboundHttpSettings,
     PhotoSettings,
     RedisSettings,
     ThicknessSettings,
@@ -86,3 +87,8 @@ def get_webhook_settings() -> WebhookSettings:
 @lru_cache
 def get_yandex_settings() -> YandexSettings:
     return YandexSettings()
+
+
+@lru_cache
+def get_outbound_http_settings() -> OutboundHttpSettings:
+    return OutboundHttpSettings()

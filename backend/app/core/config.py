@@ -186,6 +186,11 @@ class AdminSettings(BaseSettings):
 
     model_config = BaseConfig.model_config
 
+class OutboundHttpSettings(BaseSettings):
+    outbound_http_timeout_seconds: float = Field(10.0, gt=0, alias="OUTBOUND_HTTP_TIMEOUT_SECONDS")
+
+    model_config = BaseConfig.model_config
+
 class WebhookSettings(BaseSettings):
     webhook_secret: str = Field(..., alias="WEBHOOK_SECRET")
     tg_webhook_url: Optional[HttpUrl] = Field(None, alias="TG_WEBHOOK_URL")
