@@ -1,8 +1,6 @@
 from datetime import datetime
 from typing import List, Optional
-from uuid import UUID
 
-from pydantic import BaseModel
 
 # One vocabulary for the wire and the row. Re-declaring the six values here is how the
 # two drift apart the first time one is extended.
@@ -11,6 +9,7 @@ from app.features.listing.schemas.autofill import Autofill, StsAccepted, VinDeco
 from app.features.listing.schemas.feed import Seller
 from app.features.listing.schemas.listing_edit import (
     DraftKind,
+    RecognisedCar,
     SaleCarCreate,
     SaleCarUpdate,
     SaleCarUpdateResponse,
@@ -42,17 +41,7 @@ __all__ = [
 ]
 
 
-class SaleCarResponse(BaseModel):
-    sale_car_id: UUID
-    user_id: UUID
-    vin: Optional[str]
-    brand: Optional[str] = None
-    model: Optional[str] = None
-    mark_raw: Optional[str] = None
-    model_raw: Optional[str] = None
-    year: Optional[int] = None
-    transmission: Optional[str] = None
-    engine_power: Optional[int] = None
+class SaleCarResponse(RecognisedCar):
     task_id: Optional[str] = None
     task_status: Optional[str] = None
     phone_number: Optional[str] = None

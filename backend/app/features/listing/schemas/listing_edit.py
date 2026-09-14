@@ -59,11 +59,12 @@ class DraftKind(BaseModel):
     listing_kind: ListingKind = ListingKind.STOCK
 
 
-class SaleCarUpdateResponse(BaseModel):
+class RecognisedCar(BaseModel):
+    """What a listing says about the car itself, as every listing payload carries it."""
+
     sale_car_id: UUID
     user_id: UUID
     vin: Optional[str]
-    body_number: Optional[str] = None
     brand: Optional[str] = None
     model: Optional[str] = None
     mark_raw: Optional[str] = None
@@ -71,6 +72,10 @@ class SaleCarUpdateResponse(BaseModel):
     year: Optional[int] = None
     transmission: Optional[str] = None
     engine_power: Optional[int] = None
+
+
+class SaleCarUpdateResponse(RecognisedCar):
+    body_number: Optional[str] = None
     task_status: Optional[str]
     updated_at: datetime
     message: str = "Sale car updated successfully"

@@ -19,7 +19,7 @@ from app.features.listing.services.photo_image import read_limited, require_imag
 from app.utils.security import get_current_user
 
 from app.shared.http.listing_http import listing_of, to_http
-from app.shared.http.sale_car_view import autofill_view
+from app.features.listing.api.autofill_target import accepted, autofill_target
 
 document_router = APIRouter()
 
@@ -51,9 +51,8 @@ async def get_document_link(
 async def attach_document(
     sale_car_id: str,
     file: UploadFile = File(...),
-    listing_lifecycle_service: ListingLifecycleService = Depends(get_listing_lifecycle_service),
+    listing=Depends(autofill_target),
     listing_autofill_service: ListingAutofillService = Depends(get_listing_autofill_service),
-    current_user=Depends(get_current_user),
 ):
     """Accepted, not done: the reading runs on the queue and reports back separately.
 
@@ -61,10 +60,9 @@ async def attach_document(
     endpoint above does.
     """
     try:
-        listing = await listing_of(listing_lifecycle_service, sale_car_id, current_user)
         body = await read_limited(file)
         detected = require_image(file.filename, body)
         updated = await listing_autofill_service.attach_scan(listing, body, detected)
     except ListingError as error:
         raise to_http(error)
-    return {"sale_car_id": updated.sale_car_id, "autofill": autofill_view(updated)}
+    return accepted(updated)
