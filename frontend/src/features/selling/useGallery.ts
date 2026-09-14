@@ -21,8 +21,11 @@ export interface Gallery {
 const DEFAULT_LIMIT = 15
 
 export function useGallery(saleCarId: string | null): Gallery {
-  const [photos, setPhotos] = useState<PhotoWire[]>([])
-  const [limit, setLimit] = useState(DEFAULT_LIMIT)
+  // Фотографии и потолок приходят одним ответом и меняются только вместе.
+  const [{ photos, limit }, setShown] = useState<{ photos: PhotoWire[]; limit: number }>({
+    photos: [],
+    limit: DEFAULT_LIMIT,
+  })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -33,8 +36,7 @@ export function useGallery(saleCarId: string | null): Gallery {
       setError(null)
       try {
         const gallery = await action(saleCarId)
-        setPhotos(gallery.photos)
-        setLimit(gallery.limit)
+        setShown({ photos: gallery.photos, limit: gallery.limit })
       } catch (failure) {
         // Отказ показывается текстом: лимит фотографий и слишком большой файл — это то,
         // что человек может исправить сам, и молчание оставило бы его гадать.

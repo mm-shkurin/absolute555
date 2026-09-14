@@ -19,8 +19,11 @@ interface Props {
 }
 
 export function PanelEditor({ detail, busy, error, onSave, onRemove, onRead }: Props) {
-  const [value, setValue] = useState('')
-  const [photo, setPhoto] = useState<File | null>(null)
+  const [{ value, photo }, setForm] = useState<{ value: string; photo: File | null }>({
+    value: '',
+    photo: null,
+  })
+  const setValue = (next: string) => setForm((form) => ({ ...form, value: next }))
   const [refused, setRefused] = useState<string | null>(null)
   const [reading, setReading] = useState<'idle' | 'busy' | 'read' | 'unread'>('idle')
   const file = useRef<HTMLInputElement>(null)
@@ -34,8 +37,7 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove, onRead }: P
   // Смена панели очищает форму: иначе число от капота уедет на крышу — и уедет молча,
   // потому что поле выглядит заполненным законно.
   useEffect(() => {
-    setValue(detail.valueUm === null ? '' : String(detail.valueUm))
-    setPhoto(null)
+    setForm({ value: detail.valueUm === null ? '' : String(detail.valueUm), photo: null })
     setRefused(null)
     setReading('idle')
     if (file.current) file.current.value = ''
@@ -66,7 +68,7 @@ export function PanelEditor({ detail, busy, error, onSave, onRemove, onRead }: P
         data-testid="panel-photo"
         onChange={(event) => {
           const chosen = event.target.files?.[0] ?? null
-          setPhoto(chosen)
+          setForm((form) => ({ ...form, photo: chosen }))
           if (!chosen || !onRead) return
           setReading('busy')
           const beforeRead = typed.current
