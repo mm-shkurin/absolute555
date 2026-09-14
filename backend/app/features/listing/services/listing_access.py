@@ -1,7 +1,7 @@
 """Which listing a caller may learn exists."""
 
 from app.features.listing.services.listing_errors import ListingNotFound
-from app.features.listing.statuses import SaleCarStatus
+from app.features.listing.domain.statuses import SaleCarStatus
 from app.permissions.ownership import can_manage_sale_car
 
 PUBLIC_STATUSES = frozenset({SaleCarStatus.PUBLISHED, SaleCarStatus.WITHDRAWN, SaleCarStatus.SOLD})

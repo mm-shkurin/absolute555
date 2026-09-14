@@ -7,7 +7,7 @@ wants to know.
 
 from fastapi import APIRouter, Depends, Query
 from app.shared.http.paging import page_size as page_size_query
-from app.features.listing.services.listing_review import ListingReviewService
+from app.features.listing.services.listing_review_service import ListingReviewService
 from app.features.moderation.deps import get_complaint_service
 from app.features.moderation.deps import get_moderation_service
 

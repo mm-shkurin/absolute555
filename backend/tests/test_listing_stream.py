@@ -11,7 +11,7 @@ import uuid
 
 import pytest
 
-from app.features.listing.services.task_status_service import held_task_status
+from app.features.listing.services.task_status import held_task_status
 from app.shared.realtime.listing_stream import listing_events
 from app.shared.realtime.manager import sse_manager
 

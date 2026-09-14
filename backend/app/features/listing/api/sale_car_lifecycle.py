@@ -5,9 +5,9 @@ value walks straight past the transition table.
 """
 
 from fastapi import APIRouter, Depends
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
+from app.features.listing.services.listing_lifecycle_service import ListingLifecycleService
 from app.features.listing.deps import get_listing_review_service
-from app.features.listing.services.listing_review import ListingReviewService
+from app.features.listing.services.listing_review_service import ListingReviewService
 from app.features.moderation.deps import get_complaint_service
 
 from app.features.listing.deps import get_listing_lifecycle_service, get_listing_review_service
@@ -17,7 +17,7 @@ from app.features.moderation.schemas.moderation import ComplaintCreate, Complain
 from app.features.listing.schemas.sale_cars import SaleCarStatusChanged
 from app.features.moderation.services.complaint_service import ComplaintService
 from app.features.auth.deps import get_current_user
-from app.features.listing.services.listing_access_service import listing_of
+from app.features.listing.services.listing_access import listing_of
 from app.features.moderation.api.moderation_view import complaint_view
 
 lifecycle_router = APIRouter()

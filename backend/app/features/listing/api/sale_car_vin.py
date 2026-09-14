@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, status
 from app.features.listing.deps import get_listing_autofill_service
 from app.features.listing.api.autofill_target import accepted, autofill_target
 from app.features.listing.schemas.sale_cars import StsAccepted, VinDecodeRequest
-from app.features.listing.services.listing_autofill import ListingAutofillService
+from app.features.listing.services.listing_autofill_service import ListingAutofillService
 
 vin_router = APIRouter()
 

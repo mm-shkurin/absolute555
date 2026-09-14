@@ -3,8 +3,8 @@
 from fastapi import Depends
 
 from app.features.listing.deps import get_listing_lifecycle_service
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
-from app.features.listing.services.listing_access_service import listing_of
+from app.features.listing.services.listing_lifecycle_service import ListingLifecycleService
+from app.features.listing.services.listing_access import listing_of
 from app.features.listing.api.sale_car_view import autofill_view
 from app.features.auth.deps import get_current_user
 

@@ -8,16 +8,16 @@ workers to an image.
 from typing import List
 
 from fastapi import APIRouter, Depends, File, UploadFile
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
+from app.features.listing.services.listing_lifecycle_service import ListingLifecycleService
 from app.features.listing.deps import get_listing_gallery_service
 
 from app.features.listing.deps import get_listing_lifecycle_service
 from app.features.listing.schemas.sale_cars import GalleryResponse, PhotoOrder
-from app.features.listing.services.listing_photos import ListingGalleryService
+from app.features.listing.services.listing_gallery_service import ListingGalleryService
 from app.features.listing.services.photo_image import read_limited
 from app.features.auth.deps import get_current_user
 
-from app.features.listing.services.listing_access_service import listing_of
+from app.features.listing.services.listing_access import listing_of
 from app.features.listing.api.sale_car_view import to_gallery
 
 photos_router = APIRouter()

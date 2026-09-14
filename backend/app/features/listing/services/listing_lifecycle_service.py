@@ -5,7 +5,7 @@ a branch per case. The one boundary carrying a rule of its own is submit, which 
 completeness.
 
 The moderator's side -- publishing, turning a listing back with a reason, and taking a
-published one down over complaints -- lives in `listing_review.py`: it needs the reason
+published one down over complaints -- lives in `listing_review_service.py`: it needs the reason
 labels and the complaint queue, and neither belongs to the seller's path.
 """
 

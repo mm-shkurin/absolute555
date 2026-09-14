@@ -1,12 +1,12 @@
 """The live stream of a listing's background reading."""
 
 from fastapi import APIRouter, Depends
-from app.features.listing.services.listing_lifecycle import ListingLifecycleService
+from app.features.listing.services.listing_lifecycle_service import ListingLifecycleService
 from fastapi.responses import StreamingResponse
 
 from app.features.listing.deps import get_listing_lifecycle_service
-from app.features.listing.services.listing_access_service import listing_of
-from app.features.listing.services.task_status_service import held_task_status
+from app.features.listing.services.listing_access import listing_of
+from app.features.listing.services.task_status import held_task_status
 from app.shared.realtime.listing_stream import listing_events
 from app.features.auth.deps import get_current_user
 
