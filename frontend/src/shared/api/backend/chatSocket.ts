@@ -2,6 +2,7 @@
 // человек смотрит на экран, и второе соединение ради отправки не нужно — отправка идёт
 // обычным POST, а сюда возвращается уже записанное сервером.
 import { currentSession } from '../../session/authSession'
+import { messageFromFrame } from './chatFrame'
 import type { MessageWire } from './chatContract'
 import { BACKEND } from './paths'
 
@@ -21,15 +22,8 @@ export function openChatSocket(handlers: ChatSocketHandlers): () => void {
   const socket = new WebSocket(url)
 
   socket.addEventListener('message', (event) => {
-    try {
-      // Сервер шлёт конверт `{type, message}`: развёрнутое сообщение пришло бы без
-      // `dialog_id`, и обновился бы только список диалогов, но не открытая переписка.
-      const frame = JSON.parse(event.data) as { type?: string; message?: MessageWire }
-      if (frame.type !== 'message' || !frame.message) return
-      handlers.onMessage(frame.message)
-    } catch {
-      // Одно испорченное сообщение не повод рвать поток: остальные придут следом.
-    }
+    const message = messageFromFrame(event.data)
+    if (message) handlers.onMessage(message)
   })
 
   if (handlers.onClose) socket.addEventListener('close', handlers.onClose)
