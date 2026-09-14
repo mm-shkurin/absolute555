@@ -16,8 +16,6 @@ from app.core.config_ml import GigaChatSettings
 from app.ml.sts_vision import access_token
 
 MODEL = "GigaChat-2-Max"
-UPLOAD_TIMEOUT = 60
-ANSWER_TIMEOUT = 60
 
 PROMPT = """На фотографии — экран толщиномера лакокрасочного покрытия автомобиля.
 
@@ -46,20 +44,20 @@ class GaugeVisionUnavailable(Exception):
     """Провайдер не ответил. Отличается от «прочитал и не нашёл числа»."""
 
 
-def _upload(api: str, access: str, body: bytes) -> str:
+def _upload(api: str, access: str, body: bytes, timeout: int, verify) -> str:
     answer = requests.post(
         f"{api}/files",
         headers={"Authorization": f"Bearer {access}"},
         files={"file": ("gauge.jpg", body, "image/jpeg")},
         data={"purpose": "general"},
-        verify=False,
-        timeout=UPLOAD_TIMEOUT,
+        verify=verify,
+        timeout=timeout,
     )
     answer.raise_for_status()
     return answer.json()["id"]
 
 
-def _ask(api: str, access: str, file_id: str) -> str:
+def _ask(api: str, access: str, file_id: str, timeout: int, verify) -> str:
     answer = requests.post(
         f"{api}/chat/completions",
         headers={"Authorization": f"Bearer {access}", "Content-Type": "application/json"},
@@ -69,8 +67,8 @@ def _ask(api: str, access: str, file_id: str) -> str:
             "temperature": 0,
             "messages": [{"role": "user", "content": PROMPT, "attachments": [file_id]}],
         },
-        verify=False,
-        timeout=ANSWER_TIMEOUT,
+        verify=verify,
+        timeout=timeout,
     )
     answer.raise_for_status()
     return answer.json()["choices"][0]["message"]["content"]
@@ -100,8 +98,9 @@ def read_gauge_vision(body: bytes) -> Optional[int]:
     api = str(settings.giga_api_url).rstrip("/")
     try:
         access = access_token(settings)
-        file_id = _upload(api, access, body)
-        answers = [_ask(api, access, file_id) for _ in range(READS)]
+        timeout, verify = settings.giga_gauge_timeout, settings.tls_verify
+        file_id = _upload(api, access, body, timeout, verify)
+        answers = [_ask(api, access, file_id, timeout, verify) for _ in range(READS)]
     except Exception as error:
         raise GaugeVisionUnavailable(str(error)) from error
 

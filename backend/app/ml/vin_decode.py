@@ -16,8 +16,6 @@ from app.core.config_ml import GigaChatSettings
 from app.ml.model_answer import parse_answer
 from app.ml.sts_vision import MODEL, VisionUnavailable, access_token
 
-ANSWER_TIMEOUT = 120
-
 FIELDS = ("mark", "model", "year", "power", "transmission")
 
 PROMPT = """Расшифруй VIN автомобиля: {vin}
@@ -37,7 +35,7 @@ PROMPT = """Расшифруй VIN автомобиля: {vin}
 """
 
 
-def _ask(api: str, access: str, vin: str) -> str:
+def _ask(api: str, access: str, vin: str, timeout: int, verify) -> str:
     answer = requests.post(
         f"{api}/chat/completions",
         headers={"Authorization": f"Bearer {access}", "Content-Type": "application/json"},
@@ -47,8 +45,8 @@ def _ask(api: str, access: str, vin: str) -> str:
             "temperature": 0.1,
             "messages": [{"role": "user", "content": PROMPT.format(vin=vin)}],
         },
-        verify=False,
-        timeout=ANSWER_TIMEOUT,
+        verify=verify,
+        timeout=timeout,
     )
     answer.raise_for_status()
     return answer.json()["choices"][0]["message"]["content"]
@@ -61,7 +59,7 @@ def read_vin(vin: str) -> dict:
 
     try:
         access = access_token(settings)
-        content = _ask(api, access, vin)
+        content = _ask(api, access, vin, settings.giga_vin_timeout, settings.tls_verify)
     except Exception as error:
         raise VisionUnavailable(str(error)) from error
 

@@ -13,11 +13,11 @@ from typing import Optional
 
 from loguru import logger
 
+from app.core.config_ml import RecognitionSettings
 from app.ml.gauge_vision import GaugeVisionUnavailable, read_gauge_vision
 from app.shared.storage.cache_service import cache_service
 
 CACHE_PREFIX = "gauge_reading"
-CACHE_TTL = 3600
 
 
 def _key(body: bytes) -> str:
@@ -41,5 +41,5 @@ async def read_panel_photo(body: bytes) -> Optional[int]:
         logger.warning(f"gauge vision unavailable: {str(error)[:120]}")
         return None
 
-    await cache_service.set(CACHE_PREFIX, key, {"value_um": reading}, ttl=CACHE_TTL)
+    await cache_service.set(CACHE_PREFIX, key, {"value_um": reading}, ttl=RecognitionSettings().gauge_cache_ttl_seconds)
     return reading

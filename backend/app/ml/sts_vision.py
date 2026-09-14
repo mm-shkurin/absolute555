@@ -30,8 +30,6 @@ from app.core.config_ml import GigaChatSettings
 from app.ml.model_answer import parse_answer
 
 MODEL = "GigaChat-2-Max"
-UPLOAD_TIMEOUT = 90
-ANSWER_TIMEOUT = 180
 
 # Буквы I, O и Q в VIN не используются по стандарту ISO 3779 — именно чтобы их не путали
 # с единицей и нулём. Строка, где они есть, прочитана неверно.
@@ -71,27 +69,27 @@ def access_token(settings: GigaChatSettings) -> str:
             "Content-Type": "application/x-www-form-urlencoded",
         },
         data={"scope": str(settings.giga_scope)},
-        verify=False,
-        timeout=30,
+        verify=settings.tls_verify,
+        timeout=settings.giga_token_timeout,
     )
     answer.raise_for_status()
     return answer.json()["access_token"]
 
 
-def _upload(api: str, access: str, body: bytes) -> str:
+def _upload(api: str, access: str, body: bytes, timeout: int, verify) -> str:
     answer = requests.post(
         f"{api}/files",
         headers={"Authorization": f"Bearer {access}"},
         files={"file": ("sts.jpg", body, "image/jpeg")},
         data={"purpose": "general"},
-        verify=False,
-        timeout=UPLOAD_TIMEOUT,
+        verify=verify,
+        timeout=timeout,
     )
     answer.raise_for_status()
     return answer.json()["id"]
 
 
-def _ask(api: str, access: str, file_id: str) -> str:
+def _ask(api: str, access: str, file_id: str, timeout: int, verify) -> str:
     answer = requests.post(
         f"{api}/chat/completions",
         headers={"Authorization": f"Bearer {access}", "Content-Type": "application/json"},
@@ -101,8 +99,8 @@ def _ask(api: str, access: str, file_id: str) -> str:
             "temperature": 0.1,
             "messages": [{"role": "user", "content": PROMPT, "attachments": [file_id]}],
         },
-        verify=False,
-        timeout=ANSWER_TIMEOUT,
+        verify=verify,
+        timeout=timeout,
     )
     answer.raise_for_status()
     return answer.json()["choices"][0]["message"]["content"]
@@ -121,8 +119,9 @@ def read_sts(body: bytes) -> dict:
 
     try:
         access = access_token(settings)
-        file_id = _upload(api, access, body)
-        content = _ask(api, access, file_id)
+        verify = settings.tls_verify
+        file_id = _upload(api, access, body, settings.giga_sts_upload_timeout, verify)
+        content = _ask(api, access, file_id, settings.giga_sts_answer_timeout, verify)
     except Exception as error:
         raise VisionUnavailable(str(error)) from error
 

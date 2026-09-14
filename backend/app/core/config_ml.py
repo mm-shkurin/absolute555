@@ -5,6 +5,8 @@
 и меняются они вместе с ним, а не вместе с приложением.
 """
 
+from typing import Optional, Union
+
 from pydantic import Field, HttpUrl
 from pydantic_settings import BaseSettings
 
@@ -21,6 +23,7 @@ class RecognitionSettings(BaseSettings):
     """
 
     confirm_number_with_ocr: bool = Field(False, alias="CONFIRM_NUMBER_WITH_OCR")
+    gauge_cache_ttl_seconds: int = Field(default=3600, gt=0, alias="GAUGE_CACHE_TTL_SECONDS")
 
     model_config = BaseConfig.model_config
 
@@ -37,5 +40,19 @@ class GigaChatSettings(BaseSettings):
     giga_scope: str = Field(default="GIGACHAT_API_PERS", alias="GIGA_SCOPE")
     giga_oauth_url: HttpUrl = Field(..., alias="GIGA_OAUTH_URL")
     giga_api_url: HttpUrl = Field(..., alias="GIGA_API_URL")
-    
+    # Seconds. Reading a СТС answers slowest: the model reads a whole document.
+    giga_token_timeout: int = Field(default=30, gt=0, alias="GIGA_TOKEN_TIMEOUT")
+    giga_sts_upload_timeout: int = Field(default=90, gt=0, alias="GIGA_STS_UPLOAD_TIMEOUT")
+    giga_sts_answer_timeout: int = Field(default=180, gt=0, alias="GIGA_STS_ANSWER_TIMEOUT")
+    giga_gauge_timeout: int = Field(default=60, gt=0, alias="GIGA_GAUGE_TIMEOUT")
+    giga_vin_timeout: int = Field(default=120, gt=0, alias="GIGA_VIN_TIMEOUT")
+    # GigaChat's certificate chains to the Russian Trusted Root CA, which system trust
+    # stores lack. Point this at that bundle; unset means the system store.
+    giga_ca_bundle: Optional[str] = Field(default=None, alias="GIGA_CA_BUNDLE")
+
+    @property
+    def tls_verify(self) -> Union[str, bool]:
+        return self.giga_ca_bundle or True
+
+
     model_config = BaseConfig.model_config

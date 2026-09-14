@@ -24,8 +24,8 @@ def provider(monkeypatch):
 
     def _use(content: str):
         monkeypatch.setattr(sts_vision, "access_token", lambda settings: "test-token")
-        monkeypatch.setattr(sts_vision, "_upload", lambda api, access, body: "file-1")
-        monkeypatch.setattr(sts_vision, "_ask", lambda api, access, file_id: content)
+        monkeypatch.setattr(sts_vision, "_upload", lambda api, access, body, timeout, verify: "file-1")
+        monkeypatch.setattr(sts_vision, "_ask", lambda api, access, file_id, timeout, verify: content)
 
     return _use
 
