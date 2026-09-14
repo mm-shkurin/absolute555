@@ -16,7 +16,7 @@ from app.features.offer.statuses import OfferStatus as OfferStatusEnum
 from app.features.review.deps import get_review_service
 from app.features.review.services.review_service import ReviewService
 from app.permissions.guests import forbid_guest
-from app.shared.http.review_view import offer_view
+from app.features.review.api.review_view import offer_view
 from app.features.auth.deps import get_current_user
 
 offer_router = APIRouter()

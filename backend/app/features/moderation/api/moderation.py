@@ -25,7 +25,7 @@ from app.features.listing.schemas.sale_cars import SaleCarStatusChanged
 from app.features.moderation.services.complaint_service import ComplaintService
 from app.features.moderation.services.moderation_service import ModerationService
 
-from app.shared.http.moderation_view import complaint_view, group_view, queue_item
+from app.features.moderation.api.moderation_view import complaint_view, group_view, queue_item
 
 moderation_router = APIRouter()
 

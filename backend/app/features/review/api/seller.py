@@ -4,8 +4,8 @@ from fastapi import APIRouter, Depends, Query
 from app.shared.http.paging import page_size as page_size_query
 from app.features.review.deps import get_seller_profile_service
 
-from app.shared.http.review_view import profile_view, review_view
-from app.shared.http.sale_car_view import to_card
+from app.features.review.api.review_view import profile_view, review_view
+from app.features.listing.api.sale_car_view import to_card
 from app.features.review.schemas.review import (
     ReviewPage,
     SellerListingPage,

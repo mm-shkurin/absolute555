@@ -2,7 +2,7 @@
 
 from typing import Iterable
 
-from app.shared.http.sale_car_view import seller_view, to_card
+from app.features.listing.api.sale_car_view import seller_view, to_card
 
 
 def queue_item(listing, open_complaints: int) -> dict:

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, status
 from app.features.review.deps import get_dialog_review_service
 from app.features.review.deps import get_review_service
 
-from app.shared.http.review_view import review_view
+from app.features.review.api.review_view import review_view
 from app.permissions.guests import forbid_guest
 from app.features.review.schemas.review import ReviewCreate, ReviewPatch, ReviewResponse
 from app.features.review.services.review_dialog import DialogReviewService
