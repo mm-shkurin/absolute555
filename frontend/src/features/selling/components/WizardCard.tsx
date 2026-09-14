@@ -2,8 +2,6 @@
 // сетка мастера.
 import { FormCard, type FormCardProps } from '../../../shared/ui/FormCard'
 
-export { NavSpacer } from '../../../shared/ui/FormCard'
-
 export interface WizardCardProps extends Omit<FormCardProps, 'flush' | 'testId'> {
   testId: string
 }

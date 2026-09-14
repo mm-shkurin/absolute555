@@ -22,3 +22,9 @@ export const MAX_LISTING_PHOTOS = positiveNumber(import.meta.env.VITE_MAX_LISTIN
 
 // Одноразовый код провайдера длиннее этого — не код, а мусор в адресной строке.
 export const MAX_OAUTH_CODE_LENGTH = positiveNumber(import.meta.env.VITE_MAX_OAUTH_CODE_LENGTH, 512)
+
+// Длина текста отзыва: клиент не даёт набрать больше, чем примет сервер.
+export const MAX_REVIEW_TEXT_LENGTH = positiveNumber(
+  import.meta.env.VITE_MAX_REVIEW_TEXT_LENGTH,
+  2000,
+)

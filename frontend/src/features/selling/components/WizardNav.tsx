@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { Button } from '../../../shared/ui/Button'
-import { NavSpacer } from './WizardCard'
+import { NavSpacer } from '../../../shared/ui/FormCard'
 
 export interface WizardNavProps {
   backLabel?: string

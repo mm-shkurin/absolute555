@@ -1,6 +1,7 @@
 // Помечается только то, чей источник подтвердил сервер. Не подставилось — значит пусто, и
 // заполняет продавец: пометка на угаданном поле снимала бы с него проверку.
 import type { Draft } from '../logic/draft'
+import { listingYearHint } from '../../../shared/format/yearHints'
 import { Form, Field, Select } from '../../../shared/ui/Form'
 import { RecognizedInput, isRecognized } from './RecognizedInput'
 
@@ -18,7 +19,12 @@ export function SpecsFields({ draft, manual, onField }: SpecsFieldsProps) {
     <Form>
       <RecognizedInput {...common} name="brand" label="Марка" placeholder="Lexus" />
       <RecognizedInput {...common} name="model" label="Модель" placeholder="LX 570" />
-      <RecognizedInput {...common} name="year" label="Год выпуска" placeholder="2012" />
+      <RecognizedInput
+        {...common}
+        name="year"
+        label="Год выпуска"
+        placeholder={listingYearHint()}
+      />
       <Field label="Коробка" source={draft.transmission.source}>
         <Select
           value={draft.transmission.value}

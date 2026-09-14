@@ -18,7 +18,7 @@ export function ProfilePage() {
   const identity = useProfileIdentity()
   const storefront = useMyStorefront()
   const view = query.data ? toProfileView(query.data) : null
-  const failure = !query.isPending && query.error ? (query.error as Error) : null
+  const failure = !query.isPending && query.error ? query.error : null
   return (
     <>
       <SiteHeader signedIn />

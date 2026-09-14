@@ -39,7 +39,7 @@ export function useReview(): ReviewResult {
   return {
     target,
     busy: write.isPending,
-    failure: (write.error as Error | null)?.message ?? null,
+    failure: write.error?.message ?? null,
     editable,
     open: (next) => {
       write.reset()

@@ -1,10 +1,10 @@
 // Сервер отвечает на загрузку сразу — принято, а не прочитано, — и результат приезжает
 // потоком. Поток можно не застать, поэтому исход дополнительно перечитывается из
 // объявления: `autofill` повторяет то, что приходило по SSE.
-import { openListingStream } from '../../shared/api/backend/listingStream'
-import type { AutofillState } from '../../shared/api/backend/saleCarContract'
-import { loadDraft } from './api/draftApi'
-import { isFinal, outcomeOf } from './logic/recognition'
+import { openListingStream } from '../../../shared/api/backend/listingStream'
+import type { AutofillState } from '../../../shared/api/backend/saleCarContract'
+import { loadDraft } from '../api/draftApi'
+import { isFinal, outcomeOf } from './recognition'
 
 // Перечитывание — страховка, а не основной канал: первая проверка через 4 с, каждая
 // следующая в полтора раза реже, но не реже раза в 30 с. Распознавание, не закончившееся

@@ -26,6 +26,6 @@ export function useProfileIdentity(): IdentityActions {
     onDropPhoto: () => dropPhoto.mutate(),
     onSignOut: () => signOut.mutate(),
     busy: rename.isPending || setPhoto.isPending || dropPhoto.isPending,
-    error: failed ? (failed as Error).message : null,
+    error: failed ? failed.message : null,
   }
 }

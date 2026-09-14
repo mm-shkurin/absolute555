@@ -35,7 +35,7 @@ export function useRoleRequest(): RoleRequestResult {
     sent: send.isSuccess,
     // Живая заявка и уже выданная роль — ответ сервера, а не поломка экрана: текст
     // отказа объясняет, почему второй заявки не будет.
-    failure: (send.error as Error | null)?.message ?? null,
+    failure: send.error?.message ?? null,
     send: (draft) => send.mutate(draft),
   }
 }

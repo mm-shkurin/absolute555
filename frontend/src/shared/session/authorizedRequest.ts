@@ -74,6 +74,7 @@ async function performRenewal(): Promise<boolean> {
     renewTokens(pair.accessToken, pair.refreshToken)
     return true
   } catch {
+    // Отказ обновления значит «сессии нет»: вызывающий уводит на вход, причина ему не нужна.
     return false
   }
 }

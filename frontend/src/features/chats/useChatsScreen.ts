@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { PHONE, useMediaQuery } from '../../shared/lib/useMediaQuery'
 import { useReview } from '../../shared/review/useReview'
-import { useChats, useConversation } from './useChats'
+import { useChats } from './useChats'
+import { useConversation } from './useConversation'
 
 export function useChatsScreen() {
   const now = new Date()

@@ -32,6 +32,7 @@ export function useDraftSave(idRef: IdRef) {
     try {
       return toDraft(await loadDraft(id))
     } catch {
+      // Недоступный черновик мастер открывает пустым: причина отказа продавцу ничего не даёт.
       return null
     }
   }, [idRef])
@@ -50,6 +51,7 @@ export function useRecognitionStart(draftId: () => Promise<string | null>) {
         await send(id)
         return true
       } catch {
+        // По «не дошло» мастер возвращается на прежний экран, текст отказа там не показывается.
         return false
       }
     },

@@ -4,7 +4,7 @@
 // разговор с сервером: когда завести черновик, когда дослать правку, что делать с исходом
 // распознавания и чем кончается отправка. Вместе они не помещались ни в голове, ни в
 // двухсотстрочный предел.
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { submitDraft } from './api/draftApi'
 import type { Draft } from './logic/draft'
 import { stageFor } from './logic/recognition'
@@ -53,6 +53,14 @@ export function useWizardServer(
   const syncRef = useLatest(sync)
   const galleryRef = useLatest(gallery)
   const recognitionRef = useLatest(recognition)
+  const mounted = useRef(true)
+
+  useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   // Открытый по ссылке черновик подтягивается целиком: поля, их происхождение и снимки.
   // Без этого «Продолжить» открывало бы пустой мастер поверх уже начатого объявления.
@@ -105,7 +113,7 @@ export function useWizardServer(
       wizardRef.current.goStage('recognizing')
       recognitionRef.current.reset()
       void send().then((accepted) => {
-        if (!accepted) wizardRef.current.goStage(fallback)
+        if (!accepted && mounted.current) wizardRef.current.goStage(fallback)
       })
     },
     [wizardRef, recognitionRef],
@@ -126,6 +134,7 @@ export function useWizardServer(
   const submitForReview = async () => {
     setSubmitError(null)
     await sync.save(wizard.draft)
+    if (!mounted.current) return
     if (!sync.saleCarId) {
       setSubmitError('Черновик не сохранён на сервере. Проверьте связь и попробуйте ещё раз.')
       return
@@ -133,12 +142,13 @@ export function useWizardServer(
     try {
       await submitDraft(sync.saleCarId)
     } catch (failure) {
+      if (!mounted.current) return
       // Отказ «не хватает полей» называет их поимённо: общий текст отправил бы продавца
       // перечитывать шесть шагов подряд.
       setSubmitError(submitFailureText(failure))
       return
     }
-    wizard.submit()
+    if (mounted.current) wizard.submit()
   }
 
   return {

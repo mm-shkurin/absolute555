@@ -6,6 +6,8 @@
 import { Field, TextInput } from '../../../shared/ui/Form'
 import type { Draft } from '../logic/draft'
 
+const DELIVERY_DAYS_HINT = '60'
+
 interface Props {
   draft: Draft
   onField: (key: keyof Draft, value: string) => void
@@ -26,7 +28,7 @@ export function ImportFields({ draft, onField }: Props) {
         <TextInput
           value={draft.deliveryDays}
           onChange={(value) => onField('deliveryDays', value)}
-          placeholder="60"
+          placeholder={DELIVERY_DAYS_HINT}
         />
       </Field>
       <Field label="Цена под ключ, ₽" full>

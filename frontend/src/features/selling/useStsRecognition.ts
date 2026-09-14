@@ -1,9 +1,9 @@
 // Ожидание исхода распознавания СТС.
 import { useCallback, useEffect, useRef, useState } from 'react'
 import type { AutofillState } from '../../shared/api/backend/saleCarContract'
-import { watchRecognition } from './recognitionWatch'
+import { watchRecognition } from './logic/recognitionWatch'
 
-export { FIRST_CHECK_MS, CHECK_BACKOFF, MAX_CHECK_MS } from './recognitionWatch'
+export { FIRST_CHECK_MS, CHECK_BACKOFF, MAX_CHECK_MS } from './logic/recognitionWatch'
 
 export function useStsRecognition(saleCarId: string | null, watching: boolean) {
   const [outcome, setOutcome] = useState<AutofillState | null>(null)

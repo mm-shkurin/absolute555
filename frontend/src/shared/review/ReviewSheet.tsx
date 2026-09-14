@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { Sheet } from '../ui/Sheet'
 import { Button } from '../ui/Button'
 import { RatingPicker } from './RatingPicker'
+import { MAX_REVIEW_TEXT_LENGTH } from '../config/runtime'
 import styles from './ReviewSheet.module.css'
 
 export interface ReviewSheetProps {
@@ -29,7 +30,7 @@ export function ReviewSheet(props: ReviewSheetProps) {
       <textarea
         className={styles.reviewText}
         value={text}
-        maxLength={2000}
+        maxLength={MAX_REVIEW_TEXT_LENGTH}
         disabled={locked}
         onChange={(event) => setText(event.target.value)}
         placeholder="Что было с этой сделкой. Текст увидят все, кто откроет профиль продавца."

@@ -57,6 +57,6 @@ export function useConversation(chat: ChatWire | null, now: Date) {
     send: (text: string) => {
       if (chat) sending.mutate(text)
     },
-    sendFailed: (sending.error as Error | null) ?? null,
+    sendFailed: sending.error,
   }
 }

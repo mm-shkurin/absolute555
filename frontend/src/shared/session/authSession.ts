@@ -123,12 +123,36 @@ function write(session: Session): void {
   }
 }
 
+const SESSION_ROLES: ReadonlySet<string> = new Set([
+  'guest',
+  'user',
+  'importer',
+  'manager',
+  'admin',
+])
+
+function isSession(value: unknown): value is Session {
+  if (typeof value !== 'object' || value === null) return false
+  const s = value as Record<string, unknown>
+  return (
+    typeof s.accessToken === 'string' &&
+    s.accessToken !== '' &&
+    typeof s.refreshToken === 'string' &&
+    typeof s.userId === 'string' &&
+    s.userId !== '' &&
+    typeof s.role === 'string' &&
+    SESSION_ROLES.has(s.role) &&
+    typeof s.displayName === 'string' &&
+    (s.avatarUrl === null || typeof s.avatarUrl === 'string')
+  )
+}
+
 function readStored(): Session | null {
   const raw = browserStorage()?.getItem(STORAGE_KEY)
   if (!raw) return null
   try {
-    const parsed = JSON.parse(raw) as Partial<Session>
-    return parsed.accessToken && parsed.userId ? (parsed as Session) : null
+    const parsed: unknown = JSON.parse(raw)
+    return isSession(parsed) ? parsed : null
   } catch {
     return null
   }
