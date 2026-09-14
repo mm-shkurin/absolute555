@@ -41,3 +41,11 @@
 2026-09-14 18:05 | #6 | audit | selling (страницы) | SellingWizardPage и шаги .tsx без тестов, 137 строк | до цели ~92 строки
 2026-09-14 18:10 | #6 | test  | selling/SellingWizardPage | 7 красных за 1 мс | не код: прогон запущен из корня репо (cd .. в соседней команде), vitest без конфига фронта; из frontend/ — 7 passed
 2026-09-14 18:11 | #6 | cover | selling/SellingWizardPage | 7 сценариев зелёные | возврат на шаг цены, цена числом при «Дальше», фото и обложка, удаление фото, сводка не пускает, отправка, ручной ввод без СТС
+2026-09-14 18:15 | #6 | suite | front | tsc exit 0; Test Files 59 passed; Tests 336 passed | lines 49.69% (+3.2), branches 43.41%, functions 45.03%
+2026-09-14 18:16 | #6 | commit| selling (страница мастера) | test(frontend): покрыть страницу мастера продажи от черновика до отправки |
+2026-09-14 18:20 | #7 | audit | importRequest | ImportRequestPage, RespondForm, BidList без тестов | до цели ~8 строк
+2026-09-14 18:25 | #7 | test  | importRequest/ImportRequestPage | «повторный отклик правит свой — форма заполнена прежним» | red: expected '' to be '6690000' — кнопка «Изменить отклик», а поле цены пустое
+2026-09-14 18:26 | #7 | fix   | importRequest/ImportRequestPage | RespondForm с key по отклику | форма монтировалась до загрузки откликов и держала пустое состояние первого рендера
+2026-09-14 18:30 | #7 | cover | importRequest/ImportRequestPage | 5 сценариев зелёные сразу | отклики и самый дешёвый, закрытие, отклик ценой с пробелами и переход в переписку, закрытая заявка, чужая не видна
+2026-09-14 18:35 | #7 | suite | front | tsc exit 0; Test Files 60 passed; Tests 342 passed | lines 51.77% (+2.1), branches 45.6%, functions 47.41%
+2026-09-14 18:36 | #7 | stop  | front | stop: target | 50% достигнуто: 23.8% -> 51.77% за 7 итераций, 4 бага исправлено

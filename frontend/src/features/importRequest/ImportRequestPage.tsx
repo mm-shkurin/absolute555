@@ -103,6 +103,9 @@ export function ImportRequestPage({ signedIn = false }: { signedIn?: boolean }) 
                 {!mine && currentRole() === 'importer' && view.active ? (
                   <Panel title="Ваш отклик" testId="request-respond">
                     <RespondForm
+                      // Отклики приезжают после заявки: без ключа форма запоминала пустые
+                      // поля первого рендера и под «Изменить отклик» показывала пустую цену.
+                      key={myResponse?.response_id ?? 'new'}
                       existing={myResponse ?? null}
                       busy={respond.isPending}
                       error={respond.error ? requestFailureText(respond.error) : null}
