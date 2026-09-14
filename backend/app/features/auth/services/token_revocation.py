@@ -12,7 +12,8 @@
 """
 
 import hashlib
-from datetime import datetime
+import time
+from datetime import datetime, timezone
 
 from loguru import logger
 
@@ -30,13 +31,13 @@ def _seconds_left(payload: dict) -> int:
     expires_at = payload.get("exp")
     if not expires_at:
         return 3600
-    left = int(expires_at - datetime.utcnow().timestamp())
+    left = int(expires_at - time.time())
     return max(60, min(left, 86400))
 
 
 async def revoke(token: str, payload: dict) -> None:
     await cache_service.set(
-        PREFIX, fingerprint(token), {"revoked_at": datetime.utcnow().isoformat()},
+        PREFIX, fingerprint(token), {"revoked_at": datetime.now(timezone.utc).isoformat()},
         ttl=_seconds_left(payload),
     )
 

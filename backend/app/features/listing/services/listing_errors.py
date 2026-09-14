@@ -1,9 +1,7 @@
 """Domain errors of the listing lifecycle.
 
 A service states what went wrong in the language of listings; the router decides which
-status code says that over HTTP. Raising HTTPException down here would put the wire
-protocol inside the business rules -- which is what `.claude/rules/coding-rules.md`
-forbids, and what the rest of this service layer still does.
+status code says that over HTTP, so the wire protocol stays out of the business rules.
 """
 
 

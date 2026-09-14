@@ -1,10 +1,8 @@
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 import uuid
-from sqlalchemy import Boolean, Column,Float, DateTime, ForeignKey, Integer,JSON, String, Text, Enum, func
+from sqlalchemy import Boolean, Column,Float, DateTime, ForeignKey, Integer,String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from datetime import datetime
-from enum import Enum as PyEnum
 
 # Словарь состояний живёт отдельно (app/features/listing/statuses.py): он нужен и схеме,
 # и роутеру, а те не должны импортировать ORM ради перечисления. Имена продолжают

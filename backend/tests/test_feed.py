@@ -12,7 +12,7 @@ import uuid
 
 import pytest
 
-from tests.test_listing_lifecycle import COMPLETE, _create, _publish
+from tests.test_listing_lifecycle import COMPLETE, _create
 
 
 @pytest.fixture

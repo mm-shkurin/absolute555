@@ -11,7 +11,6 @@ labels and the complaint queue, and neither belongs to the seller's path.
 
 import uuid
 from datetime import datetime
-from typing import Optional
 
 from loguru import logger
 from sqlalchemy import func, select, update

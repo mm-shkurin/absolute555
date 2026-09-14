@@ -1,6 +1,6 @@
 """Where complaint refusals become HTTP errors."""
 
-from app.core.exceptions import BusinessRuleError, ConflictError, ResourceNotFoundError
+from app.core.exceptions import ConflictError, ResourceNotFoundError
 from app.features.moderation.services.complaint_errors import (
     AlreadyComplained,
     ComplaintAlreadyHandled,

@@ -5,7 +5,6 @@ plumbing in place: the function the worker registers is the function the API enq
 the job is handed a key rather than the document itself.
 """
 
-import pytest
 
 from app.queue import queue_settings
 from app.tasks.decode_vin import decode_vin_from_sts

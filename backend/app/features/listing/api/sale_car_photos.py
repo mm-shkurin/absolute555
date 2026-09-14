@@ -14,7 +14,7 @@ from app.db.database import get_db
 from app.features.listing.schemas.sale_cars import GalleryResponse, PhotoOrder
 from app.features.listing.services.listing_errors import ListingError
 from app.features.listing.services.listing_lifecycle import ListingLifecycleService
-from app.features.listing.services.listing_photos import ListingGalleryService, photo_settings
+from app.features.listing.services.listing_photos import ListingGalleryService
 from app.utils.security import get_current_user
 
 from .listing_http import listing_of, to_http

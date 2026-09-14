@@ -4,7 +4,6 @@ Story 5, Tier 1. The list's order is the displayed order and its first element i
 cover; there is no separate cover field to disagree with it.
 """
 
-import pytest
 
 from tests.conftest import make_image
 from tests.test_listing_lifecycle import _create, _fill, _status

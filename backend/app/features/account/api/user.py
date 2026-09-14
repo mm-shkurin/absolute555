@@ -1,25 +1,7 @@
-from typing import Annotated
-from urllib.parse import urlencode
 
-from fastapi import APIRouter, Body, Depends, Query, status
-from fastapi.requests import Request
-from fastapi.responses import HTMLResponse, RedirectResponse
-import httpx
-from loguru import logger
-import pkce
-from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.future import select
+from fastapi import APIRouter
 
-from app.db.database import get_db
-from app.features.auth.schemas.token import Token
 from app.features.account.schemas.user import User_Data
-from app.features.account.services.user_service import UserService
-from app.utils.security import (
-    create_access_token,
-    create_refresh_token,
-    refresh_access_token,
-    get_current_user,
-)
 from app.permissions.dependencies import CurrentUser
 from app.features.account.provider_profile import as_profile
 

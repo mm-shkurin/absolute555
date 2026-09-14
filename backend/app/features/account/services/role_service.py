@@ -1,16 +1,14 @@
-from typing import List, Optional, Dict, Any
-from uuid import UUID, uuid4
+from typing import List, Optional
+from uuid import UUID
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, desc
 from datetime import datetime
-import json
 
 from app.features.account.models.users import Users
 from app.features.account.models.role_request import RoleRequest, RoleRequestStatus
 from app.permissions.roles import UserRole
 from app.permissions.checker import PermissionChecker
 from app.permissions.permissions import Permission
-from app.features.account.schemas.role import RoleRequestCreate, RoleRequestUpdate
 from loguru import logger
 
 class RoleService:

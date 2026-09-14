@@ -1,7 +1,7 @@
-from fastapi import APIRouter, Request, Form, Depends, status, Header
+from fastapi import APIRouter, Request, Form
 
 from app.core.exceptions import AuthenticationError
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from fastapi.openapi.docs import get_swagger_ui_html, get_redoc_html
 from fastapi.templating import Jinja2Templates
 from app.core.config import DocsSettings

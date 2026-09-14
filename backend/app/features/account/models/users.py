@@ -1,12 +1,8 @@
 from sqlalchemy.orm import relationship
-from app.db.database import Base
 import uuid
-from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text, Enum, func
+from sqlalchemy import Boolean, Column, DateTime, Float, Integer, String, Text, func
 from sqlalchemy.dialects.postgresql import JSONB, UUID
-from sqlalchemy.orm import declarative_base
-from datetime import datetime
 from app.db.database import BaseModel
-from app.features.offer.models.offer import Offer
 from app.features.account.provider_profile import as_profile, name_in
 from app.permissions.roles import UserRole
 class Users(BaseModel):

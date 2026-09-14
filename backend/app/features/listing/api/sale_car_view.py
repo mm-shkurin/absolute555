@@ -14,7 +14,7 @@ from app.core.config import PhotoSettings
 from app.features.account.api.account_view import avatar_url, name_of
 from app.shared.storage.s3_service import s3_service
 
-from .sale_car_thickness_view import thickness_summary, to_thickness_map
+from .sale_car_thickness_view import thickness_summary
 
 photo_settings = PhotoSettings()
 

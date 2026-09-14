@@ -1,7 +1,6 @@
-from typing import List, Optional
+from typing import Optional
 from uuid import UUID
-from datetime import datetime
-from fastapi import APIRouter, Depends, status, Query
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
@@ -13,13 +12,11 @@ from app.features.account.schemas.role import (
     RoleStats,
 )
 from app.features.account.services.account_access_service import AccountAccessService
-from app.core.exceptions import BusinessRuleError, ResourceNotFoundError
+from app.core.exceptions import ResourceNotFoundError
 from app.features.account.services.role_service import RoleService
-from app.utils.security import get_current_user
 from app.permissions.dependencies import require_permission
 from app.permissions.permissions import Permission
 from app.permissions.roles import UserRole
-from loguru import logger
 
 role_router = APIRouter()
 

@@ -9,7 +9,6 @@ These run against the compose stack: guest login yields a real account and every
 assertion goes over the API.
 """
 
-import pytest
 
 COMPLETE = {
     "price": 4020000.0,

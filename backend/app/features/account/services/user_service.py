@@ -4,7 +4,6 @@ from sqlalchemy import func
 from typing import Optional
 from app.features.account.models.users import Users
 from app.permissions.roles import UserRole
-from datetime import datetime
 from loguru import logger
 
 from uuid import UUID

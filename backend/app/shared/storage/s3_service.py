@@ -1,8 +1,9 @@
 from app.core.config import MinioSettings
-import json
 from fastapi import UploadFile
 import asyncio
 from typing import Optional
+
+from loguru import logger
 
 from app.shared.storage.s3_bucket import (
     build_client,
@@ -147,7 +148,7 @@ class S3Service:
             )
             return True
         except Exception as e:
-            print(f"Error deleting file {key} from S3: {e}")
+            logger.error(f"Error deleting file {key} from S3: {e}")
             return False
 
     async def delete_files(self, keys: list[str]) -> dict:

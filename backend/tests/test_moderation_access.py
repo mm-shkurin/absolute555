@@ -5,7 +5,6 @@ which is exactly what somebody gaming the review wants to know — and every act
 changes what buyers see.
 """
 
-import uuid
 
 import pytest
 

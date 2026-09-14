@@ -1,10 +1,8 @@
 from sqlalchemy.orm import relationship
 from app.db.database import Base
 import uuid
-from sqlalchemy import Boolean, Column,Float, DateTime, ForeignKey, Integer,JSON, String, Text, Enum, func
-from sqlalchemy.dialects.postgresql import JSONB, UUID
-from datetime import datetime
-from enum import Enum as PyEnum
+from sqlalchemy import Column,Float, DateTime, ForeignKey, String, func
+from sqlalchemy.dialects.postgresql import UUID
 
 # Словарь состояний живёт отдельно (app/features/offer/statuses.py). Имена продолжают
 # читаться отсюда: для сервисов оффер и его статусы — один предмет.

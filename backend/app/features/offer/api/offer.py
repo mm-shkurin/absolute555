@@ -1,7 +1,6 @@
 from fastapi import APIRouter, Depends, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from typing import List, Optional
-from loguru import logger
+from typing import List
 
 from app.db.database import get_db
 from app.features.offer.statuses import OfferStatus as OfferStatusEnum
@@ -17,8 +16,7 @@ from app.features.offer.api.offer_http import to_http
 from app.features.review.api.review_view import offer_view
 from app.features.review.services.review_service import ReviewService
 from app.utils.security import get_current_user
-from app.permissions.dependencies import require_permission
-from app.permissions.guests import check_guest_car_limit, forbid_guest
+from app.permissions.guests import forbid_guest
 from app.permissions.ownership import can_manage_offer, can_manage_offer_as_owner
 offer_router = APIRouter()
 @offer_router.post("/", response_model=OfferResponse, status_code=status.HTTP_201_CREATED)

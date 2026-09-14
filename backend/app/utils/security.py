@@ -1,10 +1,9 @@
 from datetime import datetime, timedelta
 
-from fastapi import Depends, status
+from fastapi import Depends
 from fastapi import Request
 from fastapi.security import APIKeyHeader
 import jwt
-from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.core.exceptions import AuthenticationError, AuthorizationError
@@ -12,7 +11,6 @@ from app.core.config import JWTSettings
 from app.core.config import CookieSettings
 from app.db.database import get_db
 from app.features.account.models.users import Users
-from app.features.auth.schemas.token import Token  
 
 auth_scheme = APIKeyHeader(name="Authorization", scheme_name="Bearer", auto_error=False)
 

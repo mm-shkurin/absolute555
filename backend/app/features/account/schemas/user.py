@@ -3,9 +3,7 @@ from typing import Any, Dict, Optional
 from uuid import UUID
 
 from pydantic import BaseModel
-from pydantic import BaseModel, validator
-from app.permissions.roles import UserRole
-import json
+from pydantic import BaseModel
 
 class User_Data(BaseModel):
     id: UUID

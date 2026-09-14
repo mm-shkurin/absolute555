@@ -1,8 +1,7 @@
 """Domain errors of an offer.
 
-Offer service used to raise HTTPException directly, which put the wire protocol inside
-the business rules -- the violation `.claude/rules/coding-rules.md` names by file. The
-service states the refusal here; app/api/offer_http.py decides the status code.
+The service states the refusal here; the router's error mapping decides the status code,
+so the wire protocol stays out of the business rules.
 """
 
 

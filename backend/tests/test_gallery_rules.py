@@ -7,7 +7,6 @@ could never fit.
 
 from concurrent.futures import ThreadPoolExecutor
 
-import pytest
 
 from tests.conftest import make_image
 from tests.test_listing_gallery import _gallery, _upload

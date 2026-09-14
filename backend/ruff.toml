@@ -1,0 +1,15 @@
+# One lint standard for app/ and tests/ alike: no per-file relaxations for test code.
+target-version = "py312"
+line-length = 100
+extend-exclude = ["alembic/versions"]
+
+[lint]
+# Pyflakes (unused imports/variables, undefined names), syntax errors, print() calls,
+# and bare except clauses.
+select = ["F", "E9", "T20", "E722"]
+# F811: tests import shared pytest fixtures by name and receive them as parameters of the
+# same name, which pyflakes reads as a redefinition.
+ignore = ["F811"]
+
+[format]
+quote-style = "double"

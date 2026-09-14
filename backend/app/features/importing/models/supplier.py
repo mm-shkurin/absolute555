@@ -9,7 +9,6 @@
 модерацию обходит.
 """
 
-import uuid
 from enum import Enum as PyEnum
 
 from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text, func

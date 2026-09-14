@@ -1,16 +1,7 @@
-import hashlib
-import hmac
-import httpx
-import json
 from typing import Optional
-from fastapi import Depends
 
 from app.core.exceptions import ValidationError
-from fastapi.responses import PlainTextResponse
-from loguru import logger
 from sqlalchemy.ext.asyncio import AsyncSession
-import pkce 
-from app.db.database import get_db
 from app.utils.security import create_access_token, create_refresh_token
 from app.features.account.services.user_service import UserService
 

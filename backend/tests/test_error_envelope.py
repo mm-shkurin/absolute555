@@ -6,7 +6,6 @@ sources of failure -- a custom error, an HTTPException raised by FastAPI's own r
 a request that fails validation, and a permission dependency.
 """
 
-import pytest
 
 ENVELOPE = {"error", "message", "code", "details"}
 

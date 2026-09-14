@@ -7,7 +7,7 @@ listing automatically is a threshold competitors learn to reach.
 
 import uuid
 from datetime import datetime
-from typing import List, Optional, Tuple
+from typing import Optional, Tuple
 
 from sqlalchemy import func, select
 from sqlalchemy.exc import IntegrityError
