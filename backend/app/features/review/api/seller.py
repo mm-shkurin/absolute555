@@ -11,7 +11,7 @@ from app.features.review.schemas.review import (
     SellerListingPage,
     SellerProfileResponse,
 )
-from app.features.review.services.seller_profile import SellerProfileService
+from app.features.review.services.seller_profile_service import SellerProfileService
 
 seller_router = APIRouter()
 

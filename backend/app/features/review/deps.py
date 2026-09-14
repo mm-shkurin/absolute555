@@ -4,9 +4,9 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.features.review.services.seller_profile import SellerProfileService
+from app.features.review.services.seller_profile_service import SellerProfileService
 from app.features.review.services.review_service import ReviewService
-from app.features.review.services.review_dialog import DialogReviewService
+from app.features.review.services.dialog_review_service import DialogReviewService
 
 
 def get_dialog_review_service(db: AsyncSession = Depends(get_db)) -> DialogReviewService:

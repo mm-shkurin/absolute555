@@ -14,8 +14,8 @@ from app.features.importing.schemas.supplier import (
     SupplierQueue,
     SupplierRejection,
 )
-from app.features.importing.services.supplier_cover import SupplierCoverService
-from app.features.importing.services.supplier_service import SupplierProfileService
+from app.features.importing.services.supplier_cover_service import SupplierCoverService
+from app.features.importing.services.supplier_profile_service import SupplierProfileService
 from app.features.listing.api.image_upload import image_upload
 from app.features.listing.services.photo_image import read_limited
 from app.permissions.dependencies import require_permission

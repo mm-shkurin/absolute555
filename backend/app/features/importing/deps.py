@@ -4,10 +4,10 @@ from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.database import get_db
-from app.features.importing.services.supplier_service import SupplierProfileService
-from app.features.importing.services.supplier_cover import SupplierCoverService
+from app.features.importing.services.supplier_profile_service import SupplierProfileService
+from app.features.importing.services.supplier_cover_service import SupplierCoverService
 from app.features.chat.services.chat_service import ChatService
-from app.features.importing.services.request_service import BuyerRequestService
+from app.features.importing.services.buyer_request_service import BuyerRequestService
 
 
 def get_buyer_request_service(db: AsyncSession = Depends(get_db)) -> BuyerRequestService:

@@ -24,7 +24,7 @@ from app.features.chat.schemas.chat import (
 from app.features.chat.services.chat_errors import ChatError, DialogNotFound
 from app.features.chat.services.chat_reader import ChatReader
 from app.features.chat.services.chat_service import ChatService
-from app.features.review.services.review_dialog import DialogReviewService
+from app.features.review.services.dialog_review_service import DialogReviewService
 from app.shared.realtime.chat_socket import chat_hub, listener_of
 from app.features.auth.deps import get_current_user
 

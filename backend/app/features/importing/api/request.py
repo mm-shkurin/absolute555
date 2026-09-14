@@ -4,7 +4,7 @@ from typing import List
 
 from fastapi import APIRouter, Depends, Query, status
 from app.shared.http.paging import page_size as page_size_query
-from app.features.importing.services.request_service import BuyerRequestService
+from app.features.importing.services.buyer_request_service import BuyerRequestService
 
 from app.features.importing.deps import get_buyer_request_service
 from app.features.importing.schemas.request import (
