@@ -67,7 +67,7 @@ class ListingLifecycleService:
         try:
             key = uuid.UUID(listing_id)
         except ValueError:
-            raise ListingNotFound(listing_id)
+            raise ListingNotFound(listing_id) from None
         found = await self.db.execute(
             select(SaleCars)
             .options(

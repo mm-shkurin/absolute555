@@ -36,6 +36,6 @@ async def verify_token(token:str, secret_key:str, algorithm:str):
         payload = jwt.decode(token, secret_key, algorithms=[algorithm])
         return payload
     except jwt.ExpiredSignatureError:
-        raise AuthenticationError("Token has expired", code="TOKEN_EXPIRED")
+        raise AuthenticationError("Token has expired", code="TOKEN_EXPIRED") from None
     except jwt.InvalidTokenError:
-        raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID")
+        raise AuthenticationError("Could not validate credentials", code="TOKEN_INVALID") from None

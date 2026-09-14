@@ -48,7 +48,7 @@ class BuyerRequestService:
         try:
             key = uuid.UUID(request_id)
         except ValueError:
-            raise RequestNotFound(request_id)
+            raise RequestNotFound(request_id) from None
 
         found = await self.db.execute(
             select(BuyerRequest)

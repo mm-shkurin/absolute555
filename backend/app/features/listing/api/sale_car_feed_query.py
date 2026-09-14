@@ -45,7 +45,7 @@ async def feed_query(
             "the feed cannot be asked that",
             code="FEED_QUERY_INVALID",
             details={"errors": [{"field": _field(error), "message": error["msg"]} for error in refusal.errors()]},
-        )
+        ) from refusal
 
 
 _PARAMETERS = set(inspect.signature(feed_query).parameters) - {"request"}

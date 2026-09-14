@@ -30,7 +30,7 @@ def as_uuid(value: str, field: str) -> uuid.UUID:
     try:
         return uuid.UUID(str(value))
     except (ValueError, AttributeError, TypeError):
-        raise MalformedIdentifier(field)
+        raise MalformedIdentifier(field) from None
 
 
 def editable_until(review: Review) -> Optional[datetime]:

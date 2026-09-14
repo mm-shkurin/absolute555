@@ -147,7 +147,7 @@ class ChatService:
         try:
             key = uuid.UUID(dialog_id)
         except ValueError:
-            raise DialogNotFound(dialog_id)
+            raise DialogNotFound(dialog_id) from None
 
         person = uuid.UUID(str(user_id))
         found = await self.db.execute(

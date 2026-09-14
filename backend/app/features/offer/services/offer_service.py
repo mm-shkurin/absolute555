@@ -69,7 +69,7 @@ class OfferService(OfferListingReader):
         try:
             uuid_ = uuid.UUID(offer_id)
         except ValueError:
-            raise MalformedIdentifier("offer_id")
+            raise MalformedIdentifier("offer_id") from None
         result = await self.db.execute(select(Offer).where(Offer.offer_id == uuid_))
         return result.scalar_one_or_none()
 
@@ -83,7 +83,7 @@ class OfferService(OfferListingReader):
         try:
             car_uuid = uuid.UUID(sale_car_id)
         except ValueError:
-            raise MalformedIdentifier("sale_car_id")
+            raise MalformedIdentifier("sale_car_id") from None
         result = await self.db.execute(select(Offer).where(Offer.sale_car_id == car_uuid))
         return result.scalars().all()
 
@@ -91,7 +91,7 @@ class OfferService(OfferListingReader):
         try:
             user_uuid = uuid.UUID(user_id)
         except ValueError:
-            raise MalformedIdentifier("user_id")
+            raise MalformedIdentifier("user_id") from None
         result = await self.db.execute(
             select(Offer).where(Offer.user_id == user_uuid).order_by(Offer.created_at.desc())
         )
@@ -107,7 +107,7 @@ class OfferService(OfferListingReader):
         try:
             user_uuid = uuid.UUID(user_id)
         except ValueError:
-            raise MalformedIdentifier("user_id")
+            raise MalformedIdentifier("user_id") from None
 
         mine = select(SaleCars.sale_car_id).where(SaleCars.user_id == user_uuid)
         result = await self.db.execute(

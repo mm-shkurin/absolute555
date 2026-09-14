@@ -22,7 +22,7 @@ class OfferListingReader:
         try:
             car_uuid = uuid.UUID(sale_car_id)
         except ValueError:
-            raise MalformedIdentifier("sale_car_id")
+            raise MalformedIdentifier("sale_car_id") from None
         result = await self.db.execute(
             select(SaleCars).where(SaleCars.sale_car_id == car_uuid)
         )

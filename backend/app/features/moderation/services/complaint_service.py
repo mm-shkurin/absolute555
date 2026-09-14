@@ -53,7 +53,7 @@ class ComplaintService:
             # The database holds the rule, so a second complaint racing the first is
             # refused here rather than counted.
             await self.db.rollback()
-            raise AlreadyComplained()
+            raise AlreadyComplained() from None
 
         await self.db.refresh(complaint)
         return complaint
@@ -124,7 +124,7 @@ class ComplaintService:
         try:
             key = uuid.UUID(complaint_id)
         except ValueError:
-            raise ComplaintNotFound(complaint_id)
+            raise ComplaintNotFound(complaint_id) from None
 
         found = await self.db.execute(
             select(Complaint)
@@ -140,7 +140,7 @@ class ComplaintService:
         try:
             key = uuid.UUID(listing_id)
         except ValueError:
-            raise ListingNotFound(listing_id)
+            raise ListingNotFound(listing_id) from None
 
         found = await self.db.execute(
             select(SaleCars).where(

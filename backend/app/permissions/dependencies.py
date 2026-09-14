@@ -42,7 +42,7 @@ def require_permission(permission: Permission):
         try:
             user_role = UserRole(current_user.role)
         except ValueError:
-            raise AuthorizationError("Invalid user role", code="ROLE_UNKNOWN")
+            raise AuthorizationError("Invalid user role", code="ROLE_UNKNOWN") from None
         if not await has_permission(user_role, permission):
             raise AuthorizationError(
                 "Permission denied",
@@ -57,7 +57,7 @@ def require_any_permission(permissions: List[Permission]):
         try:
             user_role = UserRole(current_user.role)
         except ValueError:
-            raise AuthorizationError("Invalid user role", code="ROLE_UNKNOWN")
+            raise AuthorizationError("Invalid user role", code="ROLE_UNKNOWN") from None
         if not await has_any_permission(user_role, permissions):
             raise AuthorizationError(
                 "Permission denied",
@@ -72,7 +72,7 @@ def require_all_permissions(permissions: List[Permission]):
         try:
             user_role = UserRole(current_user.role)
         except ValueError:
-            raise AuthorizationError("Invalid user role", code="ROLE_UNKNOWN")
+            raise AuthorizationError("Invalid user role", code="ROLE_UNKNOWN") from None
         if not await has_all_permissions(user_role, permissions):
             raise AuthorizationError(
                 "Permission denied",
