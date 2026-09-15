@@ -7,6 +7,7 @@ moves, or if a router stops importing.
 """
 
 import pytest
+from fastapi.routing import iter_route_contexts
 
 # One representative path per router, with the method it answers. Not the whole route
 # table: the point is that each router is mounted, and a full inventory here would need
@@ -25,7 +26,8 @@ MOUNTED_ROUTES = [
 
 def _route_table(client):
     table = {}
-    for route in client.app.routes:
+    # app.routes holds an included router as one node; the contexts expand it to its paths.
+    for route in iter_route_contexts(client.app.routes):
         methods = getattr(route, "methods", None)
         if methods:
             table.setdefault(route.path, set()).update(methods)

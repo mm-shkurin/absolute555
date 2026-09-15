@@ -24,15 +24,16 @@ def _key_matches(api_key: str | None) -> bool:
 
 def _login_page(request: Request, title: str, action: str):
     return templates.TemplateResponse(
-        "docs/login.html", {"request": request, "title": title, "action": action}
+        request, "docs/login.html", {"title": title, "action": action}
     )
 
 
 async def _login(request: Request, api_key: str, entry: str, viewer: str):
     if not _key_matches(api_key):
         return templates.TemplateResponse(
+            request,
             "docs/error.html",
-            {"request": request, "error_message": "Неверный API ключ!", "redirect_url": entry},
+            {"error_message": "Неверный API ключ!", "redirect_url": entry},
             status_code=401,
         )
     response = RedirectResponse(url=viewer, status_code=302)
