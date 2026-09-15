@@ -100,6 +100,12 @@ export class ListingStatements {
 
   async openThicknessMap(): Promise<void> {
     const teaser = await waitForVisible(this.driver, 'thickness-teaser')
+    // Пока карта грузится, в тизере заглушка другой высоты; схема, пришедшая после
+    // прокрутки, сдвигает кнопку, и клик попадает в соседний элемент.
+    await this.driver.wait(
+      async () => (await teaser.findElements(By.css('[aria-busy="true"]'))).length === 0,
+      4000,
+    )
     await clickElement(
       this.driver,
       await teaser.findElement(By.xpath('.//a[contains(., "Открыть карту")]')),

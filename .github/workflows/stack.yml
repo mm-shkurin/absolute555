@@ -94,6 +94,9 @@ jobs:
         run: npm ci && npm run test:e2e:live
         env:
           E2E_BASE_URL: http://localhost:3000
+          # Живые сценарии готовят данные прямо в API, мимо nginx; по умолчанию они ждут
+          # локальный порт 8100, а compose публикует бэкенд на BACKEND_HOST_PORT=8000.
+          E2E_API_URL: http://localhost:8000/api/v1
 
       # Логи нужны именно при падении: разбирать интеграцию по одному сообщению
       # «connection refused» бесполезно, а поднять стек заново локально — полчаса.
