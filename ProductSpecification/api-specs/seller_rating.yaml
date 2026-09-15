@@ -57,6 +57,51 @@ paths:
               schema: { $ref: 'errors.yaml#/components/schemas/Error' }
         '422': { $ref: 'errors.yaml#/components/responses/Error' }
 
+  /api/v1/chat/dialogs/{dialog_id}/review:
+    post:
+      summary: Оставить отзыв по переписке
+      operationId: createDialogReview
+      tags: [review]
+      security: [{ bearerAuth: [] }]
+      description: |
+        О продавце — по объявлению, о поставщике — по отклику или прямой переписке.
+        Оценивает только начавший переписку (buyer) того, кому писали. Один отзыв на
+        переписку.
+      parameters:
+        - name: dialog_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/ReviewCreate' }
+      responses:
+        '201':
+          description: Отзыв записан, агрегат пересчитан
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Review' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: Гость не оставляет отзывов.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '404':
+          description: |
+            Переписки нет или спрашивающий в ней не автор — случаи неразличимы.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '409':
+          description: Отзыв по переписке уже написан; тело несёт review_id.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+
   /api/v1/review/{review_id}:
     patch:
       summary: Править свой отзыв
@@ -215,10 +260,19 @@ components:
 
     Review:
       type: object
-      required: [review_id, offer_id, seller_id, rating, created_at]
+      required: [review_id, seller_id, rating, created_at]
       properties:
         review_id: { type: string, format: uuid }
-        offer_id: { type: string, format: uuid }
+        offer_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Заполнен у отзыва по офферу; у отзыва по переписке — null.
+        dialog_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Заполнен у отзыва по переписке.
         sale_car_id: { type: string, format: uuid, nullable: true }
         seller_id: { type: string, format: uuid }
         author: { $ref: '#/components/schemas/ReviewAuthor' }

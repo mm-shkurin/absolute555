@@ -163,6 +163,49 @@ paths:
         '403': { $ref: 'errors.yaml#/components/responses/Error' }
         '404': { $ref: 'errors.yaml#/components/responses/Error' }
 
+  /api/v1/role/users/{user_id}/role-info:
+    get:
+      summary: Роль пользователя
+      operationId: getUserRoleInfo
+      tags: [role]
+      security: [{ bearerAuth: [] }]
+      description: Требует право VIEW_USERS.
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Текущая роль и признак подтверждения
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserRoleInfo' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: USER_NOT_FOUND.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/role/stats:
+    get:
+      summary: Сводка пользователей по ролям
+      operationId: getRoleStats
+      tags: [role]
+      security: [{ bearerAuth: [] }]
+      description: Требует право VIEW_ANALYTICS.
+      responses:
+        '200':
+          description: Сводка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/RoleStats' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403': { $ref: 'errors.yaml#/components/responses/Error' }
+
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
@@ -222,6 +265,26 @@ components:
         - type: object
           properties:
             user_name: { type: string, nullable: true }
+
+    UserRoleInfo:
+      type: object
+      required: [user_id, current_role, is_verified]
+      properties:
+        user_id: { type: string, format: uuid }
+        current_role: { $ref: '#/components/schemas/UserRole' }
+        is_verified: { type: boolean }
+
+    RoleStats:
+      type: object
+      required: [total_users, users_by_role, verified_users, unverified_users]
+      properties:
+        total_users: { type: integer }
+        users_by_role:
+          type: object
+          description: Число пользователей по каждой роли.
+          additionalProperties: { type: integer }
+        verified_users: { type: integer }
+        unverified_users: { type: integer }
 
     UserRoleUpdate:
       type: object

@@ -78,6 +78,72 @@ paths:
             application/json:
               schema: { $ref: 'errors.yaml#/components/schemas/Error' }
 
+  /api/v1/auth/refresh:
+    post:
+      summary: Обновить access-токен по refresh-токену
+      operationId: refreshToken
+      tags: [auth]
+      description: |
+        Выдаёт новый access-токен; refresh-токен возвращается тот же, что прислан, — он не
+        перевыпускается. Отозванный, чужого типа или истёкший токен и заблокированный
+        пользователь получают отказ.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [refresh_token]
+              properties:
+                refresh_token: { type: string }
+      responses:
+        '200':
+          description: Новый access-токен и прежний refresh-токен
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Token' }
+        '401':
+          description: TOKEN_INVALID или TOKEN_WRONG_TYPE.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '403':
+          description: USER_BLOCKED — учётная запись закрыта.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/auth/guest/login:
+    post:
+      summary: Войти гостем по идентификатору устройства
+      operationId: guestLogin
+      tags: [auth]
+      description: |
+        Без аутентификации. Гостевая учётная запись заводится при первом вызове с этим
+        device_id и находится при повторном; токены несут признак is_guest.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [device_id]
+              properties:
+                device_id: { type: string }
+      responses:
+        '200':
+          description: Пара токенов гостя
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Token' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+        '502':
+          description: GUEST_CREATE_FAILED или GUEST_LOGIN_FAILED.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
 components:
   schemas:
     Token:

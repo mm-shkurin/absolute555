@@ -27,6 +27,7 @@ import yaml
 
 ROOT = Path(__file__).resolve().parent.parent
 ENDPOINTS = ROOT / "frontend/src/shared/api/endpoints.ts"
+PATHS = ROOT / "frontend/src/shared/api/backend/paths.ts"
 SPECS = ROOT / "ProductSpecification/api-specs"
 BASELINE = ROOT / "scripts/api-contract-baseline.json"
 
@@ -38,19 +39,21 @@ BRACED = re.compile(r"\{[^}]+\}")
 
 
 def frontend_paths() -> set[str]:
-    text = ENDPOINTS.read_text(encoding="utf-8")
-    version = re.search(r"API_VERSION\s*=\s*'([^']+)'", text)
-    mount = re.search(r"MOUNT\s*=\s*'([^']+)'", text)
-    prefix = f"/{mount.group(1)}/{version.group(1)}" if mount and version else "/api/v1"
+    # Версия объявлена в endpoints.ts, сами пути — в paths.ts. Пустой список путей значит,
+    # что они снова переехали: прогон с нулём сверяет ничто и зеленеет.
+    version = re.search(r"API_VERSION\s*=\s*'([^']+)'", ENDPOINTS.read_text(encoding="utf-8"))
+    prefix = f"/api/{version.group(1)}" if version else "/api/v1"
 
     paths: set[str] = set()
-    for raw in TEMPLATE.findall(text):
+    for raw in TEMPLATE.findall(PATHS.read_text(encoding="utf-8")):
         if "${V1}" not in raw:
             continue
         path = PARAM.sub("{}", raw.replace("${V1}", prefix))
         # Строка запроса к контракту не относится: она про фильтр, а не про существование
         # ручки.
         paths.add(path.split("?")[0])
+    if not paths:
+        raise SystemExit(f"В {PATHS.relative_to(ROOT)} не найдено ни одного пути с ${{V1}}")
     return paths
 
 

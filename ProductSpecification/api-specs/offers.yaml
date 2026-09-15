@@ -151,6 +151,58 @@ paths:
             application/json:
               schema: { $ref: 'errors.yaml#/components/schemas/Error' }
 
+  /api/v1/offer/car/{sale_car_id}:
+    get:
+      summary: Предложения по объявлению
+      operationId: listOffersForCar
+      tags: [offer]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Владельцу (или тому, кто управляет объявлением) — всегда. Остальным — только если
+        продавец открыл торг настройкой offers_visible. Гостю — никогда.
+      parameters:
+        - { name: sale_car_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Предложения по объявлению
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Offer' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: |
+            GUEST_FORBIDDEN — гость; NOT_CAR_OWNER — не владелец, а торг по объявлению
+            закрыт.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+
+  /api/v1/offer/{offer_id}:
+    get:
+      summary: Одно предложение
+      operationId: getOffer
+      tags: [offer]
+      security: [{ bearerAuth: [] }]
+      description: Только стороне сделки — автору предложения или тому, кто управляет объявлением.
+      parameters:
+        - { name: offer_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Предложение
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Offer' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '403':
+          description: NOT_OFFER_PARTY — спрашивающий не сторона сделки.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '404': { $ref: 'errors.yaml#/components/responses/Error' }
+
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }

@@ -96,6 +96,47 @@ paths:
                 items: { $ref: '#/components/schemas/SaleCar' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
+  /api/v1/catalog/brands:
+    get:
+      summary: Справочник марок
+      operationId: listCatalogBrands
+      tags: [catalog]
+      description: |
+        Открыт гостю: фильтр ленты и лендинг нужны до входа.
+      responses:
+        '200':
+          description: Марки
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Brand' }
+
+  /api/v1/catalog/brands/{brand_id}/models:
+    get:
+      summary: Модели марки
+      operationId: listCatalogModels
+      tags: [catalog]
+      parameters:
+        - name: brand_id
+          in: path
+          required: true
+          schema: { type: string, format: uuid }
+      responses:
+        '200':
+          description: Модели марки
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/CarModel' }
+        '404':
+          description: BRAND_NOT_FOUND — такой марки нет.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+        '422': { $ref: 'errors.yaml#/components/responses/Error' }
+
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }
@@ -107,6 +148,25 @@ components:
       description: Объявление не найдено
 
   schemas:
+    Brand:
+      type: object
+      required: [brand_id, slug, name_ru, name_en, is_popular]
+      properties:
+        brand_id: { type: string, format: uuid }
+        slug: { type: string }
+        name_ru: { type: string }
+        name_en: { type: string }
+        is_popular: { type: boolean }
+
+    CarModel:
+      type: object
+      required: [model_id, brand_id, slug, name]
+      properties:
+        model_id: { type: string, format: uuid }
+        brand_id: { type: string, format: uuid }
+        slug: { type: string }
+        name: { type: string }
+
     SaleCarStatus:
       type: string
       enum: [draft, moderation, published, rejected, withdrawn, sold]

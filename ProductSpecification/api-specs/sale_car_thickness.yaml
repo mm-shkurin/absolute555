@@ -34,6 +34,41 @@ paths:
               schema: { $ref: '#/components/schemas/ThicknessMap' }
         '404': { $ref: '#/components/responses/NotFound' }
 
+  /api/v1/sale_car/{sale_car_id}/thickness/read:
+    post:
+      summary: Прочитать число со снимка прибора, не сохраняя
+      operationId: readThicknessGaugePhoto
+      tags: [thickness]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Подсказка продавцу: число сверяется со снимком и сохраняется отдельным PUT.
+        Нечитаемый снимок — не ошибка, а `value_um: null`. Доступно тому, кто управляет
+        объявлением; остальным 404.
+      parameters:
+        - $ref: '#/components/parameters/SaleCarId'
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [photo]
+              properties:
+                photo:
+                  type: string
+                  format: binary
+                  description: Фотография экрана прибора.
+      responses:
+        '200':
+          description: Прочитанное число или null
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/GaugeReading' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '413': { $ref: '#/components/responses/TooLarge' }
+        '422': { $ref: '#/components/responses/Unprocessable' }
+
   /api/v1/sale_car/{sale_car_id}/thickness/{panel}:
     put:
       summary: Записать или перезаписать замер панели
@@ -114,22 +149,22 @@ components:
       description: Вызов без входа
       content:
         application/json:
-          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+          schema: { $ref: './errors.yaml#/components/schemas/Error' }
     NotFound:
       description: Объявления нет или оно не видно этому вызывающему
       content:
         application/json:
-          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+          schema: { $ref: './errors.yaml#/components/schemas/Error' }
     TooLarge:
       description: Фотография больше предела
       content:
         application/json:
-          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+          schema: { $ref: './errors.yaml#/components/schemas/Error' }
     Unprocessable:
       description: Значение вне диапазона или файл не изображение
       content:
         application/json:
-          schema: { $ref: './errors.yaml#/components/schemas/ErrorEnvelope' }
+          schema: { $ref: './errors.yaml#/components/schemas/Error' }
 
   schemas:
     BodyPanel:
@@ -194,6 +229,14 @@ components:
           description: |
             Измерены все панели набора. Фильтр «с картой замеров» в ленте — история 15,
             но признак считается уже здесь.
+
+    GaugeReading:
+      type: object
+      properties:
+        value_um:
+          type: integer
+          nullable: true
+          description: Число со снимка; null, если прочитать не удалось.
 
     ThicknessSummary:
       type: object

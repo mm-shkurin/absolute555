@@ -157,6 +157,33 @@ paths:
             application/json:
               schema: { $ref: '#/components/schemas/VinMalformedError' }
 
+  /api/v1/task/sse/{sale_car_id}:
+    parameters:
+      - name: sale_car_id
+        in: path
+        required: true
+        schema: { type: string, format: uuid }
+    get:
+      summary: Поток исхода распознавания объявления (SSE)
+      operationId: streamSaleCarTask
+      tags: [sale_car]
+      security: [{ bearerAuth: [] }]
+      description: |
+        Server-Sent Events. Проверяется не только вход, но и право на объявление: поток
+        несёт то, что прочитано с закрытого документа. Чужому — 404.
+      responses:
+        '200':
+          description: Поток событий распознавания
+          content:
+            text/event-stream:
+              schema: { type: string }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: Объявление не найдено или вызывающий не может им управлять.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
 components:
   securitySchemes:
     bearerAuth: { type: http, scheme: bearer, bearerFormat: JWT }

@@ -26,6 +26,30 @@ paths:
                 items: { $ref: '#/components/schemas/Dialog' }
         '401': { $ref: 'errors.yaml#/components/responses/Error' }
 
+  /api/v1/chat/dialogs/direct/{user_id}:
+    post:
+      summary: Открыть или найти прямую переписку с человеком
+      operationId: openDirectDialog
+      tags: [chat]
+      security: [{ bearerAuth: [] }]
+      description: |
+        «Написать» со страницы поставщика: переписка без объявления и заявки. Повторный
+        вызов возвращает ту же переписку. Новая начинается системной строкой.
+      parameters:
+        - { name: user_id, in: path, required: true, schema: { type: string, format: uuid } }
+      responses:
+        '200':
+          description: Переписка
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Dialog' }
+        '401': { $ref: 'errors.yaml#/components/responses/Error' }
+        '404':
+          description: Такого пользователя нет, идентификатор кривой или это сам спрашивающий.
+          content:
+            application/json:
+              schema: { $ref: 'errors.yaml#/components/schemas/Error' }
+
   /api/v1/chat/dialogs/{dialog_id}/messages:
     parameters:
       - { name: dialog_id, in: path, required: true, schema: { type: string, format: uuid } }
