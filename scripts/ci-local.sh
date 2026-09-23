@@ -222,7 +222,7 @@ start_services() {
 
   docker_run run -d --name "$MINIO_CONTAINER" --network "$CI_NETWORK" \
     -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
-    minio/minio:latest server /data >/dev/null || return 1
+    quay.io/minio/minio:RELEASE.2025-09-07T16-13-09Z server /data >/dev/null || return 1
 
   # Тот же health-gate, что в workflow: без него первый запрос уходит в ещё
   # поднимающуюся базу и прогон краснеет на connection refused.
