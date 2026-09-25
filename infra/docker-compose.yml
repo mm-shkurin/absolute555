@@ -134,6 +134,7 @@ services:
   # The profile keeps it out of `docker compose up`; `docker compose run` enables it.
   backend-test:
     profiles: ["test"]
+    user: root  # `make test` ставит pytest в venv образа, который принадлежит root
     build:
       context: ..
       dockerfile: infra/docker/backend.Dockerfile

@@ -171,6 +171,7 @@ build_backend_image() {
 build_test_image() {
   printf '%s\n' \
     "FROM $BACKEND_IMAGE" \
+    "USER root" \
     "COPY requirements.txt requirements-dev.txt ./" \
     "RUN pip install --no-cache-dir -r requirements-dev.txt" \
     | docker_run build -q -f - -t "$TEST_IMAGE" "$(to_docker_path "$ROOT/backend")" >/dev/null
