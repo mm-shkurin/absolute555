@@ -1,6 +1,6 @@
 # Frontend image: build the Vite bundle, serve it with nginx.
 # Build context is the repo root (see docker-compose.yml `frontend.build.context: ..`).
-FROM node:22-alpine AS build
+FROM node:24-alpine AS build
 
 WORKDIR /app
 
