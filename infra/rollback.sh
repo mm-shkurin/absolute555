@@ -31,7 +31,9 @@ if [[ -n "${GHCR_USER:-}" && -n "${GHCR_TOKEN:-}" ]]; then
   echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
 fi
 docker compose pull backend worker frontend
-docker compose up -d
+# --no-deps: без него поднялся бы и migrate старой версии, а её alembic не знает
+# ревизию, до которой схему довёл новый релиз, — и откат упал бы на миграции.
+docker compose up -d --no-deps backend worker frontend
 
 PORT="$(grep -E '^BACKEND_HOST_PORT=' .env | cut -d= -f2)"
 PORT="${PORT:-8000}"

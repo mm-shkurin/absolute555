@@ -40,7 +40,7 @@ export APP_TAG
 if [[ -n "${GHCR_USER:-}" && -n "${GHCR_TOKEN:-}" ]]; then
   echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
 fi
-if ! docker compose pull backend worker frontend; then
+if ! docker compose pull migrate backend worker frontend; then
   echo "Образы для $APP_TAG не найдены в реестре." >&2
   echo "Прогон release кладёт их туда по sha коммита — проверьте, что он прошёл." >&2
   exit 1
@@ -49,7 +49,7 @@ fi
 echo "== Миграции =="
 # Отдельным разовым контейнером, а не внутри работающего приложения: миграции должны
 # закончиться до того, как новый код начнёт отвечать на запросы.
-docker compose run --rm backend alembic upgrade head
+docker compose run --rm migrate
 
 echo "== Перезапуск =="
 docker compose up -d

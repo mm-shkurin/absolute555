@@ -104,9 +104,26 @@ services:
     ports:
       - "127.0.0.1:${BACKEND_HOST_PORT}:8000"
     depends_on:
-      postgres:
-        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
       redis:
+        condition: service_healthy
+
+  # Миграции — разовый контейнер, а не шаг старта приложения: при двух экземплярах
+  # бэкенда каждый запускал бы `alembic upgrade head` одновременно с другим.
+  migrate:
+    image: ghcr.io/mm-shkurin/absolute555/backend:${APP_TAG:-latest}
+    build:
+      context: ..
+      dockerfile: infra/docker/backend.Dockerfile
+    env_file:
+      - .env
+    command: alembic upgrade head
+    # HEALTHCHECK образа опрашивает :8000, который здесь никто не слушает.
+    healthcheck:
+      disable: true
+    depends_on:
+      postgres:
         condition: service_healthy
 
   # The suite, run against the working tree rather than against the image.

@@ -25,7 +25,7 @@ restart:
 	docker compose restart backend worker
 
 migrate:
-	docker compose exec backend alembic upgrade head
+	docker compose run --rm migrate
 
 shell:
 	docker compose exec backend sh
