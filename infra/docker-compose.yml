@@ -109,8 +109,7 @@ services:
       redis:
         condition: service_healthy
 
-  # Миграции — разовый контейнер, а не шаг старта приложения: при двух экземплярах
-  # бэкенда каждый запускал бы `alembic upgrade head` одновременно с другим.
+  # Разовый контейнер, а не шаг старта: две реплики бэкенда мигрировали бы наперегонки.
   migrate:
     image: ghcr.io/mm-shkurin/absolute555/backend:${APP_TAG:-latest}
     build:
@@ -119,9 +118,7 @@ services:
     env_file:
       - .env
     command: alembic upgrade head
-    # HEALTHCHECK образа опрашивает :8000, который здесь никто не слушает.
-    healthcheck:
-      disable: true
+    healthcheck: { disable: true }  # проверка образа ждёт :8000, здесь его нет
     depends_on:
       postgres:
         condition: service_healthy
