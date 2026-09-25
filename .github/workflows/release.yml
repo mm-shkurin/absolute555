@@ -58,19 +58,21 @@ jobs:
     if: github.event_name == 'push'
     uses: ./.github/workflows/audit.yml
 
+  # Образы уже лежат в GHCR под sha — их собрал `images`, и по ним прошёл `stack`.
+  # Здесь не пересборка, а только метка `latest` на проверенный sha: пересобранный образ
+  # был бы уже не тем, что проверяли.
   publish:
-    name: образы в реестр
+    name: метка latest
     needs: [gate, audit]
     # Ручной запуск проходит мимо обоих: он разворачивает уже проверенный тег, и
     # заставлять его ждать прогонов задним числом значило бы запретить откат.
     if: always() && !contains(needs.*.result, 'failure') && !cancelled()
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 10
     permissions:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
       - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
 
       - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
@@ -79,29 +81,17 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Бэкенд
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
-        with:
-          context: .
-          file: infra/docker/backend.Dockerfile
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/backend:${{ github.sha }}
-            ghcr.io/${{ github.repository }}/backend:latest
-          cache-from: type=gha,scope=backend
-          cache-to: type=gha,mode=max,scope=backend
-
-      - name: Фронтенд
-        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
-        with:
-          context: .
-          file: infra/docker/frontend.Dockerfile
-          push: true
-          tags: |
-            ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
-            ghcr.io/${{ github.repository }}/frontend:latest
-          cache-from: type=gha,scope=frontend
-          cache-to: type=gha,mode=max,scope=frontend
+      # Только на пуш: ручной запуск разворачивает произвольный ref, и `latest` на
+      # голову main при откате назад указывал бы не на то, что встало.
+      - name: latest на проверенный sha
+        if: github.event_name == 'push'
+        env:
+          IMAGE: ghcr.io/${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          for name in backend frontend; do
+            docker buildx imagetools create -t "$IMAGE/$name:latest" "$IMAGE/$name:$SHA"
+          done
 
   deploy:
     name: развернуть на сервере

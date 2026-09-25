@@ -9,7 +9,7 @@
 # а не задержкой: иначе релиз ждал бы прогона, которого никто не собирался запускать.
 set -euo pipefail
 
-REQUIRED="${REQUIRED:-backend frontend rules stack}"
+REQUIRED="${REQUIRED:-images backend frontend rules stack}"
 TIMEOUT_MINUTES="${TIMEOUT_MINUTES:-55}"
 
 deadline=$(( $(date +%s) + TIMEOUT_MINUTES * 60 ))

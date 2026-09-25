@@ -1,0 +1,52 @@
+# Образы приложения: собираются один раз на коммит и кладутся в GHCR под его sha.
+#
+# Один раз — потому что всё дальше работает с этой сборкой, а не с похожей: `stack`
+# гоняет по ней живые сценарии, `release` разворачивает её же. Раньше образ собирался
+# в каждом прогоне свой, и в прод уходила сборка, по которой ни один сценарий не шёл.
+name: images
+
+# Токен прогона: только чтение исходников. Шире выдаётся точечно на job.
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [dev, main, 'features/**']
+  workflow_dispatch:
+
+concurrency:
+  group: images-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: образ ${{ matrix.image }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        image: [backend, frontend]
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3
+
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Только тег sha. `latest` ставит release после проверок: иначе им становилась бы
+      # любая ветка в работе, которую запушили последней.
+      - name: Сборка и публикация
+        uses: docker/build-push-action@10e90e3645eae34f1e60eeb005ba3a3d33f178e8 # v6
+        with:
+          context: .
+          file: infra/docker/${{ matrix.image }}.Dockerfile
+          push: true
+          tags: ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ github.sha }}
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
