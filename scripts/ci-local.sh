@@ -213,7 +213,7 @@ start_services() {
 
   docker_run run -d --name "$PG_CONTAINER" --network "$CI_NETWORK" \
     -e POSTGRES_USER=absolute -e POSTGRES_PASSWORD=absolute -e POSTGRES_DB=absolute \
-    $PUBLISH postgres:16-alpine >/dev/null || return 1
+    $PUBLISH postgres:17-alpine >/dev/null || return 1
 
   # Без пароля: приложение читает учётные данные из окружения, и пустые значения там
   # означают ровно это соединение.
