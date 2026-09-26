@@ -23,7 +23,7 @@
 
 | # | Проблема | Решение | Готово |
 |---|---|---|---|
-| D1 | `infra/architecture.md` описывает старый стек: 4 сервиса, нет worker и MinIO, открытые порты Postgres, CRA-пути | Переписать по текущему `docker-compose.yml` | ❌ |
+| D1 | `infra/architecture.md` описывает старый стек: 4 сервиса, нет worker и MinIO, открытые порты Postgres, CRA-пути | Переписать по текущему `docker-compose.yml` | ✅ |
 | D2 | `technology.md` и `CLAUDE.md` говорят React 19, CRA, Jest, Sass, axios; по факту React 18, TypeScript, Vite, vitest, TanStack Query, обычный CSS | `technology.md` переписан по `package.json` и импортам бэкенда, `CLAUDE.md` и комментарии nginx/Dockerfile приведены к факту | ✅ |
 
 ## Хвосты первого разбора

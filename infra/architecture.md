@@ -1,151 +1,83 @@
 # Architecture — deployable infra
 
-Scope: `infra/docker-compose.yml`. All services are real (no placeholders/mocks):
-Postgres, Redis, the real FastAPI backend (migrated via Alembic on boot), and the
-real React/Vite frontend (built and served by nginx). No cloud/Terraform
-involvement yet (dormant — see `.memory-bank/index.md`). Exposed Postgres/Redis
-host ports still need revisiting before this is reused as a public-facing
-production template (see Deploy notes below).
+Scope: `infra/docker-compose.yml` and the two images in `infra/docker/`. One compose
+file serves local development, the CI stack run and the single production host. The
+live public deploy is https://mmshkurin.ru; nothing in this repo provisions that host —
+it is set up by hand per `infra/production-setup.md`.
 
 ## Topology
 
-Four services on the compose default network, resolving each other by service
-DNS name:
-
 ```
-frontend (nginx, real Vite build)     backend (FastAPI, real app)
-        |  depends_on: backend               |
-        v (start-order only)                 v
-                                        depends_on: postgres, redis (service_healthy)
-                                              |
-                                    +---------+---------+
-                                    v                   v
-                              postgres:5432        redis:6379
+                     browser
+            ┌───────────┴─────────────┐
+            v                         v
+  frontend (nginx, :80)          minio API (:9000, public photos)
+   /       static bundle              ^
+   /api/   ─┐                         │ S3 (boto3)
+   /sse/   ─┼──> backend (uvicorn, :8000) ──> postgres (:5432)
+   /api/v1/chat/ws ─┘        │              └> redis (:6379)
+                             │
+                  worker (arq, same image) ──> redis, postgres, minio
+
+  one-shot:  migrate (alembic upgrade head)   minio-init (creates the bucket)
 ```
 
-- `redis` is provisioned and reachable (`REDIS_URL` wired into `backend`) ahead
-  of the planned `arq` background worker (see `ProductSpecification/technology.md`)
-  — no `worker` service exists yet because there's no arq code to run. Add it
-  back (same backend image, `arq worker.WorkerSettings` command) once that
-  code lands.
-- No `container_name` on any service, and all host ports are `${VAR}`-driven —
-  both avoid collisions when multiple worktrees/sessions run this compose file
-  on the same host simultaneously.
-- No custom network block: the compose default network is enough since nothing
-  needs isolation yet.
+| Service | Image | Role |
+|---|---|---|
+| `postgres` | `postgres:17-alpine` | Primary database, volume `postgres_data` |
+| `redis` | `redis:7-alpine` | Cache and the ARQ queue, AOF on, volume `redis_data` |
+| `minio` | `quay.io/minio/minio`, pinned release | S3 storage for photos and documents, volume `minio_data` |
+| `minio-init` | `quay.io/minio/mc`, pinned release | Creates `MINIO_BUCKET_NAME` and exits |
+| `migrate` | backend image | `alembic upgrade head` once, then exits |
+| `backend` | backend image | FastAPI; starts only after `migrate` succeeded |
+| `worker` | backend image | `arq app.worker.WorkerSettings`: СТС OCR, VIN decode, expiring stale offers every 15 min |
+| `frontend` | frontend image | nginx serving the Vite bundle and proxying to `backend` |
+| `backend-test` | backend image, profile `test` | The pytest suite against the working tree (`make test`) |
 
-## Port map
+No `container_name` anywhere and every host port is a variable, so several checkouts
+can run side by side on one host (`docker compose -p <name>`).
 
-All host-side ports come from `infra/.env` (see `infra/.env.example` for the
-full list with dummy defaults). Container-internal ports are fixed.
+## Ports
 
-| Service  | Container port | Host port var   | Default |
-|----------|-----------------|------------------|---------|
-| postgres | 5432            | `POSTGRES_PORT`  | 5432    |
-| redis    | 6379            | `REDIS_PORT`     | 6379    |
-| backend  | 8000            | `BACKEND_PORT`   | 8000    |
-| frontend | 80              | `FRONTEND_PORT`  | 80      |
+Only three things are published. Postgres, Redis and the MinIO console have no host
+port in `docker-compose.yml`; `docker-compose.override.yml` (gitignored, copied from
+`.example`) adds them for local work, and must not exist on the server.
 
-## Env var contract
+| Service | Container port | Host port | Bound to |
+|---|---|---|---|
+| frontend | 80 | `FRONTEND_HOST_PORT` | all interfaces |
+| minio (API) | 9000 | `MINIO_HOST_PORT` | all interfaces — the browser loads photos from it |
+| backend | 8000 | `BACKEND_HOST_PORT` | `127.0.0.1` only — outside traffic goes through nginx |
 
-- `infra/.env` (gitignored, copy from `infra/.env.example`): `POSTGRES_USER`,
-  `POSTGRES_PASSWORD`, `POSTGRES_DB`, `POSTGRES_PORT`, `REDIS_PORT`,
-  `BACKEND_PORT`, `FRONTEND_PORT`, plus the OAuth contract forwarded into the
-  backend container — `YANDEX_CLIENT_ID`, `YANDEX_CLIENT_SECRET`,
-  `YANDEX_REDIRECT_URI`, `OAUTH_FRONTEND_CALLBACK_URL` (all four declared in
-  `docker-compose.yml` **without** defaults, so an unset value fails at boot naming
-  the variable), and `OAUTH_PROVIDER`, `OAUTH_HANDOFF_CODE_TTL_SECONDS`,
-  `OAUTH_FAKE_AUTHORIZE_URL` (defaulted). The OAuth half was added to this list
-  2026-08-15 — it had been in the compose file since story 16 and in neither
-  `.env.example` nor here.
-- `DATABASE_URL` and `REDIS_URL` are **not** read from `infra/.env` — they're
-  composed inside `docker-compose.yml`'s `environment:` block from the Postgres
-  vars plus the in-network service DNS names (`postgres`, `redis`), because
-  `.env` files are parsed literally by compose (no recursive `${...}`
-  interpolation inside `.env` itself).
-- `backend/.env` (gitignored, owned by the backend module): holds
-  `GIGACHAT_CREDENTIALS`, `GIGACHAT_CA_BUNDLE`, `GENERATION_PROVIDER` and any
-  other backend-only secrets (see `backend/.env.example`). Wired into
-  `backend` via `env_file: ../backend/.env` with `required: false`. This stays
-  local-`.env`-only per the existing Memory Bank decision — no cloud secret
-  store until a cloud provider is chosen.
+## Configuration
 
-## Build
+Everything comes from `infra/.env`, copied from `infra/.env.example`; the same file is
+passed to the backend, worker and migrate containers as `env_file`, and CI builds its
+config from `.env.example` too, so a variable missing there fails in CI first.
+`APP_TAG` (default `latest`) picks the image tag; on the server it is the commit sha.
 
-Build context for both `backend` and `frontend` is the **repo root** (`..`
-relative to `infra/`), because each Dockerfile needs to `COPY` its module tree
-(`backend/domain`, `backend/usecase`, `backend/adapters`, `backend/application`
-for the backend; the whole `frontend/` tree for the frontend). The root
-`.dockerignore` excludes VCS/harness/cache directories from both build
-contexts.
+## Images
 
-- **`infra/docker/backend.Dockerfile`**: `python:3.12-slim`, installs
-  `backend/requirements.txt`, copies all backend module `src/` trees. `CMD`
-  runs Alembic migrations (`cd backend/adapters/db && alembic upgrade head`)
-  then serves with `uvicorn app.main:app --app-dir backend/application/src`.
-  `HEALTHCHECK` hits `/openapi.json`.
-- **`infra/docker/frontend.Dockerfile`**: multi-stage — `node:20-alpine` build
-  stage runs `npm ci && npm run build`, then `nginx:alpine` serves the built
-  `dist/` via `infra/docker/nginx/frontend.conf` (SPA fallback to
-  `index.html`).
+- **`backend.Dockerfile`** — two stages. `deps` builds a venv with the compiler and
+  `-dev` headers; the runtime stage is `python:3.12-slim` with tesseract (`rus`),
+  poppler and the libs opencv needs, OS packages upgraded, runs as uid 10001. The only
+  writable path besides `/tmp` is `/app/logs`. `CMD` is uvicorn; migrations are not part of startup.
+- **`frontend.Dockerfile`** — `node:24-alpine` runs `npm ci && npm run build`;
+  `nginx:alpine` serves `dist/` with `nginx/frontend.conf`: SPA fallback, `/api/`
+  proxy, `/sse/` with buffering off, the chat WebSocket with Upgrade headers, 32 MB
+  upload limit. `VITE_API_BASE_URL` is empty by default, i.e. same origin.
 
-## Deploy notes
+Both are built once per commit by the `images` workflow, scanned by trivy, and pushed
+to `ghcr.io/mm-shkurin/absolute555/<name>:<sha>`.
 
-**The live public deploy is https://mmshkurin.ru.** Recorded here and in the root
-`README.md` and nowhere else — it was in no file at all until 2026-08-15, which
-matters because the season rules zero a sprint for a link that is missing or down.
-There is no IaC describing that host yet (known-debt #3: no cloud provider chosen,
-deploy is manual on an existing server), so this line is a pointer, not a source
-the deploy is driven from.
+## Deploy and rollback
 
-This compose file is usable as-is for a single-host deploy (`docker compose
--f infra/docker-compose.yml up -d --build`), given a populated `infra/.env`
-and `backend/.env` on that host. Before exposing it publicly:
+`infra/deploy.sh <sha>` on the server: check out the sha, pull the images for it, run
+`migrate`, `docker compose up -d`, wait for `/health`, and on failure call
+`rollback.sh` with the previous sha. Rollback restarts the app services with
+`--no-deps` and never runs migrations: the schema only moves forward, so a migration
+must keep working with the previous release's code (add nullable, drop in a later
+release). `backup.sh` dumps Postgres nightly from cron.
 
-- Postgres/Redis host port mappings (`ports:`) should be dropped or bound to
-  `127.0.0.1` — they're only exposed today for local debugging/migration
-  access, not for any external caller.
-- `backend/.env` and `infra/.env` must be provisioned on the deploy host
-  out-of-band (no secret store wired yet — see Env var contract above).
-- Add the `worker` service back once `arq` background-job code exists (see
-  `ProductSpecification/technology.md`); `redis` is already provisioned for it.
-- **Nothing in front of the origin may answer 503 to `/api/`.** The frontend's
-  autosave reads 503 as proof the write was never taken
-  (`mayHaveLandedServerSide` in
-  `frontend/src/features/generation/hooks/autosaveRetryPolicy.ts`), so on that
-  answer it can suppress the write and the editor shows «Сохранено» over
-  content the server never got. A TLS terminator, WAF, rate limiter
-  (`limit_req`), maintenance page (`error_page 503`) or upstream failover added
-  in front of this compose file all break that premise — and unlike the
-  container nginx, which `npm run check:ingress` scans on every CI run, **those
-  hops have no IaC source in this repo and therefore no gate**. Two exits, and
-  only these two:
-  - **If the hop has a config file**, put it in `infra/docker/nginx/` — that
-    exact directory, not `infra/` generally: `check-nginx-503.mjs` reads one
-    non-recursive directory, and `.github/workflows/frontend-ci.yml`'s path
-    filter is `infra/docker/**`, so a conf anywhere else is both unscanned and
-    unable to trigger the job that would scan it. Widen both in the same commit
-    if it has to live elsewhere.
-  - **If the hop has no config in this repo at all** — a cloud WAF, a managed
-    rate limiter, a TLS terminator you configure in someone's console — then no
-    scan is possible and the carve-out itself has to go: drop the `503` branch
-    in `mayHaveLandedServerSide` so every 5xx is treated as "may have landed".
-    That costs at most a redundant PUT. Leaving it in costs the paragraph.
-
-  Also note two paths that bypass the container nginx entirely, so its gate
-  never applies: the Vite dev proxy (`frontend/vite.config.ts`) and this file's
-  own published backend port (`docker-compose.yml`, `"${BACKEND_PORT}:8000"`).
-  Neither emits 503 today; both would need the same treatment if anything is
-  ever put in front of them.
-
-## Validated
-
-- `docker compose -f infra/docker-compose.yml config` — no errors.
-- `docker compose up -d --build` — all 4 services reach running/healthy, no
-  crash-loop; Alembic applies the `generations` table migration on backend
-  boot.
-- From inside `backend`: `pg_isready -h postgres` → `accepting connections`;
-  reaches `redis:6379`.
-- Frontend served at `FRONTEND_PORT`, backend API at `BACKEND_PORT`.
-- Postgres data survives `docker compose down` (no `-v`) + `up -d` via the
-  named `postgres_data` volume.
+Known gaps — downtime during `up -d`, no staging, no external health probe — are
+tracked in `.github/ci-cd-fixes.md` and closed by the move to Kubernetes.
