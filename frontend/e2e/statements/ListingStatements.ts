@@ -76,6 +76,7 @@ export class ListingStatements {
 
   async complainFromBottom(): Promise<void> {
     const link = await waitForVisible(this.driver, 'listing-complain')
+    await this.waitTeaserSettled()
     await clickElement(this.driver, link)
   }
 
@@ -100,17 +101,27 @@ export class ListingStatements {
 
   async openThicknessMap(): Promise<void> {
     const teaser = await waitForVisible(this.driver, 'thickness-teaser')
-    // Пока карта грузится, в тизере заглушка другой высоты; схема, пришедшая после
-    // прокрутки, сдвигает кнопку, и клик попадает в соседний элемент.
-    await this.driver.wait(
-      async () => (await teaser.findElements(By.css('[aria-busy="true"]'))).length === 0,
-      4000,
-    )
+    await this.waitTeaserSettled()
     await clickElement(
       this.driver,
       await teaser.findElement(By.xpath('.//a[contains(., "Открыть карту")]')),
     )
     await waitForVisible(this.driver, 'thickness')
+  }
+
+  // Пока карта грузится, в тизере заглушка другой высоты; схема, пришедшая после
+  // прокрутки, сдвигает всё, что ниже, и клик попадает в соседний элемент. У объявления
+  // без карты тизера нет — ждать нечего.
+  private async waitTeaserSettled(): Promise<void> {
+    await this.driver.wait(
+      async () =>
+        (
+          await this.driver.findElements(
+            By.css('[data-testid="thickness-teaser"] [aria-busy="true"]'),
+          )
+        ).length === 0,
+      4000,
+    )
   }
 
   async assertSchematicShown(): Promise<void> {
