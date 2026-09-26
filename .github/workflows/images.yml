@@ -47,6 +47,45 @@ jobs:
           context: .
           file: infra/docker/${{ matrix.image }}.Dockerfile
           push: true
+          # Свежий базовый образ: из кэша слоёв он приезжал бы с исправлениями месячной
+          # давности, и сканер ниже краснел бы на уже исправленном.
+          pull: true
           tags: ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ github.sha }}
           cache-from: type=gha,scope=${{ matrix.image }}
           cache-to: type=gha,mode=max,scope=${{ matrix.image }}
+
+      # Бинарник по версии и контрольной сумме, а не trivy-action по тегу: в марте 2026
+      # теги trivy-action переписали на вредоносный код. Сумма взята из checksums
+      # выпуска и сверена со скачанным файлом.
+      - name: Установить trivy
+        env:
+          TRIVY_VERSION: 0.74.0
+          TRIVY_SHA256: 2ae6fe3ee734b7fdf11335663e18c75ea12dccc76062f09f164a3b0f8be4371a
+        run: |
+          curl -sSfL -o trivy.tar.gz \
+            "https://github.com/aquasecurity/trivy/releases/download/v${TRIVY_VERSION}/trivy_${TRIVY_VERSION}_Linux-64bit.tar.gz"
+          echo "${TRIVY_SHA256}  trivy.tar.gz" | sha256sum -c -
+          tar -xzf trivy.tar.gz trivy
+
+      # Только исправимые HIGH и CRITICAL: неисправленную уязвимость автор коммита
+      # закрыть не может, и гейт на неё выключили бы первым делом.
+      - name: Уязвимости образа
+        run: >-
+          ./trivy image --no-progress --scanners vuln
+          --severity HIGH,CRITICAL --ignore-unfixed --exit-code 1
+          ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ github.sha }}
+
+      # Состав образа на момент сборки: когда выйдет новая уязвимость, вопрос «а у нас
+      # она есть» решается поиском по файлу, а не пересборкой старого коммита.
+      - name: SBOM
+        if: always()
+        run: >-
+          ./trivy image --no-progress --format cyclonedx --output sbom.json
+          ghcr.io/${{ github.repository }}/${{ matrix.image }}:${{ github.sha }}
+
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        if: always()
+        with:
+          name: sbom-${{ matrix.image }}
+          path: sbom.json
+          retention-days: 90

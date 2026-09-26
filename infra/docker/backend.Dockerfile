@@ -23,8 +23,10 @@ RUN pip install --no-cache-dir -r requirements.txt
 FROM python:3.12-slim
 
 # OCR (pytesseract + Russian traineddata), PDF tooling (poppler) and the shared
-# libs opencv-python-headless links against.
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# libs opencv-python-headless links against. `upgrade` because the base image trails
+# Debian security fixes by days, and the image scan in CI fails on every fixed one.
+RUN apt-get update && apt-get upgrade -y \
+    && apt-get install -y --no-install-recommends \
       tesseract-ocr \
       tesseract-ocr-rus \
       poppler-utils \
