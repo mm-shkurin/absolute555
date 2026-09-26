@@ -17,7 +17,7 @@
 | B4 | Образ бэкенда в одну стадию: `gcc` и `-dev` пакеты в рантайме, процесс от root | Multi-stage с venv, рантайм без компилятора, uid 10001; образ 1.86 → 1.2 ГБ | ✅ |
 | B5 | Образы не сканируются на уязвимости, состав не записан. Первый скан нашёл CRITICAL в `anyio 3.7.1`, который pip-audit пропускал, и десятки исправленных CVE в базовых слоях | trivy 0.74.0 по sha-образу в `images` (исправимые `HIGH`/`CRITICAL`), SBOM артефактом; `anyio` 4.14.2; `pull: true` и обновление пакетов ОС в рантайм-слоях | ✅ |
 | B6 | Образ собирается трижды: в `backend`/`frontend`, в `stack` через `--build`, в `release`; в прод уходит не та сборка, что прошла e2e | Прогон `images`: один раз на коммит, в GHCR по sha; `stack` тянет его, `release` только ставит `latest` | ✅ |
-| B7 | В `requirements.txt` пакеты, которых код не импортирует: gigachat, opentelemetry, kubernetes, posthog, minio, amqp, GeoAlchemy2 и их зависимости — лишний вес образа и лишние CVE | Убрать неиспользуемые, пересобрать и прогнать тесты | ❌ |
+| B7 | В `requirements.txt` 80 пакетов, которых код не импортирует: gigachat, opentelemetry, kubernetes, posthog, minio, amqp, GeoAlchemy2 и их зависимости — лишний вес образа и лишние CVE. `pillow`, `pytesseract`, `opencv` без версий | Оставлено замыкание по импортам `app`/`alembic`/`tests`: 129 → 50 строк, всё с пинами; образ 1.27 → 0.96 ГБ | ✅ |
 
 ## Документация
 
