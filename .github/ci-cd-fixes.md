@@ -17,13 +17,14 @@
 | B4 | Образ бэкенда в одну стадию: `gcc` и `-dev` пакеты в рантайме, процесс от root | Multi-stage с venv, рантайм без компилятора, uid 10001; образ 1.86 → 1.2 ГБ | ✅ |
 | B5 | Образы не сканируются на уязвимости, состав не записан. Первый скан нашёл CRITICAL в `anyio 3.7.1`, который pip-audit пропускал, и десятки исправленных CVE в базовых слоях | trivy 0.74.0 по sha-образу в `images` (исправимые `HIGH`/`CRITICAL`), SBOM артефактом; `anyio` 4.14.2; `pull: true` и обновление пакетов ОС в рантайм-слоях | ✅ |
 | B6 | Образ собирается трижды: в `backend`/`frontend`, в `stack` через `--build`, в `release`; в прод уходит не та сборка, что прошла e2e | Прогон `images`: один раз на коммит, в GHCR по sha; `stack` тянет его, `release` только ставит `latest` | ✅ |
+| B7 | В `requirements.txt` пакеты, которых код не импортирует: gigachat, opentelemetry, kubernetes, posthog, minio, amqp, GeoAlchemy2 и их зависимости — лишний вес образа и лишние CVE | Убрать неиспользуемые, пересобрать и прогнать тесты | ❌ |
 
 ## Документация
 
 | # | Проблема | Решение | Готово |
 |---|---|---|---|
 | D1 | `infra/architecture.md` описывает старый стек: 4 сервиса, нет worker и MinIO, открытые порты Postgres, CRA-пути | Переписать по текущему `docker-compose.yml` | ❌ |
-| D2 | `technology.md` и комментарии в nginx/Dockerfile говорят CRA и Jest, по факту Vite и vitest | Привести к факту | ❌ |
+| D2 | `technology.md` и `CLAUDE.md` говорят React 19, CRA, Jest, Sass, axios; по факту React 18, TypeScript, Vite, vitest, TanStack Query, обычный CSS | `technology.md` переписан по `package.json` и импортам бэкенда, `CLAUDE.md` и комментарии nginx/Dockerfile приведены к факту | ✅ |
 
 ## Хвосты первого разбора
 

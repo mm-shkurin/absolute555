@@ -1,6 +1,6 @@
 # absolute555
 
-Monorepo: `backend/` (FastAPI) + `frontend/` (React 19 / CRA / Capacitor).
+Monorepo: `backend/` (FastAPI) + `frontend/` (React 18 / TypeScript / Vite / Capacitor).
 
 ## Rules
 

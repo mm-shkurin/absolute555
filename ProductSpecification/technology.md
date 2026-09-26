@@ -3,43 +3,52 @@
 tech-profile:
   backend: python-fastapi
   frontend: react-js
-  css: sass
-  browser-testing: none
+  css: css
+  browser-testing: selenium
 
 ## Backend
 
 | Concern | Technology |
 |---------|-----------|
-| Language | Python 3.11+ |
-| Framework | FastAPI 0.104 |
-| Server | Uvicorn (uvloop) |
+| Language | Python 3.12 |
+| Framework | FastAPI 0.141 (Starlette 1.x) |
+| Server | Uvicorn (uvloop on Linux) |
 | Validation | Pydantic 2.x / pydantic-settings |
-| Persistence | SQLAlchemy 2.0 (async, asyncpg) + GeoAlchemy2 |
-| Database | PostgreSQL (+PostGIS) |
-| Migrations | Alembic |
-| Cache / broker | Redis, RabbitMQ (amqp) |
-| Background jobs | ARQ |
-| Object storage | MinIO / boto3 (S3) |
-| Auth | PyJWT, argon2/bcrypt, fastapi-sso, PKCE |
-| AI / vectors | ChromaDB, GigaChat, HuggingFace tokenizers, onnxruntime |
-| OCR / images | pytesseract, opencv-python-headless, Pillow |
+| Persistence | SQLAlchemy 2.0 (async, asyncpg) |
+| Database | PostgreSQL 17 |
+| Migrations | Alembic, run once per release by the `migrate` service |
+| Cache | Redis 7 |
+| Background jobs | ARQ (Redis queue), `worker` service on the backend image |
+| Object storage | MinIO over the S3 API (boto3) |
+| Auth | PyJWT; sign-in through Yandex and VK OAuth |
+| OCR / images | pytesseract (tesseract, `rus`), opencv-python-headless, Pillow |
 | Logging | loguru |
-| Telemetry | OpenTelemetry (OTLP gRPC) |
-| Packaging | Docker, docker-compose |
+| Testing | pytest, pytest-asyncio, httpx, against real Postgres/Redis/MinIO |
 
 ## Frontend
 
 | Concern | Technology |
 |---------|-----------|
-| Language | JavaScript (React 19) |
-| Build tool | react-scripts (CRA 5) |
+| Language | TypeScript (React 18) |
+| Build tool | Vite |
 | Routing | react-router-dom 7 |
-| HTTP | axios |
-| Styles | Sass |
-| Charts | recharts |
+| Server state | TanStack Query 5 |
+| Styles | Plain CSS |
 | Mobile | Capacitor 7 (Android) |
-| Testing | Testing Library (React / DOM / user-event) + Jest |
-| Serving | nginx, proxy-server.js (Express) |
+| Lint | oxlint + module-boundary and mock-parity scripts |
+| Unit tests | Vitest + Testing Library |
+| Browser tests | Selenium WebDriver under Vitest (`e2e/`), against a mock and against the live stack |
+| Serving | nginx in the image, proxying `/api`, `/sse` and the chat WebSocket to the backend |
+
+## Delivery
+
+| Concern | Technology |
+|---------|-----------|
+| Containers | Docker, one compose file in `infra/` |
+| CI/CD | GitHub Actions (`.github/workflows/README.md`) |
+| Registry | GHCR, images tagged by commit sha |
+| Image scanning | trivy, SBOM per image |
+| Deploy | `infra/deploy.sh` over SSH on a single host; Kubernetes in progress (`.github/ci-cd-fixes.md`) |
 
 ## Conventions
 

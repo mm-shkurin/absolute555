@@ -23,7 +23,6 @@ FROM nginx:alpine
 # The base image trails Alpine security fixes; the image scan in CI fails on fixed ones.
 RUN apk upgrade --no-cache
 
-# Vite writes to dist/, not build/ — the path the CRA-era version of this file used.
 COPY --from=build /app/dist /usr/share/nginx/html
 COPY infra/docker/nginx/frontend.conf /etc/nginx/conf.d/default.conf
 
